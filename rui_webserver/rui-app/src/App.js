@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import Toggle from "react-toggle"
+import CircularProgressbar from "react-circular-progressbar"
 
 import ROS from "roslib"
 
@@ -23,7 +24,8 @@ class App extends Component {
       text: "test1",
       disabledText: "test2",
       toggle: true,
-      disabledToggle: false
+      disabledToggle: false,
+      progressBarPercentage: 0
     }
 
     this.checkROSConnection = this.checkROSConnection.bind(this)
@@ -32,7 +34,8 @@ class App extends Component {
     this.onDisconnectedToROS = this.onDisconnectedToROS.bind(this)
 
     this.rosLog = this.rosLog.bind(this)
-    this.onROSListener = this.onROSListener.bind(this)
+    this.onROSListenerHelloWorld = this.onROSListenerHelloWorld.bind(this)
+    this.onROSListenerProgressBar = this.onROSListenerProgressBar.bind(this)
 
     this.onInputChange = this.onInputChange.bind(this)
     this.onToggleChange = this.onToggleChange.bind(this)
@@ -53,7 +56,6 @@ class App extends Component {
           this.ros.connect(ROS_WS_URL)
         }
       } catch (e) {
-        debugger
         console.error(e)
       }
     }
@@ -61,7 +63,7 @@ class App extends Component {
     if (rosAutoReconnect) {
       setTimeout(() => {
         this.checkROSConnection()
-      }, 2000)
+      }, 3500)
     }
   }
 
@@ -75,18 +77,28 @@ class App extends Component {
     this.ros.off("error", this.onErrorConnectingToROS)
     this.ros.off("close", this.onDisconnectedToROS)
 
-    this.rosListener.unsubscribe()
+    this.rosListenerHelloWorld.unsubscribe()
+    this.rosListenerProgressBar.unsubscribe()
   }
 
   onConnectedToROS() {
-    // rostopic pub /listener std_msgs/String "Hello, World"
-    this.rosListener = new ROS.Topic({
+    // rostopic pub /helloworld std_msgs/String "Hello, World"
+    this.rosListenerHelloWorld = new ROS.Topic({
       ros: this.ros,
-      name: "/listener",
+      name: "/helloworld",
       messageType: "std_msgs/String"
     })
 
-    this.rosListener.subscribe(this.onROSListener)
+    this.rosListenerHelloWorld.subscribe(this.onROSListenerHelloWorld)
+
+    // rostopic pub /progressbar std_msgs/Int32 50
+    this.rosListenerProgressBar = new ROS.Topic({
+      ros: this.ros,
+      name: "/progressbar",
+      messageType: "std_msgs/Int32"
+    })
+
+    this.rosListenerProgressBar.subscribe(this.onROSListenerProgressBar)
 
     this.setState({
       connectedToROS: true
@@ -111,8 +123,18 @@ class App extends Component {
     this.setState({ rosLog: `${text}\n` + rosLog })
   }
 
-  onROSListener(message) {
-    this.rosLog(`Received message on ${this.rosListener.name}: ${message.data}`)
+  onROSListenerHelloWorld(message) {
+    this.rosLog(
+      `Received message on ${this.rosListenerHelloWorld.name}: ${message.data}`
+    )
+  }
+
+  onROSListenerProgressBar(message) {
+    this.rosLog(
+      `Received message on ${this.rosListenerHelloWorld.name}: ${message.data}`
+    )
+
+    this.setState({ progressBarPercentage: message.data })
   }
 
   onInputChange(e) {
@@ -130,7 +152,8 @@ class App extends Component {
       text,
       disabledText,
       toggle,
-      disabledToggle
+      disabledToggle,
+      progressBarPercentage
     } = this.state
     return (
       <Page>
@@ -138,7 +161,7 @@ class App extends Component {
         <HorizontalDivider />
         <Columns>
           <Column>
-            <Section title={"Section name"}>
+            <Section title={"Example Section"}>
               <Label title={"Modifiable text"}>
                 <input value={text} onChange={this.onInputChange} />
               </Label>
@@ -164,6 +187,12 @@ class App extends Component {
               <pre>
                 {JSON.stringify({ ...this.state, rosLog: "hidden" }, null, 2)}
               </pre>
+            </Section>
+            <Section title={"Example progress bar"}>
+              <CircularProgressbar
+                percentage={progressBarPercentage}
+                text={`${progressBarPercentage}%`}
+              />
             </Section>
           </Column>
         </Columns>
