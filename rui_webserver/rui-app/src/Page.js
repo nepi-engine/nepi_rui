@@ -1,4 +1,4 @@
-import React, { Component } from "react"
+import React from "react"
 import { TypographyStyle, GoogleFont } from "react-typography"
 import Typography from "typography"
 import theme from "typography-theme-noriega"

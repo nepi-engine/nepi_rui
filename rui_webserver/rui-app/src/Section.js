@@ -1,9 +1,5 @@
 import React from "react"
 
-import { FaExternalLinkAlt } from "react-icons/fa"
-
-import { Columns, Column } from "./Columns"
-import ExternalLink from "./ExternalLink"
 import Styles from "./Styles"
 
 const styles = Styles.Create({
@@ -19,7 +15,7 @@ const styles = Styles.Create({
     fontWeight: "bold",
     marginBottom: Styles.vars.spacing.regular
   }
-});
+})
 
 const Section = ({ title, children }) => {
   return (

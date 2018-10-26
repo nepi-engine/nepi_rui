@@ -1,4 +1,5 @@
 import React, { Component } from "react"
+import Toggle from "react-toggle"
 
 import Page from "./Page"
 import Nav from "./Nav"
@@ -12,35 +13,44 @@ class App extends Component {
     super(props)
 
     this.state = {
-      unmodifiableText: "test",
-      modifiableText: "test",
+      text: "test1",
+      disabledText: "test2",
+      toggle: true,
+      disabledToggle: false
     }
 
     this.onInputChange = this.onInputChange.bind(this)
+    this.onToggleChange = this.onToggleChange.bind(this)
   }
 
   onInputChange(e) {
-    this.setState({ modifiableText: e.target.value })
+    this.setState({ text: e.target.value })
+  }
+
+  onToggleChange(e) {
+    this.setState({ toggle: e.target.checked })
   }
 
   render() {
-    const {
-      unmodifiableText,
-      modifiableText,
-    } = this.state
+    const { text, disabledText, toggle, disabledToggle } = this.state
     return (
       <Page>
         <Nav />
         <HorizontalDivider />
-
         <Columns>
           <Column>
             <Section title={"Section name"}>
-              <Label title={"Unmodifiable text"}>
-                <input disabled value={unmodifiableText} />
-              </Label>
               <Label title={"Modifiable text"}>
-                <input value={modifiableText} onChange={this.onInputChange} />
+                <input value={text} onChange={this.onInputChange} />
+              </Label>
+              <Label title={"Unmodifiable text"}>
+                <input disabled value={disabledText} />
+              </Label>
+              <Label title={"Modifiable toggle"}>
+                <Toggle checked={toggle} onChange={this.onToggleChange} />
+              </Label>
+              <Label title={"Unmodifiable toggle"}>
+                <Toggle disabled checked={disabledToggle} />
               </Label>
             </Section>
           </Column>
