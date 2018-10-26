@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>numurus_rui</name>
+  <version>0.0.1</version>
+  <description>Web server for the Resident User Interface of Numurus</description>
+
+  <maintainer email="lukedoyle@picknik.ai">Luke Doyle</maintainer>
+  <author email="lukedoyle@picknik.ai">Luke Doyle</author>
+
+  <license>BSD</license>
+
+  <url type="website">https://github.com/PickNikRobotics/numurus_rui</url>
+  <url type="bugtracker">https://github.com/PickNikRobotics/numurus_rui/issues</url>
+  <url type="repository">https://github.com/PickNikRobotics/numurus_rui/</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- <depend>rosbridge-server</depend> -->
+
+  <export>
+  </export>
+</package>
