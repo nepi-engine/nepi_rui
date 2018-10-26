@@ -5,7 +5,7 @@ import Styles from "./Styles"
 
 const styles = Styles.Create({
   appTitle: {
-    fontSize: Styles.vars.fontSize.xxl,
+    fontSize: Styles.vars.fontSize.xxl
   },
   appTitleUnderline: {
     textDecoration: "underline",
@@ -42,7 +42,7 @@ const Nav = () => {
   return (
     <div style={styles.root}>
       <Columns>
-        <Column>
+        <Column equalWidth={false}>
           <div style={styles.appTitle}>
             <span style={styles.appTitleUnderline}>{"n"}</span>
             {"umurus"}

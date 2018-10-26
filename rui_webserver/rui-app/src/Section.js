@@ -8,6 +8,7 @@ import Styles from "./Styles"
 
 const styles = Styles.Create({
   root: {
+    textAlign: "left",
     marginTop: Styles.vars.spacing.regular,
     padding: Styles.vars.spacing.regular,
     border: `1px solid ${Styles.vars.colors.grey1}`
