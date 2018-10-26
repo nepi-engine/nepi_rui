@@ -1,4 +1,3 @@
 import os
 
-ROOT_PATH = os.path.dirname(os.path.realpath(__file__))
-APP_PATH = os.path.join(ROOT_PATH, 'rui-app', 'build')
+APP_BUILD_PATH = os.path.join(os.environ['RUI_HOME'], 'rui_webserver', 'rui-app', 'build')

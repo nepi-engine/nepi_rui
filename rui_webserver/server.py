@@ -3,10 +3,10 @@ import time
 from flask import Flask, send_from_directory, jsonify, g
 from flask_cors import CORS
 
-from rui_webserver.config import APP_PATH
+from rui_webserver.config import APP_BUILD_PATH
 
 
-app = Flask(__name__, static_folder=APP_PATH)
+app = Flask(__name__, static_folder=APP_BUILD_PATH)
 CORS(app)
 
 
@@ -26,10 +26,10 @@ Catchall, serve the frontend
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
-    if path != "" and os.path.exists(os.path.join(APP_PATH, path)):
-        return send_from_directory(APP_PATH, path)
+    if path != "" and os.path.exists(os.path.join(APP_BUILD_PATH, path)):
+        return send_from_directory(APP_BUILD_PATH, path)
     else:
-        return send_from_directory(APP_PATH, 'index.html')
+        return send_from_directory(APP_BUILD_PATH, 'index.html')
 
 
 @app.before_request
