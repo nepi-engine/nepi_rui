@@ -1,0 +1,9 @@
+# Used with wstool, users can download and source of all packages in this.
+- git:
+    local-name: numurus_rui
+    uri: git@github.com:PickNikRobotics/numurus_rui.git
+    version: master
+- git:
+    local-name: num_sdk_msgs
+    uri: git@bitbucket.org:numurus/num_sdk_msgs.git
+    version: develop
