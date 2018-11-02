@@ -27,7 +27,7 @@ const unitString = function(unit) {
 export const em = unitString("em")
 export const px = unitString("px")
 
-export const pageWidth = px(800)
+export const pageWidth = px(1100)
 
 export const spacing = {
   xs: px(4),
