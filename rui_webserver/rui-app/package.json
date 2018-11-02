@@ -2,9 +2,11 @@
   "name": "rui-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "devDependencies": {
-    "react-scripts": "2.0.5",
-    "prettier": "1.12.1"
+    "gh-pages": "2.0.1",
+    "prettier": "1.12.1",
+    "react-scripts": "2.0.5"
   },
   "dependencies": {
     "inline-style-prefixer": "5.0.1",
@@ -22,15 +24,11 @@
     "start": "PORT=3006 react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "lint": "prettier --write --no-semi **/*.js"
+    "lint": "prettier --write --no-semi **/*.js",
+    "deploy": "npm run build && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  "browserslist": [">0.2%", "not dead", "not ie <= 11", "not op_mini all"]
 }
