@@ -38,7 +38,7 @@ const NavItem = ({ active = false, label, onClick }) => {
   )
 }
 
-const Nav = () => {
+const Nav = ({ pageLocked }) => {
   return (
     <div style={styles.root}>
       <Columns>
@@ -48,12 +48,14 @@ const Nav = () => {
             {"umurus"}
           </div>
         </Column>
-        <Column>
-          <NavItem active label={"Dashboard"} />
-          <NavItem label={"Applications"} />
-          <NavItem label={"Files"} />
-          <NavItem label={"Settings"} />
-        </Column>
+        {!pageLocked && (
+          <Column>
+            <NavItem active label={"Dashboard"} />
+            <NavItem label={"Applications"} />
+            <NavItem label={"Files"} />
+            <NavItem label={"Settings"} />
+          </Column>
+        )}
       </Columns>
     </div>
   )

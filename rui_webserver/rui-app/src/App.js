@@ -10,6 +10,7 @@ import Section from "./Section"
 import HorizontalDivider from "./HorizontalDivider"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
+import PageLock from "./PageLock"
 
 const ROS_WS_URL = "ws://localhost:9090"
 
@@ -18,6 +19,7 @@ class App extends Component {
     super(props)
 
     this.state = {
+      pageLocked: window.location.hostname !== "localhost",
       connectedToROS: false,
       rosAutoReconnect: true,
       rosLog: "",
@@ -39,6 +41,7 @@ class App extends Component {
 
     this.onInputChange = this.onInputChange.bind(this)
     this.onToggleChange = this.onToggleChange.bind(this)
+    this.onUnlockPage = this.onUnlockPage.bind(this)
   }
 
   checkROSConnection() {
@@ -145,8 +148,13 @@ class App extends Component {
     this.setState({ toggle: e.target.checked })
   }
 
+  onUnlockPage(e) {
+    this.setState({ pageLocked: false })
+  }
+
   render() {
     const {
+      pageLocked,
       connectedToROS,
       rosLog,
       text,
@@ -155,47 +163,51 @@ class App extends Component {
       disabledToggle,
       progressBarPercentage
     } = this.state
+
     return (
       <Page>
-        <Nav />
+        <Nav pageLocked={pageLocked} />
         <HorizontalDivider />
-        <Columns>
-          <Column>
-            <Section title={"Example Section"}>
-              <Label title={"Modifiable text"}>
-                <input value={text} onChange={this.onInputChange} />
-              </Label>
-              <Label title={"Unmodifiable text"}>
-                <input disabled value={disabledText} />
-              </Label>
-              <Label title={"Modifiable toggle"}>
-                <Toggle checked={toggle} onChange={this.onToggleChange} />
-              </Label>
-              <Label title={"Unmodifiable toggle"}>
-                <Toggle disabled checked={disabledToggle} />
-              </Label>
-            </Section>
-            <Section title={"ROS status"}>
-              <Label title={"ROS Connection"}>
-                <Toggle disabled checked={connectedToROS} />
-              </Label>
-              <pre>{rosLog}</pre>
-            </Section>
-          </Column>
-          <Column>
-            <Section title={"Debug info"}>
-              <pre>
-                {JSON.stringify({ ...this.state, rosLog: "hidden" }, null, 2)}
-              </pre>
-            </Section>
-            <Section title={"Example progress bar"}>
-              <CircularProgressbar
-                percentage={progressBarPercentage}
-                text={`${progressBarPercentage}%`}
-              />
-            </Section>
-          </Column>
-        </Columns>
+        {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}
+        {!pageLocked && (
+          <Columns>
+            <Column>
+              <Section title={"Example Section"}>
+                <Label title={"Modifiable text"}>
+                  <input value={text} onChange={this.onInputChange} />
+                </Label>
+                <Label title={"Unmodifiable text"}>
+                  <input disabled value={disabledText} />
+                </Label>
+                <Label title={"Modifiable toggle"}>
+                  <Toggle checked={toggle} onChange={this.onToggleChange} />
+                </Label>
+                <Label title={"Unmodifiable toggle"}>
+                  <Toggle disabled checked={disabledToggle} />
+                </Label>
+              </Section>
+              <Section title={"ROS status"}>
+                <Label title={"ROS Connection"}>
+                  <Toggle disabled checked={connectedToROS} />
+                </Label>
+                <pre>{rosLog}</pre>
+              </Section>
+            </Column>
+            <Column>
+              <Section title={"Debug info"}>
+                <pre>
+                  {JSON.stringify({ ...this.state, rosLog: "hidden" }, null, 2)}
+                </pre>
+              </Section>
+              <Section title={"Example progress bar"}>
+                <CircularProgressbar
+                  percentage={progressBarPercentage}
+                  text={`${progressBarPercentage}%`}
+                />
+              </Section>
+            </Column>
+          </Columns>
+        )}
       </Page>
     )
   }
