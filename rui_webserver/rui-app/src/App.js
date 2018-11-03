@@ -7,6 +7,7 @@ import ROS from "roslib"
 
 import Page from "./Page"
 import Nav from "./Nav"
+import Input from "./Input"
 import Section from "./Section"
 import HorizontalDivider from "./HorizontalDivider"
 import { Columns, Column } from "./Columns"
@@ -213,10 +214,10 @@ class App extends Component {
       <React.Fragment>
         <Section title={"Example Section"}>
           <Label title={"Modifiable text"}>
-            <input value={text} onChange={this.onInputChange} />
+            <Input value={text} onChange={this.onInputChange} />
           </Label>
           <Label title={"Unmodifiable text"}>
-            <input disabled value={disabledText} />
+            <Input disabled value={disabledText} />
           </Label>
           <Label title={"Modifiable toggle"}>
             <Toggle checked={toggle} onChange={this.onToggleChange} />
@@ -257,10 +258,10 @@ class App extends Component {
     return (
       <Section title={"Device Info"}>
         <Label title={"Device Name"}>
-          <input disabled value={deviceInfoName} />
+          <Input disabled value={deviceInfoName} />
         </Label>
         <Label title={"Device Serial Number"}>
-          <input disabled value={deviceInfoSerial} />
+          <Input disabled value={deviceInfoSerial} />
         </Label>
       </Section>
     )
@@ -281,13 +282,13 @@ class App extends Component {
           <Toggle disabled checked={deviceClockPPSActive} />
         </Label>
         <Label title={"Time"}>
-          <input disabled value={deviceClockTime.format("h:mm a")} />
+          <Input disabled value={deviceClockTime.format("h:mm a")} />
         </Label>
         <Label title={"Date"}>
-          <input disabled value={deviceClockTime.format("l")} />
+          <Input disabled value={deviceClockTime.format("l")} />
         </Label>
         <Label title={"Timezone"}>
-          <input disabled value={"MDT"} />
+          <Input disabled value={"MDT"} />
         </Label>
       </Section>
     )
@@ -302,13 +303,13 @@ class App extends Component {
     return (
       <Section title={"Location"}>
         <Label title={"Latitude"}>
-          <input disabled value={deviceLocationLat} />
+          <Input disabled value={deviceLocationLat} />
         </Label>
         <Label title={"Longitude"}>
-          <input disabled value={deviceLocationLng} />
+          <Input disabled value={deviceLocationLng} />
         </Label>
         <Label title={"Altitude (m)"}>
-          <input disabled value={deviceLocationAlt} />
+          <Input disabled value={deviceLocationAlt} />
         </Label>
       </Section>
     )
@@ -336,10 +337,10 @@ class App extends Component {
         </Label>
 
         <Label title={"Actual Rate (Hz)"}>
-          <input disabled value={deviceTriggerActualRateHz} />
+          <Input disabled value={deviceTriggerActualRateHz} />
         </Label>
         <Label title={"Auto Rate (Hz)"}>
-          <input disabled value={deviceTriggerAutoRateHz} />
+          <Input disabled value={deviceTriggerAutoRateHz} />
         </Label>
       </Section>
     )
@@ -360,23 +361,23 @@ class App extends Component {
         </Label>
 
         <Label title={"Temp (C)"}>
-          <input disabled value={deviceStatusTempC} />
+          <Input disabled value={deviceStatusTempC} />
         </Label>
 
         <Label title={"Temp (C)"}>
-          <input disabled value={deviceStatusTempC} />
+          <Input disabled value={deviceStatusTempC} />
         </Label>
 
         <Label title={"Storage"}>
-          <input disabled value={deviceStatusStorage} />
+          <Input disabled value={deviceStatusStorage} />
         </Label>
 
         <Label title={"Capacity (MB)"}>
-          <input disabled value={deviceStatusStorageCapacityMB} />
+          <Input disabled value={deviceStatusStorageCapacityMB} />
         </Label>
 
         <Label title={"Used (MB)"}>
-          <input disabled value={deviceStatusStorageUsedMB} />
+          <Input disabled value={deviceStatusStorageUsedMB} />
         </Label>
       </Section>
     )
@@ -387,10 +388,10 @@ class App extends Component {
     return (
       <Section title={"Direction"}>
         <Label title={"Heading (deg)"}>
-          <input disabled value={deviceDirectionHeadingDeg} />
+          <Input disabled value={deviceDirectionHeadingDeg} />
         </Label>
         <Label title={"Speed (m/s)"}>
-          <input disabled value={deviceDirectionSpeedMpS} />
+          <Input disabled value={deviceDirectionSpeedMpS} />
         </Label>
       </Section>
     )
@@ -408,36 +409,36 @@ class App extends Component {
     return (
       <Section title={"Orientation (deg, deg/s)"}>
         <Label title={"Yaw"}>
-          <input
+          <Input
             disabled
             style={{ width: "50%" }}
             value={deviceOrientationYawAngle}
           />
-          <input
+          <Input
             disabled
             style={{ width: "50%" }}
             value={deviceOrientationYawRate}
           />
         </Label>
         <Label title={"Pitch"}>
-          <input
+          <Input
             disabled
             style={{ width: "50%" }}
             value={deviceOrientationPitchAngle}
           />
-          <input
+          <Input
             disabled
             style={{ width: "50%" }}
             value={deviceOrientationPitchRate}
           />
         </Label>
         <Label title={"Roll"}>
-          <input
+          <Input
             disabled
             style={{ width: "50%" }}
             value={deviceOrientationRollAngle}
           />
-          <input
+          <Input
             disabled
             style={{ width: "50%" }}
             value={deviceOrientationRollRate}

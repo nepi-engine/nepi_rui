@@ -10,12 +10,17 @@ const typography = new Typography({
   baseFontSize: Styles.vars.fontSize.regular,
   baseLineHeight: Styles.vars.lineHeights.regular,
   blockMarginBottom: 0.5,
-  scaleRatio: 1.5
+  scaleRatio: 1.5,
+  overrideStyles: ({ adjustFontSizeTo, rhythm }, options, styles) => ({
+    "*": {
+      color: Styles.vars.colors.white
+    }
+  })
 })
 
 const styles = Styles.Create({
   container: {
-    backgroundColor: Styles.vars.colors.grey0,
+    backgroundColor: Styles.vars.colors.black,
     maxWidth: Styles.vars.pageWidth,
     margin: "0 auto",
     padding: Styles.vars.spacing.large

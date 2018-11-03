@@ -8,8 +8,7 @@ const styles = Styles.Create({
   },
   labelTitle: {
     flex: 1,
-    textAlign: "left",
-    color: Styles.vars.colors.grey2
+    textAlign: "left"
   },
   container: {
     flex: 1,
@@ -20,7 +19,7 @@ const styles = Styles.Create({
 const Label = ({ title, children }) => {
   return (
     <div style={{ display: "flex", ...styles.root }}>
-      <label style={styles.labelTitle}>{`${title}:`}</label>
+      <label style={styles.labelTitle}>{title}</label>
       <div style={styles.container}>{children}</div>
     </div>
   )

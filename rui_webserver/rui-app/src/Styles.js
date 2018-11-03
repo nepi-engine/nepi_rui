@@ -9,7 +9,9 @@ export const Create = function(rules) {
 }
 
 export const colors = {
+  black: "#1c1d20",
   white: "#ffffff",
+  orange: "#ffd000",
   grey0: "#e1e6e9",
   grey1: "#a5abb4",
   grey2: "#3e4043",
@@ -27,7 +29,7 @@ const unitString = function(unit) {
 export const em = unitString("em")
 export const px = unitString("px")
 
-export const pageWidth = px(1100)
+export const pageWidth = px(1080)
 
 export const spacing = {
   xs: px(4),

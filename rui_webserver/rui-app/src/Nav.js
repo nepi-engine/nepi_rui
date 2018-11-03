@@ -25,7 +25,7 @@ const styles = Styles.Create({
   }
 })
 
-const NavItem = ({ active = false, label, onClick }) => {
+const NavItem = ({ active, label, onClick }) => {
   const style = {
     ...styles.navItem,
     ...(active ? styles.activeNavItem : {})
@@ -38,18 +38,22 @@ const NavItem = ({ active = false, label, onClick }) => {
   )
 }
 
+NavItem.defaultProps = {
+  active: false
+}
+
 const Nav = ({ pageLocked }) => {
   return (
     <div style={styles.root}>
       <Columns>
-        <Column equalWidth={false}>
+        <Column>
           <div style={styles.appTitle}>
             <span style={styles.appTitleUnderline}>{"n"}</span>
             {"umurus"}
           </div>
         </Column>
         {!pageLocked && (
-          <Column>
+          <Column style={{ flex: 3 }}>
             <NavItem active label={"Dashboard"} />
             <NavItem label={"Applications"} />
             <NavItem label={"Files"} />
