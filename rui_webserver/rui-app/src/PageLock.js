@@ -1,6 +1,8 @@
 import React, { Component } from "react"
 import Section from "./Section"
 import Label from "./Label"
+import Input from "./Input"
+import Button, { ButtonMenu } from "./Button"
 
 const PASSWORD = "picknik2018"
 
@@ -40,15 +42,17 @@ class PageLock extends Component {
       <React.Fragment>
         <Section title={"Page locked"}>
           <Label title={"Please enter the password to unlock the page"}>
-            <input
+            <Input
               type={"password"}
               value={passwordValue}
               onChange={this.onUpdatePassword}
               onKeyPress={this.handleKeyPress}
             />
           </Label>
+          <ButtonMenu>
+            <Button onClick={this.checkLock}>{"Check password"}</Button>
+          </ButtonMenu>
         </Section>
-        <button onClick={this.checkLock}>{"Check password"}</button>
       </React.Fragment>
     )
   }

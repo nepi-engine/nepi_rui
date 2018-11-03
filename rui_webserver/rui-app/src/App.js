@@ -13,6 +13,10 @@ import HorizontalDivider from "./HorizontalDivider"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import PageLock from "./PageLock"
+import Button, { ButtonMenu } from "./Button"
+import Select, { Option } from "./Select"
+
+import camPlaceholder from "./camPlaceholder.png"
 
 const ROS_WS_URL = "ws://localhost:9090"
 const IS_DEBUG = window.location.hostname === "localhost"
@@ -466,10 +470,35 @@ class App extends Component {
   }
 
   renderCameraPreview() {
-    const { rosLog } = this.state
     return (
       <Section title={"Camera Preview"}>
-        <img src={"https://www.placecage.com/200/300"} />
+        <img src={camPlaceholder} />
+        <ButtonMenu>
+          <Button>{"Take Snapshot"}</Button>
+          <Button>{"Clear Fence"}</Button>
+        </ButtonMenu>
+      </Section>
+    )
+  }
+
+  renderCameraSettings() {
+    return (
+      <Section title={"Settings"}>
+        <Label title={"Image Topic"}>
+          <Select>
+            <Option value="single-cam-1-image">Single Cam 1 Image</Option>
+            <Option value="single-cam-2-image">Single Cam 2 Image</Option>
+            <Option value="sonar-image-1">Sonar Image 1</Option>
+          </Select>
+        </Label>
+        <Label title={"Image Classifier"}>
+          <Select>
+            <Option value="number">Number</Option>
+            <Option value="face">Face</Option>
+            <Option value="cat">Cat</Option>
+            <Option value="hamster">Hamster</Option>
+          </Select>
+        </Label>
       </Section>
     )
   }
@@ -503,7 +532,7 @@ class App extends Component {
         return (
           <Columns>
             <Column>{this.renderCameraPreview()}</Column>
-            <Column>{"great"}</Column>
+            <Column>{this.renderCameraSettings()}</Column>
           </Columns>
         )
       default:
