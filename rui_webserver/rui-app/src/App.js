@@ -16,12 +16,16 @@ import PageLock from "./PageLock"
 
 const ROS_WS_URL = "ws://localhost:9090"
 const IS_DEBUG = window.location.hostname === "localhost"
+
+const PAGES = ["Dashboard", "Applications", "Files", "Settings"]
+
 class App extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
       pageLocked: !IS_DEBUG,
+      activePage: PAGES[0],
       connectedToROS: false,
       rosAutoReconnect: true,
       rosLog: "",
@@ -58,6 +62,8 @@ class App extends Component {
       deviceOrientationRollRate: ".2"
     }
 
+    this.onNavChange = this.onNavChange.bind(this)
+
     this.checkROSConnection = this.checkROSConnection.bind(this)
     this.onConnectedToROS = this.onConnectedToROS.bind(this)
     this.onErrorConnectingToROS = this.onErrorConnectingToROS.bind(this)
@@ -82,6 +88,12 @@ class App extends Component {
     this.renderDirection = this.renderDirection.bind(this)
     this.renderOrientation = this.renderOrientation.bind(this)
     this.renderSystemMessages = this.renderSystemMessages.bind(this)
+    this.renderAppContent = this.renderAppContent.bind(this)
+    this.renderCameraPreview = this.renderCameraPreview.bind(this)
+  }
+
+  onNavChange(pageName) {
+    this.setState({ activePage: pageName })
   }
 
   checkROSConnection() {
@@ -364,10 +376,6 @@ class App extends Component {
           <Input disabled value={deviceStatusTempC} />
         </Label>
 
-        <Label title={"Temp (C)"}>
-          <Input disabled value={deviceStatusTempC} />
-        </Label>
-
         <Label title={"Storage"}>
           <Input disabled value={deviceStatusStorage} />
         </Label>
@@ -457,14 +465,21 @@ class App extends Component {
     )
   }
 
-  render() {
-    const { pageLocked } = this.state
+  renderCameraPreview() {
+    const { rosLog } = this.state
     return (
-      <Page>
-        <Nav pageLocked={pageLocked} />
-        <HorizontalDivider />
-        {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}
-        {!pageLocked && (
+      <Section title={"Camera Preview"}>
+        <img src={"https://www.placecage.com/200/300"} />
+      </Section>
+    )
+  }
+
+  renderAppContent() {
+    const { activePage } = this.state
+
+    switch (activePage) {
+      case PAGES[0]: // dashboard
+        return (
           <Columns>
             {/* <Column>{this.renderExampleSection()}</Column> */}
             {/* <Column>{this.renderROSStatus()}</Column> */}
@@ -476,14 +491,38 @@ class App extends Component {
             <Column>
               {this.renderTriggerSettings()}
               {this.renderSystemStatus()}
-              {this.renderDirection()}
             </Column>
             <Column>
               {this.renderSystemMessages()}
               {this.renderOrientation()}
+              {this.renderDirection()}
             </Column>
           </Columns>
-        )}
+        )
+      case PAGES[1]: // apps
+        return (
+          <Columns>
+            <Column>{this.renderCameraPreview()}</Column>
+            <Column>{"great"}</Column>
+          </Columns>
+        )
+      default:
+        return <div>{"Page not implemented"}</div>
+    }
+  }
+
+  render() {
+    const { pageLocked } = this.state
+    return (
+      <Page>
+        <Nav
+          pageLocked={pageLocked}
+          onNavChange={this.onNavChange}
+          pages={PAGES}
+        />
+        <HorizontalDivider />
+        {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}
+        {!pageLocked && this.renderAppContent()}
       </Page>
     )
   }

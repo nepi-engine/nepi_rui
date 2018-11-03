@@ -1,4 +1,4 @@
-import React from "react"
+import React, { Component } from "react"
 
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
@@ -32,7 +32,12 @@ const NavItem = ({ active, label, onClick }) => {
   }
 
   return (
-    <div style={style} onClick={onClick}>
+    <div
+      style={style}
+      onClick={() => {
+        onClick(label)
+      }}
+    >
       {label}
     </div>
   )
@@ -42,27 +47,57 @@ NavItem.defaultProps = {
   active: false
 }
 
-const Nav = ({ pageLocked }) => {
-  return (
-    <div style={styles.root}>
-      <Columns>
-        <Column>
-          <div style={styles.appTitle}>
-            <span style={styles.appTitleUnderline}>{"n"}</span>
-            {"umurus"}
-          </div>
-        </Column>
-        {!pageLocked && (
-          <Column style={{ flex: 3 }}>
-            <NavItem active label={"Dashboard"} />
-            <NavItem label={"Applications"} />
-            <NavItem label={"Files"} />
-            <NavItem label={"Settings"} />
+class Nav extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      activePage: this.props.pages[0]
+    }
+
+    this.onNavItemClick = this.onNavItemClick.bind(this)
+  }
+
+  onNavItemClick(pageName) {
+    const { activePage } = this.state
+    if (pageName !== activePage) {
+      this.setState({
+        activePage: pageName
+      })
+      this.props.onNavChange(pageName)
+    }
+  }
+
+  render() {
+    const { pages, pageLocked } = this.props
+    const { activePage } = this.state
+    return (
+      <div style={styles.root}>
+        <Columns>
+          <Column>
+            <div style={styles.appTitle}>
+              <span style={styles.appTitleUnderline}>{"n"}</span>
+              {"umurus"}
+            </div>
           </Column>
-        )}
-      </Columns>
-    </div>
-  )
+          {!pageLocked && (
+            <Column style={{ flex: 3 }}>
+              {pages.map(pageName => {
+                return (
+                  <NavItem
+                    active={pageName === activePage}
+                    label={pageName}
+                    key={pageName}
+                    onClick={this.onNavItemClick}
+                  />
+                )
+              })}
+            </Column>
+          )}
+        </Columns>
+      </div>
+    )
+  }
 }
 
 export default Nav
