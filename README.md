@@ -17,7 +17,9 @@ TODO(dave@picknik.ai): fix Travis badge:
 
 1. [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following python and build tools.
 
-        sudo apt-get install python3 python3-venv python-wstool python-catkin-tools
+        sudo apt-get install python python-wstool python-catkin-tools python-pip
+        pip install --user -U pip
+        pip install --user virtualenv
 
 1. TODO(davetcoleman): rosbridge should be install by rosdep in the package.xml, but currently not working so:
 
@@ -42,9 +44,24 @@ TODO(dave@picknik.ai): fix Travis badge:
         wstool update
         rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
+1. Setup the virtual environment
+
+        cd $CATKIN_WS
+        python -m virtualenv venv
+
+1. Source the virtual environment and environment variables (NOTE: you may want to add this to your .bashrc)
+
+        source $CATKIN_WS/src/numurus_rui/devenv.sh
+
+1. Install python and javascript dependencies:
+
+        cd $CATKIN_WS/src/numurus_rui
+        pip install -r requirements.txt
+        cd rui_webserver/rui-app/ && npm i
+
 1. Configure and build the workspace:
 
-        cd ..
+        cd $CATKIN_WS
         catkin config --extend /opt/ros/kinetic --cmake-args -DCMAKE_BUILD_TYPE=Release
         catkin build
 
@@ -52,12 +69,6 @@ TODO(dave@picknik.ai): fix Travis badge:
 
         source devel/setup.bash
 
-1. Setup the virtual environment, source the devenv, and install python and javascript dependencies:
-
-        python3 -m venv venv
-        . devenv.sh
-        pip install -r requirements.txt
-        cd rui_webserver/rui-app/ && npm i
 
 ## Development
 
