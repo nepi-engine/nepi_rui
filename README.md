@@ -102,6 +102,21 @@ If changing frontend code, run the development server with:
 
 There are a couple different commands that can be run with `npm`, such as `build`, `lint`, etc. See the scripts `scripts` section of `rui_webserver/rui-app/package.json` for a full list.
 
+### Fake Data Publishers
+We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` folow the steps below. (Note: make sure that you have source'd your catkin workspace in every terminal)
+
+1. If you do not already have a ros master running, run in a new terminal: (Append `&` to run the ros master in the background)
+
+        roscore
+
+1. Run the publisher in a different terminal:
+
+        rosrun numurus_rui nd_status_pub.py
+
+1. Verify that the publisher is working in a separate terminal:
+
+        rostopic echo /fake_nd_status
+
 ## Production
 
 TODO(Stonelinks): figure out production
