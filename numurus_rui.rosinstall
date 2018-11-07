@@ -5,5 +5,5 @@
     version: master
 - git:
     local-name: num_sdk_msgs
-    uri: git@bitbucket.org:numurus/num_sdk_msgs.git
+    uri: https://bitbucket.org/numurus/num_sdk_msgs.git
     version: develop
