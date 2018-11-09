@@ -19,10 +19,6 @@ TODO(dave@picknik.ai): fix Travis badge:
 
         sudo apt-get install python3 python3-venv python-wstool python-catkin-tools
 
-1. TODO(davetcoleman): rosbridge should be install by rosdep in the package.xml, but currently not working so:
-
-        sudo apt-get install ros-kinetic-rosbridge-server
-
 1. nvm (node version manager) is also needed:
 
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
