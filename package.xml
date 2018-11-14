@@ -15,7 +15,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <!-- <depend>rosbridge-server</depend> -->
+  <depend>rosbridge_server</depend>
+  <depend>num_sdk_msgs</depend>
 
   <export>
   </export>

@@ -21,10 +21,6 @@ TODO(dave@picknik.ai): fix Travis badge:
         pip install --user -U pip
         pip install --user virtualenv
 
-1. TODO(davetcoleman): rosbridge should be install by rosdep in the package.xml, but currently not working so:
-
-        sudo apt-get install ros-kinetic-rosbridge-server
-
 1. nvm (node version manager) is also needed:
 
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
@@ -112,6 +108,21 @@ If changing frontend code, run the development server with:
     cd rui_webserver/rui-app/ && npm start
 
 There are a couple different commands that can be run with `npm`, such as `build`, `lint`, etc. See the scripts `scripts` section of `rui_webserver/rui-app/package.json` for a full list.
+
+### Fake Data Publishers
+We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` follow the steps below. (Note: make sure that you have source'd your catkin workspace in every terminal)
+
+1. If you do not already have a ros master running, run in a new terminal: (Append `&` to run the ros master in the background)
+
+        roscore
+
+1. Run the publisher in a different terminal:
+
+        rosrun numurus_rui nd_status_pub.py
+
+1. Verify that the publisher is working in a separate terminal:
+
+        rostopic echo /fake_nd_status
 
 ## Production
 
