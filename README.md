@@ -21,14 +21,19 @@ TODO(dave@picknik.ai): fix Travis badge:
         pip install --user -U pip
         pip install --user virtualenv
 
+1. The following is a temporary fix for a ROS issue and may not be needed:
+
+        pip install empy
+
 1. nvm (node version manager) is also needed:
 
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+        export NVM_DIR="$HOME/.nvm"
         nvm install 8.11.1
 
 1. Re-use or create a catkin workspace:
 
-        export CATKIN_WS=~/ws_catkin/
+        export CATKIN_WS=~/ws_numurus/
         mkdir -p $CATKIN_WS/src
         cd $CATKIN_WS/src
 
@@ -84,7 +89,10 @@ To make sure you have the latest repos:
 
 ### Development
 
-When developing, always source the devenv (`. devenv.sh`) to ensure the correct versions of python, node and define environment variables.
+When developing, always source the devenv.sh to ensure the correct versions of python, node and define environment variables:
+
+    cd $CATKIN_WS/src/numurus_rui
+    . devenv.sh
 
 ### Rosbridge
 
@@ -99,6 +107,7 @@ If changing backend code, run the webserver with:
     python -m rui_webserver
 
 TODO(mlautman): run with rosrun
+TODO(davetcoleman): move these instructions after the frontend ones since they are dependent in that order
 The backend only works if the frontend has been built for production (see below).
 
 ### Frontend
@@ -110,6 +119,7 @@ If changing frontend code, run the development server with:
 There are a couple different commands that can be run with `npm`, such as `build`, `lint`, etc. See the scripts `scripts` section of `rui_webserver/rui-app/package.json` for a full list.
 
 ### Fake Data Publishers
+
 We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` follow the steps below. (Note: make sure that you have source'd your catkin workspace in every terminal)
 
 1. If you do not already have a ros master running, run in a new terminal: (Append `&` to run the ros master in the background)
