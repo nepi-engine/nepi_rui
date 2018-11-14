@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(numurus_rui)
 
 # Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS num_sdk_msgs rosbridge_server)
+find_package(catkin REQUIRED COMPONENTS num_sdk_msgs rosbridge_server rospy)
 
 ###################################
 ## Catkin specific configuration ##
@@ -21,9 +21,11 @@ catkin_python_setup()
 #############
 ## Install ##
 #############
-install(PROGRAMS scripts/nd_status_pub.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# install(PROGRAMS scripts/nd_status_pub.py
+  # DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+catkin_install_python(PROGRAMS scripts/nd_status_pub.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 #############
 ## Testing ##
