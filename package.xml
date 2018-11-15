@@ -17,6 +17,9 @@
 
   <depend>rosbridge_server</depend>
   <depend>num_sdk_msgs</depend>
+  
+  <exec_depend>gscam</exec_depend>
+  <exec_depend>web_video_server</exec_depend>
 
   <export>
   </export>
