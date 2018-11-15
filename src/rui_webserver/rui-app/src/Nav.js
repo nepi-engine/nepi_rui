@@ -1,4 +1,5 @@
 import React, { Component } from "react"
+import { Link } from "react-router-dom"
 
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
@@ -25,21 +26,16 @@ const styles = Styles.Create({
   }
 })
 
-const NavItem = ({ active, label, onClick }) => {
+const NavItem = ({ active, label, path }) => {
   const style = {
     ...styles.navItem,
     ...(active ? styles.activeNavItem : {})
   }
 
   return (
-    <div
-      style={style}
-      onClick={() => {
-        onClick(label)
-      }}
-    >
+    <Link style={style} to={path}>
       {label}
-    </div>
+    </Link>
   )
 }
 
@@ -48,29 +44,8 @@ NavItem.defaultProps = {
 }
 
 class Nav extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      activePage: this.props.pages[0]
-    }
-
-    this.onNavItemClick = this.onNavItemClick.bind(this)
-  }
-
-  onNavItemClick(pageName) {
-    const { activePage } = this.state
-    if (pageName !== activePage) {
-      this.setState({
-        activePage: pageName
-      })
-      this.props.onNavChange(pageName)
-    }
-  }
-
   render() {
     const { pages, pageLocked } = this.props
-    const { activePage } = this.state
     return (
       <div style={styles.root}>
         <Columns>
@@ -82,13 +57,13 @@ class Nav extends Component {
           </Column>
           {!pageLocked && (
             <Column style={{ flex: 3 }}>
-              {pages.map(pageName => {
+              {pages.map(({ path, label }) => {
                 return (
                   <NavItem
-                    active={pageName === activePage}
-                    label={pageName}
-                    key={pageName}
-                    onClick={this.onNavItemClick}
+                    path={path}
+                    active={path === window.location.pathname}
+                    label={label}
+                    key={label}
                   />
                 )
               })}

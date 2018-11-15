@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import Toggle from "react-toggle"
 import CircularProgressbar from "react-circular-progressbar"
 import moment from "moment"
+import { Route, Switch, Link } from "react-router-dom"
 
 import ROS from "roslib"
 
@@ -16,13 +17,13 @@ import PageLock from "./PageLock"
 import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
 
+import FileBrowser from "./FileBrowser"
+
 const FLASK_URL = "http://localhost:5003"
 const ROS_WS_URL = "ws://localhost:9090"
 const ROS_WEBCAM_URL =
   "http://localhost:9091/stream?topic=/v4l/camera/image_raw"
 const IS_DEBUG = window.location.hostname === "localhost"
-
-const PAGES = ["Dashboard", "Applications", "Files", "Settings"]
 
 class App extends Component {
   constructor(props) {
@@ -30,7 +31,6 @@ class App extends Component {
 
     this.state = {
       pageLocked: !IS_DEBUG,
-      activePage: PAGES[0],
       connectedToROS: false,
       rosAutoReconnect: true,
       rosLog: "",
@@ -72,8 +72,6 @@ class App extends Component {
       ipAddress: "none"
     }
 
-    this.onNavChange = this.onNavChange.bind(this)
-
     this.checkROSConnection = this.checkROSConnection.bind(this)
     this.onConnectedToROS = this.onConnectedToROS.bind(this)
     this.onErrorConnectingToROS = this.onErrorConnectingToROS.bind(this)
@@ -96,8 +94,6 @@ class App extends Component {
     // this.onUpdateUnits = this.onUpdateUnits.bind(this)
     // this.onUpdateUnitsResolution = this.onUpdateUnitsResolution.bind(this)
 
-    this.renderExampleSection = this.renderExampleSection.bind(this)
-    this.renderROSStatus = this.renderROSStatus.bind(this)
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
     this.renderSystemClock = this.renderSystemClock.bind(this)
     this.updateClock = this.updateClock.bind(this)
@@ -112,10 +108,6 @@ class App extends Component {
     this.renderSaveSettings = this.renderSaveSettings.bind(this)
     // this.renderUnits = this.renderUnits.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
-  }
-
-  onNavChange(pageName) {
-    this.setState({ activePage: pageName })
   }
 
   checkROSConnection() {
@@ -148,9 +140,9 @@ class App extends Component {
     this.setState({
       deviceClockTime: moment()
     })
-    setTimeout(() => {
-      this.updateClock()
-    }, 1000)
+    // setTimeout(() => {
+    //   this.updateClock()
+    // }, 1000)
   }
 
   async fetchNetworkInfo() {
@@ -249,57 +241,6 @@ class App extends Component {
 
   onUnlockPage(e) {
     this.setState({ pageLocked: false })
-  }
-
-  renderExampleSection() {
-    const {
-      text,
-      disabledText,
-      toggle,
-      disabledToggle,
-      progressBarPercentage
-    } = this.state
-    return (
-      <React.Fragment>
-        <Section title={"Example Section"}>
-          <Label title={"Modifiable text"}>
-            <Input value={text} onChange={this.onInputChange} />
-          </Label>
-          <Label title={"Unmodifiable text"}>
-            <Input disabled value={disabledText} />
-          </Label>
-          <Label title={"Modifiable toggle"}>
-            <Toggle checked={toggle} onChange={this.onToggleChange} />
-          </Label>
-          <Label title={"Unmodifiable toggle"}>
-            <Toggle disabled checked={disabledToggle} />
-          </Label>
-        </Section>
-        <Section title={"Example progress bar"}>
-          <CircularProgressbar
-            percentage={progressBarPercentage}
-            text={`${progressBarPercentage}%`}
-          />
-        </Section>
-        <Section title={"Debug info"}>
-          <pre>
-            {JSON.stringify({ ...this.state, rosLog: "hidden" }, null, 2)}
-          </pre>
-        </Section>
-      </React.Fragment>
-    )
-  }
-
-  renderROSStatus() {
-    const { connectedToROS, rosLog } = this.state
-    return (
-      <Section title={"ROS status"}>
-        <Label title={"ROS Connection"}>
-          <Toggle disabled checked={connectedToROS} />
-        </Label>
-        <pre>{rosLog}</pre>
-      </Section>
-    )
   }
 
   renderDeviceInfo() {
@@ -631,54 +572,73 @@ class App extends Component {
   }
 
   renderAppContent() {
-    const { activePage } = this.state
-
-    switch (activePage) {
-      case PAGES[0]: // dashboard
-        return (
-          <Columns>
-            {/* <Column>{this.renderExampleSection()}</Column> */}
-            {/* <Column>{this.renderROSStatus()}</Column> */}
-            <Column>
-              {this.renderDeviceInfo()}
-              {this.renderSystemClock()}
-              {this.renderLocation()}
-            </Column>
-            <Column>
-              {this.renderTriggerSettings()}
-              {this.renderSystemStatus()}
-              {this.renderDirection()}
-            </Column>
-            <Column>
-              {this.renderSystemMessages()}
-              {this.renderOrientation()}
-            </Column>
-          </Columns>
-        )
-      case PAGES[1]: // apps
-        return (
-          <Columns>
-            <Column>{this.renderCameraPreview()}</Column>
-            <Column>{this.renderCameraSettings()}</Column>
-          </Columns>
-        )
-      case PAGES[3]: // settings
-        return (
-          <Columns>
-            <Column>
-              {this.renderDeviceInfo()}
-              {this.renderSaveSettings()}
-              {this.renderUnits()}
-            </Column>
-            <Column>
-              {this.renderNetworkInfo()}
-              {this.renderResetActions()}
-            </Column>
-          </Columns>
-        )
-      default:
-        return <div>{"Page not implemented"}</div>
-    }
+    return (
+      <Switch>
+        <Route
+          exact
+          path="/"
+          component={() => {
+            return (
+              <Columns>
+                <Column>
+                  {this.renderDeviceInfo()}
+                  {this.renderSystemClock()}
+                  {this.renderLocation()}
+                </Column>
+                <Column>
+                  {this.renderTriggerSettings()}
+                  {this.renderSystemStatus()}
+                  {this.renderDirection()}
+                </Column>
+                <Column>
+                  {this.renderSystemMessages()}
+                  {this.renderOrientation()}
+                </Column>
+              </Columns>
+            )
+          }}
+        />
+        <Route
+          path="/applications"
+          component={() => {
+            return (
+              <Columns>
+                <Column>{this.renderCameraPreview()}</Column>
+                <Column>{this.renderCameraSettings()}</Column>
+              </Columns>
+            )
+          }}
+        />
+        <Route
+          path="/files/:path*"
+          component={props => {
+            return (
+              <Section title={"Files"}>
+                <FileBrowser {...props} />
+              </Section>
+            )
+          }}
+        />
+        <Route
+          path="/settings"
+          component={() => {
+            return (
+              <Columns>
+                <Column>
+                  {this.renderDeviceInfo()}
+                  {this.renderSaveSettings()}
+                  {this.renderUnits()}
+                </Column>
+                <Column>
+                  {this.renderNetworkInfo()}
+                  {this.renderResetActions()}
+                </Column>
+              </Columns>
+            )
+          }}
+        />
+      </Switch>
+    )
   }
 
   render() {
@@ -687,8 +647,12 @@ class App extends Component {
       <Page>
         <Nav
           pageLocked={pageLocked}
-          onNavChange={this.onNavChange}
-          pages={PAGES}
+          pages={[
+            { path: "/", label: "Dashboard" },
+            { path: "/applications", label: "Applications" },
+            { path: "/files", label: "Files" },
+            { path: "/settings", label: "Settings" }
+          ]}
         />
         <HorizontalDivider />
         {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}

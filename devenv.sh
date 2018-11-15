@@ -9,4 +9,4 @@ export RUI_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && nvm use )"
 
 # Setup ROS environment
-source ../devel/setup.bash
+source $CATKIN_WS/devel/setup.bash

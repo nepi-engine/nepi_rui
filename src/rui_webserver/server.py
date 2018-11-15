@@ -4,15 +4,10 @@ import socket
 import threading
 from threading import Thread
 
-from flask import Flask, send_from_directory, jsonify, g
+from flask import Flask, send_from_directory, send_file, jsonify, g
 from flask_cors import CORS
 
-
-from pyftpdlib.authorizers import DummyAuthorizer
-from pyftpdlib.handlers import FTPHandler
-from pyftpdlib.servers import FTPServer
-
-from rui_webserver.config import APP_BUILD_PATH
+from rui_webserver.config import APP_BUILD_PATH, DATA_PATH
 
 
 app = Flask(__name__, static_folder=APP_BUILD_PATH)
@@ -23,7 +18,7 @@ CORS(app)
 Test route
 """
 @app.route('/test')
-def data_files():
+def test():
     return jsonify({
         "foo": "bar"
     })
@@ -36,6 +31,45 @@ def network_info():
     return jsonify({
         "ipAddress": socket.gethostbyname(socket.gethostname())
     })
+
+"""
+Directory listing / file browsing
+"""
+@app.route('/files/', defaults={'path': ''})
+@app.route('/files/<path:path>')
+def files(path):
+    req_path = os.path.join(DATA_PATH, path)
+
+    # check against bad users
+    if req_path != DATA_PATH and os.path.commonprefix((os.path.realpath(req_path), DATA_PATH)) != DATA_PATH:
+        print('No access to files outside %s' % DATA_PATH)
+        return Response(status=400)
+
+    # check if path is a file and serve
+    if os.path.isfile(req_path):
+        r = send_file(req_path)
+        r.headers["Pragma"] = "no-cache"
+        r.headers["Expires"] = "0"
+        r.headers['Cache-Control'] = 'public, max-age=0'
+        return r
+
+    # show directory contents
+    dirlist = []
+    for f in os.listdir(req_path):
+        file_path = os.path.join(path, f)
+        abs_file_path = os.path.join(req_path, f)
+        is_file = os.path.isfile(abs_file_path)
+        file_size = os.stat(abs_file_path).st_size if is_file else 0
+        num_files = len(os.listdir(abs_file_path)) if not is_file else 0
+        dirlist.append({
+            "name": f,
+            "path": file_path,
+            "isFile": is_file,
+            "size": file_size,
+            "numItems": num_files
+        })
+    return jsonify(dirlist)
+
 
 
 """
@@ -64,24 +98,6 @@ def teardown_request(exc):
         print("Request took {} secs".format(str(diff)))
 
 
-
-def start_flask():
+def start_server():
     app.run(use_reloader=True, host='0.0.0.0',
             port=5003, threaded=True, debug=True)
-
-def start_ftp():
-
-    authorizer = DummyAuthorizer()
-    # authorizer.add_user("user", "12345", "/home/giampaolo", perm="elradfmwMT")
-    authorizer.add_anonymous(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-    ftp_handler = FTPHandler
-    ftp_handler.authorizer = authorizer
-    ftp_server = FTPServer(("0.0.0.0", 5051), ftp_handler)
-    ftp_server.serve_forever()
-
-def start_servers():
-    # Thread(target = start_flask).start()
-    # Thread(target = start_ftp).start()
-    start_flask()
-    

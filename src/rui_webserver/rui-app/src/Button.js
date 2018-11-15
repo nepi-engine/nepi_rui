@@ -11,9 +11,6 @@ const styles = Styles.Create({
     padding: `${Styles.vars.spacing.xs} ${Styles.vars.spacing.small}`,
     color: Styles.vars.colors.black
   },
-  pressed: {
-    backgroundColor: Styles.vars.colors.grey1
-  },
   menuContainer: {
     marginTop: Styles.vars.spacing.small,
     textAlign: "right"
