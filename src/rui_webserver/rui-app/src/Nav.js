@@ -57,8 +57,8 @@ class Nav extends Component {
               {pages.map(({ path, label }) => {
                 return (
                   <NavItem
-                    path={path}
                     active={path === window.location.pathname}
+                    path={path}
                     label={label}
                     key={label}
                   />
