@@ -4,13 +4,11 @@ import { Link } from "react-router-dom"
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
 
+import logo from "./logo.png"
+
 const styles = Styles.Create({
-  appTitle: {
-    fontSize: Styles.vars.fontSize.xxl
-  },
-  appTitleUnderline: {
-    textDecoration: "underline",
-    textDecorationColor: Styles.vars.colors.blue
+  logo: {
+    backgroundColor: Styles.vars.colors.grey0
   },
   navItem: {
     display: "inline-block",
@@ -50,9 +48,8 @@ class Nav extends Component {
       <div style={styles.root}>
         <Columns>
           <Column>
-            <div style={styles.appTitle}>
-              <span style={styles.appTitleUnderline}>{"n"}</span>
-              {"umurus"}
+            <div style={styles.logo}>
+              <img src={logo} />
             </div>
           </Column>
           {!pageLocked && (
