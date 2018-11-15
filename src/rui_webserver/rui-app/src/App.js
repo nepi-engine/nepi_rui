@@ -16,9 +16,10 @@ import PageLock from "./PageLock"
 import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
 
-import camPlaceholder from "./camPlaceholder.png"
-
+const FLASK_URL = "http://localhost:5003"
 const ROS_WS_URL = "ws://localhost:9090"
+const ROS_WEBCAM_URL =
+  "http://localhost:9091/stream?topic=/v4l/camera/image_raw"
 const IS_DEBUG = window.location.hostname === "localhost"
 
 const PAGES = ["Dashboard", "Applications", "Files", "Settings"]
@@ -63,7 +64,12 @@ class App extends Component {
       deviceOrientationPitchAngle: "-4.2",
       deviceOrientationPitchRate: ".1",
       deviceOrientationRollAngle: "-2",
-      deviceOrientationRollRate: ".2"
+      deviceOrientationRollRate: ".2",
+      saveSettingsFileSize: "20.0",
+      saveSettingsFilePrefix: "Lake Union",
+      units: "metric",
+      unitsResolution: "Low",
+      ipAddress: "none"
     }
 
     this.onNavChange = this.onNavChange.bind(this)
@@ -81,6 +87,15 @@ class App extends Component {
     this.onToggleChange = this.onToggleChange.bind(this)
     this.onUnlockPage = this.onUnlockPage.bind(this)
 
+    this.onUpdateSaveSettingFileSize = this.onUpdateSaveSettingFileSize.bind(
+      this
+    )
+    this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(
+      this
+    )
+    // this.onUpdateUnits = this.onUpdateUnits.bind(this)
+    // this.onUpdateUnitsResolution = this.onUpdateUnitsResolution.bind(this)
+
     this.renderExampleSection = this.renderExampleSection.bind(this)
     this.renderROSStatus = this.renderROSStatus.bind(this)
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
@@ -94,6 +109,9 @@ class App extends Component {
     this.renderSystemMessages = this.renderSystemMessages.bind(this)
     this.renderAppContent = this.renderAppContent.bind(this)
     this.renderCameraPreview = this.renderCameraPreview.bind(this)
+    this.renderSaveSettings = this.renderSaveSettings.bind(this)
+    // this.renderUnits = this.renderUnits.bind(this)
+    this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
   }
 
   onNavChange(pageName) {
@@ -135,9 +153,24 @@ class App extends Component {
     }, 1000)
   }
 
+  async fetchNetworkInfo() {
+    try {
+      const r = await fetch(`${FLASK_URL}/api/networkinfo`, {
+        method: "GET"
+      })
+      const networkInfo = await r.json()
+      this.setState({
+        ipAddress: networkInfo.ipAddress
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   componentDidMount() {
     this.checkROSConnection()
     this.updateClock()
+    this.fetchNetworkInfo()
   }
 
   componentWillUnmount() {
@@ -200,7 +233,7 @@ class App extends Component {
 
   onROSListenerProgressBar(message) {
     this.rosLog(
-      `Received message on ${this.rosListenerHelloWorld.name}: ${message.data}`
+      `Received message on ${this.rosListenerProgressBar.name}: ${message.data}`
     )
 
     this.setState({ progressBarPercentage: message.data })
@@ -279,6 +312,9 @@ class App extends Component {
         <Label title={"Device Serial Number"}>
           <Input disabled value={deviceInfoSerial} />
         </Label>
+        <Label title={"Firmware Version"}>
+          <Input disabled value={"1.001"} />
+        </Label>
       </Section>
     )
   }
@@ -340,16 +376,25 @@ class App extends Component {
       deviceTriggerActualRateHz,
       deviceTriggerAutoRateHz
     } = this.state
+
+    //         <Label title={"Dual Cams"}>
+    //   <Toggle disabled checked={deviceTriggerDualCamsActive} />
+    // </Label>
+    // <Label title={"ToF Cam"}>
+    //   <Toggle disabled checked={deviceTriggerToFCamActive} />
+    // </Label>
+    // <Label title={"3D Sonar"}>
+    //   <Toggle disabled checked={deviceTrigger3DSonarActive} />
+    // </Label>
+
     return (
       <Section title={"Trigger Settings"}>
-        <Label title={"Dual Cams"}>
-          <Toggle disabled checked={deviceTriggerDualCamsActive} />
-        </Label>
-        <Label title={"ToF Cam"}>
-          <Toggle disabled checked={deviceTriggerToFCamActive} />
-        </Label>
-        <Label title={"3D Sonar"}>
-          <Toggle disabled checked={deviceTrigger3DSonarActive} />
+        <Label title={"Trigger Value"}>
+          <Select>
+            <Option value="1">1</Option>
+            <Option value="2">2</Option>
+            <Option value="3">3</Option>
+          </Select>
         </Label>
 
         <Label title={"Actual Rate (Hz)"}>
@@ -358,6 +403,11 @@ class App extends Component {
         <Label title={"Auto Rate (Hz)"}>
           <Input disabled value={deviceTriggerAutoRateHz} />
         </Label>
+
+        <ButtonMenu>
+          <Button>{"HW. Trigger Enab."}</Button>
+          <Button>{"Manual Trigger"}</Button>
+        </ButtonMenu>
       </Section>
     )
   }
@@ -472,7 +522,7 @@ class App extends Component {
   renderCameraPreview() {
     return (
       <Section title={"Camera Preview"}>
-        <img src={camPlaceholder} />
+        <img src={ROS_WEBCAM_URL} />
         <ButtonMenu>
           <Button>{"Take Snapshot"}</Button>
           <Button>{"Clear Fence"}</Button>
@@ -483,7 +533,7 @@ class App extends Component {
 
   renderCameraSettings() {
     return (
-      <Section title={"Settings"}>
+      <Section title={"Device"}>
         <Label title={"Image Topic"}>
           <Select>
             <Option value="single-cam-1-image">Single Cam 1 Image</Option>
@@ -498,6 +548,83 @@ class App extends Component {
             <Option value="cat">Cat</Option>
             <Option value="hamster">Hamster</Option>
           </Select>
+        </Label>
+      </Section>
+    )
+  }
+
+  renderSaveSettings() {
+    const { saveSettingsFileSize, saveSettingsFilePrefix } = this.state
+    return (
+      <Section title={"Save Settings"}>
+        <Label title={"Max File Size (MB)"}>
+          <Input
+            value={saveSettingsFileSize}
+            onChange={this.onUpdateSaveSettingFileSize}
+          />
+        </Label>
+        <Label title={"File Name Prefix"}>
+          <Input
+            value={saveSettingsFilePrefix}
+            onChange={this.onUpdateSaveSettingFilePrefix}
+          />
+        </Label>
+      </Section>
+    )
+  }
+
+  onUpdateSaveSettingFileSize(e) {
+    this.setState({ saveSettingsFileSize: e.target.value })
+  }
+
+  onUpdateSaveSettingFilePrefix(e) {
+    this.setState({ saveSettingsFilePrefix: e.target.value })
+  }
+
+  renderUnits() {
+    const { units, unitsResolution } = this.state
+    return (
+      <Section title={"Units"}>
+        <Label title={"Units"}>
+          <Select>
+            <Option value="metric">Metric</Option>
+            <Option value="imperial">Imperial</Option>
+          </Select>
+        </Label>
+        <Label title={"Resolution"}>
+          <Select>
+            <Option value="Low">Low</Option>
+            <Option value="Med">Med</Option>
+            <Option value="High">High</Option>
+            <Option value="Full">Full</Option>
+          </Select>
+        </Label>
+      </Section>
+    )
+  }
+
+  renderNetworkInfo() {
+    const { ipAddress } = this.state
+    return (
+      <Section title={"Network"}>
+        <Label title={"IP Address"}>
+          <Input value={ipAddress} disabled />
+        </Label>
+      </Section>
+    )
+  }
+
+  renderResetActions() {
+    return (
+      <Section title={"Reset"}>
+        <Label>
+          <Button>{"User Reset"}</Button>
+        </Label>
+        <Label>
+          <Button>{"Factory Reset"}</Button>
+        </Label>
+        <Label>
+          <Button>{"Reboot System"}</Button>
         </Label>
       </Section>
     )
@@ -520,11 +647,11 @@ class App extends Component {
             <Column>
               {this.renderTriggerSettings()}
               {this.renderSystemStatus()}
+              {this.renderDirection()}
             </Column>
             <Column>
               {this.renderSystemMessages()}
               {this.renderOrientation()}
-              {this.renderDirection()}
             </Column>
           </Columns>
         )
@@ -533,6 +660,20 @@ class App extends Component {
           <Columns>
             <Column>{this.renderCameraPreview()}</Column>
             <Column>{this.renderCameraSettings()}</Column>
+          </Columns>
+        )
+      case PAGES[3]: // settings
+        return (
+          <Columns>
+            <Column>
+              {this.renderDeviceInfo()}
+              {this.renderSaveSettings()}
+              {this.renderUnits()}
+            </Column>
+            <Column>
+              {this.renderNetworkInfo()}
+              {this.renderResetActions()}
+            </Column>
           </Columns>
         )
       default:

@@ -58,7 +58,7 @@ TODO(dave@picknik.ai): fix Travis badge:
 
         cd $CATKIN_WS/src/numurus_rui
         pip install -r requirements.txt
-        cd rui_webserver/rui-app/ && npm i
+        cd rui_webserver/rui-app/ && npm install
 
 1. Configure and build the workspace:
 
@@ -87,6 +87,8 @@ To make sure you have the latest repos:
 
 ## Run
 
+TODO luke - write instructions for running in prod 
+
 ### Development
 
 When developing, always source the devenv.sh to ensure the correct versions of python, node and define environment variables:
@@ -96,19 +98,9 @@ When developing, always source the devenv.sh to ensure the correct versions of p
 
 ### Rosbridge
 
-Start rosbridge with this roslaunch command in the root of this repository:
+You always need to run rosbridge. Start rosbridge with this roslaunch command in the root of this repository:
 
     roslaunch numurus_rui rosbridge.launch
-
-### Backend
-
-If changing backend code, run the webserver with:
-
-    python -m rui_webserver
-
-TODO(mlautman): run with rosrun
-TODO(davetcoleman): move these instructions after the frontend ones since they are dependent in that order
-The backend only works if the frontend has been built for production (see below).
 
 ### Frontend
 
@@ -117,6 +109,15 @@ If changing frontend code, run the development server with:
     cd rui_webserver/rui-app/ && npm start
 
 There are a couple different commands that can be run with `npm`, such as `build`, `lint`, etc. See the scripts `scripts` section of `rui_webserver/rui-app/package.json` for a full list.
+
+### Backend
+
+If changing backend code, run the webserver with:
+
+    rosrun numurus_rui run_webserver.py
+
+The backend only works if the frontend has been built for production (see below).
+
 
 ### Fake Data Publishers
 
