@@ -77,49 +77,62 @@ TODO(dave@picknik.ai): fix Travis badge:
 
 To make sure you have the latest repos:
 
-    cd $CATKIN_WS/src/numurus_rui
-    git checkout master
-    git pull origin master
-    cd ..
-    wstool merge numurus_rui/numurus_rui.rosinstall
-    wstool update
-    rosdep install --from-paths . --ignore-src --rosdistro kinetic
+        cd $CATKIN_WS/src/numurus_rui
+        git checkout master
+        git pull origin master
+        cd ..
+        wstool merge numurus_rui/numurus_rui.rosinstall
+        wstool update
+        rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
 ## Run
 
-TODO luke - write instructions for running in prod 
+### Rosbridge
+
+In all cases, rosbridge needs to run:
+
+        roslaunch numurus_rui rosbridge.launch
+
+### Production
+
+When running in production (on the device), simply run:
+
+        rosrun numurus_rui run_webserver.py
+
 
 ### Development
 
 When developing, always source the devenv.sh to ensure the correct versions of python, node and define environment variables:
 
-    cd $CATKIN_WS/src/numurus_rui
-    . devenv.sh
+        cd $CATKIN_WS/src/numurus_rui
+        . devenv.sh
 
-### Rosbridge
+#### Frontend
 
-You always need to run rosbridge. Start rosbridge with this roslaunch command in the root of this repository:
+This is only necessary when making changes to frontend code. Start the development server with:
 
-    roslaunch numurus_rui rosbridge.launch
+        cd src/rui_webserver/rui-app/ && npm start
 
-### Frontend
+Various other npm commands are available such as `build`, `lint`, etc. See the `scripts` section of `rui-app/package.json` for a full list of commands.
 
-If changing frontend code, run the development server with:
+When you're done changing frontend, make sure to build and commit build to this repository prior to a release:
 
-    cd rui_webserver/rui-app/ && npm start
+        npm run build
+        git add .
+        git commit -m "Update build"
 
-There are a couple different commands that can be run with `npm`, such as `build`, `lint`, etc. See the scripts `scripts` section of `rui_webserver/rui-app/package.json` for a full list.
+Also be sure to deploy the newest version of the demo site (see https://picknikrobotics.github.io/numurus_rui/):
 
-### Backend
+        npm run deploy
 
-If changing backend code, run the webserver with:
+#### Backend
+
+When changing backend code, run the webserver with:
 
     rosrun numurus_rui run_webserver.py
 
-The backend only works if the frontend has been built for production (see below).
 
-
-### Fake Data Publishers
+#### Fake Data Publishers
 
 We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` follow the steps below. (Note: make sure that you have source'd your catkin workspace in every terminal)
 
@@ -134,16 +147,6 @@ We have provided some fake data publishers for testing purposes. To run a node t
 1. Verify that the publisher is working in a separate terminal:
 
         rostopic echo /fake_nd_status
-
-## Production
-
-TODO(Stonelinks): figure out production
-
-### Frontend
-
-Get a production build of the frontend with:
-
-    cd rui_webserver/rui-app/ && npm build
 
 ## Run Docker
 
