@@ -8,8 +8,10 @@ Description: Web server for the Resident User Interface of Numurus
 
 Developed by Lucas Doyle and Dave Coleman at [PickNik Consulting](http://picknik.ai/)
 
-TODO(dave@picknik.ai): fix Travis badge:
-[![Build Status](https://travis-ci.com/PickNikRobotics/numurus_rui.svg?token=o9hPQnr2kShM9ckDs6J8&branch=master)](https://travis-ci.com/PickNikRobotics/numurus_rui)
+Travis CI: [![Build Status](https://travis-ci.com/PickNikRobotics/numurus_rui.svg?token=o9hPQnr2kShM9ckDs6J8&branch=master)](https://travis-ci.com/PickNikRobotics/numurus_rui)
+
+Architecture:
+![Alt text](/resources/architecture.png?raw=true "Architecture")
 
 ## Install
 
@@ -147,44 +149,3 @@ We have provided some fake data publishers for testing purposes. To run a node t
 1. Verify that the publisher is working in a separate terminal:
 
         rostopic echo /fake_nd_status
-
-## Run Docker
-
-### Prerequisite
-
-TODO(davetcoleman): test Docker instructions, may not work
-
-You must have a private rsa key `~/.ssh/id_rsa` that is not password protected and is attached to your Github and Bitbucket accounts. You must also have a working installation of `docker`.
-
-1. Navigate to `$CATKIN_WS/src/numurus_rui/.docker`. You should see the `Dockerfile` recipe in the directory.
-
-1. Build the docker image
-
-        cd $CATKIN_WS/src/numurus_rui/.docker
-        cp ~/.ssh/id_rsa id_rsa && docker build -t numurus_rui:kinetic-source .; rm id_rsa
-
-1. Run the docker image
-
-    * Without the gui
-
-            docker run -it --rm numurus_rui:kinetic-source /bin/bash
-
-    * With the gui (tested with Ubuntu native and a Ubuntu VM)
-
-            . ./gui-docker -it --rm numurus_rui:kinetic-source /bin/bash
-
-## Testing and Linting
-
-TODO(davetcoleman): test Docker instructions, may not work
-
-To run [roslint](http://wiki.ros.org/roslint), use the following command with [catkin-tools](https://catkin-tools.readthedocs.org/).
-
-    catkin build --no-status --no-deps --this --make-args roslint
-
-To run [catkin lint](https://pypi.python.org/pypi/catkin_lint), use the following command with [catkin-tools](https://catkin-tools.readthedocs.org/).
-
-    catkin lint -W2 --rosdistro kinetic
-
-Use the following command with [catkin-tools](https://catkin-tools.readthedocs.org/) to run tests.
-
-    catkin run_tests --no-deps --this -i
