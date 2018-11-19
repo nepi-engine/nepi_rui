@@ -23,6 +23,8 @@ Architecture:
         pip install --user -U pip
         pip install --user virtualenv
 
+   Note: if you get the error ``ImportError: cannot import name main``, open a new terminal and retry the last command.
+
 1. The following is a temporary fix for a ROS issue and may not be needed:
 
         pip install empy
@@ -32,6 +34,8 @@ Architecture:
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
         export NVM_DIR="$HOME/.nvm"
         nvm install 8.11.1
+
+   Note: don't miss the install script's instructions: "Close and reopen your terminal to start using nvm or run the following to use it now"
 
 1. Re-use or create a catkin workspace:
 
@@ -60,7 +64,7 @@ Architecture:
 
         cd $CATKIN_WS/src/numurus_rui
         pip install -r requirements.txt
-        cd rui_webserver/rui-app/ && npm install
+        cd src/rui_webserver/rui-app/ && npm install
 
 1. Configure and build the workspace:
 
@@ -68,7 +72,7 @@ Architecture:
         catkin config --extend /opt/ros/kinetic --cmake-args -DCMAKE_BUILD_TYPE=Release
         catkin build
 
-1. Source the workspace.
+1. Source the workspace:
 
         source devel/setup.bash
 
