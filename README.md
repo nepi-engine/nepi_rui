@@ -108,10 +108,18 @@ When running in production (on the device), simply run:
 
 ### Development
 
-When developing, always source the devenv.sh to ensure the correct versions of python, node and define environment variables:
+When developing, always source the `devenv.sh` to ensure the correct versions of python, node and define environment variables:
 
         cd $CATKIN_WS/src/numurus_rui
         . devenv.sh
+
+If working with the numurus dev board, you can also use `. boardenv.sh` instead of `devenv.sh`. This script will make it so that ROS nodes running on your computer connect to the ROS master on the device.
+
+For it to work, you must add this line to your `etc/hosts` file:
+
+        192.168.179.101 num-sb1-zynq
+
+Additionally, this script makes some assumptions about which ethernet port you've plugged the device into, so users may need to modify `$NUMURUS_BOARD_INTERFACE` variable within the script.
 
 #### Frontend
 
