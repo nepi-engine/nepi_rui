@@ -8,7 +8,7 @@ import logo from "./logo.png"
 
 const styles = Styles.Create({
   logo: {
-    backgroundColor: Styles.vars.colors.grey0
+    // backgroundColor: Styles.vars.colors.grey0
   },
   navItem: {
     display: "inline-block",
@@ -49,7 +49,7 @@ class Nav extends Component {
         <Columns>
           <Column>
             <div style={styles.logo}>
-              <img src={logo} />
+              <img src={logo} alt={"logo"} />
             </div>
           </Column>
           {!pageLocked && (
