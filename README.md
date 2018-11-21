@@ -168,6 +168,6 @@ We have provided some fake data publishers for testing purposes. To run a node t
 
 ### Test Camera
 
-TODO(luke): Expand documentation
+If your dev machine has a webcam, you can simulate a video feed from the device using the launch file below. It assumes the webcam is at `/dev/video0`, but you can modify the launch file to change this. 
 
       roslaunch numurus_rui test_camera.launch
