@@ -17,19 +17,18 @@ Architecture:
 
 ### Build from Source
 
-1. [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following python and build tools.
+1. [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
 
         sudo apt-get install python python-wstool python-catkin-tools python-pip
+
+1. Setup pip and a virtual environment:
+
         pip install --user -U pip
         pip install --user virtualenv
 
    Note: if you get the error ``ImportError: cannot import name main``, open a new terminal and retry the last command.
 
-1. The following is a temporary fix for a ROS issue and may not be needed:
-
-        pip install empy
-
-1. nvm (node version manager) is also needed:
+1. Install nvm (node version manager):
 
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
         export NVM_DIR="$HOME/.nvm"
@@ -37,13 +36,12 @@ Architecture:
 
    Note: don't miss the install script's instructions: "Close and reopen your terminal to start using nvm or run the following to use it now"
 
-1. Re-use or create a catkin workspace:
+1. Re-use or create a Catkin workspace:
 
-        export CATKIN_WS=~/ws_numurus/
-        mkdir -p $CATKIN_WS/src
-        cd $CATKIN_WS/src
+        mkdir -p ~/ws_numurus/src
+        cd ~/ws_numurus/src
 
-1. Download the required repositories and install any dependencies:
+1. Download the required repositories and install any dependencies. Note this requires SSH key authentication setup with Github.
 
         git clone git@github.com:PickNikRobotics/numurus_rui.git
         wstool init .
@@ -51,31 +49,36 @@ Architecture:
         wstool update
         rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
-1. Setup the virtual environment
+1. Setup the virtual environment:
 
-        cd $CATKIN_WS
+        cd ~/ws_numurus/
         python -m virtualenv venv
 
-1. Source the virtual environment and environment variables (NOTE: you may want to add this to your .bashrc)
+1. Source the virtual environment and environment variables:
 
-        source $CATKIN_WS/src/numurus_rui/devenv.sh
+        source ~/ws_numurus/src/numurus_rui/devenv.sh
 
-1. Install python and javascript dependencies:
+1. Install Python and javascript dependencies:
 
-        cd $CATKIN_WS/src/numurus_rui
+        cd ~/ws_numurus/src/numurus_rui
         pip install -r requirements.txt
         cd src/rui_webserver/rui-app/ && npm install
 
 1. Configure and build the workspace:
 
-        cd $CATKIN_WS
+        cd ~/ws_numurus/
         catkin config --extend /opt/ros/kinetic --cmake-args -DCMAKE_BUILD_TYPE=Release
         catkin build
+
+   Note: if you get the error ``ImportError: No module named em`` try the following fix:
+
+        pip install empy
 
 1. Source the workspace:
 
         source devel/setup.bash
 
+   Note: consider adding this to your .bashrc
 
 ## Development
 
@@ -83,7 +86,7 @@ Architecture:
 
 To make sure you have the latest repos:
 
-        cd $CATKIN_WS/src/numurus_rui
+        cd ~/ws_numurus/src/numurus_rui
         git checkout master
         git pull origin master
         cd ..
@@ -105,12 +108,11 @@ When running in production (on the device), simply run:
 
         rosrun numurus_rui run_webserver.py
 
+## Development
 
-### Development
+When developing, always source the `devenv.sh` to ensure the correct versions of Python, node and define environment variables:
 
-When developing, always source the `devenv.sh` to ensure the correct versions of python, node and define environment variables:
-
-        cd $CATKIN_WS/src/numurus_rui
+        cd ~/ws_numurus/src/numurus_rui
         . devenv.sh
 
 If working with the numurus dev board, you can also use `. boardenv.sh` instead of `devenv.sh`. This script will make it so that ROS nodes running on your computer connect to the ROS master on the device.
@@ -121,7 +123,7 @@ For it to work, you must add this line to your `etc/hosts` file:
 
 Additionally, this script makes some assumptions about which ethernet port you've plugged the device into, so users may need to modify `$NUMURUS_BOARD_INTERFACE` variable within the script.
 
-#### Frontend
+### Frontend
 
 This is only necessary when making changes to frontend code. Start the development server with:
 
@@ -139,16 +141,18 @@ Also be sure to deploy the newest version of the demo site (see https://picknikr
 
         npm run deploy
 
-#### Backend
+### Backend
 
 When changing backend code, run the webserver with:
 
     rosrun numurus_rui run_webserver.py
 
 
-#### Fake Data Publishers
+## Simulation
 
-We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` follow the steps below. (Note: make sure that you have source'd your catkin workspace in every terminal)
+### Fake Data Publishers
+
+We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` follow the steps below. (Note: make sure that you have source'd your Catkin workspace in every terminal)
 
 1. If you do not already have a ros master running, run in a new terminal: (Append `&` to run the ros master in the background)
 
@@ -161,3 +165,9 @@ We have provided some fake data publishers for testing purposes. To run a node t
 1. Verify that the publisher is working in a separate terminal:
 
         rostopic echo /fake_nd_status
+
+### Test Camera
+
+TODO(luke): Expand documentation
+
+      roslaunch numurus_rui test_camera.launch
