@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Route, Switch, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 import filesize from "filesize"
 
 const FLASK_URL = "http://localhost:5003"
