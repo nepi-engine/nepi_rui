@@ -2,7 +2,7 @@
   <!-- This launchfile should bring up a node that broadcasts a ros image
        transport on /v4l/camera/image_raw -->
 
-  <arg name="DEVICE" default="/dev/video1"/>
+  <arg name="DEVICE" default="/dev/video0"/>
   <!-- The GStreamer framerate needs to be an integral fraction -->
   <arg name="FPS" default="15/1"/>
   <arg name="PUBLISH_FRAME" default="false"/>

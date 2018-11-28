@@ -152,7 +152,7 @@ When changing backend code, run the webserver with:
 
 ### Fake Data Publishers
 
-We have provided some fake data publishers for testing purposes. To run a node that publishes NDStatus messages to a topic `/fake_nd_status` follow the steps below. (Note: make sure that you have source'd your Catkin workspace in every terminal)
+We have provided some fake data publishers for testing purposes. To run a node that publishes fake data that the UI responds to, follow the steps below. (Note: make sure that you have source'd your Catkin workspace)
 
 1. If you do not already have a ros master running, run in a new terminal: (Append `&` to run the ros master in the background)
 
@@ -160,14 +160,18 @@ We have provided some fake data publishers for testing purposes. To run a node t
 
 1. Run the publisher in a different terminal:
 
-        rosrun numurus_rui nd_status_pub.py
+        rosrun numurus_rui fake_data_pub.py
 
-1. Verify that the publisher is working in a separate terminal:
+1. Verify that the publisher is working in a separate terminal by echoing one of the topics:
 
         rostopic echo /fake_nd_status
 
 ### Test Camera
 
-If your dev machine has a webcam, you can simulate a video feed from the device using the launch file below. It assumes the webcam is at `/dev/video0`, but you can modify the launch file to change this. 
+If your dev machine has a webcam, you can simulate a video feed from the device using this command
 
-      roslaunch numurus_rui test_camera.launch
+        roslaunch numurus_rui test_camera.launch
+
+This launch file assumes the webcam is at `/dev/video0`, but you can pass in a an argument to change this 
+
+        roslaunch numurus_rui test_camera.launch DEVICE:=/dev/video1

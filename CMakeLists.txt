@@ -24,7 +24,7 @@ catkin_python_setup()
 # install(PROGRAMS scripts/nd_status_pub.py
   # DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-catkin_install_python(PROGRAMS scripts/nd_status_pub.py
+catkin_install_python(PROGRAMS scripts/fake_data_pub.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 catkin_install_python(PROGRAMS scripts/run_webserver.py

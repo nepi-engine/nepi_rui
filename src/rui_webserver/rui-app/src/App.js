@@ -1,10 +1,8 @@
 import React, { Component } from "react"
 import Toggle from "react-toggle"
-import CircularProgressbar from "react-circular-progressbar"
 import moment from "moment"
-import { Route, Switch, Link } from "react-router-dom"
-
-import ROS from "roslib"
+import { Route, Switch } from "react-router-dom"
+import { observer } from "mobx-react"
 
 import Page from "./Page"
 import Nav from "./Nav"
@@ -18,11 +16,9 @@ import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
 
 import FileBrowser from "./FileBrowser"
+import CameraViewer from "./CameraViewer"
 
 const FLASK_URL = "http://localhost:5003"
-const ROS_WS_URL = "ws://localhost:9090"
-const ROS_WEBCAM_URL =
-  "http://localhost:9091/stream?topic=/v4l/camera/image_raw"
 const IS_DEBUG = window.location.hostname === "localhost"
 
 class App extends Component {
@@ -31,14 +27,10 @@ class App extends Component {
 
     this.state = {
       pageLocked: !IS_DEBUG,
-      connectedToROS: false,
-      rosAutoReconnect: true,
-      rosLog: "",
       text: "test1",
       disabledText: "test2",
       toggle: true,
       disabledToggle: false,
-      progressBarPercentage: 0,
       deviceInfoName: "3DSC-64",
       deviceInfoSerial: "100100",
       deviceClockNTPActive: true,
@@ -69,17 +61,9 @@ class App extends Component {
       saveSettingsFilePrefix: "Lake Union",
       units: "metric",
       unitsResolution: "Low",
-      ipAddress: "none"
+      ipAddress: "none",
+      imageRecognitions: []
     }
-
-    this.checkROSConnection = this.checkROSConnection.bind(this)
-    this.onConnectedToROS = this.onConnectedToROS.bind(this)
-    this.onErrorConnectingToROS = this.onErrorConnectingToROS.bind(this)
-    this.onDisconnectedToROS = this.onDisconnectedToROS.bind(this)
-
-    this.rosLog = this.rosLog.bind(this)
-    this.onROSListenerHelloWorld = this.onROSListenerHelloWorld.bind(this)
-    this.onROSListenerProgressBar = this.onROSListenerProgressBar.bind(this)
 
     this.onInputChange = this.onInputChange.bind(this)
     this.onToggleChange = this.onToggleChange.bind(this)
@@ -110,32 +94,6 @@ class App extends Component {
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
   }
 
-  checkROSConnection() {
-    const { connectedToROS, rosAutoReconnect } = this.state
-    if (!connectedToROS) {
-      try {
-        if (!this.ros) {
-          this.ros = new ROS.Ros({
-            url: ROS_WS_URL
-          })
-          this.ros.on("connection", this.onConnectedToROS)
-          this.ros.on("error", this.onErrorConnectingToROS)
-          this.ros.on("close", this.onDisconnectedToROS)
-        } else {
-          this.ros.connect(ROS_WS_URL)
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    }
-
-    if (rosAutoReconnect) {
-      setTimeout(() => {
-        this.checkROSConnection()
-      }, 3500)
-    }
-  }
-
   updateClock() {
     this.setState({
       deviceClockTime: moment()
@@ -160,75 +118,10 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.checkROSConnection()
+    this.props.store.ros.checkROSConnection()
+
     this.updateClock()
     this.fetchNetworkInfo()
-  }
-
-  componentWillUnmount() {
-    this.setState({ rosAutoReconnect: false })
-    this.ros.off("connection", this.onConnectedToROS)
-    this.ros.off("error", this.onErrorConnectingToROS)
-    this.ros.off("close", this.onDisconnectedToROS)
-
-    this.rosListenerHelloWorld.unsubscribe()
-    this.rosListenerProgressBar.unsubscribe()
-  }
-
-  onConnectedToROS() {
-    // rostopic pub /helloworld std_msgs/String "Hello, World"
-    this.rosListenerHelloWorld = new ROS.Topic({
-      ros: this.ros,
-      name: "/helloworld",
-      messageType: "std_msgs/String"
-    })
-
-    this.rosListenerHelloWorld.subscribe(this.onROSListenerHelloWorld)
-
-    // rostopic pub /progressbar std_msgs/Int32 50
-    this.rosListenerProgressBar = new ROS.Topic({
-      ros: this.ros,
-      name: "/progressbar",
-      messageType: "std_msgs/Int32"
-    })
-
-    this.rosListenerProgressBar.subscribe(this.onROSListenerProgressBar)
-
-    this.setState({
-      connectedToROS: true
-    })
-    this.rosLog("Connected to rosbridge")
-  }
-
-  onErrorConnectingToROS() {
-    this.setState({
-      connectedToROS: false
-    })
-    this.rosLog("Error connecting to rosbridge, retrying")
-  }
-
-  onDisconnectedToROS() {
-    this.setState({ connectedToROS: false })
-    this.rosLog("Connection to rosbridge closed")
-  }
-
-  rosLog(text) {
-    const { rosLog } = this.state
-    this.setState({ rosLog: `${text}\n` + rosLog })
-  }
-
-  onROSListenerHelloWorld(message) {
-    this.rosLog(
-      `Received message on ${this.rosListenerHelloWorld.name}: ${message.data}`
-    )
-  }
-
-  onROSListenerProgressBar(message) {
-    this.rosLog(
-      `Received message on ${this.rosListenerProgressBar.name}: ${message.data}`
-    )
-
-    this.setState({ progressBarPercentage: message.data })
   }
 
   onInputChange(e) {
@@ -452,24 +345,18 @@ class App extends Component {
   }
 
   renderSystemMessages() {
-    const { rosLog } = this.state
     return (
       <Section title={"System Messages"}>
-        <pre style={{ height: "220px", overflowY: "auto" }}>{rosLog}</pre>
+        <pre style={{ height: "220px", overflowY: "auto" }}>
+          {this.props.store.ros.messageLog}
+        </pre>
       </Section>
     )
   }
 
   renderCameraPreview() {
-    return (
-      <Section title={"Camera Preview"}>
-        <img src={ROS_WEBCAM_URL} />
-        <ButtonMenu>
-          <Button>{"Take Snapshot"}</Button>
-          <Button>{"Clear Fence"}</Button>
-        </ButtonMenu>
-      </Section>
-    )
+    const { store } = this.props
+    return <CameraViewer store={store} />
   }
 
   renderCameraSettings() {
@@ -577,7 +464,7 @@ class App extends Component {
         <Route
           exact
           path="/"
-          component={() => {
+          component={observer(() => {
             return (
               <Columns>
                 <Column>
@@ -596,32 +483,32 @@ class App extends Component {
                 </Column>
               </Columns>
             )
-          }}
+          })}
         />
         <Route
           path="/applications"
-          component={() => {
+          component={observer(() => {
             return (
               <Columns>
                 <Column>{this.renderCameraPreview()}</Column>
                 <Column>{this.renderCameraSettings()}</Column>
               </Columns>
             )
-          }}
+          })}
         />
         <Route
           path="/files/:path*"
-          component={props => {
+          component={observer(props => {
             return (
               <Section title={"Files"}>
                 <FileBrowser {...props} />
               </Section>
             )
-          }}
+          })}
         />
         <Route
           path="/settings"
-          component={() => {
+          component={observer(() => {
             return (
               <Columns>
                 <Column>
@@ -635,7 +522,7 @@ class App extends Component {
                 </Column>
               </Columns>
             )
-          }}
+          })}
         />
       </Switch>
     )
@@ -662,4 +549,4 @@ class App extends Component {
   }
 }
 
-export default App
+export default observer(App)
