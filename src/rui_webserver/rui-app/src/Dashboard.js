@@ -38,14 +38,21 @@ class Dashboard extends Component {
   }
 
   renderDeviceInfo() {
-    const { deviceName, deviceSerial } = this.props.ros
+    const {
+      deviceName,
+      deviceSerial,
+      systemDefsFirmwareVersion
+    } = this.props.ros
     return (
       <Section title={"Device Info"}>
-        <Label title={"Device Name"}>
+        <Label title={"Name"}>
           <Input disabled value={deviceName} />
         </Label>
-        <Label title={"Device Serial Number"}>
+        <Label title={"Serial Number"}>
           <Input disabled value={deviceSerial} />
+        </Label>
+        <Label title={"Firmware Version"}>
+          <Input disabled value={systemDefsFirmwareVersion} />
         </Label>
       </Section>
     )
@@ -145,7 +152,9 @@ class Dashboard extends Component {
     const {
       heartbeat,
       systemStatusDiskUsageMB,
-      systemStatusTempC
+      systemStatusTempC,
+      systemDefsDiskCapacity,
+      diskUsagePercent
     } = this.props.ros
 
     return (
@@ -159,11 +168,11 @@ class Dashboard extends Component {
         </Label>
 
         <Label title={"Storage"}>
-          <Input disabled value={"90%"} />
+          <Input disabled value={diskUsagePercent} />
         </Label>
 
         <Label title={"Capacity (MB)"}>
-          <Input disabled value={"9000"} />
+          <Input disabled value={systemDefsDiskCapacity} />
         </Label>
 
         <Label title={"Used (MB)"}>

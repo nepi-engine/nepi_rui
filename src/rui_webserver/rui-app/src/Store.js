@@ -27,13 +27,16 @@ class ROSConnectionStore {
   @observable deviceName = null
   @observable deviceSerial = null
 
-  @observable imageRecognitions = []
+  @observable systemDefs = null
+  @observable systemDefsFirmwareVersion = null
+  @observable systemDefsDiskCapacity = null
 
   @observable systemStatus = null
   @observable heartbeat = false
   @observable systemStatusDiskUsageMB = null
   @observable systemStatusTempC = null
   @observable systemStatusWarnings = []
+  @observable diskUsagePercent = null
 
   @observable navPos = null
   @observable navPosLocationLat = null
@@ -47,6 +50,8 @@ class ROSConnectionStore {
   @observable navPosOrientationPitchRate = null
   @observable navPosOrientationRollAngle = null
   @observable navPosOrientationRollRate = null
+
+  @observable imageRecognitions = []
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -108,7 +113,6 @@ class ROSConnectionStore {
       name: "/fake_image_recognition",
       messageType: "num_sdk_msgs/Annotation"
     })
-
     this.fakeImageRecognitionListener.subscribe(this.onFakeImageRecognition)
 
     this.systemStatusListener = new ROS.Topic({
@@ -116,15 +120,27 @@ class ROSConnectionStore {
       name: `${rosPrefix}/system_status`,
       messageType: "num_sdk_msgs/SystemStatus"
     })
-
     this.systemStatusListener.subscribe(this.onSystemStatus)
+
+    const systemDefsClient = new ROS.Service({
+      ros: this.ros,
+      name: `${rosPrefix}/system_defs_query`,
+      serviceType: "num_sdk_msgs/SystemDefs"
+    })
+    const systemDefsRequest = new ROS.ServiceRequest()
+
+    systemDefsClient.callService(systemDefsRequest, result => {
+      this.systemDefs = result.defs
+
+      this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
+      this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
+    })
 
     const navPosClient = new ROS.Service({
       ros: this.ros,
       name: `${rosPrefix}/nav_pos_query`,
       serviceType: "num_sdk_msgs/NavPosQuery"
     })
-
     const navPosRequest = new ROS.ServiceRequest({ query_time: 0 })
 
     const _pollNavPosOnce = () => {
@@ -208,6 +224,12 @@ class ROSConnectionStore {
 
     this.systemStatus = message
     this.systemStatusDiskUsageMB = message.disk_usage
+
+    this.diskUsagePercent = `${parseInt(
+      100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
+      10
+    )}%`
+
     this.systemStatusTempC =
       message.temperatures.length && message.temperatures[0]
     this.systemStatusWarnings = message.warnings && message.warnings.flags
