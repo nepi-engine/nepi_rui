@@ -28,7 +28,7 @@ class Settings extends Component {
   }
 
   componentDidMount() {
-    this.props.networkInfo.fetchNetworkInfo()
+    this.props.networkInfo.fetch()
   }
 
   renderSaveSettings() {

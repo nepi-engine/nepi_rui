@@ -17,8 +17,6 @@ class Dashboard extends Component {
     super(props)
 
     this.state = {
-      deviceInfoName: "3DSC-64",
-      deviceInfoSerial: "100100",
       deviceClockNTPActive: true,
       deviceClockPPSActive: true,
       deviceLocationLat: "44.968046",
@@ -55,17 +53,14 @@ class Dashboard extends Component {
   }
 
   renderDeviceInfo() {
-    const { deviceInfoName, deviceInfoSerial } = this.state
+    const { deviceName, deviceSerial } = this.props.ros
     return (
       <Section title={"Device Info"}>
         <Label title={"Device Name"}>
-          <Input disabled value={deviceInfoName} />
+          <Input disabled value={deviceName} />
         </Label>
         <Label title={"Device Serial Number"}>
-          <Input disabled value={deviceInfoSerial} />
-        </Label>
-        <Label title={"Firmware Version"}>
-          <Input disabled value={"1.001"} />
+          <Input disabled value={deviceSerial} />
         </Label>
       </Section>
     )

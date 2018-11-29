@@ -53,23 +53,13 @@ class App extends Component {
         {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}
         {!pageLocked && (
           <Switch>
-            <Route
-              exact
-              path="/"
-              component={Dashboard}
-            />
-            <Route
-              path="/applications"
-              component={Applications}
-            />
+            <Route exact path="/" component={Dashboard} />
+            <Route path="/applications" component={Applications} />
             <Route
               path="/files/:path*"
-              component={(props) => <Files {...props} />}
+              component={props => <Files {...props} />}
             />
-            <Route
-              path="/settings"
-              component={Settings}
-            />
+            <Route path="/settings" component={Settings} />
           </Switch>
         )}
       </Page>

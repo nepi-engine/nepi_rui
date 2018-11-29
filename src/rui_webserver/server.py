@@ -1,11 +1,11 @@
 import os
 import time
 import socket
-import threading
-from threading import Thread
 
 from flask import Flask, send_from_directory, send_file, jsonify, g
 from flask_cors import CORS
+
+import rospy
 
 from rui_webserver.config import APP_BUILD_PATH, DATA_PATH
 
@@ -15,21 +15,37 @@ CORS(app)
 
 
 """
-Test route
-"""
-@app.route('/test')
-def test():
-    return jsonify({
-        "foo": "bar"
-    })
-
-"""
 Network info route
 """
 @app.route('/api/networkinfo')
 def network_info():
     return jsonify({
         "ipAddress": socket.gethostbyname(socket.gethostname())
+    })
+
+"""
+Device info route
+"""
+@app.route('/api/deviceinfo')
+def device_info():
+    namespace_prefix = None
+    device_name = None
+    device_serial = None
+    for topic in rospy.get_published_topics():
+        topic_name, msg_type = topic
+        topic_name_parts = topic_name.split('/')
+
+        # look for the "system_status" message
+        if topic_name_parts[-1] == "system_status" and msg_type == "num_sdk_msgs/SystemStatus":
+            namespace_prefix = topic_name_parts[1]
+            device_name = topic_name_parts[2]
+            device_serial = topic_name_parts[3]
+            break
+
+    return jsonify({
+        "namespacePrefix": namespace_prefix,
+        "deviceName": device_name,
+        "deviceSerial": device_serial
     })
 
 """

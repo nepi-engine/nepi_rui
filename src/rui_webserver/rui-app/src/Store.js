@@ -5,24 +5,52 @@ import ROS from "roslib"
 const ROS_WS_URL = "ws://localhost:9090"
 const FLASK_URL = "http://localhost:5003"
 
+async function apiCall(endpoint) {
+  try {
+    const r = await fetch(`${FLASK_URL}/api/${endpoint}`, {
+      method: "GET"
+    })
+    const json = await r.json()
+    return json
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 class ROSConnectionStore {
   @observable connectedToROS = false
   @observable rosAutoReconnect = true
   @observable messageLog = ""
+
+  @observable namespacePrefix = null
+  @observable deviceName = null
+  @observable deviceSerial = null
+
   @observable imageRecognitions = []
 
-  checkROSConnection() {
+  async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
-        if (!this.ros) {
-          this.ros = new ROS.Ros({
-            url: ROS_WS_URL
-          })
-          this.ros.on("connection", this.onConnectedToROS)
-          this.ros.on("error", this.onErrorConnectingToROS)
-          this.ros.on("close", this.onDisconnectedToROS)
-        } else {
-          this.ros.connect(ROS_WS_URL)
+        const deviceInfo = await apiCall("deviceinfo")
+        this.namespacePrefix = deviceInfo.namespacePrefix
+        this.deviceName = deviceInfo.deviceName
+        this.deviceSerial = deviceInfo.deviceSerial
+        if (this.namespacePrefix && this.deviceName && this.deviceSerial) {
+          this.rosLog(
+            `Fetched device info ${this.namespacePrefix}/${this.deviceName}/${
+              this.deviceSerial
+            }`
+          )
+          if (!this.ros) {
+            this.ros = new ROS.Ros({
+              url: ROS_WS_URL
+            })
+            this.ros.on("connection", this.onConnectedToROS)
+            this.ros.on("error", this.onErrorConnectingToROS)
+            this.ros.on("close", this.onDisconnectedToROS)
+          } else {
+            this.ros.connect(ROS_WS_URL)
+          }
         }
       } catch (e) {
         console.error(e)
@@ -30,8 +58,8 @@ class ROSConnectionStore {
     }
 
     if (this.rosAutoReconnect) {
-      setTimeout(() => {
-        this.checkROSConnection()
+      setTimeout(async () => {
+        await this.checkROSConnection()
       }, 3500)
     }
   }
@@ -71,6 +99,11 @@ class ROSConnectionStore {
   @action.bound
   onDisconnectedToROS() {
     this.connectedToROS = false
+
+    this.namespacePrefix = null
+    this.deviceName = null
+    this.deviceSerial = null
+
     this.rosLog("Connection to rosbridge closed")
   }
 
@@ -94,16 +127,9 @@ class NetworkInfoStore {
   @observable ipAddress = null
 
   @action.bound
-  async fetchNetworkInfo() {
-    try {
-      const r = await fetch(`${FLASK_URL}/api/networkinfo`, {
-        method: "GET"
-      })
-      const networkInfo = await r.json()
-      this.ipAddress = networkInfo.ipAddress
-    } catch (err) {
-      console.error(err)
-    }
+  async fetch() {
+    const networkInfo = await apiCall("networkinfo")
+    this.ipAddress = networkInfo.ipAddress
   }
 }
 
