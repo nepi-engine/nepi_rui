@@ -1,6 +1,7 @@
 import { observable, action } from "mobx"
 import moment from "moment"
 import ROS from "roslib"
+import cannon from "cannon"
 
 const ROS_WS_URL = "ws://localhost:9090"
 const FLASK_URL = "http://localhost:5003"
@@ -27,6 +28,19 @@ class ROSConnectionStore {
   @observable deviceSerial = null
 
   @observable imageRecognitions = []
+
+  @observable navPos = null
+  @observable navPosLocationLat = null
+  @observable navPosLocationLng = null
+  @observable navPosLocationAlt = null
+  @observable navPosDirectionHeadingDeg = null
+  @observable navPosDirectionSpeedMpS = null
+  @observable navPosOrientationYawAngle = null
+  @observable navPosOrientationYawRate = null
+  @observable navPosOrientationPitchAngle = null
+  @observable navPosOrientationPitchRate = null
+  @observable navPosOrientationRollAngle = null
+  @observable navPosOrientationRollRate = null
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -71,23 +85,72 @@ class ROSConnectionStore {
     this.ros.off("error", this.onErrorConnectingToROS)
     this.ros.off("close", this.onDisconnectedToROS)
 
-    this.rosListenerImageRecognition.unsubscribe()
+    this.rosListenerFakeImageRecognition.unsubscribe()
   }
 
   @action.bound
   onConnectedToROS() {
-    this.rosListenerImageRecognition = new ROS.Topic({
+    const rosPrefix = `/${this.namespacePrefix}/${this.deviceName}/${
+      this.deviceSerial
+    }`
+    this.connectedToROS = true
+    this.rosLog("Connected to rosbridge")
+
+    this.rosListenerFakeImageRecognition = new ROS.Topic({
       ros: this.ros,
       name: "/fake_image_recognition",
       messageType: "num_sdk_msgs/Annotation"
     })
 
-    this.rosListenerImageRecognition.subscribe(
+    this.rosListenerFakeImageRecognition.subscribe(
       this.onROSListenerrosListenerImageRecognition
     )
 
-    this.connectedToROS = true
-    this.rosLog("Connected to rosbridge")
+    const navPosClient = new ROS.Service({
+      ros: this.ros,
+      name: `${rosPrefix}/nav_pos_query`,
+      serviceType: "num_sdk_msgs/NavPosQuery"
+    })
+
+    const navPosRequest = new ROS.ServiceRequest({ query_time: 0 })
+
+    const _pollNavPosOnce = () => {
+      navPosClient.callService(navPosRequest, result => {
+        this.navPos = result.nav_pos
+
+        this.navPosLocationLat = this.navPos.fix.latitude
+        this.navPosLocationLng = this.navPos.fix.longitude
+        this.navPosLocationAlt = this.navPos.fix.altitude
+        this.navPosDirectionHeadingDeg = this.navPos.heading
+
+        // magnitude of linear_velocity?
+        let { x, y, z } = this.navPos.linear_velocity
+        this.navPosDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
+
+        // TODO check the ordering of these
+        this.navPosOrientationYawRate = this.navPos.angular_velocity.x
+        this.navPosOrientationPitchRate = this.navPos.angular_velocity.y
+        this.navPosOrientationRollRate = this.navPos.angular_velocity.z
+
+        const q = new cannon.Quaternion(
+          this.navPos.orientation.x,
+          this.navPos.orientation.y,
+          this.navPos.orientation.z,
+          this.navPos.orientation.w
+        )
+        const vec = new cannon.Vec3()
+        q.toEuler(vec)
+        this.navPosOrientationYawAngle = vec.x
+        this.navPosOrientationPitchAngle = vec.y
+        this.navPosOrientationRollAngle = vec.z
+
+        if (this.connectedToROS) {
+          setTimeout(_pollNavPosOnce, 500)
+        }
+      })
+    }
+
+    _pollNavPosOnce()
   }
 
   @action.bound
@@ -116,7 +179,7 @@ class ROSConnectionStore {
   onROSListenerrosListenerImageRecognition(message) {
     this.rosLog(
       `Received message on ${
-        this.rosListenerImageRecognition.name
+        this.rosListenerFakeImageRecognition.name
       }: ${JSON.stringify(message, null, 2)}`
     )
     this.imageRecognitions = [message]

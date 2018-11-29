@@ -19,9 +19,6 @@ class Dashboard extends Component {
     this.state = {
       deviceClockNTPActive: true,
       deviceClockPPSActive: true,
-      deviceLocationLat: "44.968046",
-      deviceLocationLng: "-94.420307",
-      deviceLocationAlt: "567.4",
       deviceTriggerSWActive: true,
       deviceTriggerDualCamsActive: true,
       deviceTriggerToFCamActive: true,
@@ -31,15 +28,7 @@ class Dashboard extends Component {
       deviceStatusTempC: "75 C",
       deviceStatusStorage: "90%",
       deviceStatusStorageCapacityMB: "500000",
-      deviceStatusStorageUsedMB: "450000",
-      deviceDirectionHeadingDeg: "40.3",
-      deviceDirectionSpeedMpS: "2.1",
-      deviceOrientationYawAngle: "44.96",
-      deviceOrientationYawRate: "1",
-      deviceOrientationPitchAngle: "-4.2",
-      deviceOrientationPitchRate: ".1",
-      deviceOrientationRollAngle: "-2",
-      deviceOrientationRollRate: ".2"
+      deviceStatusStorageUsedMB: "450000"
     }
 
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
@@ -92,20 +81,20 @@ class Dashboard extends Component {
 
   renderLocation() {
     const {
-      deviceLocationLat,
-      deviceLocationLng,
-      deviceLocationAlt
-    } = this.state
+      navPosLocationLat,
+      navPosLocationLng,
+      navPosLocationAlt
+    } = this.props.ros
     return (
       <Section title={"Location"}>
         <Label title={"Latitude"}>
-          <Input disabled value={deviceLocationLat} />
+          <Input disabled value={navPosLocationLat} />
         </Label>
         <Label title={"Longitude"}>
-          <Input disabled value={deviceLocationLng} />
+          <Input disabled value={navPosLocationLng} />
         </Label>
         <Label title={"Altitude (m)"}>
-          <Input disabled value={deviceLocationAlt} />
+          <Input disabled value={navPosLocationAlt} />
         </Label>
       </Section>
     )
@@ -190,14 +179,17 @@ class Dashboard extends Component {
   }
 
   renderDirection() {
-    const { deviceDirectionHeadingDeg, deviceDirectionSpeedMpS } = this.state
+    const {
+      navPosDirectionHeadingDeg,
+      navPosDirectionSpeedMpS
+    } = this.props.ros
     return (
       <Section title={"Direction"}>
         <Label title={"Heading (deg)"}>
-          <Input disabled value={deviceDirectionHeadingDeg} />
+          <Input disabled value={navPosDirectionHeadingDeg} />
         </Label>
         <Label title={"Speed (m/s)"}>
-          <Input disabled value={deviceDirectionSpeedMpS} />
+          <Input disabled value={navPosDirectionSpeedMpS} />
         </Label>
       </Section>
     )
@@ -205,49 +197,49 @@ class Dashboard extends Component {
 
   renderOrientation() {
     const {
-      deviceOrientationYawAngle,
-      deviceOrientationYawRate,
-      deviceOrientationPitchAngle,
-      deviceOrientationPitchRate,
-      deviceOrientationRollAngle,
-      deviceOrientationRollRate
-    } = this.state
+      navPosOrientationYawAngle,
+      navPosOrientationYawRate,
+      navPosOrientationPitchAngle,
+      navPosOrientationPitchRate,
+      navPosOrientationRollAngle,
+      navPosOrientationRollRate
+    } = this.props.ros
     return (
       <Section title={"Orientation (deg, deg/s)"}>
         <Label title={"Yaw"}>
           <Input
             disabled
             style={{ width: "50%" }}
-            value={deviceOrientationYawAngle}
+            value={navPosOrientationYawAngle}
           />
           <Input
             disabled
             style={{ width: "50%" }}
-            value={deviceOrientationYawRate}
+            value={navPosOrientationYawRate}
           />
         </Label>
         <Label title={"Pitch"}>
           <Input
             disabled
             style={{ width: "50%" }}
-            value={deviceOrientationPitchAngle}
+            value={navPosOrientationPitchAngle}
           />
           <Input
             disabled
             style={{ width: "50%" }}
-            value={deviceOrientationPitchRate}
+            value={navPosOrientationPitchRate}
           />
         </Label>
         <Label title={"Roll"}>
           <Input
             disabled
             style={{ width: "50%" }}
-            value={deviceOrientationRollAngle}
+            value={navPosOrientationRollAngle}
           />
           <Input
             disabled
             style={{ width: "50%" }}
-            value={deviceOrientationRollRate}
+            value={navPosOrientationRollRate}
           />
         </Label>
       </Section>
