@@ -1,8 +1,9 @@
 import React from "react"
 import ReactDOM from "react-dom"
 import { BrowserRouter } from "react-router-dom"
+import { Provider } from "mobx-react"
 
-import store from "./Store"
+import stores from "./Store"
 import App from "./App"
 
 import "react-toggle/style.css"
@@ -10,7 +11,9 @@ import "react-circular-progressbar/dist/styles.css"
 
 ReactDOM.render(
   <BrowserRouter>
-    <App store={store} />
+    <Provider {...stores}>
+      <App />
+    </Provider>
   </BrowserRouter>,
   document.getElementById("root")
 )

@@ -1,14 +1,14 @@
-import { observable, computed, action, autorun } from "mobx"
-
+import { observable, action } from "mobx"
+import moment from "moment"
 import ROS from "roslib"
 
 const ROS_WS_URL = "ws://localhost:9090"
+const FLASK_URL = "http://localhost:5003"
 
-class ROSConnection {
+class ROSConnectionStore {
   @observable connectedToROS = false
   @observable rosAutoReconnect = true
   @observable messageLog = ""
-  @observable progressBarPercentage = 0
   @observable imageRecognitions = []
 
   checkROSConnection() {
@@ -43,7 +43,6 @@ class ROSConnection {
     this.ros.off("error", this.onErrorConnectingToROS)
     this.ros.off("close", this.onDisconnectedToROS)
 
-    this.rosListenerProgressBar.unsubscribe()
     this.rosListenerImageRecognition.unsubscribe()
   }
 
@@ -53,20 +52,11 @@ class ROSConnection {
       ros: this.ros,
       name: "/fake_image_recognition",
       messageType: "num_sdk_msgs/Annotation"
-    });
+    })
 
     this.rosListenerImageRecognition.subscribe(
       this.onROSListenerrosListenerImageRecognition
     )
-
-    // rostopic pub /progressbar std_msgs/Int32 50
-    this.rosListenerProgressBar = new ROS.Topic({
-      ros: this.ros,
-      name: "/progressbar",
-      messageType: "std_msgs/Int32"
-    })
-
-    this.rosListenerProgressBar.subscribe(this.onROSListenerProgressBar)
 
     this.connectedToROS = true
     this.rosLog("Connected to rosbridge")
@@ -98,22 +88,44 @@ class ROSConnection {
     )
     this.imageRecognitions = [message]
   }
+}
+
+class NetworkInfoStore {
+  @observable ipAddress = null
 
   @action.bound
-  onROSListenerProgressBar(message) {
-    this.rosLog(
-      `Received message on ${this.rosListenerProgressBar.name}: ${message.data}`
-    )
-
-    this.progressBarPercentage = message.data
+  async fetchNetworkInfo() {
+    try {
+      const r = await fetch(`${FLASK_URL}/api/networkinfo`, {
+        method: "GET"
+      })
+      const networkInfo = await r.json()
+      this.ipAddress = networkInfo.ipAddress
+    } catch (err) {
+      console.error(err)
+    }
   }
 }
 
-class Store {
-  @observable imageRecognitions = []
-  @observable ros = new ROSConnection()
+class ClockStore {
+  @observable time = moment()
+
+  constructor() {
+    this.tick()
+  }
+
+  @action.bound
+  tick() {
+    this.time = moment()
+    setTimeout(() => {
+      this.tick()
+    }, 1000)
+  }
 }
 
-const store = new Store()
-
-export default store
+const stores = {
+  ros: new ROSConnectionStore(),
+  networkInfo: new NetworkInfoStore(),
+  clock: new ClockStore()
+}
+export default stores

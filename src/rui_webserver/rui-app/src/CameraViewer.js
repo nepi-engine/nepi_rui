@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import moment from "moment"
-import { observer } from "mobx-react"
+import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Button, { ButtonMenu } from "./Button"
@@ -18,6 +18,8 @@ const styles = Styles.Create({
 const ROS_WEBCAM_URL =
   "http://localhost:9091/stream?topic=/v4l/camera/image_raw"
 
+@inject("ros")
+@observer
 class CameraViewer extends Component {
   constructor(props) {
     super(props)
@@ -46,7 +48,7 @@ class CameraViewer extends Component {
       containerWidth,
       containerHeight
     } = this.state
-    const { imageRecognitions } = this.props.store.ros
+    const { imageRecognitions } = this.props.ros
     if (shouldUpdate && hasInitialized) {
       if (!containerWidth) {
         this.setState({
@@ -153,4 +155,4 @@ CameraViewer.defaultProps = {
   ]
 }
 
-export default observer(CameraViewer)
+export default CameraViewer
