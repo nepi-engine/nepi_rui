@@ -29,6 +29,12 @@ class ROSConnectionStore {
 
   @observable imageRecognitions = []
 
+  @observable systemStatus = null
+  @observable heartbeat = false
+  @observable systemStatusDiskUsageMB = null
+  @observable systemStatusTempC = null
+  @observable systemStatusWarnings = []
+
   @observable navPos = null
   @observable navPosLocationLat = null
   @observable navPosLocationLng = null
@@ -85,7 +91,8 @@ class ROSConnectionStore {
     this.ros.off("error", this.onErrorConnectingToROS)
     this.ros.off("close", this.onDisconnectedToROS)
 
-    this.rosListenerFakeImageRecognition.unsubscribe()
+    this.fakeImageRecognitionListener.unsubscribe()
+    this.systemStatusListener.unsubscribe()
   }
 
   @action.bound
@@ -96,15 +103,21 @@ class ROSConnectionStore {
     this.connectedToROS = true
     this.rosLog("Connected to rosbridge")
 
-    this.rosListenerFakeImageRecognition = new ROS.Topic({
+    this.fakeImageRecognitionListener = new ROS.Topic({
       ros: this.ros,
       name: "/fake_image_recognition",
       messageType: "num_sdk_msgs/Annotation"
     })
 
-    this.rosListenerFakeImageRecognition.subscribe(
-      this.onROSListenerrosListenerImageRecognition
-    )
+    this.fakeImageRecognitionListener.subscribe(this.onFakeImageRecognition)
+
+    this.systemStatusListener = new ROS.Topic({
+      ros: this.ros,
+      name: `${rosPrefix}/system_status`,
+      messageType: "num_sdk_msgs/SystemStatus"
+    })
+
+    this.systemStatusListener.subscribe(this.onSystemStatus)
 
     const navPosClient = new ROS.Service({
       ros: this.ros,
@@ -127,7 +140,7 @@ class ROSConnectionStore {
         let { x, y, z } = this.navPos.linear_velocity
         this.navPosDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
 
-        // TODO check the ordering of these
+        // TODO check the ordering of these?
         this.navPosOrientationYawRate = this.navPos.angular_velocity.x
         this.navPosOrientationPitchRate = this.navPos.angular_velocity.y
         this.navPosOrientationRollRate = this.navPos.angular_velocity.z
@@ -176,13 +189,29 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onROSListenerrosListenerImageRecognition(message) {
-    this.rosLog(
-      `Received message on ${
-        this.rosListenerFakeImageRecognition.name
-      }: ${JSON.stringify(message, null, 2)}`
-    )
+  onFakeImageRecognition(message) {
+    // this.rosLog(
+    //   `Received message on ${
+    //     this.fakeImageRecognitionListener.name
+    //   }: ${JSON.stringify(message, null, 2)}`
+    // );
     this.imageRecognitions = [message]
+  }
+
+  @action.bound
+  onSystemStatus(message) {
+    // turn heartbeat on for half a second
+    this.heartbeat = true
+    setTimeout(() => {
+      this.heartbeat = false
+    }, 500)
+
+    this.systemStatus = message
+    this.systemStatusDiskUsageMB = message.disk_usage
+    this.systemStatusTempC =
+      message.temperatures.length && message.temperatures[0]
+    this.systemStatusWarnings = message.warnings && message.warnings.flags
+    this.rosLog(`Received status message`)
   }
 }
 

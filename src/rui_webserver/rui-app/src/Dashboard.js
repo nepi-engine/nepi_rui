@@ -24,11 +24,7 @@ class Dashboard extends Component {
       deviceTriggerToFCamActive: true,
       deviceTrigger3DSonarActive: true,
       deviceTriggerActualRateHz: "15.5",
-      deviceTriggerAutoRateHz: "20",
-      deviceStatusTempC: "75 C",
-      deviceStatusStorage: "90%",
-      deviceStatusStorageCapacityMB: "500000",
-      deviceStatusStorageUsedMB: "450000"
+      deviceTriggerAutoRateHz: "20"
     }
 
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
@@ -147,32 +143,31 @@ class Dashboard extends Component {
 
   renderSystemStatus() {
     const {
-      connectedToROS,
-      deviceStatusTempC,
-      deviceStatusStorage,
-      deviceStatusStorageCapacityMB,
-      deviceStatusStorageUsedMB
-    } = this.state
+      heartbeat,
+      systemStatusDiskUsageMB,
+      systemStatusTempC
+    } = this.props.ros
+
     return (
       <Section title={"System Status"}>
         <Label title={"Heartbeat"}>
-          <Toggle disabled checked={connectedToROS} />
+          <Toggle disabled checked={heartbeat} />
         </Label>
 
         <Label title={"Temp (C)"}>
-          <Input disabled value={deviceStatusTempC} />
+          <Input disabled value={systemStatusTempC} />
         </Label>
 
         <Label title={"Storage"}>
-          <Input disabled value={deviceStatusStorage} />
+          <Input disabled value={"90%"} />
         </Label>
 
         <Label title={"Capacity (MB)"}>
-          <Input disabled value={deviceStatusStorageCapacityMB} />
+          <Input disabled value={"9000"} />
         </Label>
 
         <Label title={"Used (MB)"}>
-          <Input disabled value={deviceStatusStorageUsedMB} />
+          <Input disabled value={systemStatusDiskUsageMB} />
         </Label>
       </Section>
     )
