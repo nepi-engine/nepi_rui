@@ -22,6 +22,7 @@ class ROSConnectionStore {
   @observable connectedToROS = false
   @observable rosAutoReconnect = true
   @observable messageLog = ""
+  rosListers = []
 
   @observable namespacePrefix = null
   @observable deviceName = null
@@ -96,35 +97,41 @@ class ROSConnectionStore {
     this.ros.off("error", this.onErrorConnectingToROS)
     this.ros.off("close", this.onDisconnectedToROS)
 
-    this.fakeImageRecognitionListener.unsubscribe()
-    this.systemStatusListener.unsubscribe()
+    this.rosListers.forEach(listener => {
+      listener.unsubscribe()
+    })
+  }
+
+  @action.bound
+  rosLog(text) {
+    this.messageLog = `${text}\n${this.messageLog}`
+  }
+
+  get rosPrefix() {
+    return `/${this.namespacePrefix}/${this.deviceName}/${this.deviceSerial}`
+  }
+
+  addListener(name, messageType, cb, noPrefix = false) {
+    const listener = new ROS.Topic({
+      ros: this.ros,
+      name: noPrefix ? name : `${this.rosPrefix}/${name}`,
+      messageType
+    })
+    listener.subscribe(action(cb))
+    this.rosListers.push(listener)
   }
 
   @action.bound
   onConnectedToROS() {
-    const rosPrefix = `/${this.namespacePrefix}/${this.deviceName}/${
-      this.deviceSerial
-    }`
     this.connectedToROS = true
     this.rosLog("Connected to rosbridge")
 
-    this.fakeImageRecognitionListener = new ROS.Topic({
-      ros: this.ros,
-      name: "/fake_image_recognition",
-      messageType: "num_sdk_msgs/Annotation"
-    })
-    this.fakeImageRecognitionListener.subscribe(this.onFakeImageRecognition)
-
-    this.systemStatusListener = new ROS.Topic({
-      ros: this.ros,
-      name: `${rosPrefix}/system_status`,
-      messageType: "num_sdk_msgs/SystemStatus"
-    })
-    this.systemStatusListener.subscribe(this.onSystemStatus)
+    this.setupImageRecognitionListener()
+    this.setupImageSystemStatusListener()
 
     const systemDefsClient = new ROS.Service({
       ros: this.ros,
-      name: `${rosPrefix}/system_defs_query`,
+      name: `${this.rosPrefix}/system_defs_query`,
       serviceType: "num_sdk_msgs/SystemDefs"
     })
     const systemDefsRequest = new ROS.ServiceRequest()
@@ -138,7 +145,7 @@ class ROSConnectionStore {
 
     const navPosClient = new ROS.Service({
       ros: this.ros,
-      name: `${rosPrefix}/nav_pos_query`,
+      name: `${this.rosPrefix}/nav_pos_query`,
       serviceType: "num_sdk_msgs/NavPosQuery"
     })
     const navPosRequest = new ROS.ServiceRequest({ query_time: 0 })
@@ -199,41 +206,38 @@ class ROSConnectionStore {
     this.rosLog("Connection to rosbridge closed")
   }
 
-  @action.bound
-  rosLog(text) {
-    this.messageLog = `${text}\n${this.messageLog}`
+  setupImageRecognitionListener() {
+    this.addListener(
+      "/fake_image_recognition",
+      "num_sdk_msgs/Annotation",
+      message => {
+        this.imageRecognitions = [message]
+      },
+      true
+    )
   }
 
-  @action.bound
-  onFakeImageRecognition(message) {
-    // this.rosLog(
-    //   `Received message on ${
-    //     this.fakeImageRecognitionListener.name
-    //   }: ${JSON.stringify(message, null, 2)}`
-    // );
-    this.imageRecognitions = [message]
-  }
+  setupImageSystemStatusListener() {
+    this.addListener("system_status", "num_sdk_msgs/SystemStatus", message => {
+      // turn heartbeat on for half a second
+      this.heartbeat = true
+      setTimeout(() => {
+        this.heartbeat = false
+      }, 500)
 
-  @action.bound
-  onSystemStatus(message) {
-    // turn heartbeat on for half a second
-    this.heartbeat = true
-    setTimeout(() => {
-      this.heartbeat = false
-    }, 500)
+      this.systemStatus = message
+      this.systemStatusDiskUsageMB = message.disk_usage
 
-    this.systemStatus = message
-    this.systemStatusDiskUsageMB = message.disk_usage
+      this.diskUsagePercent = `${parseInt(
+        100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
+        10
+      )}%`
 
-    this.diskUsagePercent = `${parseInt(
-      100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
-      10
-    )}%`
-
-    this.systemStatusTempC =
-      message.temperatures.length && message.temperatures[0]
-    this.systemStatusWarnings = message.warnings && message.warnings.flags
-    this.rosLog(`Received status message`)
+      this.systemStatusTempC =
+        message.temperatures.length && message.temperatures[0]
+      this.systemStatusWarnings = message.warnings && message.warnings.flags
+      this.rosLog(`Received status message`)
+    })
   }
 }
 
