@@ -111,14 +111,31 @@ class ROSConnectionStore {
     return `/${this.namespacePrefix}/${this.deviceName}/${this.deviceSerial}`
   }
 
-  addListener(name, messageType, cb, noPrefix = false) {
+  addListener({ name, messageType, callback, noPrefix = false }) {
     const listener = new ROS.Topic({
       ros: this.ros,
       name: noPrefix ? name : `${this.rosPrefix}/${name}`,
       messageType
     })
-    listener.subscribe(action(cb))
+    listener.subscribe(action(callback))
     this.rosListers.push(listener)
+  }
+
+  callService({ name, messageType, args = null, msgKey = null }) {
+    return new Promise(resolve => {
+      const client = new ROS.Service({
+        ros: this.ros,
+        name: `${this.rosPrefix}/${name}`,
+        serviceType: messageType
+      })
+      const request = new ROS.ServiceRequest(args)
+      client.callService(
+        request,
+        action(result => {
+          resolve(msgKey ? result[msgKey] : result)
+        })
+      )
+    })
   }
 
   @action.bound
@@ -126,67 +143,13 @@ class ROSConnectionStore {
     this.connectedToROS = true
     this.rosLog("Connected to rosbridge")
 
+    // listeners
     this.setupImageRecognitionListener()
     this.setupImageSystemStatusListener()
 
-    const systemDefsClient = new ROS.Service({
-      ros: this.ros,
-      name: `${this.rosPrefix}/system_defs_query`,
-      serviceType: "num_sdk_msgs/SystemDefs"
-    })
-    const systemDefsRequest = new ROS.ServiceRequest()
-
-    systemDefsClient.callService(systemDefsRequest, result => {
-      this.systemDefs = result.defs
-
-      this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
-      this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
-    })
-
-    const navPosClient = new ROS.Service({
-      ros: this.ros,
-      name: `${this.rosPrefix}/nav_pos_query`,
-      serviceType: "num_sdk_msgs/NavPosQuery"
-    })
-    const navPosRequest = new ROS.ServiceRequest({ query_time: 0 })
-
-    const _pollNavPosOnce = () => {
-      navPosClient.callService(navPosRequest, result => {
-        this.navPos = result.nav_pos
-
-        this.navPosLocationLat = this.navPos.fix.latitude
-        this.navPosLocationLng = this.navPos.fix.longitude
-        this.navPosLocationAlt = this.navPos.fix.altitude
-        this.navPosDirectionHeadingDeg = this.navPos.heading
-
-        // magnitude of linear_velocity?
-        let { x, y, z } = this.navPos.linear_velocity
-        this.navPosDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
-
-        // TODO check the ordering of these?
-        this.navPosOrientationYawRate = this.navPos.angular_velocity.x
-        this.navPosOrientationPitchRate = this.navPos.angular_velocity.y
-        this.navPosOrientationRollRate = this.navPos.angular_velocity.z
-
-        const q = new cannon.Quaternion(
-          this.navPos.orientation.x,
-          this.navPos.orientation.y,
-          this.navPos.orientation.z,
-          this.navPos.orientation.w
-        )
-        const vec = new cannon.Vec3()
-        q.toEuler(vec)
-        this.navPosOrientationYawAngle = vec.x
-        this.navPosOrientationPitchAngle = vec.y
-        this.navPosOrientationRollAngle = vec.z
-
-        if (this.connectedToROS) {
-          setTimeout(_pollNavPosOnce, 500)
-        }
-      })
-    }
-
-    _pollNavPosOnce()
+    // services
+    this.callSystemDefsService()
+    this.startPollingNavPosService()
   }
 
   @action.bound
@@ -207,37 +170,93 @@ class ROSConnectionStore {
   }
 
   setupImageRecognitionListener() {
-    this.addListener(
-      "/fake_image_recognition",
-      "num_sdk_msgs/Annotation",
-      message => {
+    this.addListener({
+      name: "/fake_image_recognition",
+      messageType: "num_sdk_msgs/Annotation",
+      callback: message => {
         this.imageRecognitions = [message]
       },
-      true
-    )
+      noPrefix: true
+    })
   }
 
   setupImageSystemStatusListener() {
-    this.addListener("system_status", "num_sdk_msgs/SystemStatus", message => {
-      // turn heartbeat on for half a second
-      this.heartbeat = true
-      setTimeout(() => {
-        this.heartbeat = false
-      }, 500)
+    this.addListener({
+      name: "system_status",
+      messageType: "num_sdk_msgs/SystemStatus",
+      callback: message => {
+        // turn heartbeat on for half a second
+        this.heartbeat = true
+        setTimeout(() => {
+          this.heartbeat = false
+        }, 500)
 
-      this.systemStatus = message
-      this.systemStatusDiskUsageMB = message.disk_usage
+        this.systemStatus = message
+        this.systemStatusDiskUsageMB = message.disk_usage
 
-      this.diskUsagePercent = `${parseInt(
-        100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
-        10
-      )}%`
+        this.diskUsagePercent = `${parseInt(
+          100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
+          10
+        )}%`
 
-      this.systemStatusTempC =
-        message.temperatures.length && message.temperatures[0]
-      this.systemStatusWarnings = message.warnings && message.warnings.flags
-      this.rosLog(`Received status message`)
+        this.systemStatusTempC =
+          message.temperatures.length && message.temperatures[0]
+        this.systemStatusWarnings = message.warnings && message.warnings.flags
+        this.rosLog(`Received status message`)
+      }
     })
+  }
+
+  async callSystemDefsService() {
+    this.systemDefs = await this.callService({
+      name: "system_defs_query",
+      messageType: "num_sdk_msgs/SystemDefs",
+      msgKey: "defs"
+    })
+    this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
+    this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
+  }
+
+  startPollingNavPosService() {
+    const _pollNavPosOnce = async () => {
+      this.navPos = await this.callService({
+        name: "nav_pos_query",
+        messageType: "num_sdk_msgs/NavPosQuery",
+        msgKey: "nav_pos"
+      })
+
+      this.navPosLocationLat = this.navPos.fix.latitude
+      this.navPosLocationLng = this.navPos.fix.longitude
+      this.navPosLocationAlt = this.navPos.fix.altitude
+      this.navPosDirectionHeadingDeg = this.navPos.heading
+
+      // magnitude of linear_velocity?
+      let { x, y, z } = this.navPos.linear_velocity
+      this.navPosDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
+
+      // TODO check the ordering of these?
+      this.navPosOrientationYawRate = this.navPos.angular_velocity.x
+      this.navPosOrientationPitchRate = this.navPos.angular_velocity.y
+      this.navPosOrientationRollRate = this.navPos.angular_velocity.z
+
+      const q = new cannon.Quaternion(
+        this.navPos.orientation.x,
+        this.navPos.orientation.y,
+        this.navPos.orientation.z,
+        this.navPos.orientation.w
+      )
+      const vec = new cannon.Vec3()
+      q.toEuler(vec)
+      this.navPosOrientationYawAngle = vec.x
+      this.navPosOrientationPitchAngle = vec.y
+      this.navPosOrientationRollAngle = vec.z
+
+      if (this.connectedToROS) {
+        setTimeout(_pollNavPosOnce, 500)
+      }
+    }
+
+    _pollNavPosOnce()
   }
 }
 
