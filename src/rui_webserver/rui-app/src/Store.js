@@ -394,13 +394,11 @@ class ROSConnectionStore {
   onToggleHWTriggerInputEnabled(e) {
     const checked = e.target.checked
 
-    if (checked) {
-      this.publishMessage({
-        name: "hw_trigger_in_enab",
-        messageType: "std_msgs/UInt32",
-        data: this.triggerMask
-      })
-    }
+    this.publishMessage({
+      name: "hw_trigger_in_enab",
+      messageType: "std_msgs/UInt32",
+      data: checked ? this.triggerMask : 0
+    })
   }
 
   @action.bound
