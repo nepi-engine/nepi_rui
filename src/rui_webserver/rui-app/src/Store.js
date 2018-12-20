@@ -72,7 +72,7 @@ class ROSConnectionStore {
 
   @observable imageRecognitions = []
 
-  @observable triggerAutoRateHz = 20.0
+  @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
   async checkROSConnection() {
@@ -388,6 +388,13 @@ class ROSConnectionStore {
     this.triggerMask = checked
       ? TRIGGER_MASKS.OUTPUT_ENABLED
       : TRIGGER_MASKS.DEFAULT
+    
+    // republish rate change with new mask
+    this.onChangeTriggerRate({
+      target: {
+        value: this.triggerAutoRateHz
+      }
+    })
   }
 
   @action.bound
