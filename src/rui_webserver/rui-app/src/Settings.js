@@ -22,7 +22,6 @@ class Settings extends Component {
     }
 
     this.renderSaveSettings = this.renderSaveSettings.bind(this)
-    this.renderUnits = this.renderUnits.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderResetActions = this.renderResetActions.bind(this)
   }
@@ -59,28 +58,6 @@ class Settings extends Component {
     this.setState({ saveSettingsFilePrefix: e.target.value })
   }
 
-  renderUnits() {
-    // const { units, unitsResolution } = this.state
-    return (
-      <Section title={"Units"}>
-        <Label title={"Units"}>
-          <Select>
-            <Option value="metric">Metric</Option>
-            <Option value="imperial">Imperial</Option>
-          </Select>
-        </Label>
-        <Label title={"Resolution"}>
-          <Select>
-            <Option value="Low">Low</Option>
-            <Option value="Med">Med</Option>
-            <Option value="High">High</Option>
-            <Option value="Full">Full</Option>
-          </Select>
-        </Label>
-      </Section>
-    )
-  }
-
   renderNetworkInfo() {
     const { ipAddress } = this.props.networkInfo
     return (
@@ -113,7 +90,6 @@ class Settings extends Component {
       <Columns>
         <Column>
           {this.renderSaveSettings()}
-          {this.renderUnits()}
         </Column>
         <Column>
           {this.renderNetworkInfo()}
