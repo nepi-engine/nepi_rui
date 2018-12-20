@@ -49,18 +49,14 @@ class CameraViewer extends Component {
       containerHeight
     } = this.state
     const { imageRecognitions } = this.props.ros
-    if (shouldUpdate && hasInitialized) {
+    if (shouldUpdate && hasInitialized && this.canvas) {
       if (!containerWidth) {
-        this.setState({
-          containerWidth: this.canvas.width
-        })
+        this.setState({ containerWidth: this.canvas.width })
         this.canvas.width = streamWidth
       }
 
       if (!containerHeight) {
-        this.setState({
-          containerHeight: this.canvas.height
-        })
+        this.setState({ containerHeight: this.canvas.height })
         this.canvas.height = streamHeight
       }
 
@@ -73,7 +69,6 @@ class CameraViewer extends Component {
 
       imageRecognitions.forEach(
         ({ label, roi: { x_offset, y_offset, width, height } }) => {
-          // debugger
           context.beginPath()
           context.lineWidth = "10"
           context.strokeStyle = "red"
@@ -88,12 +83,8 @@ class CameraViewer extends Component {
         }
       )
 
-      this.setState({
-        clockTime: moment()
-      })
-      setTimeout(() => {
-        this.updateFrame()
-      }, 0)
+      this.setState({ clockTime: moment() })
+      setTimeout(this.updateFrame, 0)
     }
   }
 

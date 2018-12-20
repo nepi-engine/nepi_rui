@@ -6,6 +6,13 @@ import cannon from "cannon"
 const ROS_WS_URL = "ws://localhost:9090"
 const FLASK_URL = "http://localhost:5003"
 
+const TRIGGER_MASKS = {
+  OUTPUT_ENABLED: 0xffffffff,
+  DEFAULT: 0x8fffffff
+}
+
+export { TRIGGER_MASKS }
+
 async function apiCall(endpoint) {
   try {
     const r = await fetch(`${FLASK_URL}/api/${endpoint}`, {
@@ -16,6 +23,10 @@ async function apiCall(endpoint) {
   } catch (err) {
     console.error(err)
   }
+}
+
+function getLocalTZ() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
 class ROSConnectionStore {
@@ -35,9 +46,16 @@ class ROSConnectionStore {
   @observable systemStatus = null
   @observable heartbeat = false
   @observable systemStatusDiskUsageMB = null
+  @observable systemStatusDiskRate = null
   @observable systemStatusTempC = null
   @observable systemStatusWarnings = []
   @observable diskUsagePercent = null
+
+  @observable systemStatusTime = null
+  @observable clockUTCMode = false
+  @observable clockTZ = getLocalTZ()
+  @observable clockNTP = false
+  @observable clockPPS = false
 
   @observable navPos = null
   @observable navPosLocationLat = null
@@ -53,6 +71,9 @@ class ROSConnectionStore {
   @observable navPosOrientationRollRate = null
 
   @observable imageRecognitions = []
+
+  @observable triggerAutoRateHz = 20.0
+  @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -111,6 +132,16 @@ class ROSConnectionStore {
     return `/${this.namespacePrefix}/${this.deviceName}/${this.deviceSerial}`
   }
 
+  publishMessage({ name, messageType, data }) {
+    const publisher = new ROS.Topic({
+      ros: this.ros,
+      name: `${this.rosPrefix}/${name}`,
+      messageType
+    })
+    const message = new ROS.Message(data)
+    publisher.publish(message)
+  }
+
   addListener({ name, messageType, callback, noPrefix = false }) {
     const listener = new ROS.Topic({
       ros: this.ros,
@@ -150,6 +181,7 @@ class ROSConnectionStore {
     // services
     this.callSystemDefsService()
     this.startPollingNavPosService()
+    this.startPollingTimeStatusService()
   }
 
   @action.bound
@@ -193,6 +225,15 @@ class ROSConnectionStore {
 
         this.systemStatus = message
         this.systemStatusDiskUsageMB = message.disk_usage
+        this.systemStatusDiskRate = message.storage_rate
+
+        this.systemStatusTime = moment.unix(message.sys_time.secs)
+
+        // add timezone offset if not in UTC mode
+        if (!this.clockUTCMode) {
+          const tzOffset = new Date().getTimezoneOffset()
+          this.systemStatusTime.add(tzOffset, "minutes")
+        }
 
         this.diskUsagePercent = `${parseInt(
           100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
@@ -218,7 +259,7 @@ class ROSConnectionStore {
   }
 
   startPollingNavPosService() {
-    const _pollNavPosOnce = async () => {
+    const _pollOnce = async () => {
       this.navPos = await this.callService({
         name: "nav_pos_query",
         messageType: "num_sdk_msgs/NavPosQuery",
@@ -252,11 +293,139 @@ class ROSConnectionStore {
       this.navPosOrientationRollAngle = vec.z
 
       if (this.connectedToROS) {
-        setTimeout(_pollNavPosOnce, 500)
+        setTimeout(_pollOnce, 500)
       }
     }
 
-    _pollNavPosOnce()
+    _pollOnce()
+  }
+
+  startPollingTimeStatusService() {
+    const _pollOnce = async () => {
+      this.timeStatus = await this.callService({
+        name: "time_status_query",
+        messageType: "num_sdk_msgs/TimeStatus",
+        msgKey: "time_status"
+      })
+
+      // if last_ntp_sync is 10y, no sync has happened
+      this.clockNTP = true
+      const lastNTPSync = this.timeStatus.last_ntp_sync
+      lastNTPSync &&
+        lastNTPSync.length &&
+        lastNTPSync.forEach(sync => {
+          if (sync === "10y") {
+            this.clockNTP = false
+          }
+        })
+
+      // if last_pps – current_time < 1 second no sync has happened
+      this.clockPPS = true
+      const lastPPSTS = moment.unix(this.timeStatus.last_pps.secs).unix()
+      const currTS = this.systemStatusTime && this.systemStatusTime.unix()
+      if (currTS && lastPPSTS - currTS < 1) {
+        this.clockPPS = false
+      }
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  @action.bound
+  onToggleClockUTCMode() {
+    this.clockUTCMode = !this.clockUTCMode
+    this.clockTZ = this.clockUTCMode ? "UTC" : getLocalTZ()
+  }
+
+  @action.bound
+  onSyncUTCToDevice() {
+    const tzOffset = new Date().getTimezoneOffset()
+    const utcTS = moment()
+      .subtract(tzOffset, "minutes")
+      .unix()
+    this.publishMessage({
+      name: "set_time",
+      messageType: "std_msgs/Time",
+      data: {
+        data: {
+          secs: utcTS,
+          nsecs: utcTS
+        }
+      }
+    })
+  }
+
+  @action.bound
+  onChangeTriggerRate(e) {
+    let freq = parseFloat(e.target.value)
+
+    if (isNaN(freq)) {
+      freq = 0
+    }
+
+    this.publishMessage({
+      name: "set_periodic_sw_trig",
+      messageType: "num_sdk_msgs/PeriodicSwTrig",
+      data: {
+        enabled: freq > 0,
+        sw_trig_mask: this.triggerMask,
+        rate_hz: freq
+      }
+    })
+
+    this.triggerAutoRateHz = freq
+  }
+
+  @action.bound
+  onToggleHWTriggerOutputEnabled(e) {
+    const checked = e.target.checked
+
+    // If HW Trig Output Enable selected, trig mask is 0xFFFFFFFF, otherwise trig mask is 0x8FFFFFFF
+    this.triggerMask = checked
+      ? TRIGGER_MASKS.OUTPUT_ENABLED
+      : TRIGGER_MASKS.DEFAULT
+  }
+
+  @action.bound
+  onToggleHWTriggerInputEnabled(e) {
+    const checked = e.target.checked
+
+    if (checked) {
+      this.publishMessage({
+        name: "hw_trigger_in_enab",
+        messageType: "std_msgs/UInt32",
+        data: this.triggerMask
+      })
+    }
+  }
+
+  @action.bound
+  onPressManualTrigger() {
+    console.log(this.triggerMask)
+    // Pressing Manual Trigger publishes mask on the sw_trigger topic.
+    this.publishMessage({
+      name: "sw_trigger",
+      messageType: "std_msgs/UInt32",
+      data: this.triggerMask
+    })
+  }
+
+  @action.bound
+  onToggleSaveData(e) {
+    const checked = e.target.checked
+
+    this.publishMessage({
+      name: "save_data",
+      messageType: "num_sdk_msgs/SaveData",
+      data: {
+        save_continuous: checked,
+        save_raw: false
+      }
+    })
   }
 }
 
@@ -270,25 +439,9 @@ class NetworkInfoStore {
   }
 }
 
-class ClockStore {
-  @observable time = moment()
-
-  constructor() {
-    this.tick()
-  }
-
-  @action.bound
-  tick() {
-    this.time = moment()
-    setTimeout(() => {
-      this.tick()
-    }, 1000)
-  }
-}
-
 const stores = {
   ros: new ROSConnectionStore(),
-  networkInfo: new NetworkInfoStore(),
-  clock: new ClockStore()
+  networkInfo: new NetworkInfoStore()
 }
+
 export default stores

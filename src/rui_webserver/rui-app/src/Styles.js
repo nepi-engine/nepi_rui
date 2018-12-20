@@ -15,7 +15,9 @@ export const colors = {
   grey0: "#e1e6e9",
   grey1: "#a5abb4",
   grey2: "#3e4043",
-  blue: "#00a5ed"
+  blue: "#00a5ed",
+  green: "#228b22",
+  red: "#a52a2a"
 }
 
 const unitString = function(unit) {

@@ -8,8 +8,13 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
+import BooleanIndicator from "./BooleanIndicator"
+import { TRIGGER_MASKS } from "./Store"
 
-@inject("clock")
+function round(value, decimals = 0) {
+  return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
+
 @inject("ros")
 @observer
 class Dashboard extends Component {
@@ -17,8 +22,6 @@ class Dashboard extends Component {
     super(props)
 
     this.state = {
-      deviceClockNTPActive: true,
-      deviceClockPPSActive: true,
       deviceTriggerSWActive: true,
       deviceTriggerDualCamsActive: true,
       deviceTriggerToFCamActive: true,
@@ -35,6 +38,7 @@ class Dashboard extends Component {
     this.renderDirection = this.renderDirection.bind(this)
     this.renderOrientation = this.renderOrientation.bind(this)
     this.renderSystemMessages = this.renderSystemMessages.bind(this)
+    this.renderSaveData = this.renderSaveData.bind(this)
   }
 
   renderDeviceInfo() {
@@ -59,25 +63,42 @@ class Dashboard extends Component {
   }
 
   renderSystemClock() {
-    const { clock } = this.props
-    const { deviceClockNTPActive, deviceClockPPSActive } = this.state
+    const {
+      systemStatusTime,
+      clockUTCMode,
+      clockTZ,
+      onToggleClockUTCMode,
+      clockNTP,
+      clockPPS,
+      onSyncUTCToDevice
+    } = this.props.ros
+
+    const time = systemStatusTime && systemStatusTime.format("h:mm:ss a")
+    const date = systemStatusTime && systemStatusTime.format("l")
+
     return (
       <Section title={"System Clock"}>
         <Label title={"NTP"}>
-          <Toggle disabled checked={deviceClockNTPActive} />
+          <BooleanIndicator value={clockNTP} />
         </Label>
         <Label title={"PPS"}>
-          <Toggle disabled checked={deviceClockPPSActive} />
+          <BooleanIndicator value={clockPPS} />
         </Label>
         <Label title={"Time"}>
-          <Input disabled value={clock.time.format("h:mm:ss a")} />
+          <Input disabled value={time} />
         </Label>
         <Label title={"Date"}>
-          <Input disabled value={clock.time.format("l")} />
+          <Input disabled value={date} />
         </Label>
         <Label title={"Timezone"}>
-          <Input disabled value={"MDT"} />
+          <Input disabled value={clockTZ} />
         </Label>
+        <Label title={"UTC"}>
+          <Toggle checked={clockUTCMode} onClick={onToggleClockUTCMode} />
+        </Label>
+        <ButtonMenu>
+          <Button onClick={onSyncUTCToDevice}>{"Sync Clocks"}</Button>
+        </ButtonMenu>
       </Section>
     )
   }
@@ -105,45 +126,32 @@ class Dashboard extends Component {
 
   renderTriggerSettings() {
     const {
-      // deviceTriggerSWActive,
-      // deviceTriggerDualCamsActive,
-      // deviceTriggerToFCamActive,
-      // deviceTrigger3DSonarActive,
-      deviceTriggerActualRateHz,
-      deviceTriggerAutoRateHz
-    } = this.state
-
-    //         <Label title={"Dual Cams"}>
-    //   <Toggle disabled checked={deviceTriggerDualCamsActive} />
-    // </Label>
-    // <Label title={"ToF Cam"}>
-    //   <Toggle disabled checked={deviceTriggerToFCamActive} />
-    // </Label>
-    // <Label title={"3D Sonar"}>
-    //   <Toggle disabled checked={deviceTrigger3DSonarActive} />
-    // </Label>
+      triggerAutoRateHz,
+      onChangeTriggerRate,
+      triggerMask,
+      onPressManualTrigger,
+      onToggleHWTriggerOutputEnabled,
+      onToggleHWTriggerInputEnabled
+    } = this.props.ros
 
     return (
       <Section title={"Trigger Settings"}>
-        <Label title={"Trigger Value"}>
-          <Select>
-            <Option value="1">1</Option>
-            <Option value="2">2</Option>
-            <Option value="3">3</Option>
-          </Select>
-        </Label>
-
-        <Label title={"Actual Rate (Hz)"}>
-          <Input disabled value={deviceTriggerActualRateHz} />
-        </Label>
         <Label title={"Auto Rate (Hz)"}>
-          <Input disabled value={deviceTriggerAutoRateHz} />
+          <Input value={triggerAutoRateHz} onChange={onChangeTriggerRate} />
         </Label>
 
         <ButtonMenu>
-          <Button>{"HW. Trigger Enab."}</Button>
-          <Button>{"Manual Trigger"}</Button>
+          <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
         </ButtonMenu>
+        <Label title={"Hardware Trigger Input Enable"}>
+          <Toggle onClick={onToggleHWTriggerInputEnabled} />
+        </Label>
+        <Label title={"Hardware Trigger Output Enable"}>
+          <Toggle
+            checked={triggerMask === TRIGGER_MASKS.OUTPUT_ENABLED}
+            onClick={onToggleHWTriggerOutputEnabled}
+          />
+        </Label>
       </Section>
     )
   }
@@ -160,11 +168,11 @@ class Dashboard extends Component {
     return (
       <Section title={"System Status"}>
         <Label title={"Heartbeat"}>
-          <Toggle disabled checked={heartbeat} />
+          <BooleanIndicator value={heartbeat} />
         </Label>
 
         <Label title={"Temp (C)"}>
-          <Input disabled value={systemStatusTempC} />
+          <Input disabled value={round(systemStatusTempC, 2)} />
         </Label>
 
         <Label title={"Storage"}>
@@ -176,7 +184,7 @@ class Dashboard extends Component {
         </Label>
 
         <Label title={"Used (MB)"}>
-          <Input disabled value={systemStatusDiskUsageMB} />
+          <Input disabled value={round(systemStatusDiskUsageMB)} />
         </Label>
       </Section>
     )
@@ -190,10 +198,10 @@ class Dashboard extends Component {
     return (
       <Section title={"Direction"}>
         <Label title={"Heading (deg)"}>
-          <Input disabled value={navPosDirectionHeadingDeg} />
+          <Input disabled value={round(navPosDirectionHeadingDeg, 3)} />
         </Label>
         <Label title={"Speed (m/s)"}>
-          <Input disabled value={navPosDirectionSpeedMpS} />
+          <Input disabled value={round(navPosDirectionSpeedMpS, 3)} />
         </Label>
       </Section>
     )
@@ -209,41 +217,47 @@ class Dashboard extends Component {
       navPosOrientationRollRate
     } = this.props.ros
     return (
-      <Section title={"Orientation (deg, deg/s)"}>
+      <Section title={"Orientation"}>
+        <Label title={""}>
+          <div style={{ display: "inline-block", width: "45%", float: "left" }}>
+            {"deg"}
+          </div>
+          <div style={{ display: "inline-block", width: "45%" }}>{"deg/s"}</div>
+        </Label>
         <Label title={"Yaw"}>
           <Input
             disabled
-            style={{ width: "50%" }}
-            value={navPosOrientationYawAngle}
+            style={{ width: "45%", float: "left" }}
+            value={round(navPosOrientationYawAngle, 3)}
           />
           <Input
             disabled
-            style={{ width: "50%" }}
-            value={navPosOrientationYawRate}
+            style={{ width: "45%" }}
+            value={round(navPosOrientationYawRate, 3)}
           />
         </Label>
         <Label title={"Pitch"}>
           <Input
             disabled
-            style={{ width: "50%" }}
-            value={navPosOrientationPitchAngle}
+            style={{ width: "45%", float: "left" }}
+            value={round(navPosOrientationPitchAngle, 3)}
           />
           <Input
             disabled
-            style={{ width: "50%" }}
-            value={navPosOrientationPitchRate}
+            style={{ width: "45%" }}
+            value={round(navPosOrientationPitchRate, 3)}
           />
         </Label>
         <Label title={"Roll"}>
           <Input
             disabled
-            style={{ width: "50%" }}
-            value={navPosOrientationRollAngle}
+            style={{ width: "45%", float: "left" }}
+            value={round(navPosOrientationRollAngle, 3)}
           />
           <Input
             disabled
-            style={{ width: "50%" }}
-            value={navPosOrientationRollRate}
+            style={{ width: "45%" }}
+            value={round(navPosOrientationRollRate, 3)}
           />
         </Label>
       </Section>
@@ -256,6 +270,20 @@ class Dashboard extends Component {
         <pre style={{ height: "220px", overflowY: "auto" }}>
           {this.props.ros.messageLog}
         </pre>
+      </Section>
+    )
+  }
+
+  renderSaveData() {
+    const { systemStatusDiskRate, onToggleSaveData } = this.props.ros
+    return (
+      <Section title={"Save Data"}>
+        <Label title={"Rate (MB/s)"}>
+          <Input disabled value={round(systemStatusDiskRate, 3)} />
+        </Label>
+        <Label title={"Save Data"}>
+          <Toggle onClick={onToggleSaveData} />
+        </Label>
       </Section>
     )
   }
@@ -275,6 +303,7 @@ class Dashboard extends Component {
         </Column>
         <Column>
           {this.renderSystemMessages()}
+          {this.renderSaveData()}
           {this.renderOrientation()}
         </Column>
       </Columns>
