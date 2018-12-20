@@ -13,7 +13,7 @@ const styles = Styles.Create({
     backgroundColor: Styles.vars.colors.green
   },
   false: {
-    backgroundColor: Styles.vars.colors.red
+    backgroundColor: Styles.vars.colors.grey1
   }
 })
 
