@@ -397,18 +397,17 @@ class ROSConnectionStore {
     this.publishMessage({
       name: "hw_trigger_in_enab",
       messageType: "std_msgs/UInt32",
-      data: checked ? this.triggerMask : 0
+      data: { data: checked ? this.triggerMask : 0 }
     })
   }
 
   @action.bound
   onPressManualTrigger() {
-    console.log(this.triggerMask)
     // Pressing Manual Trigger publishes mask on the sw_trigger topic.
     this.publishMessage({
       name: "sw_trigger",
       messageType: "std_msgs/UInt32",
-      data: this.triggerMask
+      data: { data: this.triggerMask }
     })
   }
 
