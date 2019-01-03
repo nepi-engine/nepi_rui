@@ -94,20 +94,6 @@ To make sure you have the latest repos:
         wstool update
         rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
-## Run
-
-### Rosbridge
-
-In all cases, rosbridge needs to run:
-
-        roslaunch numurus_rui rosbridge.launch
-
-### Production
-
-When running in production (on the device), simply run:
-
-        rosrun numurus_rui run_webserver.py
-
 ## Development
 
 When developing, always source the `devenv.sh` to ensure the correct versions of Python, node and define environment variables:
@@ -147,6 +133,11 @@ When changing backend code, run the webserver with:
 
     rosrun numurus_rui run_webserver.py
 
+### Rosbridge
+
+In all cases, rosbridge needs to run:
+
+        roslaunch numurus_rui rosbridge.launch
 
 ## Simulation
 
@@ -175,3 +166,42 @@ If your dev machine has a webcam, you can simulate a video feed from the device 
 This launch file assumes the webcam is at `/dev/video0`, but you can pass in a an argument to change this 
 
         roslaunch numurus_rui test_camera.launch DEVICE:=/dev/video1
+
+## Production
+
+TODO(Luke) ask Josh / Dave what the official steps to add rosbridge / other dependencies to the device's ROS installation 
+
+To copy this module to the device (using boardenv above) please run this from the directory above this module:
+
+        rsync -avzhe ssh --exclude node_modules --exclude .git numurus_rui/ root@num-sb1-zynq:/opt/numurus/ros/share/numurus_rui
+
+To actually run the RUI on the device, please eject the SD card and use qemu to create a new python venv in the root of this module
+
+        sudo apt install qemu-user-static
+        mkdir ~/mnt/rootfs
+        sudo mount /dev/mmcblk0p2 ~/mnt/rootfs
+        sudo mount -t proc proc ~/mnt/rootfs/proc
+        cp $(which qemu-arm-static) ~/mnt/rootfs
+        cp etc/resolv.conf ~/mnt/rootfs/etc/resolv.conf
+        sudo chroot ~/mnt/rootfs /bin/bash
+
+Once the SD card is mounted, go to the directory where the package is located and create the venv
+
+        cd /opt/numurus/ros/share/numurus_rui
+        python -m virtualenv venv
+
+Unmount and eject the SD card and put it back in the device
+
+To run the webserver in production on the device, run the following in separate terminals:
+
+        ssh root@num-sb1-zynq
+        cd /opt/numurus/ros/share/numurus_rui
+        . ../../setup.bash
+        . prodenv.sh
+        roslaunch numurus_rui rosbridge.launch
+
+        ssh root@num-sb1-zynq
+        cd /opt/numurus/ros/share/numurus_rui
+        . ../../setup.bash
+        . prodenv.sh
+        rosrun numurus_rui run_webserver.py
