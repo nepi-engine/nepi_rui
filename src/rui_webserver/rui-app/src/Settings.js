@@ -88,9 +88,7 @@ class Settings extends Component {
   render() {
     return (
       <Columns>
-        <Column>
-          {this.renderSaveSettings()}
-        </Column>
+        <Column>{this.renderSaveSettings()}</Column>
         <Column>
           {this.renderNetworkInfo()}
           {this.renderResetActions()}

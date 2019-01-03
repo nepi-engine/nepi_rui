@@ -3,8 +3,10 @@ import moment from "moment"
 import ROS from "roslib"
 import cannon from "cannon"
 
-const ROS_WS_URL = `ws://${window.location.hostname}:9090`;
-const FLASK_URL = `http://${window.location.hostname}:5003`;
+// const ROS_WS_URL = `ws://localhost:9090`
+const ROS_WS_URL = `ws://${window.location.hostname}:9090`
+// const FLASK_URL = `http://localhost:5003`
+const FLASK_URL = `http://${window.location.hostname}:5003`
 
 const TRIGGER_MASKS = {
   OUTPUT_ENABLED: 0xffffffff,
@@ -388,7 +390,7 @@ class ROSConnectionStore {
     this.triggerMask = checked
       ? TRIGGER_MASKS.OUTPUT_ENABLED
       : TRIGGER_MASKS.DEFAULT
-    
+
     // republish rate change with new mask
     this.onChangeTriggerRate({
       target: {
