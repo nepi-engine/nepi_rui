@@ -4,7 +4,7 @@ import Label from "./Label"
 import Input from "./Input"
 import Button, { ButtonMenu } from "./Button"
 
-const PASSWORD = "picknik2018"
+const PASSWORD = "numurus"
 
 class PageLock extends Component {
   constructor(props) {
