@@ -469,13 +469,13 @@ class ROSConnectionStore {
       })
 
       // if last_ntp_sync is 10y, no sync has happened
-      this.clockNTP = true
+      this.clockNTP = false
       const lastNTPSync = this.timeStatus.last_ntp_sync
       lastNTPSync &&
         lastNTPSync.length &&
         lastNTPSync.forEach(sync => {
-          if (sync === "10y") {
-            this.clockNTP = false
+          if (sync !== "10y") {
+            this.clockNTP = true
           }
         })
 
