@@ -181,13 +181,16 @@ This launch file assumes the webcam is at `/dev/video0`, but you can pass in a a
 
 ## Production
 
-TODO(Luke) ask Josh / Dave what the official steps to add rosbridge / other dependencies to the device's ROS installation 
-
+### Installing the module
 To copy this module to the device (using boardenv above) please run this from the directory above this module:
 
         rsync --info=progress2 -avzhe ssh --exclude node_modules --exclude .git numurus_rui/ root@num-sb1-zynq:/opt/numurus/ros/share/numurus_rui
 
-To actually run the RUI on the device, please eject the SD card and use qemu to create a new python venv in the root of this module
+### Targets without internet access
+
+Some targets do not have internet access, so installation of dependencies is best done in a QEMU environment on a development host in a `chroot` of the mounted root filesystem media of the target. RUI-specific steps are preserved here for posterity, but refer to the Numurus Zynq FW Developer's Guide for the complete QEMU instructions.
+
+Please eject the SD card and use qemu to create a new python venv in the root of this module
 
         sudo apt install qemu-user-static
         mkdir ~/mnt/rootfs
@@ -197,12 +200,24 @@ To actually run the RUI on the device, please eject the SD card and use qemu to 
         cp etc/resolv.conf ~/mnt/rootfs/etc/resolv.conf
         sudo chroot ~/mnt/rootfs /bin/bash
 
-Once the SD card is mounted, go to the directory where the package is located and create the venv
+Once this is complete, you can proceed to install dependencies and set up the Python virtual environment as below. When finished unmount and eject the SD card and put it back in the device
+
+### Preparing the target
+
+Ensure the ROS dependencies and Python virtual env are installed to the target.
+
+1. Go to the directory where the package is located and install ROS dependencies
 
         cd /opt/numurus/ros/share/numurus_rui
-        python -m virtualenv venv
+        rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
-Unmount and eject the SD card and put it back in the device
+1. Create and populate the venv
+
+        python -m virtualenv venv
+        . prodenv.sh
+        pip install -r requirements.txt
+
+### Running on the target
 
 To run the webserver in production on the device, run the following in separate terminals:
 
@@ -217,3 +232,13 @@ To run the webserver in production on the device, run the following in separate 
         . ../../setup.bash
         . prodenv.sh
         rosrun numurus_rui run_webserver.py
+
+### Automate Start-up
+In final production `rosbridge.launch` should be launched from an include tag in a system launch file. The same is difficult to achieve for the run_webserver.py node, as it requires running from the venv, which can't readily be activated within a launch file. Instead, a start-up script is provided at `numurus_rui/launch/start_rui.sh`. This can be automatically run by installing `systemd` services file `numurus_rui/launch/numurus_rui.service`:
+
+
+        cp /opt/numurus/ros/share/numurus_rui/launch/start_rui.sh /opt/numurus
+        sudo cp /opt/numurus/ros/share/numurus_rui/launch/numurus_rui.service /etc/systemd/system
+        sudo systemctl enable numurus_rui
+
+The `numurus_rui.service` unit requires the `roslaunch.service` provided in the `num_sdk_base` repository to guarantee that `rosbridge` is also launched, so ensure this is also installed and enabled on the taget device.

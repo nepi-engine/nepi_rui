@@ -1,0 +1,11 @@
+[Unit]
+Description=The Numurus RUI Webserver
+After=roslaunch.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/numurus/ros/share/numurus_rui/launch/start_rui.sh
+
+[Install]
+WantedBy=multi-user.target 
