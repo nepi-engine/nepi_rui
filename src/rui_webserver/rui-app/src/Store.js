@@ -8,7 +8,7 @@ const FLASK_URL = `http://${window.location.hostname}:5003`
 
 const TRIGGER_MASKS = {
   OUTPUT_ENABLED: 0xffffffff,
-  DEFAULT: 0x8fffffff
+  DEFAULT: 0xefffffff
 }
 
 export { TRIGGER_MASKS }
