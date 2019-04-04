@@ -10,10 +10,13 @@ from numurus_rui.nd_status_publisher import NDStatusPublisher
 if __name__ == '__main__':
     image_recognition_pub = ImageRecognitionPublisher()
     nd_status_pub = NDStatusPublisher()
-    frequency = 10.0
 
-    publishers = [image_recognition_pub, nd_status_pub]
-    node = FakeDataNode(publishers, frequency)
+    # publishers is a list of publisher object and frequency turples
+    publishers = [
+        (image_recognition_pub, 10.), 
+        (nd_status_pub, 10.)
+    ]
+    node = FakeDataNode('fake_data', publishers)
 
     try:
         node.publish_fake_data()

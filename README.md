@@ -157,6 +157,14 @@ We have provided some fake data publishers for testing purposes. To run a node t
 
         rostopic echo /fake_nd_status
 
+### Fake System Status Publisher
+
+We've also provided fake system status publishers for testing without hardware. Here is the step for running the fake system status publishers.
+
+1. Run the publisher in different terminal:
+
+        rosrun numurus_rui fake_status_pub.py
+
 ### Test Camera
 
 If your dev machine has a webcam, you can simulate a video feed from the device using this command
