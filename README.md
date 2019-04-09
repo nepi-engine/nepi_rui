@@ -111,9 +111,13 @@ Additionally, this script makes some assumptions about which ethernet port you'v
 
 ### Frontend
 
+To build the frontend run this command in `src/rui_webserver/rui-app/`:
+
+        npm run build
+
 This is only necessary when making changes to frontend code. Start the development server with:
 
-        cd src/rui_webserver/rui-app/ && npm start
+        npm start
 
 Various other npm commands are available such as `build`, `lint`, etc. See the `scripts` section of `rui-app/package.json` for a full list of commands.
 
@@ -181,7 +185,7 @@ TODO(Luke) ask Josh / Dave what the official steps to add rosbridge / other depe
 
 To copy this module to the device (using boardenv above) please run this from the directory above this module:
 
-        rsync -avzhe ssh --exclude node_modules --exclude .git numurus_rui/ root@num-sb1-zynq:/opt/numurus/ros/share/numurus_rui
+        rsync --info=progress2 -avzhe ssh --exclude node_modules --exclude .git numurus_rui/ root@num-sb1-zynq:/opt/numurus/ros/share/numurus_rui
 
 To actually run the RUI on the device, please eject the SD card and use qemu to create a new python venv in the root of this module
 

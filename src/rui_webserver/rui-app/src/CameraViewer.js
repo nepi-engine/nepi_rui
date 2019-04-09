@@ -15,8 +15,9 @@ const styles = Styles.Create({
   }
 })
 
-const ROS_WEBCAM_URL =
-  "http://localhost:9091/stream?topic=/v4l/camera/image_raw"
+const ROS_WEBCAM_URL_BASE = `http://${
+  window.location.hostname
+}:9091/stream?topic=`
 
 @inject("ros")
 @observer
@@ -90,25 +91,40 @@ class CameraViewer extends Component {
 
   onCanvasRef(ref) {
     this.canvas = ref
-    this.image = new Image()
-    this.image.crossOrigin = "Anonymous"
-    this.image.onload = () => {
+    this.updateImageSource()
+  }
+
+  updateImageSource() {
+    if (this.props.imageTopic) {
       const { hasInitialized } = this.state
-      if (!hasInitialized) {
-        const { width, height } = this.image
-        this.setState(
-          {
-            hasInitialized: true,
-            streamWidth: width,
-            streamHeight: height
-          },
-          () => {
-            this.updateFrame()
-          }
-        )
+      this.image = new Image()
+      this.image.crossOrigin = "Anonymous"
+      this.image.onload = () => {
+        if (!hasInitialized) {
+          const { width, height } = this.image
+          this.setState(
+            {
+              hasInitialized: true,
+              streamWidth: width,
+              streamHeight: height
+            },
+            () => {
+              this.updateFrame()
+            }
+          )
+        }
       }
     }
-    this.image.src = ROS_WEBCAM_URL
+    if (this.image) {
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const { imageTopic } = this.props
+    if (prevProps.imageTopic !== imageTopic) {
+      this.updateImageSource()
+    }
   }
 
   componentWillUnmount() {

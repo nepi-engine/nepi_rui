@@ -105,5 +105,3 @@ venv.bak/
 .DS_Store
 
 *.orig
-
-!src/rui_webserver/rui-app/build

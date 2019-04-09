@@ -13,7 +13,7 @@ class NDStatusPublisher(object):
 
     def __init__(self):
         super(NDStatusPublisher, self).__init__()
-        self.topic_name = '/fake_nd_status'
+        self.topic_name = '/numurus/fake_device/x0000-02/fake_nd_status'
         self._nd_status = NDStatus()
         self._publisher = rospy.Publisher(self.topic_name, NDStatus, queue_size=10)
         self.init_nd_status()

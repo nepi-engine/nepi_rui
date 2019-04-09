@@ -18,7 +18,7 @@ class SystemStatusPublisher(object):
 
     def __init__(self):
         super(SystemStatusPublisher, self).__init__()
-        self.topic_name = '/picknik/fake_device/0000-01'
+        self.topic_name = '/numurus/fake_device/0000-01/system_status'
         self._system_status = SystemStatus()
         self._publisher = rospy.Publisher(self.topic_name, SystemStatus, queue_size=10)
         self.init_system_status()

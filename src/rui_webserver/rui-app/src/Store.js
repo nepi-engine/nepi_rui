@@ -3,9 +3,7 @@ import moment from "moment"
 import ROS from "roslib"
 import cannon from "cannon"
 
-// const ROS_WS_URL = `ws://localhost:9090`
 const ROS_WS_URL = `ws://${window.location.hostname}:9090`
-// const FLASK_URL = `http://localhost:5003`
 const FLASK_URL = `http://${window.location.hostname}:5003`
 
 const TRIGGER_MASKS = {
@@ -77,40 +75,97 @@ class ROSConnectionStore {
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
+  @observable topicNames = null
+  @observable topicTypes = null
+
+  @observable imageTopics = []
+
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
-        const deviceInfo = await apiCall("deviceinfo")
-        this.namespacePrefix = deviceInfo.namespacePrefix
-        this.deviceName = deviceInfo.deviceName
-        this.deviceSerial = deviceInfo.deviceSerial
-        if (this.namespacePrefix && this.deviceName && this.deviceSerial) {
-          this.rosLog(
-            `Fetched device info ${this.namespacePrefix}/${this.deviceName}/${
-              this.deviceSerial
-            }`
-          )
-          if (!this.ros) {
-            this.ros = new ROS.Ros({
-              url: ROS_WS_URL
-            })
-            this.ros.on("connection", this.onConnectedToROS)
-            this.ros.on("error", this.onErrorConnectingToROS)
-            this.ros.on("close", this.onDisconnectedToROS)
-          } else {
-            this.ros.connect(ROS_WS_URL)
-          }
+        if (!this.ros) {
+          this.ros = new ROS.Ros({
+            url: ROS_WS_URL
+          })
+          this.ros.on("connection", this.onConnectedToROS)
+          this.ros.on("error", this.onErrorConnectingToROS)
+          this.ros.on("close", this.onDisconnectedToROS)
+        } else {
+          this.ros.connect(ROS_WS_URL)
         }
       } catch (e) {
         console.error(e)
       }
     }
+    this.updateTopics()
 
     if (this.rosAutoReconnect) {
       setTimeout(async () => {
         await this.checkROSConnection()
       }, 3500)
     }
+  }
+
+  @action.bound
+  updateTopics() {
+    if (this.ros) {
+      this.ros.getTopics(result => {
+        this.topicNames = result.topics
+        this.topicTypes = result.types
+        this.updatePrefix()
+        this.updateImageTopics()
+      })
+    }
+  }
+
+  validPrefix() {
+    return this.namespacePrefix && this.deviceName && this.deviceSerial
+  }
+
+  @action.bound
+  updatePrefix() {
+    // This function looks to see if we need to update the prefix properties.
+    // It loops though the topics and uses the testTopicForPrefix to test and
+    // perform the update.  If it updates we are done, break.
+    for (var i = 0; i < this.topicNames.length; i++) {
+      var topic_name_parts = this.topicNames[i].split("/")
+      if (
+        topic_name_parts[topic_name_parts.length - 1] === "system_status" &&
+        this.topicTypes[i] === "num_sdk_msgs/SystemStatus"
+      ) {
+        if (
+          this.namespacePrefix !== topic_name_parts[1] &&
+          this.deviceName !== topic_name_parts[2] &&
+          this.deviceSerial !== topic_name_parts[3]
+        ) {
+          this.namespacePrefix = topic_name_parts[1]
+          this.deviceName = topic_name_parts[2]
+          this.deviceSerial = topic_name_parts[3]
+          if (this.validPrefix()) {
+            this.onNewPrefix()
+            this.rosLog(
+              `Fetched device info ${this.namespacePrefix}/${this.deviceName}/${
+                this.deviceSerial
+              }`
+            )
+            break
+          }
+        }
+      }
+    }
+  }
+
+  @action.bound
+  updateImageTopics() {
+    // find all the image source topics in the topic list
+    var newImageTopics = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicTypes[i] === "sensor_msgs/Image") {
+        newImageTopics.push(this.topicNames[i])
+      }
+    }
+
+    this.imageTopics = newImageTopics
   }
 
   @action.bound
@@ -175,7 +230,10 @@ class ROSConnectionStore {
   onConnectedToROS() {
     this.connectedToROS = true
     this.rosLog("Connected to rosbridge")
+  }
 
+  @action.bound
+  onNewPrefix() {
     // listeners
     this.setupImageRecognitionListener()
     this.setupImageSystemStatusListener()

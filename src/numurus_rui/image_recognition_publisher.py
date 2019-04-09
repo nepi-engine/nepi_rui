@@ -14,7 +14,7 @@ class ImageRecognitionPublisher(object):
 
     def __init__(self):
         super(ImageRecognitionPublisher, self).__init__()
-        self.topic_name = '/fake_image_recognition'
+        self.topic_name = '/numurus/fake_device/x0000-02/fake_image_recognition'
         self._image_recognition = Annotation()
         self._publisher = rospy.Publisher(self.topic_name, Annotation, queue_size=10)
         self.init_image_recognition()
