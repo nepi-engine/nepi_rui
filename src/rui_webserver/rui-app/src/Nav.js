@@ -15,25 +15,104 @@ const styles = Styles.Create({
     marginLeft: Styles.vars.spacing.small,
     marginRight: Styles.vars.spacing.small,
     textTransform: "uppercase",
-    cursor: "pointer"
+    cursor: "pointer",
+    textDecoration: "underline"
   },
   activeNavItem: {
     color: Styles.vars.colors.blue,
-    fontWeight: "bold",
-    textDecoration: "underline"
+    fontWeight: "bold"
+  },
+  subNavItem: {
+    backgroundColor: Styles.vars.colors.grey2,
+    position: "absolute",
+    marginTop: Styles.vars.spacing.small,
+    marginLeft: 0,
+    marginRight: Styles.vars.spacing.small,
+    left: 0,
+    listStyleType: "none",
+    width: "100px",
+    textAlign: "left"
   }
 })
 
-const NavItem = ({ active, label, path }) => {
+class Card extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      showMenu: false,
+      top: 0,
+      left: 0
+    }
+
+    this.showMenu = this.showMenu.bind(this)
+    this.closeMenu = this.closeMenu.bind(this)
+  }
+
+  showMenu(event) {
+    event.preventDefault()
+    this.setState({ showMenu: true }, () => {
+      document.addEventListener("click", this.closeMenu)
+    })
+  }
+
+  closeMenu() {
+    this.setState({ showMenu: false }, () => {
+      document.removeEventListener("click", this.closeMenu)
+    })
+  }
+
+  render() {
+    const { active, subItems } = this.props
+    const style = {
+      ...styles.navItem,
+      ...(active ? styles.activeNavItem : {}),
+      position: "relative"
+    }
+    const subStyle = {
+      ...styles.navItem,
+      ...styles.subNavItem
+    }
+
+    return (
+      <div style={style} onMouseEnter={this.showMenu}>
+        <div>{this.props.label}</div>
+        {this.state.showMenu ? (
+          <ul style={subStyle}>
+            {subItems.map(({ path, label }) => {
+              return (
+                <li>
+                  <Link style={style} to={path}>
+                    {" "}
+                    {label}{" "}
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
+        ) : null}
+      </div>
+    )
+  }
+}
+
+const NavItem = ({ active, label, path, subItems }) => {
   const style = {
     ...styles.navItem,
     ...(active ? styles.activeNavItem : {})
   }
 
+  this.subMenu = new Card()
   return (
-    <Link style={style} to={path}>
-      {label}
-    </Link>
+    <React.Fragment>
+      {subItems ? (
+        <Card style={style} label={label} subItems={subItems} />
+      ) : (
+        <Link style={style} to={path}>
+          {label}
+        </Link>
+      )}
+    </React.Fragment>
   )
 }
 
@@ -54,13 +133,14 @@ class Nav extends Component {
           </Column>
           {!pageLocked && (
             <Column style={{ flex: 3 }}>
-              {pages.map(({ path, label }) => {
+              {pages.map(({ path, label, subItems }) => {
                 return (
                   <NavItem
                     active={path === window.location.pathname}
                     path={path}
                     label={label}
                     key={label}
+                    subItems={subItems}
                   />
                 )
               })}

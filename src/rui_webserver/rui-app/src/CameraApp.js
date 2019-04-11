@@ -10,7 +10,7 @@ import CameraViewer from "./CameraViewer"
 
 @inject("ros")
 @observer
-class Applications extends Component {
+class CameraApp extends Component {
   constructor(props) {
     super(props)
     this.state = { imageTopic: null }
@@ -20,7 +20,7 @@ class Applications extends Component {
 
   createImageTopicsOptions() {
     var items = []
-    items.push(<Option value={null}>None</Option>)
+    items.push(<Option value={null}>{null}</Option>)
     const { imageTopics } = this.props.ros
     for (var i = 0; i < imageTopics.length; i++) {
       items.push(<Option value={imageTopics[i]}>{imageTopics[i]}</Option>)
@@ -62,4 +62,4 @@ class Applications extends Component {
   }
 }
 
-export default Applications
+export default CameraApp

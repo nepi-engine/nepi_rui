@@ -8,7 +8,8 @@ import HorizontalDivider from "./HorizontalDivider"
 import PageLock from "./PageLock"
 
 import Dashboard from "./Dashboard"
-import Applications from "./Applications"
+import CameraApp from "./CameraApp"
+import NDSensor from "./NDSensor"
 import Files from "./Files"
 import Settings from "./Settings"
 
@@ -44,7 +45,14 @@ class App extends Component {
           pageLocked={pageLocked}
           pages={[
             { path: "/", label: "Dashboard" },
-            { path: "/applications", label: "Applications" },
+            {
+              path: "/applications",
+              label: "Applications",
+              subItems: [
+                { path: "/camera", label: "Camera" },
+                { path: "/ndsensor", label: "ND Sensor" }
+              ]
+            },
             { path: "/files", label: "Files" },
             { path: "/settings", label: "Settings" }
           ]}
@@ -54,7 +62,8 @@ class App extends Component {
         {!pageLocked && (
           <Switch>
             <Route exact path="/" component={Dashboard} />
-            <Route path="/applications" component={Applications} />
+            <Route path="/camera" component={CameraApp} />
+            <Route path="/ndsensor" component={NDSensor} />
             <Route
               path="/files/:path*"
               component={props => <Files {...props} />}

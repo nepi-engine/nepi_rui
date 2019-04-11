@@ -160,7 +160,11 @@ class ROSConnectionStore {
     // find all the image source topics in the topic list
     var newImageTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "sensor_msgs/Image") {
+      var topic_name_parts = this.topicNames[i].split("/")
+      if (
+        topic_name_parts[topic_name_parts.length - 1] === "image_raw" &&
+        this.topicTypes[i] === "sensor_msgs/Image"
+      ) {
         newImageTopics.push(this.topicNames[i])
       }
     }

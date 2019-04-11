@@ -143,7 +143,7 @@ class CameraViewer extends Component {
 
   render() {
     return (
-      <Section title={"Camera Preview"}>
+      <Section title={this.props.imageTopic ? this.props.imageTopic : ""}>
         <canvas style={styles.canvas} ref={this.onCanvasRef} />
         <ButtonMenu>
           <Button onClick={this.onTakeSnapshot}>{"Take Snapshot"}</Button>
