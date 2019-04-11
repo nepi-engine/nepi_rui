@@ -179,10 +179,6 @@ This launch file assumes the webcam is at `/dev/video0`, but you can pass in a a
 
         roslaunch numurus_rui test_camera.launch DEVICE:=/dev/video1
 
-Note: If you get the error `ros.gscam: no element "v4l2src"` install gstreammer plugin with this
-
-        sudo apt install gstreamer0.10-plugins-good
-
 ## Production
 
 TODO(Luke) ask Josh / Dave what the official steps to add rosbridge / other dependencies to the device's ROS installation 
