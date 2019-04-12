@@ -6,7 +6,6 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button from "./Button"
-import Select, { Option } from "./Select"
 
 @inject("networkInfo")
 @observer

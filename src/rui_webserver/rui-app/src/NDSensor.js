@@ -7,6 +7,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 
 import CameraViewer from "./CameraViewer"
+import NDControl from "./NDControl"
 
 @inject("ros")
 @observer
@@ -62,40 +63,47 @@ class NDSensor extends Component {
 
   render() {
     return (
-      <Columns>
-        <Column>
-          <CameraViewer imageTopic={this.state.imageTopic_0} />
-          <CameraViewer imageTopic={this.state.imageTopic_2} />
-        </Column>
-        <Column>
-          <CameraViewer imageTopic={this.state.imageTopic_1} />
-          <CameraViewer imageTopic={this.state.imageTopic_3} />
-        </Column>
-        <Column>
-          <Section title={"Image Topic Source"}>
-            <Label title={"Topic 0"}>
-              <Select id="topicSelect_0" onChange={this.onImageTopicSelected}>
-                {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
-            <Label title={"Topic 1"}>
-              <Select id="topicSelect_1" onChange={this.onImageTopicSelected}>
-                {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
-            <Label title={"Topic 2"}>
-              <Select id="topicSelect_2" onChange={this.onImageTopicSelected}>
-                {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
-            <Label title={"Topic 3"}>
-              <Select id="topicSelect_3" onChange={this.onImageTopicSelected}>
-                {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
-          </Section>
-        </Column>
-      </Columns>
+      <React.Fragment>
+        <Columns>
+          <Column>
+            <Section title={"Image Topic Source"}>
+              <Label title={"Topic 0"}>
+                <Select id="topicSelect_0" onChange={this.onImageTopicSelected}>
+                  {this.createImageTopicsOptions()}
+                </Select>
+              </Label>
+              <Label title={"Topic 1"}>
+                <Select id="topicSelect_1" onChange={this.onImageTopicSelected}>
+                  {this.createImageTopicsOptions()}
+                </Select>
+              </Label>
+              <Label title={"Topic 2"}>
+                <Select id="topicSelect_2" onChange={this.onImageTopicSelected}>
+                  {this.createImageTopicsOptions()}
+                </Select>
+              </Label>
+              <Label title={"Topic 3"}>
+                <Select id="topicSelect_3" onChange={this.onImageTopicSelected}>
+                  {this.createImageTopicsOptions()}
+                </Select>
+              </Label>
+            </Section>
+          </Column>
+          <Column>
+            <NDControl />
+          </Column>
+        </Columns>
+        <Columns>
+          <Column>
+            <CameraViewer imageTopic={this.state.imageTopic_0} />
+            <CameraViewer imageTopic={this.state.imageTopic_2} />
+          </Column>
+          <Column>
+            <CameraViewer imageTopic={this.state.imageTopic_1} />
+            <CameraViewer imageTopic={this.state.imageTopic_3} />
+          </Column>
+        </Columns>
+      </React.Fragment>
     )
   }
 }

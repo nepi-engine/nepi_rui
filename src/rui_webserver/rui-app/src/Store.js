@@ -33,7 +33,7 @@ class ROSConnectionStore {
   @observable connectedToROS = false
   @observable rosAutoReconnect = true
   @observable messageLog = ""
-  rosListers = []
+  rosListeners = []
 
   @observable namespacePrefix = null
   @observable deviceName = null
@@ -75,10 +75,31 @@ class ROSConnectionStore {
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
+  @observable topicQueryLock = false
   @observable topicNames = null
   @observable topicTypes = null
-
   @observable imageTopics = []
+  @observable ndSensorTopicBase = null
+
+  @observable ndStatus = null
+
+  @observable rangeMax = null
+  @observable rangeMin = null
+
+  @observable angleOffset = null
+  @observable angleTotal = null
+
+  @observable resolutionEnabled = false
+  @observable resolutionAdjustment = null
+
+  @observable gainEnabled = false
+  @observable gainAdjustment = null
+
+  @observable filterEnabled = false
+  @observable filterAdjustment = null
+
+  @observable ndDisplayName = null
+  @observable pauseEnable = false
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -108,12 +129,22 @@ class ROSConnectionStore {
 
   @action.bound
   updateTopics() {
-    if (this.ros) {
+    // topicQueryLock is used so we don't call getTopics many times
+    // while witing for it to return.  With many topics on a slow
+    // target it takes a few seconds to retrun.
+    if (this.ros && !this.topicQueryLock) {
+      this.topicQueryLock = true
       this.ros.getTopics(result => {
         this.topicNames = result.topics
         this.topicTypes = result.types
-        this.updatePrefix()
+        var newPrefix = this.updatePrefix()
+        var newNDSensor = this.updateNDSensorTopic()
         this.updateImageTopics()
+
+        if (newPrefix || newNDSensor) {
+          this.initalizeListeners()
+        }
+        this.topicQueryLock = false
       })
     }
   }
@@ -127,6 +158,9 @@ class ROSConnectionStore {
     // This function looks to see if we need to update the prefix properties.
     // It loops though the topics and uses the testTopicForPrefix to test and
     // perform the update.  If it updates we are done, break.
+
+    // we return true if the prefix was updated
+    var ret = false
     for (var i = 0; i < this.topicNames.length; i++) {
       var topic_name_parts = this.topicNames[i].split("/")
       if (
@@ -142,7 +176,7 @@ class ROSConnectionStore {
           this.deviceName = topic_name_parts[2]
           this.deviceSerial = topic_name_parts[3]
           if (this.validPrefix()) {
-            this.onNewPrefix()
+            ret = true
             this.rosLog(
               `Fetched device info ${this.namespacePrefix}/${this.deviceName}/${
                 this.deviceSerial
@@ -153,6 +187,7 @@ class ROSConnectionStore {
         }
       }
     }
+    return ret
   }
 
   @action.bound
@@ -173,13 +208,33 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  updateNDSensorTopic() {
+    // find path of publisher of NDStatus msgs
+    var ret = false // returns true if ND Sensor Topic changes
+    for (var i = 0; i < this.topicNames.length; i++) {
+      var topic_name_parts = this.topicNames[i].split("/")
+      var last_element = topic_name_parts.pop()
+      var topic_base = topic_name_parts.join("/")
+      if (
+        last_element === "nd_status" &&
+        this.topicTypes[i] === "num_sdk_msgs/NDStatus" &&
+        topic_base !== this.ndSensorTopicBase
+      ) {
+        this.ndSensorTopicBase = topic_base
+        ret = true
+      }
+    }
+    return ret
+  }
+
+  @action.bound
   destroyROSConnection() {
     this.rosAutoReconnect = false
     this.ros.off("connection", this.onConnectedToROS)
     this.ros.off("error", this.onErrorConnectingToROS)
     this.ros.off("close", this.onDisconnectedToROS)
 
-    this.rosListers.forEach(listener => {
+    this.rosListeners.forEach(listener => {
       listener.unsubscribe()
     })
   }
@@ -193,10 +248,10 @@ class ROSConnectionStore {
     return `/${this.namespacePrefix}/${this.deviceName}/${this.deviceSerial}`
   }
 
-  publishMessage({ name, messageType, data }) {
+  publishMessage({ name, messageType, data, noPrefix = false }) {
     const publisher = new ROS.Topic({
       ros: this.ros,
-      name: `${this.rosPrefix}/${name}`,
+      name: noPrefix ? name : `${this.rosPrefix}/${name}`,
       messageType
     })
     const message = new ROS.Message(data)
@@ -210,7 +265,7 @@ class ROSConnectionStore {
       messageType
     })
     listener.subscribe(action(callback))
-    this.rosListers.push(listener)
+    this.rosListeners.push(listener)
   }
 
   callService({ name, messageType, args = null, msgKey = null }) {
@@ -237,10 +292,15 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onNewPrefix() {
+  initalizeListeners() {
+    this.rosListeners.forEach(listener => {
+      listener.unsubscribe()
+    })
+
     // listeners
     this.setupImageRecognitionListener()
     this.setupImageSystemStatusListener()
+    this.setupNDStatusListener()
 
     // services
     this.callSystemDefsService()
@@ -310,6 +370,42 @@ class ROSConnectionStore {
         this.rosLog(`Received status message`)
       }
     })
+  }
+
+  @action.bound
+  ndStatusListener(message) {
+    this.ndStatus = message
+
+    this.rangeMax = message.range.max_range
+    this.rangeMin = message.range.min_range
+
+    this.angleOffset = message.angle.angle_offset
+    this.angleTotal = message.angle.total_angle
+
+    this.resolutionEnabled = message.resolution_settings.enabled
+    this.resolutionAdjustment = message.resolution_settings.adjustment
+
+    this.gainEnabled = message.gain_settings.enabled
+    this.gainAdjustment = message.gain_settings.adjustment
+
+    this.filterEnabled = message.filter_settings.enabled
+    this.filterAdjustment = message.filter_settings.adjustment
+
+    this.ndDisplayName = message.display_name
+    this.pauseEnable = message.pause_enable
+
+    this.rosLog(`Received NDStatus message`)
+  }
+
+  setupNDStatusListener() {
+    if (this.ndSensorTopicBase) {
+      this.addListener({
+        name: this.ndSensorTopicBase + "/nd_status",
+        messageType: "num_sdk_msgs/NDStatus",
+        noPrefix: true,
+        callback: this.ndStatusListener
+      })
+    }
   }
 
   async callSystemDefsService() {
@@ -495,6 +591,56 @@ class ROSConnectionStore {
       }
     })
   }
+
+  // for ND Control Component to configure ND Sensor values ////////////////
+  publishNDAutoManualSelection(name, checked, adjustment) {
+    if (this.ndSensorTopicBase) {
+      this.publishMessage({
+        name: this.ndSensorTopicBase + "/set_" + name,
+        messageType: "num_sdk_msgs/NDAutoManualSelection",
+        noPrefix: true,
+        data: {
+          enabled: checked,
+          adjustment: adjustment
+        }
+      })
+    } else {
+      console.warn("publishNDAutoManualSelection: ndSensorTopicBase not set")
+    }
+  }
+
+  publishNDRange(min, max) {
+    if (this.ndSensorTopicBase) {
+      this.publishMessage({
+        name: this.ndSensorTopicBase + "/set_range",
+        messageType: "num_sdk_msgs/NDRange",
+        noPrefix: true,
+        data: {
+          min_range: min,
+          max_range: max
+        }
+      })
+    } else {
+      console.warn("publishNDRange: ndSensorTopicBase not set")
+    }
+  }
+
+  publishNDAngle(offset, total) {
+    if (this.ndSensorTopicBase) {
+      this.publishMessage({
+        name: this.ndSensorTopicBase + "/set_angle",
+        messageType: "num_sdk_msgs/NDAngle",
+        noPrefix: true,
+        data: {
+          angle_offset: offset,
+          total_angle: total
+        }
+      })
+    } else {
+      console.warn("publishNDAngle: ndSensorTopicBase not set")
+    }
+  }
+  /////////////////////////////////////////////////////////////////////////
 }
 
 class NetworkInfoStore {

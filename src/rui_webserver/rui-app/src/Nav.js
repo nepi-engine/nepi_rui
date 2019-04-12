@@ -35,7 +35,7 @@ const styles = Styles.Create({
   }
 })
 
-class Card extends Component {
+class SubNavMenu extends Component {
   constructor(props) {
     super(props)
 
@@ -102,11 +102,11 @@ const NavItem = ({ active, label, path, subItems }) => {
     ...(active ? styles.activeNavItem : {})
   }
 
-  this.subMenu = new Card()
+  this.subMenu = new SubNavMenu()
   return (
     <React.Fragment>
       {subItems ? (
-        <Card style={style} label={label} subItems={subItems} />
+        <SubNavMenu style={style} label={label} subItems={subItems} />
       ) : (
         <Link style={style} to={path}>
           {label}

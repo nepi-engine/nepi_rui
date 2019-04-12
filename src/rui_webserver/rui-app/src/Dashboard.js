@@ -7,7 +7,6 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
-import Select, { Option } from "./Select"
 import BooleanIndicator from "./BooleanIndicator"
 import { TRIGGER_MASKS } from "./Store"
 
