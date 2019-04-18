@@ -11,6 +11,8 @@ const TRIGGER_MASKS = {
   DEFAULT: 0xefffffff
 }
 
+const UPDATE_PERIOD = 100 // ms between sending updates
+
 export { TRIGGER_MASKS }
 
 async function apiCall(endpoint) {
@@ -117,6 +119,7 @@ class ROSConnectionStore {
 
   @observable imageFilter = null
 
+  @observable lastNDUpdate = new Date()
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -619,7 +622,21 @@ class ROSConnectionStore {
   }
 
   // for ND Control Component to configure ND Sensor values ////////////////
-  publishNDAutoManualSelection(name, checked, adjustment) {
+  @action.bound
+  isThrottled() {
+    var now = new Date()
+    if (now - this.lastNDUpdate < UPDATE_PERIOD) {
+      return true
+    }
+    this.lastNDUpdate = now
+    return false
+  }
+
+  publishNDAutoManualSelection(name, checked, adjustment, throttle = true) {
+    if (throttle && this.isThrottled()) {
+      return
+    }
+
     if (this.ndSensorTopicBase) {
       this.publishMessage({
         name: this.ndSensorTopicBase + "/set_" + name,
@@ -635,7 +652,11 @@ class ROSConnectionStore {
     }
   }
 
-  publishNDRange(min, max) {
+  publishNDRange(min, max, throttle = true) {
+    if (throttle && this.isThrottled()) {
+      return
+    }
+
     if (this.ndSensorTopicBase) {
       this.publishMessage({
         name: this.ndSensorTopicBase + "/set_range",
@@ -651,7 +672,11 @@ class ROSConnectionStore {
     }
   }
 
-  publishNDAngle(offset, total) {
+  publishNDAngle(offset, total, throttle = true) {
+    if (throttle && this.isThrottled()) {
+      return
+    }
+
     if (this.ndSensorTopicBase) {
       this.publishMessage({
         name: this.ndSensorTopicBase + "/set_angle",

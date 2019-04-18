@@ -69,6 +69,8 @@ class AngleAdjustment extends Component {
     this.onTotalInputChange = this.onTotalInputChange.bind(this)
     this.onAfterOffsetChange = this.onAfterOffsetChange.bind(this)
     this.onAfterTotalChange = this.onAfterTotalChange.bind(this)
+    this.onOffsetSliderChange = this.onOffsetSliderChange.bind(this)
+    this.onTotalSliderChange = this.onTotalSliderChange.bind(this)
   }
 
   // we need this because the props is used to track
@@ -95,12 +97,22 @@ class AngleAdjustment extends Component {
     })
   }
 
+  onOffsetSliderChange(value) {
+    this.onOffsetChange(value)
+    this.onAfterOffsetChange(value, true)
+  }
+
   onTotalChange(value) {
     this.setState({
       total: value,
       scaled_total: value / 100.0,
       input_total: Math.round(value)
     })
+  }
+
+  onTotalSliderChange(value) {
+    this.onTotalChange(value)
+    this.onAfterTotalChange(value, true)
   }
 
   onOffsetInputChange(event) {
@@ -113,12 +125,20 @@ class AngleAdjustment extends Component {
     this.onAfterTotalChange(event.target.value)
   }
 
-  onAfterOffsetChange(value) {
-    this.props.ros.publishNDAngle(value / 100.0, this.state.scaled_total)
+  onAfterOffsetChange(value, throttle = false) {
+    this.props.ros.publishNDAngle(
+      value / 100.0,
+      this.state.scaled_total,
+      throttle
+    )
   }
 
-  onAfterTotalChange(value) {
-    this.props.ros.publishNDAngle(this.state.scaled_offset, value / 100.0)
+  onAfterTotalChange(value, throttle = false) {
+    this.props.ros.publishNDAngle(
+      this.state.scaled_offset,
+      value / 100.0,
+      throttle
+    )
   }
 
   render() {
@@ -137,7 +157,7 @@ class AngleAdjustment extends Component {
         <Slider
           style={styles.slider}
           value={this.state.offset}
-          onChange={this.onOffsetChange}
+          onChange={this.onOffsetSliderChange}
           onAfterChange={this.onAfterOffsetChange}
           min={0}
           max={100}
@@ -154,7 +174,7 @@ class AngleAdjustment extends Component {
         <Slider
           style={styles.slider}
           value={this.state.total}
-          onChange={this.onTotalChange}
+          onChange={this.onTotalSliderChange}
           onAfterChange={this.onAfterTotalChange}
           min={0}
           max={100}

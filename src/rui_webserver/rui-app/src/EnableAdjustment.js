@@ -37,7 +37,7 @@ const styles = Styles.Create({
     marginRight: Styles.vars.spacing.small,
     marginLeft: Styles.vars.spacing.small,
     flex: 0.2,
-    textAlign: "right",
+    textAlign: "right"
   },
   input: {
     flex: 0.25,
@@ -70,6 +70,7 @@ class EnableAdjustment extends Component {
 
     this.onToggle = this.onToggle.bind(this)
     this.onValueChange = this.onValueChange.bind(this)
+    this.onSliderValueChange = this.onSliderValueChange.bind(this)
     this.onValueInputChange = this.onValueInputChange.bind(this)
     this.onValueAfterChange = this.onValueAfterChange.bind(this)
   }
@@ -98,6 +99,11 @@ class EnableAdjustment extends Component {
     )
   }
 
+  onSliderValueChange(value) {
+    this.onValueChange(value)
+    this.onValueAfterChange(value, true)
+  }
+
   onValueChange(value) {
     this.setState({
       value: Math.round(value),
@@ -110,11 +116,12 @@ class EnableAdjustment extends Component {
     this.onValueAfterChange(event.target.value)
   }
 
-  onValueAfterChange(value) {
+  onValueAfterChange(value, throttle = false) {
     this.props.ros.publishNDAutoManualSelection(
       this.name,
       this.state.checked,
-      value / 100.0
+      value / 100.0,
+      throttle
     )
   }
 
@@ -139,7 +146,7 @@ class EnableAdjustment extends Component {
           style={styles.slider}
           disabled={!this.state.checked}
           value={this.state.value}
-          onChange={this.onValueChange}
+          onChange={this.onSliderValueChange}
           onAfterChange={this.onValueAfterChange}
           min={0}
           max={100}

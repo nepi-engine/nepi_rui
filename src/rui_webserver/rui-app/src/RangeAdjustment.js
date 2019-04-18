@@ -66,10 +66,11 @@ class RangeAdjustment extends Component {
       scaled_min: min,
       scaled_max: max,
       input_min: Math.round(min * 100),
-      input_max: Math.round(max * 100),
+      input_max: Math.round(max * 100)
     }
 
     this.onValuesChange = this.onValuesChange.bind(this)
+    this.onSliderValuesChange = this.onSliderValuesChange.bind(this)
     this.onValuesAfterChange = this.onValuesAfterChange.bind(this)
     this.onMinChange = this.onMinChange.bind(this)
     this.onMaxChange = this.onMaxChange.bind(this)
@@ -109,6 +110,11 @@ class RangeAdjustment extends Component {
     this.update(values[0], values[1])
   }
 
+  onSliderValuesChange(values) {
+    this.onValuesChange(values)
+    this.onValuesAfterChange(values, true)
+  }
+
   onMinChange(event) {
     this.update(event.target.value, this.state.max)
     this.onValuesAfterChange([event.target.value, this.state.max])
@@ -119,8 +125,12 @@ class RangeAdjustment extends Component {
     this.onValuesAfterChange([this.state.min, event.target.value])
   }
 
-  onValuesAfterChange(values) {
-    this.props.ros.publishNDRange(values[0] / 100.0, values[1] / 100.0)
+  onValuesAfterChange(values, throttle = false) {
+    this.props.ros.publishNDRange(
+      values[0] / 100.0,
+      values[1] / 100.0,
+      throttle
+    )
   }
 
   render() {
@@ -146,7 +156,7 @@ class RangeAdjustment extends Component {
         <Range
           style={styles.range}
           value={[this.state.min, this.state.max]}
-          onChange={this.onValuesChange}
+          onChange={this.onSliderValuesChange}
           onAfterChange={this.onValuesAfterChange}
           count={1}
           min={0}
