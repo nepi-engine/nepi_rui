@@ -25,6 +25,19 @@ async function apiCall(endpoint) {
   }
 }
 
+// gets a file through the flask api and parses it as Json
+async function getFileJson(filename) {
+  try {
+    const r = await fetch(`${FLASK_URL}/files/${filename}`, {
+      method: "GET"
+    })
+    const json = await r.json()
+    return json
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 function getLocalTZ() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
@@ -79,6 +92,7 @@ class ROSConnectionStore {
   @observable topicNames = null
   @observable topicTypes = null
   @observable imageTopics = []
+
   @observable ndSensorTopicBase = null
 
   @observable ndStatus = null
@@ -101,9 +115,19 @@ class ROSConnectionStore {
   @observable ndDisplayName = null
   @observable pauseEnable = false
 
+  @observable imageFilter = null
+
+
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
+        // get the image filter
+        const imageFilterJson = await getFileJson("img_filter.json")
+        if (imageFilterJson.filter) {
+          this.imageFilter = imageFilterJson.filter
+        }
+
+        // setup rosbridge connection
         if (!this.ros) {
           this.ros = new ROS.Ros({
             url: ROS_WS_URL
@@ -195,12 +219,14 @@ class ROSConnectionStore {
     // find all the image source topics in the topic list
     var newImageTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
-      var topic_name_parts = this.topicNames[i].split("/")
       if (
-        topic_name_parts[topic_name_parts.length - 1] === "image_raw" &&
         this.topicTypes[i] === "sensor_msgs/Image"
       ) {
-        newImageTopics.push(this.topicNames[i])
+        // if we don't have a filter, or if we do and this topic name includes
+        // the filter text (substring search) then push it onto the list
+        if (!this.imageFilter || this.topicNames[i].includes(this.imageFilter)) {
+          newImageTopics.push(this.topicNames[i])
+        }
       }
     }
 

@@ -233,6 +233,7 @@ To run the webserver in production on the device, run the following in separate 
         . prodenv.sh
         rosrun numurus_rui run_webserver.py
 
+
 ### Automate Start-up
 In final production `rosbridge.launch` should be launched from an include tag in a system launch file. The same is difficult to achieve for the run_webserver.py node, as it requires running from the venv, which can't readily be activated within a launch file. Instead, a start-up script is provided at `numurus_rui/launch/start_rui.sh`. This can be automatically run by installing `systemd` services file `numurus_rui/launch/numurus_rui.service`:
 
@@ -242,3 +243,15 @@ In final production `rosbridge.launch` should be launched from an include tag in
         sudo systemctl enable numurus_rui
 
 The `numurus_rui.service` unit requires the `roslaunch.service` provided in the `num_sdk_base` repository to guarantee that `rosbridge` is also launched, so ensure this is also installed and enabled on the taget device.
+
+### Image Source Filter
+
+The file `img_filter.json` located in the `rui-app` directory can be used to filter the image source topics visible in the UI.  The filter is a substring that is searched for before adding the image topic to the list of image topics the user can select.
+
+Example:
+
+        {
+            "filter": "image_raw"
+        }
+
+Only topics with the phrase `image_raw` will show up in camera topic drop down menus.
