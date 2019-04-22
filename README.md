@@ -4,7 +4,7 @@ Description: Web server for the Resident User Interface of Numurus
 
 - Uses rosbridge to connect to ROS
 
-<img src="https://picknik.ai/images/logo.jpg" width="100">
+<img src="https://picknik.ai/assets/images/logo.jpg" width="100">
 
 Developed by Lucas Doyle and Dave Coleman at [PickNik Consulting](http://picknik.ai/)
 
