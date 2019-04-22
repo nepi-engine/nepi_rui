@@ -6,6 +6,8 @@ import Tooltip from "rc-tooltip"
 import Styles from "./Styles"
 import Input from "./Input"
 
+// This "handle" is for adding a tooltip to the slider
+// Range is a double ended slider
 import "rc-slider/assets/index.css"
 import "rc-tooltip/assets/bootstrap.css"
 const handle = props => {
@@ -56,27 +58,32 @@ class RangeAdjustment extends Component {
 
     var { min, max } = this.props
     if (min > max) {
-      // uninitalized
+      // initalized invalid
       max = 1
       min = 0
     }
+
     this.state = {
+      // min and max values used by slider
       min: min * 100.0,
       max: max * 100.0,
+      // scaled min and max for use in ROS messages
       scaled_min: min,
       scaled_max: max,
+      // input min and max for input UI element
       input_min: Math.round(min * 100),
       input_max: Math.round(max * 100)
     }
 
-    this.onValuesChange = this.onValuesChange.bind(this)
-    this.onSliderValuesChange = this.onSliderValuesChange.bind(this)
-    this.onValuesAfterChange = this.onValuesAfterChange.bind(this)
-    this.onMinChange = this.onMinChange.bind(this)
-    this.onMaxChange = this.onMaxChange.bind(this)
+    this.onSliderChange = this.onSliderChange.bind(this)
+    this.onSliderAfterChange = this.onSliderAfterChange.bind(this)
+    this.onMinInputChange = this.onMinInputChange.bind(this)
+    this.onMaxInputChange = this.onMaxInputChange.bind(this)
     this.update = this.update.bind(this)
+    this.sendUpdate = this.sendUpdate.bind(this)
   }
 
+  // Function for updating state when values change
   update(min, max) {
     if (min >= 0 && min <= 100 && max >= 0 && max <= 100) {
       this.setState({
@@ -90,11 +97,19 @@ class RangeAdjustment extends Component {
     }
   }
 
-  // we need this because the props is used to track
-  // changes provided by mobx
+  // Lifecycle function called right after component updates.
+  // The params of this component can be changed so we need to
+  // react when that happens.
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { min, max } = this.props
-    if (prevProps.min !== min || prevProps.max !== max) {
+    // create local constants out of new(current) props values
+    const { min, max, disabled } = this.props
+
+    // this tests to see of a NDStatus message updated our values
+    if (
+      prevProps.min !== min ||
+      prevProps.max !== max ||
+      (!disabled && prevProps.disabled)
+    ) {
       this.setState({
         min: min * 100.0,
         max: max * 100.0,
@@ -104,33 +119,46 @@ class RangeAdjustment extends Component {
         input_max: Math.round(max * 100.0)
       })
     }
+
+    // this zeros out values if we go from enabled to disabled
+    // this prop is used when we are not tracking a ND Sensor
+    // disabled grays out all the inputs and makes them uneditable
+    if (disabled && prevProps.disabled !== disabled) {
+      this.setState({
+        min: 0,
+        max: 0,
+        scaled_min: 0,
+        scaled_max: 0,
+        input_min: 0,
+        input_max: 0
+      })
+    }
   }
 
-  onValuesChange(values) {
+  // Handler for slider changing the values
+  onSliderChange(values) {
     this.update(values[0], values[1])
+    this.sendUpdate(values[0] / 100.0, values[1] / 100.0, true)
   }
 
-  onSliderValuesChange(values) {
-    this.onValuesChange(values)
-    this.onValuesAfterChange(values, true)
-  }
-
-  onMinChange(event) {
+  // Handlers for value changes through input text boxes
+  onMinInputChange(event) {
     this.update(event.target.value, this.state.max)
-    this.onValuesAfterChange([event.target.value, this.state.max])
+    this.sendUpdate(event.target.value / 100.0, this.state.max / 100.0)
   }
-
-  onMaxChange(event) {
+  onMaxInputChange(event) {
     this.update(this.state.min, event.target.value)
-    this.onValuesAfterChange([this.state.min, event.target.value])
+    this.sendUpdate(this.state.min / 100.0, event.target.value / 100.0)
   }
 
-  onValuesAfterChange(values, throttle = false) {
-    this.props.ros.publishNDRange(
-      values[0] / 100.0,
-      values[1] / 100.0,
-      throttle
-    )
+  // Handler for when slider is released (mouse up)
+  onSliderAfterChange(values) {
+    this.sendUpdate(values[0] / 100.0, values[1] / 100.0)
+  }
+
+  // Function for publishing values through rosbridge
+  sendUpdate(min, max, throttle = false) {
+    this.props.ros.publishNDRange(this.props.topic, min, max, throttle)
   }
 
   render() {
@@ -143,21 +171,24 @@ class RangeAdjustment extends Component {
           <Input
             style={styles.input}
             value={this.state.input_min}
-            onChange={this.onMinChange}
+            onChange={this.onMinInputChange}
+            disabled={this.props.disabled}
           />
         </Tooltip>
         <Tooltip placement="top" overlay="max">
           <Input
             style={styles.input}
             value={this.state.input_max}
-            onChange={this.onMaxChange}
+            onChange={this.onMaxInputChange}
+            disabled={this.props.disabled}
           />
         </Tooltip>
         <Range
           style={styles.range}
           value={[this.state.min, this.state.max]}
-          onChange={this.onSliderValuesChange}
-          onAfterChange={this.onValuesAfterChange}
+          onChange={this.onSliderChange}
+          onAfterChange={this.onSliderAfterChange}
+          disabled={this.props.disabled}
           count={1}
           min={0}
           max={100}

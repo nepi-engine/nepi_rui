@@ -6,6 +6,7 @@ import Tooltip from "rc-tooltip"
 import Styles from "./Styles"
 import Input from "./Input"
 
+// This "handle" is for adding a tooltip to the slider
 import "rc-slider/assets/index.css"
 import "rc-tooltip/assets/bootstrap.css"
 const handle = props => {
@@ -55,10 +56,13 @@ class AngleAdjustment extends Component {
 
     const { offset, total } = this.props
     this.state = {
+      // offset and total are used by the sliders for their values
       offset: offset * 100.0,
       total: total * 100.0,
+      // scaled offset and total are used for communicating with ROS messages
       scaled_offset: offset,
       scaled_total: total,
+      // input offset and total are used for the input box in the UI
       input_offset: Math.round(offset * 100),
       input_total: Math.round(total * 100)
     }
@@ -67,17 +71,27 @@ class AngleAdjustment extends Component {
     this.onTotalChange = this.onTotalChange.bind(this)
     this.onOffsetInputChange = this.onOffsetInputChange.bind(this)
     this.onTotalInputChange = this.onTotalInputChange.bind(this)
-    this.onAfterOffsetChange = this.onAfterOffsetChange.bind(this)
-    this.onAfterTotalChange = this.onAfterTotalChange.bind(this)
     this.onOffsetSliderChange = this.onOffsetSliderChange.bind(this)
     this.onTotalSliderChange = this.onTotalSliderChange.bind(this)
+    this.sendOffsetUpdate = this.sendOffsetUpdate.bind(this)
+    this.sendTotalUpdate = this.sendTotalUpdate.bind(this)
+    this.sendUpdate = this.sendUpdate.bind(this)
   }
 
-  // we need this because the props is used to track
-  // changes provided by mobx
+  // Lifecycle function called right after component updates.
+  // The params of this component can be changed so we need to
+  // react when that happens.
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { offset, total } = this.props
-    if (prevProps.offset !== offset || prevProps.total !== total) {
+    // get various fields from the new props values
+    const { offset, total, disabled } = this.props
+
+    // this tests to see if a NDStatus message updated our
+    // values through the props
+    if (
+      prevProps.offset !== offset ||
+      prevProps.total !== total ||
+      (!disabled && prevProps.disabled)
+    ) {
       this.setState({
         offset: offset * 100.0,
         total: total * 100.0,
@@ -87,8 +101,23 @@ class AngleAdjustment extends Component {
         input_total: Math.round(total * 100)
       })
     }
+
+    // this zeros out values if we go from enabled to disabled
+    // this prop is used when we aren't tracking a ND Sensor
+    // disabled grays out all the inputs and makes them uneditable
+    if (disabled && prevProps.disabled !== disabled) {
+      this.setState({
+        offset: 0,
+        total: 0,
+        scaled_offset: 0,
+        scaled_total: 0,
+        input_offset: 0,
+        input_total: 0
+      })
+    }
   }
 
+  // functions for updating state when values change
   onOffsetChange(value) {
     this.setState({
       offset: value,
@@ -96,12 +125,6 @@ class AngleAdjustment extends Component {
       input_offset: Math.round(value)
     })
   }
-
-  onOffsetSliderChange(value) {
-    this.onOffsetChange(value)
-    this.onAfterOffsetChange(value, true)
-  }
-
   onTotalChange(value) {
     this.setState({
       total: value,
@@ -110,35 +133,35 @@ class AngleAdjustment extends Component {
     })
   }
 
+  // Handlers for when the slider changes value
+  onOffsetSliderChange(value) {
+    this.onOffsetChange(value)
+    this.sendOffsetUpdate(value, true)
+  }
   onTotalSliderChange(value) {
     this.onTotalChange(value)
-    this.onAfterTotalChange(value, true)
+    this.sendTotalUpdate(value, true)
   }
 
+  // Handlers for when the input boxes changes value
   onOffsetInputChange(event) {
     this.onOffsetChange(event.target.value)
-    this.onAfterOffsetChange(event.target.value)
+    this.sendOffsetUpdate(event.target.value)
   }
-
   onTotalInputChange(event) {
     this.onTotalChange(event.target.value)
-    this.onAfterTotalChange(event.target.value)
+    this.sendTotalUpdate(event.target.value)
   }
 
-  onAfterOffsetChange(value, throttle = false) {
-    this.props.ros.publishNDAngle(
-      value / 100.0,
-      this.state.scaled_total,
-      throttle
-    )
+  // Functions for sending value changes through rosbridge
+  sendOffsetUpdate(value, throttled = false) {
+    this.sendUpdate(value / 100.0, this.state.scaled_total, throttled)
   }
-
-  onAfterTotalChange(value, throttle = false) {
-    this.props.ros.publishNDAngle(
-      this.state.scaled_offset,
-      value / 100.0,
-      throttle
-    )
+  sendTotalUpdate(value, throttled = false) {
+    this.sendUpdate(this.state.scaled_offset, value / 100.0, throttled)
+  }
+  sendUpdate(offset, total, throttled = false) {
+    this.props.ros.publishNDAngle(this.props.topic, offset, total, throttled)
   }
 
   render() {
@@ -152,13 +175,15 @@ class AngleAdjustment extends Component {
             style={styles.input}
             value={this.state.input_offset}
             onChange={this.onOffsetInputChange}
+            disabled={this.props.disabled}
           />
         </Tooltip>
         <Slider
           style={styles.slider}
           value={this.state.offset}
           onChange={this.onOffsetSliderChange}
-          onAfterChange={this.onAfterOffsetChange}
+          onAfterChange={this.sendOffsetUpdate}
+          disabled={this.props.disabled}
           min={0}
           max={100}
           step={1}
@@ -169,13 +194,15 @@ class AngleAdjustment extends Component {
             style={styles.input}
             value={this.state.input_total}
             onChange={this.onTotalInputChange}
+            disabled={this.props.disabled}
           />
         </Tooltip>
         <Slider
           style={styles.slider}
           value={this.state.total}
           onChange={this.onTotalSliderChange}
-          onAfterChange={this.onAfterTotalChange}
+          onAfterChange={this.sendTotalUpdate}
+          disabled={this.props.disabled}
           min={0}
           max={100}
           step={1}

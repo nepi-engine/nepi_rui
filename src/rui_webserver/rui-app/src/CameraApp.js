@@ -5,6 +5,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
+import createShortUniqueValues from "./Utilities"
 
 import CameraViewer from "./CameraViewer"
 
@@ -13,24 +14,32 @@ import CameraViewer from "./CameraViewer"
 class CameraApp extends Component {
   constructor(props) {
     super(props)
-    this.state = { imageTopic: null }
+    this.state = { imageTopic: null, imageText: null }
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
   }
 
+  // Function for creating image topic options.
   createImageTopicsOptions() {
     var items = []
-    items.push(<Option value={null}>{null}</Option>)
+    items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
+    var uniqueNames = createShortUniqueValues(imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
-      items.push(<Option value={imageTopics[i]}>{imageTopics[i]}</Option>)
+      items.push(<Option value={imageTopics[i]}>{uniqueNames[i]}</Option>)
     }
     return items
   }
 
-  onImageTopicSelected(e) {
+  // Handler for when the image topic selection changes
+  onImageTopicSelected(event) {
+    var idx = event.nativeEvent.target.selectedIndex
+    var text = event.nativeEvent.target[idx].text
+    var value = event.target.value === "None" ? null : event.target.value
+
     this.setState({
-      imageTopic: e.target.value
+      imageTopic: value,
+      imageText: text === "None" ? null : text
     })
   }
 
@@ -38,7 +47,10 @@ class CameraApp extends Component {
     return (
       <Columns>
         <Column>
-          <CameraViewer imageTopic={this.state.imageTopic} />
+          <CameraViewer
+            imageTopic={this.state.imageTopic}
+            title={this.state.imageText}
+          />
         </Column>
         <Column>
           <Section title={"Device"}>

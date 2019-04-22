@@ -44,6 +44,37 @@ function getLocalTZ() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
+//////////////////////////////////////////////////////////////
+// from: https://stackoverflow.com/questions/7837456/how-to-compare-arrays-in-javascript
+// Warn if overriding existing method
+if (Array.prototype.equals)
+  console.warn(
+    "Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code."
+  )
+// attach the .equals method to Array's prototype to call it on any array
+Array.prototype.equals = function(array) {
+  // if the other array is a falsy value, return
+  if (!array) return false
+
+  // compare lengths - can save a lot of time
+  if (this.length != array.length) return false
+
+  for (var i = 0, l = this.length; i < l; i++) {
+    // Check if we have nested arrays
+    if (this[i] instanceof Array && array[i] instanceof Array) {
+      // recurse into the nested arrays
+      if (!this[i].equals(array[i])) return false
+    } else if (this[i] != array[i]) {
+      // Warning - two different object instances will never be equal: {x:20} != {x:20}
+      return false
+    }
+  }
+  return true
+}
+// Hide method from for-in loops
+Object.defineProperty(Array.prototype, "equals", { enumerable: false })
+//////////////////////////////////////////////////////////////
+
 class ROSConnectionStore {
   @observable connectedToROS = false
   @observable rosAutoReconnect = true
@@ -94,28 +125,7 @@ class ROSConnectionStore {
   @observable topicNames = null
   @observable topicTypes = null
   @observable imageTopics = []
-
-  @observable ndSensorTopicBase = null
-
-  @observable ndStatus = null
-
-  @observable rangeMax = null
-  @observable rangeMin = null
-
-  @observable angleOffset = null
-  @observable angleTotal = null
-
-  @observable resolutionEnabled = false
-  @observable resolutionAdjustment = null
-
-  @observable gainEnabled = false
-  @observable gainAdjustment = null
-
-  @observable filterEnabled = false
-  @observable filterAdjustment = null
-
-  @observable ndDisplayName = null
-  @observable pauseEnable = false
+  @observable ndSensorTopics = []
 
   @observable imageFilter = null
 
@@ -145,6 +155,8 @@ class ROSConnectionStore {
         console.error(e)
       }
     }
+
+    // update the topics periodically
     this.updateTopics()
 
     if (this.rosAutoReconnect) {
@@ -165,10 +177,10 @@ class ROSConnectionStore {
         this.topicNames = result.topics
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
-        var newNDSensor = this.updateNDSensorTopic()
-        this.updateImageTopics()
+        var newNDSensors = this.updateNDSensorTopics()
+        var newImageTopics = this.updateImageTopics()
 
-        if (newPrefix || newNDSensor) {
+        if (newPrefix || newNDSensors || newImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -182,7 +194,7 @@ class ROSConnectionStore {
 
   @action.bound
   updatePrefix() {
-    // This function looks to see if we need to update the prefix properties.
+    // Function for testing if we need to update the device prefix variables.
     // It loops though the topics and uses the testTopicForPrefix to test and
     // perform the update.  If it updates we are done, break.
 
@@ -219,41 +231,55 @@ class ROSConnectionStore {
 
   @action.bound
   updateImageTopics() {
-    // find all the image source topics in the topic list
+    // Function for updating image topics list
     var newImageTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
-      if (
-        this.topicTypes[i] === "sensor_msgs/Image"
-      ) {
+      if (this.topicTypes[i] === "sensor_msgs/Image") {
         // if we don't have a filter, or if we do and this topic name includes
         // the filter text (substring search) then push it onto the list
-        if (!this.imageFilter || this.topicNames[i].includes(this.imageFilter)) {
+        if (
+          !this.imageFilter ||
+          this.topicNames[i].includes(this.imageFilter)
+        ) {
           newImageTopics.push(this.topicNames[i])
         }
       }
     }
+    // sort the image topics for comparison to work
+    newImageTopics.sort()
 
-    this.imageTopics = newImageTopics
+    if (!this.imageTopics.equals(newImageTopics)) {
+      this.imageTopics = newImageTopics
+      return true
+    } else {
+      return false
+    }
   }
 
   @action.bound
-  updateNDSensorTopic() {
-    // find path of publisher of NDStatus msgs
-    var ret = false // returns true if ND Sensor Topic changes
+  updateNDSensorTopics() {
+    // Function for updating ND Sensor topic list
+    var newNDSensorTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
       var topic_name_parts = this.topicNames[i].split("/")
       var last_element = topic_name_parts.pop()
       var topic_base = topic_name_parts.join("/")
       if (
         last_element === "nd_status" &&
-        this.topicTypes[i] === "num_sdk_msgs/NDStatus" &&
-        topic_base !== this.ndSensorTopicBase
+        this.topicTypes[i] === "num_sdk_msgs/NDStatus"
       ) {
-        this.ndSensorTopicBase = topic_base
-        ret = true
+        newNDSensorTopics.push(topic_base)
       }
     }
-    return ret
+    // sort the sensor topics for comparison to work
+    newNDSensorTopics.sort()
+
+    if (!this.ndSensorTopics.equals(newNDSensorTopics)) {
+      this.ndSensorTopics = newNDSensorTopics
+      return true
+    } else {
+      return false
+    }
   }
 
   @action.bound
@@ -287,14 +313,27 @@ class ROSConnectionStore {
     publisher.publish(message)
   }
 
-  addListener({ name, messageType, callback, noPrefix = false }) {
+  addListener({
+    name,
+    messageType,
+    callback,
+    noPrefix = false,
+    manageListener = true
+  }) {
     const listener = new ROS.Topic({
       ros: this.ros,
       name: noPrefix ? name : `${this.rosPrefix}/${name}`,
       messageType
     })
     listener.subscribe(action(callback))
-    this.rosListeners.push(listener)
+
+    // add to listeners that get unsubscribed
+    if (manageListener) {
+      this.rosListeners.push(listener)
+    }
+
+    // return listener for clients that manage their own
+    return listener
   }
 
   callService({ name, messageType, args = null, msgKey = null }) {
@@ -329,7 +368,6 @@ class ROSConnectionStore {
     // listeners
     this.setupImageRecognitionListener()
     this.setupImageSystemStatusListener()
-    this.setupNDStatusListener()
 
     // services
     this.callSystemDefsService()
@@ -401,38 +439,15 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  ndStatusListener(message) {
-    this.ndStatus = message
-
-    this.rangeMax = message.range.max_range
-    this.rangeMin = message.range.min_range
-
-    this.angleOffset = message.angle.angle_offset
-    this.angleTotal = message.angle.total_angle
-
-    this.resolutionEnabled = message.resolution_settings.enabled
-    this.resolutionAdjustment = message.resolution_settings.adjustment
-
-    this.gainEnabled = message.gain_settings.enabled
-    this.gainAdjustment = message.gain_settings.adjustment
-
-    this.filterEnabled = message.filter_settings.enabled
-    this.filterAdjustment = message.filter_settings.adjustment
-
-    this.ndDisplayName = message.display_name
-    this.pauseEnable = message.pause_enable
-
-    this.rosLog(`Received NDStatus message`)
-  }
-
-  setupNDStatusListener() {
-    if (this.ndSensorTopicBase) {
-      this.addListener({
-        name: this.ndSensorTopicBase + "/nd_status",
+  // returns the listener, clients that use this
+  setupNDStatusListener(topic, callback) {
+    if (topic) {
+      return this.addListener({
+        name: topic + "/nd_status",
         messageType: "num_sdk_msgs/NDStatus",
         noPrefix: true,
-        callback: this.ndStatusListener
+        callback: callback,
+        manageListener: false
       })
     }
   }
@@ -621,7 +636,7 @@ class ROSConnectionStore {
     })
   }
 
-  // for ND Control Component to configure ND Sensor values ////////////////
+  // ND Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
     var now = new Date()
@@ -632,14 +647,20 @@ class ROSConnectionStore {
     return false
   }
 
-  publishNDAutoManualSelection(name, checked, adjustment, throttle = true) {
+  publishNDAutoManualSelection(
+    topic,
+    name,
+    checked,
+    adjustment,
+    throttle = true
+  ) {
     if (throttle && this.isThrottled()) {
       return
     }
 
-    if (this.ndSensorTopicBase) {
+    if (topic) {
       this.publishMessage({
-        name: this.ndSensorTopicBase + "/set_" + name,
+        name: topic + "/set_" + name,
         messageType: "num_sdk_msgs/NDAutoManualSelection",
         noPrefix: true,
         data: {
@@ -652,14 +673,14 @@ class ROSConnectionStore {
     }
   }
 
-  publishNDRange(min, max, throttle = true) {
+  publishNDRange(topic, min, max, throttle = true) {
     if (throttle && this.isThrottled()) {
       return
     }
 
-    if (this.ndSensorTopicBase) {
+    if (topic) {
       this.publishMessage({
-        name: this.ndSensorTopicBase + "/set_range",
+        name: topic + "/set_range",
         messageType: "num_sdk_msgs/NDRange",
         noPrefix: true,
         data: {
@@ -672,14 +693,14 @@ class ROSConnectionStore {
     }
   }
 
-  publishNDAngle(offset, total, throttle = true) {
+  publishNDAngle(topic, offset, total, throttle = true) {
     if (throttle && this.isThrottled()) {
       return
     }
 
-    if (this.ndSensorTopicBase) {
+    if (topic) {
       this.publishMessage({
-        name: this.ndSensorTopicBase + "/set_angle",
+        name: topic + "/set_angle",
         messageType: "num_sdk_msgs/NDAngle",
         noPrefix: true,
         data: {

@@ -7,6 +7,7 @@ import Tooltip from "rc-tooltip"
 import Styles from "./Styles"
 import Input from "./Input"
 
+// This "handle" is for adding a tooltip to the slider
 import "rc-slider/assets/index.css"
 import "rc-tooltip/assets/bootstrap.css"
 const handle = props => {
@@ -63,8 +64,14 @@ class EnableAdjustment extends Component {
     this.name = this.props.title.toLowerCase()
 
     this.state = {
+      // state of the checkbox
+      // props name enabled corresponds to the field in the
+      // ros message
       checked: this.props.enabled,
+      // value used by the input field and the slider
       value: Math.round(this.props.adjustment * 100.0),
+      // scaled is for sending updates to the ROS message
+      // adjustment is the field name in the ROS message
       scaled: this.props.adjustment
     }
 
@@ -73,37 +80,67 @@ class EnableAdjustment extends Component {
     this.onSliderValueChange = this.onSliderValueChange.bind(this)
     this.onValueInputChange = this.onValueInputChange.bind(this)
     this.onValueAfterChange = this.onValueAfterChange.bind(this)
+    this.sendUpdate = this.sendUpdate.bind(this)
   }
 
-  // we need this because the props is used to track
-  // changes provided by mobx
+  // Lifecycle function called right after component updates.
+  // The params of this component can be changed so we need to
+  // react when that happens.
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { enabled, adjustment } = this.props
-    if (prevProps.enabled !== enabled || prevProps.adjustment !== adjustment) {
+    // make various props variables local constants
+    const { enabled, adjustment, disabled } = this.props
+
+    // this tests to see if a NDStatus message updated our
+    // values through the props
+    if (
+      prevProps.enabled !== enabled ||
+      prevProps.adjustment !== adjustment ||
+      (!disabled && prevProps.disabled)
+    ) {
       this.setState({
         checked: enabled,
         value: Math.round(adjustment * 100.0),
         scaled: adjustment
       })
     }
+
+    // this zeros out values if we go from enabled to disabled
+    // this prop is used when we aren't tracking a ND Sensor
+    // disabled grays out all the inputs and makes them uneditable
+    if (disabled && prevProps.disabled !== disabled) {
+      this.setState({
+        checked: false,
+        value: 0,
+        scaled: 0
+      })
+    }
   }
 
+  // Handler for toggle switch changes
   onToggle(event) {
-    this.setState({
-      checked: event.target.checked
-    })
-    this.props.ros.publishNDAutoManualSelection(
-      this.name,
-      event.target.checked,
-      this.state.scaled
-    )
+    // only do actions if we are not disabled
+    if (!this.props.disabled) {
+      // udpate the state
+      this.setState({
+        checked: event.target.checked
+      })
+      // send and update through ROS
+      this.sendUpdate(event.target.checked, this.state.scaled)
+    } else {
+      // if whole element is disabled, toggle can't be checked
+      this.setState({
+        checked: false
+      })
+    }
   }
 
+  // Handler for slider value changes
   onSliderValueChange(value) {
     this.onValueChange(value)
-    this.onValueAfterChange(value, true)
+    this.sendUpdate(this.state.checked, value / 100.0, true)
   }
 
+  // Function for updating state to new value
   onValueChange(value) {
     this.setState({
       value: Math.round(value),
@@ -111,16 +148,24 @@ class EnableAdjustment extends Component {
     })
   }
 
+  // Handler function for value changes through text input box
   onValueInputChange(event) {
     this.onValueChange(event.target.value)
     this.onValueAfterChange(event.target.value)
   }
 
-  onValueAfterChange(value, throttle = false) {
+  // Handler function called when user releases mouse on slider
+  onValueAfterChange(value) {
+    this.sendUpdate(this.state.checked, value / 100.0)
+  }
+
+  // Function for sending updated state through rosbridge
+  sendUpdate(checked, value, throttle = false) {
     this.props.ros.publishNDAutoManualSelection(
+      this.props.topic,
       this.name,
-      this.state.checked,
-      value / 100.0,
+      checked,
+      value,
       throttle
     )
   }
@@ -134,17 +179,19 @@ class EnableAdjustment extends Component {
         <Toggle
           style={styles.toggle}
           onClick={this.onToggle}
-          checked={this.state.checked}
+          checked={!this.props.disabled && this.state.checked}
+          disabled={this.props.disabled}
         />
         <Input
           style={styles.input}
-          disabled={!this.state.checked}
+          disabled={this.props.disabled || !this.state.checked}
           value={this.state.value}
           onChange={this.onValueInputChange}
+          disabled={this.props.disabled}
         />
         <Slider
           style={styles.slider}
-          disabled={!this.state.checked}
+          disabled={this.props.disabled || !this.state.checked}
           value={this.state.value}
           onChange={this.onSliderValueChange}
           onAfterChange={this.onValueAfterChange}

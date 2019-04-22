@@ -15,9 +15,10 @@ const styles = Styles.Create({
   }
 })
 
+const PORT = 9091
 const ROS_WEBCAM_URL_BASE = `http://${
   window.location.hostname
-}:9091/stream?topic=`
+}:${PORT}/stream?topic=`
 
 @inject("ros")
 @observer
@@ -120,6 +121,8 @@ class CameraViewer extends Component {
     }
   }
 
+  // Lifecycle method called when the props change.
+  // Used to track changes in the image topic value
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { imageTopic } = this.props
     if (prevProps.imageTopic !== imageTopic) {
@@ -143,7 +146,7 @@ class CameraViewer extends Component {
 
   render() {
     return (
-      <Section title={this.props.imageTopic ? this.props.imageTopic : ""}>
+      <Section title={this.props.title ? this.props.title : ""}>
         <canvas style={styles.canvas} ref={this.onCanvasRef} />
         <ButtonMenu>
           <Button onClick={this.onTakeSnapshot}>{"Take Snapshot"}</Button>
