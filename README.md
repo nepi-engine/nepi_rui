@@ -6,7 +6,7 @@ Description: Web server for the Resident User Interface of Numurus
 
 <img src="https://picknik.ai/assets/images/logo.jpg" width="100">
 
-Developed by Lucas Doyle and Dave Coleman at [PickNik Consulting](http://picknik.ai/)
+Developed by Lucas Doyle, Dave Coleman, and Tyler Weaver at [PickNik Consulting](http://picknik.ai/)
 
 Travis CI: [![Build Status](https://travis-ci.com/PickNikRobotics/numurus_rui.svg?token=o9hPQnr2kShM9ckDs6J8&branch=master)](https://travis-ci.com/PickNikRobotics/numurus_rui)
 
@@ -175,7 +175,7 @@ If your dev machine has a webcam, you can simulate a video feed from the device 
 
         roslaunch numurus_rui test_camera.launch
 
-This launch file assumes the webcam is at `/dev/video0`, but you can pass in a an argument to change this 
+This launch file assumes the webcam is at `/dev/video0`, but you can pass in a an argument to change this
 
         roslaunch numurus_rui test_camera.launch DEVICE:=/dev/video1
 
