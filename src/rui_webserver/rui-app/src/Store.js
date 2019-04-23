@@ -57,14 +57,14 @@ Array.prototype.equals = function(array) {
   if (!array) return false
 
   // compare lengths - can save a lot of time
-  if (this.length != array.length) return false
+  if (this.length !== array.length) return false
 
   for (var i = 0, l = this.length; i < l; i++) {
     // Check if we have nested arrays
     if (this[i] instanceof Array && array[i] instanceof Array) {
       // recurse into the nested arrays
       if (!this[i].equals(array[i])) return false
-    } else if (this[i] != array[i]) {
+    } else if (this[i] !== array[i]) {
       // Warning - two different object instances will never be equal: {x:20} != {x:20}
       return false
     }
@@ -137,7 +137,7 @@ class ROSConnectionStore {
         // get the image filter
         const imageFilterJson = await getFileJson("img_filter.json")
         if (imageFilterJson.filter) {
-          this.imageFilter = imageFilterJson.filter
+          this.imageFilter = new RegExp(imageFilterJson.filter)
         }
 
         // setup rosbridge connection
@@ -237,10 +237,7 @@ class ROSConnectionStore {
       if (this.topicTypes[i] === "sensor_msgs/Image") {
         // if we don't have a filter, or if we do and this topic name includes
         // the filter text (substring search) then push it onto the list
-        if (
-          !this.imageFilter ||
-          this.topicNames[i].includes(this.imageFilter)
-        ) {
+        if (!this.imageFilter || this.imageFilter.test(this.topicNames[i])) {
           newImageTopics.push(this.topicNames[i])
         }
       }

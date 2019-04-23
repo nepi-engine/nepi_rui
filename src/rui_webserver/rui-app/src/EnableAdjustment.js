@@ -187,7 +187,6 @@ class EnableAdjustment extends Component {
           disabled={this.props.disabled || !this.state.checked}
           value={this.state.value}
           onChange={this.onValueInputChange}
-          disabled={this.props.disabled}
         />
         <Slider
           style={styles.slider}

@@ -63,7 +63,7 @@ class NDControl extends Component {
       this.state.listener.unsubscribe()
     }
 
-    if (this.props.title) {
+    if (title) {
       var listener = this.props.ros.setupNDStatusListener(
         topic,
         this.ndStatusListener

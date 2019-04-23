@@ -38,6 +38,7 @@ class CameraViewer extends Component {
 
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
+    this.updateImageSource = this.updateImageSource.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
   }
 
@@ -86,7 +87,7 @@ class CameraViewer extends Component {
       )
 
       this.setState({ clockTime: moment() })
-      setTimeout(this.updateFrame, 0)
+      requestAnimationFrame(this.updateFrame)
     }
   }
 
@@ -110,7 +111,7 @@ class CameraViewer extends Component {
               streamHeight: height
             },
             () => {
-              this.updateFrame()
+              requestAnimationFrame(this.updateFrame)
             }
           )
         }

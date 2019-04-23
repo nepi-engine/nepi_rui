@@ -93,25 +93,25 @@ class NDSensor extends Component {
     switch (event.currentTarget.id) {
       case "topicSelect_0":
         this.setState({
-          imageTopic_0: event.target.value,
+          imageTopic_0: value,
           imageText_0: text === "None" ? null : text
         })
         break
       case "topicSelect_1":
         this.setState({
-          imageTopic_1: event.target.value,
+          imageTopic_1: value,
           imageText_1: text === "None" ? null : text
         })
         break
       case "topicSelect_2":
         this.setState({
-          imageTopic_2: event.target.value,
+          imageTopic_2: value,
           imageText_2: text === "None" ? null : text
         })
         break
       case "topicSelect_3":
         this.setState({
-          imageTopic_3: event.target.value,
+          imageTopic_3: value,
           imageText_3: text === "None" ? null : text
         })
         break

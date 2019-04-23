@@ -64,6 +64,10 @@ Architecture:
         pip install -r requirements.txt
         cd src/rui_webserver/rui-app/ && npm install
 
+1. Build the frontend:
+
+        cd ~/ws_numurus/src/numurus_rui/src/rui_webserver/rui-app/ && npm run build
+
 1. Configure and build the workspace:
 
         cd ~/ws_numurus/
@@ -246,12 +250,18 @@ The `numurus_rui.service` unit requires the `roslaunch.service` provided in the 
 
 ### Image Source Filter
 
-The file `img_filter.json` located in the `rui-app` directory can be used to filter the image source topics visible in the UI.  The filter is a substring that is searched for before adding the image topic to the list of image topics the user can select.
+The file `img_filter.json` located in the `rui-app` directory can be used to filter the image source topics visible in the UI.  The filter is a regular expression that is tested on the full topic string before adding the image topic to the drop down menus.
 
-Example:
+Examples:
 
         {
-            "filter": "image_raw"
+            "filter": "image_raw$"
         }
 
-Only topics with the phrase `image_raw` will show up in camera topic drop down menus.
+Only topics with the phrase `image_raw` at the end of the topic will show up in camera topic drop down menus.
+
+        {
+            "filter": "^/numurus"
+        }
+
+Only topics with the phrase `/numurus` at the beginning of the topic will show up in camera topic drop down menus.
