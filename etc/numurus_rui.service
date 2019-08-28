@@ -4,7 +4,7 @@ After=roslaunch.service
 
 [Service]
 Type=simple
-User=root
+User=numurus
 ExecStart=/opt/numurus/ros/share/numurus_rui/etc/start_rui.sh
 
 [Install]
