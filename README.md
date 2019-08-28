@@ -17,6 +17,9 @@ Architecture:
 
 ### Build from Source
 
+Note, for certain targets (like Jetson TX-2) it is easiest to build the RUI directly on the target by installing all dependencies and following the instructions
+below. For other targets without easy internet access (like the KRM module), it is best to build in a container on a local host and rsync the results directly to the target's rootfs media as described later in the document. 
+
 1. [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
 
         sudo apt-get install python python-wstool python-catkin-tools python-pip
@@ -51,12 +54,13 @@ Architecture:
 
 1. Setup the virtual environment:
 
-        cd ~/ws_numurus/
+        cd ~/ws_numurus/src/numurus_rui
         python -m virtualenv venv
 
 1. Source the virtual environment and environment variables:
 
-        source ~/ws_numurus/src/numurus_rui/devenv.sh
+        cd ~/ws_numurus/src/numurus_rui
+        source ./devenv.sh
 
 1. Install Python and javascript dependencies:
 
@@ -77,6 +81,7 @@ Architecture:
    Note: if you get the error ``ImportError: No module named em`` try the following fix:
 
         pip install empy
+   (This should no longer be necessary as empy has been added to requirements.txt)
 
 1. Source the workspace:
 
@@ -119,19 +124,15 @@ To build the frontend run this command in `src/rui_webserver/rui-app/`:
 
         npm run build
 
-This is only necessary when making changes to frontend code. Start the development server with:
+Building the frontend is necessary after initial checkout (as the frontend build is not stored in the repo), but after that only necessary when making changes to frontend code. 
+
+Start the development server with:
 
         npm start
 
 Various other npm commands are available such as `build`, `lint`, etc. See the `scripts` section of `rui-app/package.json` for a full list of commands.
 
-When you're done changing frontend, make sure to build and commit build to this repository prior to a release:
-
-        npm run build
-        git add .
-        git commit -m "Update build"
-
-Also be sure to deploy the newest version of the demo site (see https://picknikrobotics.github.io/numurus_rui/):
+If desired, you can deploy the newest version of the demo site (see https://picknikrobotics.github.io/numurus_rui/):
 
         npm run deploy
 
@@ -189,6 +190,8 @@ This launch file assumes the webcam is at `/dev/video0`, but you can pass in a a
 To copy this module to the device (using boardenv above) please run this from the directory above this module:
 
         rsync --info=progress2 -avzhe ssh --exclude node_modules --exclude .git numurus_rui/ root@num-sb1-zynq:/opt/numurus/ros/share/numurus_rui
+
+Note that if you've built the module directly on the target, you can omit the `ssh` portion of the command.
 
 ### Targets without internet access
 
