@@ -94,7 +94,7 @@ class NDControl extends Component {
   render() {
     return (
       <Section
-        title={this.props.title ? this.props.title : "NO SENSOR TOPIC SELECTED"}
+        title={this.props.title ? this.props.title : "NO SENSOR SELECTED"}
       >
         <RangeAdjustment
           min={this.state.rangeMin}

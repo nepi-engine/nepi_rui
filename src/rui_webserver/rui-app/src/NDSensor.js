@@ -129,12 +129,12 @@ class NDSensor extends Component {
         <Columns>
           <Column>
             <Section title={"ND Sensor"}>
-              <Label title={"ND Sensor Topic"}>
+              <Label title={"ND Sensor Selection"}>
                 <Select onChange={this.onNDTopicSelected}>
                   {this.createTopicOptions(ndSensorTopics)}
                 </Select>
               </Label>
-              <Label title={"Topic 0"}>
+              <Label title={"Selected Image 1"}>
                 <Select
                   id="topicSelect_0"
                   onChange={this.onImageTopicSelected}
@@ -145,7 +145,7 @@ class NDSensor extends Component {
                     : NoneOption}
                 </Select>
               </Label>
-              <Label title={"Topic 1"}>
+              <Label title={"Selected Image 2"}>
                 <Select
                   id="topicSelect_1"
                   onChange={this.onImageTopicSelected}
@@ -156,7 +156,7 @@ class NDSensor extends Component {
                     : NoneOption}
                 </Select>
               </Label>
-              <Label title={"Topic 2"}>
+              <Label title={"Selected Image 3"}>
                 <Select
                   id="topicSelect_2"
                   onChange={this.onImageTopicSelected}
@@ -167,7 +167,7 @@ class NDSensor extends Component {
                     : NoneOption}
                 </Select>
               </Label>
-              <Label title={"Topic 3"}>
+              <Label title={"Selected Image 4"}>
                 <Select
                   id="topicSelect_3"
                   onChange={this.onImageTopicSelected}
