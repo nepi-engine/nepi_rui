@@ -104,7 +104,7 @@ class RangeAdjustment extends Component {
     // create local constants out of new(current) props values
     const { min, max, disabled } = this.props
 
-    // this tests to see of a NDStatus message updated our values
+    // this tests to see of a Status3DX message updated our values
     if (
       prevProps.min !== min ||
       prevProps.max !== max ||
@@ -121,7 +121,7 @@ class RangeAdjustment extends Component {
     }
 
     // this zeros out values if we go from enabled to disabled
-    // this prop is used when we are not tracking a ND Sensor
+    // this prop is used when we are not tracking a 3DX Sensor
     // disabled grays out all the inputs and makes them uneditable
     if (disabled && prevProps.disabled !== disabled) {
       this.setState({
@@ -158,7 +158,7 @@ class RangeAdjustment extends Component {
 
   // Function for publishing values through rosbridge
   sendUpdate(min, max, throttle = false) {
-    this.props.ros.publishNDRange(this.props.topic, min, max, throttle)
+    this.props.ros.publishRange3DX(this.props.topic, min, max, throttle)
   }
 
   render() {

@@ -85,7 +85,7 @@ class AngleAdjustment extends Component {
     // get various fields from the new props values
     const { offset, total, disabled } = this.props
 
-    // this tests to see if a NDStatus message updated our
+    // this tests to see if a Status3DX message updated our
     // values through the props
     if (
       prevProps.offset !== offset ||
@@ -103,7 +103,7 @@ class AngleAdjustment extends Component {
     }
 
     // this zeros out values if we go from enabled to disabled
-    // this prop is used when we aren't tracking a ND Sensor
+    // this prop is used when we aren't tracking a 3DX Sensor
     // disabled grays out all the inputs and makes them uneditable
     if (disabled && prevProps.disabled !== disabled) {
       this.setState({
@@ -161,7 +161,7 @@ class AngleAdjustment extends Component {
     this.sendUpdate(this.state.scaled_offset, value / 100.0, throttled)
   }
   sendUpdate(offset, total, throttled = false) {
-    this.props.ros.publishNDAngle(this.props.topic, offset, total, throttled)
+    this.props.ros.publishAngle3DX(this.props.topic, offset, total, throttled)
   }
 
   render() {

@@ -9,7 +9,7 @@ import PageLock from "./PageLock"
 
 import Dashboard from "./Dashboard"
 import CameraApp from "./CameraApp"
-import NDSensor from "./NDSensor"
+import Sensor3DX from "./Sensor3DX"
 import Files from "./Files"
 import Settings from "./Settings"
 
@@ -50,7 +50,7 @@ class App extends Component {
               label: "Applications",
               subItems: [
                 { path: "/camera", label: "Camera" },
-                { path: "/ndsensor", label: "ND Sensor" }
+                { path: "/sensor3DX", label: "3DX" }
               ]
             },
             { path: "/files", label: "Files" },
@@ -63,7 +63,7 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={Dashboard} />
             <Route path="/camera" component={CameraApp} />
-            <Route path="/ndsensor" component={NDSensor} />
+            <Route path="/sensor3DX" component={Sensor3DX} />
             <Route
               path="/files/:path*"
               component={props => <Files {...props} />}

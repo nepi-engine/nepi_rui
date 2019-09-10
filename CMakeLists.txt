@@ -21,7 +21,7 @@ catkin_python_setup()
 #############
 ## Install ##
 #############
-# install(PROGRAMS scripts/nd_status_pub.py
+# install(PROGRAMS scripts/status_3dx_pub.py
   # DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 catkin_install_python(

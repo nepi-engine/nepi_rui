@@ -9,12 +9,12 @@ import AngleAdjustment from "./AngleAdjustment"
 @inject("ros")
 @observer
 
-// Component that contains the ND Sensor controlls
-class NDControl extends Component {
+// Component that contains the 3DX Sensor controlls
+class Control3DX extends Component {
   constructor(props) {
     super(props)
 
-    // these states track the values through NDStatus messages
+    // these states track the values through Status3DX messages
     this.state = {
       rangeMax: null,
       rangeMin: null,
@@ -26,20 +26,20 @@ class NDControl extends Component {
       gainAdjustment: null,
       filterEnabled: false,
       filterAdjustment: null,
-      ndDisplayName: null,
+      displayName3DX: null,
       pauseEnable: false,
       listener: null,
       disabled: true
     }
 
     this.updateListener = this.updateListener.bind(this)
-    this.ndStatusListener = this.ndStatusListener.bind(this)
+    this.status3DXListener = this.status3DXListener.bind(this)
 
     this.updateListener()
   }
 
-  // Callback for handling ROS NDStatus messages
-  ndStatusListener(message) {
+  // Callback for handling ROS Status3DX messages
+  status3DXListener(message) {
     this.setState({
       rangeMax: message.range.max_range,
       rangeMin: message.range.min_range,
@@ -51,12 +51,12 @@ class NDControl extends Component {
       gainAdjustment: message.gain_settings.adjustment,
       filterEnabled: message.filter_settings.enabled,
       filterAdjustment: message.filter_settings.adjustment,
-      ndDisplayName: message.display_name,
+      displayName3DX: message.display_name,
       pauseEnable: message.pause_enable
     })
   }
 
-  // Function for configuring and subscribing to NDStatus
+  // Function for configuring and subscribing to Status3DX
   updateListener() {
     const { topic, title } = this.props
     if (this.state.listener) {
@@ -64,9 +64,9 @@ class NDControl extends Component {
     }
 
     if (title) {
-      var listener = this.props.ros.setupNDStatusListener(
+      var listener = this.props.ros.setupStatus3DXListener(
         topic,
-        this.ndStatusListener
+        this.status3DXListener
       )
       this.setState({ listener: listener, disabled: false })
     } else {
@@ -84,7 +84,7 @@ class NDControl extends Component {
   }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to NDStatus message
+  // Used to unsubscribe to Status3DX message
   componentWillUnmount() {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
@@ -146,4 +146,4 @@ class NDControl extends Component {
     )
   }
 }
-export default NDControl
+export default Control3DX

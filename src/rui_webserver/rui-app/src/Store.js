@@ -125,11 +125,11 @@ class ROSConnectionStore {
   @observable topicNames = null
   @observable topicTypes = null
   @observable imageTopics = []
-  @observable ndSensorTopics = []
+  @observable sensor3DXTopics = []
 
   @observable imageFilter = null
 
-  @observable lastNDUpdate = new Date()
+  @observable last3DXUpdate = new Date()
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -177,10 +177,10 @@ class ROSConnectionStore {
         this.topicNames = result.topics
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
-        var newNDSensors = this.updateNDSensorTopics()
+        var newSensor3DXs = this.updateSensor3DXTopics()
         var newImageTopics = this.updateImageTopics()
 
-        if (newPrefix || newNDSensors || newImageTopics) {
+        if (newPrefix || newSensor3DXs || newImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -254,25 +254,25 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  updateNDSensorTopics() {
-    // Function for updating ND Sensor topic list
-    var newNDSensorTopics = []
+  updateSensor3DXTopics() {
+    // Function for updating 3DX Sensor topic list
+    var newSensor3DXTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
       var topic_name_parts = this.topicNames[i].split("/")
       var last_element = topic_name_parts.pop()
       var topic_base = topic_name_parts.join("/")
       if (
-        last_element === "nd_status" &&
-        this.topicTypes[i] === "num_sdk_msgs/NDStatus"
+        last_element === "status_3dx" &&
+        this.topicTypes[i] === "num_sdk_msgs/Status3DX"
       ) {
-        newNDSensorTopics.push(topic_base)
+        newSensor3DXTopics.push(topic_base)
       }
     }
     // sort the sensor topics for comparison to work
-    newNDSensorTopics.sort()
+    newSensor3DXTopics.sort()
 
-    if (!this.ndSensorTopics.equals(newNDSensorTopics)) {
-      this.ndSensorTopics = newNDSensorTopics
+    if (!this.sensor3DXTopics.equals(newSensor3DXTopics)) {
+      this.sensor3DXTopics = newSensor3DXTopics
       return true
     } else {
       return false
@@ -437,11 +437,11 @@ class ROSConnectionStore {
   }
 
   // returns the listener, clients that use this
-  setupNDStatusListener(topic, callback) {
+  setupStatus3DXListener(topic, callback) {
     if (topic) {
       return this.addListener({
-        name: topic + "/nd_status",
-        messageType: "num_sdk_msgs/NDStatus",
+        name: topic + "/status_3dx",
+        messageType: "num_sdk_msgs/Status3DX",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -633,18 +633,18 @@ class ROSConnectionStore {
     })
   }
 
-  // ND Sensor Control methods //////////////////////////////////////////////
+  // 3DX Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
     var now = new Date()
-    if (now - this.lastNDUpdate < UPDATE_PERIOD) {
+    if (now - this.last3DXUpdate < UPDATE_PERIOD) {
       return true
     }
-    this.lastNDUpdate = now
+    this.last3DXUpdate = now
     return false
   }
 
-  publishNDAutoManualSelection(
+  publishAutoManualSelection3DX(
     topic,
     name,
     checked,
@@ -658,7 +658,7 @@ class ROSConnectionStore {
     if (topic) {
       this.publishMessage({
         name: topic + "/set_" + name,
-        messageType: "num_sdk_msgs/NDAutoManualSelection",
+        messageType: "num_sdk_msgs/AutoManualSelection3DX",
         noPrefix: true,
         data: {
           enabled: checked,
@@ -666,11 +666,11 @@ class ROSConnectionStore {
         }
       })
     } else {
-      console.warn("publishNDAutoManualSelection: ndSensorTopicBase not set")
+      console.warn("publishAutoManualSelection3DX: sensor3DXTopicBase not set")
     }
   }
 
-  publishNDRange(topic, min, max, throttle = true) {
+  publishRange3DX(topic, min, max, throttle = true) {
     if (throttle && this.isThrottled()) {
       return
     }
@@ -678,7 +678,7 @@ class ROSConnectionStore {
     if (topic) {
       this.publishMessage({
         name: topic + "/set_range",
-        messageType: "num_sdk_msgs/NDRange",
+        messageType: "num_sdk_msgs/Range3DX",
         noPrefix: true,
         data: {
           min_range: min,
@@ -686,11 +686,11 @@ class ROSConnectionStore {
         }
       })
     } else {
-      console.warn("publishNDRange: ndSensorTopicBase not set")
+      console.warn("publishRange3DX: sensor3DXTopicBase not set")
     }
   }
 
-  publishNDAngle(topic, offset, total, throttle = true) {
+  publishAngle3DX(topic, offset, total, throttle = true) {
     if (throttle && this.isThrottled()) {
       return
     }
@@ -698,7 +698,7 @@ class ROSConnectionStore {
     if (topic) {
       this.publishMessage({
         name: topic + "/set_angle",
-        messageType: "num_sdk_msgs/NDAngle",
+        messageType: "num_sdk_msgs/Angle3DX",
         noPrefix: true,
         data: {
           angle_offset: offset,
@@ -706,7 +706,7 @@ class ROSConnectionStore {
         }
       })
     } else {
-      console.warn("publishNDAngle: ndSensorTopicBase not set")
+      console.warn("publishAngle3DX: sensor3DXTopicBase not set")
     }
   }
   /////////////////////////////////////////////////////////////////////////

@@ -7,21 +7,21 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 
 import CameraViewer from "./CameraViewer"
-import NDControl from "./NDControl"
+import Control3DX from "./Control3DX"
 import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
 @observer
 
-// NDSensor Application page
-class NDSensor extends Component {
+// Sensor3DX Application page
+class Sensor3DX extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      // ND Sensor topic to subscribe to and update
-      ndTopic: null,
-      ndTopicText: null,
+      // 3DX Sensor topic to subscribe to and update
+      topic3DX: null,
+      topic3DXText: null,
 
       // image topics and names for the quad image display
       // these are not an array because state values are not
@@ -38,7 +38,7 @@ class NDSensor extends Component {
     }
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
-    this.onNDTopicSelected = this.onNDTopicSelected.bind(this)
+    this.onTopic3DXSelected = this.onTopic3DXSelected.bind(this)
     this.createTopicOptions = this.createTopicOptions.bind(this)
   }
 
@@ -64,15 +64,15 @@ class NDSensor extends Component {
     return items
   }
 
-  // Handler for ND Sensor topic selection
-  onNDTopicSelected(event) {
+  // Handler for 3DX Sensor topic selection
+  onTopic3DXSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value
 
     this.setState({
-      ndTopic: value,
-      ndTopicText: text === "None" ? null : text,
+      topic3DX: value,
+      topic3DXText: text === "None" ? null : text,
       imageTopic_0: "None",
       imageText_0: null,
       imageTopic_1: "None",
@@ -121,17 +121,17 @@ class NDSensor extends Component {
   }
 
   render() {
-    const { ndSensorTopics, imageTopics } = this.props.ros
+    const { sensor3DXTopics, imageTopics } = this.props.ros
     const NoneOption = <Option>None</Option>
 
     return (
       <React.Fragment>
         <Columns>
           <Column>
-            <Section title={"ND Sensor"}>
-              <Label title={"ND Sensor Selection"}>
-                <Select onChange={this.onNDTopicSelected}>
-                  {this.createTopicOptions(ndSensorTopics)}
+            <Section title={"3DX Sensor"}>
+              <Label title={"3DX Sensor Selection"}>
+                <Select onChange={this.onTopic3DXSelected}>
+                  {this.createTopicOptions(sensor3DXTopics)}
                 </Select>
               </Label>
               <Label title={"Selected Image 1"}>
@@ -140,8 +140,8 @@ class NDSensor extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_0}
                 >
-                  {this.state.ndTopic
-                    ? this.createTopicOptions(imageTopics, this.state.ndTopic)
+                  {this.state.topic3DX
+                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -151,8 +151,8 @@ class NDSensor extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_1}
                 >
-                  {this.state.ndTopic
-                    ? this.createTopicOptions(imageTopics, this.state.ndTopic)
+                  {this.state.topic3DX
+                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -162,8 +162,8 @@ class NDSensor extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_2}
                 >
-                  {this.state.ndTopic
-                    ? this.createTopicOptions(imageTopics, this.state.ndTopic)
+                  {this.state.topic3DX
+                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -173,17 +173,17 @@ class NDSensor extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_3}
                 >
-                  {this.state.ndTopic
-                    ? this.createTopicOptions(imageTopics, this.state.ndTopic)
+                  {this.state.topic3DX
+                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
             </Section>
           </Column>
           <Column>
-            <NDControl
-              topic={this.state.ndTopic}
-              title={this.state.ndTopicText}
+            <Control3DX
+              topic={this.state.topic3DX}
+              title={this.state.topic3DXText}
             />
           </Column>
         </Columns>
@@ -214,4 +214,4 @@ class NDSensor extends Component {
   }
 }
 
-export default NDSensor
+export default Sensor3DX

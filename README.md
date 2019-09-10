@@ -164,7 +164,7 @@ We have provided some fake data publishers for testing purposes. To run a node t
 
 1. Verify that the publisher is working in a separate terminal by echoing one of the topics:
 
-        rostopic echo /fake_nd_status
+        rostopic echo /fake_status_3dx
 
 ### Fake System Status Publisher
 

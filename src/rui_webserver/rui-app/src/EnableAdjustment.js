@@ -90,7 +90,7 @@ class EnableAdjustment extends Component {
     // make various props variables local constants
     const { enabled, adjustment, disabled } = this.props
 
-    // this tests to see if a NDStatus message updated our
+    // this tests to see if a Status3DX message updated our
     // values through the props
     if (
       prevProps.enabled !== enabled ||
@@ -105,7 +105,7 @@ class EnableAdjustment extends Component {
     }
 
     // this zeros out values if we go from enabled to disabled
-    // this prop is used when we aren't tracking a ND Sensor
+    // this prop is used when we aren't tracking a 3DX Sensor
     // disabled grays out all the inputs and makes them uneditable
     if (disabled && prevProps.disabled !== disabled) {
       this.setState({
@@ -161,7 +161,7 @@ class EnableAdjustment extends Component {
 
   // Function for sending updated state through rosbridge
   sendUpdate(checked, value, throttle = false) {
-    this.props.ros.publishNDAutoManualSelection(
+    this.props.ros.publishAutoManualSelection3DX(
       this.props.topic,
       this.name,
       checked,
