@@ -415,12 +415,10 @@ class ROSConnectionStore {
         this.systemStatusDiskUsageMB = message.disk_usage
         this.systemStatusDiskRate = message.storage_rate
 
-        this.systemStatusTime = moment.unix(message.sys_time.secs)
-
-        // add timezone offset if not in UTC mode
-        if (!this.clockUTCMode) {
-          const tzOffset = new Date().getTimezoneOffset()
-          this.systemStatusTime.add(tzOffset, "minutes")
+        if (this.clockUTCMode) {
+          this.systemStatusTime = moment.unix(message.sys_time.secs).utc()
+        } else {
+          this.systemStatusTime = moment.unix(message.sys_time.secs)
         }
 
         this.diskUsagePercent = `${parseInt(
@@ -544,9 +542,7 @@ class ROSConnectionStore {
 
   @action.bound
   onSyncUTCToDevice() {
-    const tzOffset = new Date().getTimezoneOffset()
-    const utcTS = moment()
-      .subtract(tzOffset, "minutes")
+    const utcTS = moment.utc()
       .unix()
     this.publishMessage({
       name: "set_time",
@@ -554,7 +550,7 @@ class ROSConnectionStore {
       data: {
         data: {
           secs: utcTS,
-          nsecs: utcTS
+          nsecs: 0
         }
       }
     })
