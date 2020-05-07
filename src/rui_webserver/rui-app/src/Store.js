@@ -474,10 +474,9 @@ class ROSConnectionStore {
       let { x, y, z } = this.navPos.linear_velocity
       this.navPosDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
 
-      // TODO check the ordering of these?
-      this.navPosOrientationYawRate = this.navPos.angular_velocity.x
-      this.navPosOrientationPitchRate = this.navPos.angular_velocity.y
-      this.navPosOrientationRollRate = this.navPos.angular_velocity.z
+      this.navPosOrientationYawRate = this.navPos.angular_velocity.z * (180/Math.PI)
+      this.navPosOrientationPitchRate = this.navPos.angular_velocity.y * (180/Math.PI)
+      this.navPosOrientationRollRate = this.navPos.angular_velocity.x * (180/Math.PI)
 
       const q = new cannon.Quaternion(
         this.navPos.orientation.x,
@@ -487,9 +486,9 @@ class ROSConnectionStore {
       )
       const vec = new cannon.Vec3()
       q.toEuler(vec)
-      this.navPosOrientationYawAngle = vec.x
-      this.navPosOrientationPitchAngle = vec.y
-      this.navPosOrientationRollAngle = vec.z
+      this.navPosOrientationYawAngle = vec.z * (180/Math.PI)
+      this.navPosOrientationPitchAngle = vec.y * (180/Math.PI)
+      this.navPosOrientationRollAngle = vec.x * (180/Math.PI)
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 500)
