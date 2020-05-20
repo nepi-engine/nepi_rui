@@ -1,0 +1,9 @@
+<launch>
+  <!-- Must run rosbridge_websocket -->
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" >
+     <arg name="address" value="0.0.0.0"/>
+     <arg name="port" value="9090"/>
+  </include>
+
+  <node name="run_webserver" pkg="numurus_rui" type="run_webserver.py" respawn="true" output="log" />
+</launch>
