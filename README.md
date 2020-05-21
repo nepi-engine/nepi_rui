@@ -15,6 +15,9 @@ Architecture:
 
 ## Preliminary Notes
 1. The instructions below are specific to building and running stand-alone version of the RUI. In general, the RUI is now built within a larger workspace, e.g., jetson_3dsc_ws, and not all instruction are relevant -- particularly those related to workspace setup
+- Back-end is "built" and installed by building the top-level workspace
+- Front-end should be built from the (final) installation target folder as the Python virtualenv is not portable, must be populated at its final location.
+- Running the RUI is largely automated now simply by installing the numurus_rui.service script (cp to /etc/systemd/system) and enabling it (systemctl enable numurus_rui).
 2. The instructions and terminal commands specify the "kinetic" ROS release at some points, though you can substitute "melodic" or presumably other future versions to match your system's ROS install.
 3. The RUI relies on node.js 8.11.1, which has some noted vulnerabilities -- it should be updated to later node version.
 4. The RUI relies on Python 2.7, which is EOL -- pip will start failing in Jan. 2021, and then, if not sooner, will need to port everything to Python 3.
@@ -128,7 +131,7 @@ To build the frontend run this command in `src/rui_webserver/rui-app/`:
 
         npm run build
 
-Building the frontend is necessary after initial checkout (as the frontend build is not stored in the repo), but after that only necessary when making changes to frontend code. 
+Building the frontend is necessary after initial checkout (as the frontend build is not stored in the repo), but after that only necessary when making changes to frontend code.
 
 Start the development server with:
 
