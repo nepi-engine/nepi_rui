@@ -2,6 +2,10 @@
 
 # This interactive script installs the RUI to either a local or remote system
 
+echo "This script is deprecated because it relies on bad assumptions... instead you must build the RUI in the location you want it"
+echo "Otherwise, your python virtualenv will always point back to this place."
+exit
+
 echo "Are you installing to a remote system? (y/n)"
 read REMOTE
 if [ "$REMOTE" == "y" ]; then
@@ -31,7 +35,7 @@ read CONTINUE
 if [ "$REMOTE" == "y" ]; then
 	echo numurus | ssh -tt -i $SSH_KEY_PATH numurus@192.168.179.102 "sudo systemctl stop numurus_rui"
 	sleep 1
-	ssh -i $SSH_KEY_PATH numurus@192.168.179.102 "rm -rf /opt/numurus/ros/share/numurus_rui" 
+	ssh -i $SSH_KEY_PATH numurus@192.168.179.102 "rm -rf /opt/numurus/ros/share/numurus_rui"
 	sleep 1
 	rsync -avzhe "ssh -i $SSH_KEY_PATH" $EXCLUDE_SWITCH $SRC_PATH/ numurus@192.168.179.102:/opt/numurus/ros/share/numurus_rui
 	sleep 1
