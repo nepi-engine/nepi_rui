@@ -13,12 +13,16 @@ Travis CI: [![Build Status](https://travis-ci.com/PickNikRobotics/numurus_rui.sv
 Architecture:
 ![Alt text](/resources/architecture.png?raw=true "Architecture")
 
+## Preliminary Notes
+1. The instructions below are specific to building and running stand-alone version of the RUI. In general, the RUI is now built within a larger workspace, e.g., jetson_3dsc_ws, and not all instruction are relevant -- particularly those related to workspace setup
+2. The instructions and terminal commands specify the "kinetic" ROS release at some points, though you can substitute "melodic" or presumably other future versions to match your system's ROS install.
+3. The RUI relies on node.js 8.11.1, which has some noted vulnerabilities -- it should be updated to later node version.
+4. The RUI relies on Python 2.7, which is EOL -- pip will start failing in Jan. 2021, and then, if not sooner, will need to port everything to Python 3.
+5. For certain targets (like Jetson TX-2) it is easiest to build the RUI directly on the target by installing all dependencies and following the instructions below. For other targets without easy internet access (like the KRM module), it is best to build in a container on a local host and rsync the results directly to the target's rootfs media as described later in the document.  
+
 ## Install
 
 ### Build from Source
-
-Note, for certain targets (like Jetson TX-2) it is easiest to build the RUI directly on the target by installing all dependencies and following the instructions
-below. For other targets without easy internet access (like the KRM module), it is best to build in a container on a local host and rsync the results directly to the target's rootfs media as described later in the document. 
 
 1. [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
 
