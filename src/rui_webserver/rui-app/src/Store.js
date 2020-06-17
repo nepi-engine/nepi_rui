@@ -84,6 +84,7 @@ class ROSConnectionStore {
   @observable namespacePrefix = null
   @observable deviceName = null
   @observable deviceSerial = null
+  @observable deviceInWater = false
 
   @observable systemDefs = null
   @observable systemDefsFirmwareVersion = null
@@ -368,6 +369,7 @@ class ROSConnectionStore {
 
     // services
     this.callSystemDefsService()
+    this.startPollingOpEnvironmentQueryService()
     this.startPollingNavPosService()
     this.startPollingTimeStatusService()
   }
@@ -457,6 +459,24 @@ class ROSConnectionStore {
     this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
   }
 
+  async startPollingOpEnvironmentQueryService() {
+    const _pollOnce = async () => {
+      this.opEnv = await this.callService({
+        name: "op_environment_query",
+        messageType: "num_sdk_msgs/OpEnvironmentQuery",
+        msgKey: "op_env"
+      })
+
+      this.deviceInWater = (this.opEnv === "water")
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 5000)
+      }
+    }
+
+    _pollOnce()
+  }
+
   startPollingNavPosService() {
     const _pollOnce = async () => {
       this.navPos = await this.callService({
@@ -531,6 +551,18 @@ class ROSConnectionStore {
     }
 
     _pollOnce()
+  }
+
+  @action.bound
+  onToggleDeviceInWater() {
+    this.deviceInWater = !this.deviceInWater
+
+    let newOpEnv = (this.deviceInWater === true)? "water" : "air"
+    this.publishMessage({
+      name: "set_op_environment",
+      messageType: "std_msgs/String",
+      data: { data: newOpEnv }
+    })
   }
 
   @action.bound
