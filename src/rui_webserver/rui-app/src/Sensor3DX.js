@@ -18,28 +18,28 @@ class Sensor3DX extends Component {
   constructor(props) {
     super(props)
 
+    this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
+    this.onTopic3DXSelected = this.onTopic3DXSelected.bind(this)
+    this.createTopicOptions = this.createTopicOptions.bind(this)
+
     this.state = {
       // 3DX Sensor topic to subscribe to and update
-      topic3DX: null,
-      topic3DXText: null,
+      topic3DX: props.ros.sensor3DXTopics[0],
+      topic3DXText: createShortUniqueValues(props.ros.sensor3DXTopics)[0],
 
       // image topics and names for the quad image display
       // these are not an array because state values are not
       // mutable, making dealing with an array in the state
       // object obnoxious
-      imageTopic_0: null,
-      imageText_0: null,
-      imageTopic_1: null,
-      imageText_1: null,
-      imageTopic_2: null,
-      imageText_2: null,
+      imageTopic_0: props.ros.sensor3DXTopics[0].concat("/img_0/image_raw"),
+      imageText_0: "img_0/image_raw",
+      imageTopic_1: props.ros.sensor3DXTopics[0].concat("/alt/image_raw"),
+      imageText_1: "alt/image_raw",
+      imageTopic_2: props.ros.sensor3DXTopics[0].concat("/img_1/image_raw"),
+      imageText_2: "img_1/image_raw",
       imageTopic_3: null,
       imageText_3: null
     }
-
-    this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
-    this.onTopic3DXSelected = this.onTopic3DXSelected.bind(this)
-    this.createTopicOptions = this.createTopicOptions.bind(this)
   }
 
   // Function for creating topic options for Select input
@@ -130,7 +130,10 @@ class Sensor3DX extends Component {
           <Column>
             <Section title={"3DX Sensor"}>
               <Label title={"3DX Sensor Selection"}>
-                <Select onChange={this.onTopic3DXSelected}>
+                <Select
+                  onChange={this.onTopic3DXSelected}
+                  value={this.state.topic3DX}
+                >
                   {this.createTopicOptions(sensor3DXTopics)}
                 </Select>
               </Label>

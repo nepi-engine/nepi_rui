@@ -29,7 +29,7 @@ class Control3DX extends Component {
       displayName3DX: null,
       pauseEnable: false,
       listener: null,
-      disabled: true
+      disabled: false
     }
 
     this.updateListener = this.updateListener.bind(this)
