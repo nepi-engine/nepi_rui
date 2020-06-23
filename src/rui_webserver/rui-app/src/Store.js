@@ -8,7 +8,7 @@ const FLASK_URL = `http://${window.location.hostname}:5003`
 
 const TRIGGER_MASKS = {
   OUTPUT_ENABLED: 0xffffffff,
-  DEFAULT: 0xefffffff
+  DEFAULT: 0x7fffffff
 }
 
 const UPDATE_PERIOD = 100 // ms between sending updates
@@ -119,6 +119,7 @@ class ROSConnectionStore {
 
   @observable imageRecognitions = []
 
+  @observable triggerStatus = null
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
@@ -370,6 +371,7 @@ class ROSConnectionStore {
     // services
     this.callSystemDefsService()
     this.startPollingOpEnvironmentQueryService()
+    this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
     this.startPollingTimeStatusService()
   }
@@ -468,6 +470,25 @@ class ROSConnectionStore {
       })
 
       this.deviceInWater = (this.opEnv === "water")
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 5000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingTriggerStatusQueryService() {
+    const _pollOnce = async () => {
+      this.triggerStatus = await this.callService({
+        name: "trigger_status_query",
+        messageType: "num_sdk_msgs/TriggerStatusQuery",
+        args: {trig_val : this.triggerMask},
+        msgKey: "status"
+      })
+
+      this.triggerAutoRateHz = this.triggerStatus.auto_rate
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 5000)
@@ -612,7 +633,7 @@ class ROSConnectionStore {
   onToggleHWTriggerOutputEnabled(e) {
     const checked = e.target.checked
 
-    // If HW Trig Output Enable selected, trig mask is 0xFFFFFFFF, otherwise trig mask is 0x8FFFFFFF
+    // If HW Trig Output Enable selected, trig mask is 0xFFFFFFFF, otherwise trig mask is 0x7FFFFFFF
     this.triggerMask = checked
       ? TRIGGER_MASKS.OUTPUT_ENABLED
       : TRIGGER_MASKS.DEFAULT
