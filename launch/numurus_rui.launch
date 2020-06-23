@@ -1,9 +1,15 @@
 <launch>
-  <!-- Must run rosbridge_websocket -->
-  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" >
-     <arg name="address" value="0.0.0.0"/>
-     <arg name="port" value="9090"/>
-  </include>
+  <arg name="device_ns" value="$(env ROOTNAME)/$(env DEVICE_TYPE)/$(env DEVICE_SN)" />
 
-  <node name="run_webserver" pkg="numurus_rui" type="run_webserver.py" respawn="true" output="log" />
+  <!-- Everything lives in the device namespace -->
+  <group ns="$(arg device_ns)">
+
+    <!-- Must run rosbridge_websocket -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" >
+       <arg name="address" value="0.0.0.0"/>
+       <arg name="port" value="9090"/>
+    </include>
+
+    <node name="run_webserver" pkg="numurus_rui" type="run_webserver.py" respawn="true" output="log" />
+  </group>
 </launch>
