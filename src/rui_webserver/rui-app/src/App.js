@@ -49,7 +49,7 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/camera", label: "Camera" },
+                { path: "/detection", label: "Detection" },
                 { path: "/sensor3DX", label: "3DX" }
               ]
             },
@@ -62,7 +62,7 @@ class App extends Component {
         {!pageLocked && (
           <Switch>
             <Route exact path="/" component={Dashboard} />
-            <Route path="/camera" component={CameraApp} />
+            <Route path="/detection" component={CameraApp} />
             <Route path="/sensor3DX" component={Sensor3DX} />
             <Route
               path="/files/:path*"
