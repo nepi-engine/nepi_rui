@@ -46,11 +46,12 @@ class CameraViewer extends Component {
     const {
       shouldUpdate,
       hasInitialized,
-      streamWidth,
-      streamHeight,
       containerWidth,
-      containerHeight
+      containerHeight,
+      streamWidth,
+      streamHeight
     } = this.state
+    const { width, height } = this.image
     const { imageRecognitions } = this.props.ros
     if (shouldUpdate && hasInitialized && this.canvas) {
       if (!containerWidth) {

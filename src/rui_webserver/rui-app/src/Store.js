@@ -11,6 +11,8 @@ const TRIGGER_MASKS = {
   DEFAULT: 0x7fffffff
 }
 
+const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
+
 const UPDATE_PERIOD = 100 // ms between sending updates
 
 export { TRIGGER_MASKS }
@@ -133,6 +135,10 @@ class ROSConnectionStore {
 
   @observable last3DXUpdate = new Date()
 
+  @observable classifiers = []
+  @observable classifierImgTopic = null
+  @observable classifierImgIsPublished = false
+
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
@@ -223,6 +229,9 @@ class ROSConnectionStore {
                 this.deviceSerial
               }`
             )
+            // And update the (fixed) classifier image topic
+            this.classifierImgTopic = '/'
+            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceName, '/', this.deviceSerial, CLASSIFIER_IMG_TOPIC_SUFFIX)
             break
           }
         }
@@ -244,6 +253,13 @@ class ROSConnectionStore {
         }
       }
     }
+    if (newImageTopics.includes(this.classifierImgTopic)) {
+      this.classifierImgIsPublished = true
+    }
+    else {
+      this.classifierImgIsPublished = false
+    }
+
     // sort the image topics for comparison to work
     newImageTopics.sort()
 
@@ -370,6 +386,7 @@ class ROSConnectionStore {
 
     // services
     this.callSystemDefsService()
+    this.callImgClassifierListQueryService()
     this.startPollingOpEnvironmentQueryService()
     this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
@@ -459,6 +476,14 @@ class ROSConnectionStore {
     })
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
     this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
+  }
+
+  async callImgClassifierListQueryService() {
+    this.classifiers = await this.callService({
+      name: "img_classifier_list_query",
+      messageType: "num_sdk_msgs/ImageClassifierListQuery",
+      msgKey: "classifiers"
+    })
   }
 
   async startPollingOpEnvironmentQueryService() {
@@ -678,6 +703,28 @@ class ROSConnectionStore {
         save_continuous: checked,
         save_raw: false
       }
+    })
+  }
+
+  @action.bound
+  startClassifier(selectedImageTopic, selectedClassifier) {
+    this.publishMessage({
+      name: "start_classifier",
+      messageType: "num_sdk_msgs/ClassifierSelection",
+      data: {
+        // TODO: Eliminate hard-coding here
+        img_topic: selectedImageTopic,
+        classifier: selectedClassifier
+      }
+    })
+  }
+
+  @action.bound
+  stopClassifier() {
+    this.publishMessage({
+      name: "stop_classifier",
+      messageType: "std_msgs/Empty",
+      data: {}
     })
   }
 
