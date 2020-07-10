@@ -139,6 +139,10 @@ class ROSConnectionStore {
   @observable classifierImgTopic = null
   @observable classifierImgIsPublished = false
 
+  //@observable reportedClassifierImg = "Uninitialized"
+  //@observable reportedClassifierName = "Uninitialized"
+  @observable reportedClassifierState = "Uninitialized"
+
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
@@ -391,6 +395,7 @@ class ROSConnectionStore {
     this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
     this.startPollingTimeStatusService()
+    this.startPollingImgClassifierStatusQueryService()
   }
 
   @action.bound
@@ -593,6 +598,22 @@ class ROSConnectionStore {
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingImgClassifierStatusQueryService() {
+    const _pollOnce = async () => {
+      this.reportedClassifierState = await this.callService({
+        name: "img_classifier_status_query",
+        messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
+        msgKey: "classifier_state"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 2000)
       }
     }
 

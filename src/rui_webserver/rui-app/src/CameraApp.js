@@ -90,6 +90,9 @@ class CameraApp extends Component {
   }
 
   render() {
+    const {
+      reportedClassifierState
+    } = this.props.ros
     return (
       <Columns>
         <Column>
@@ -115,8 +118,11 @@ class CameraApp extends Component {
               <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
             </ButtonMenu>
           </Section>
+          <Section title={"Status"}>
+            <Label title={reportedClassifierState} />
+          </Section>
           <Section title={"Bug Work-around"}>
-            <Label title={"If image does not update within 15 seconds of pressing Apply, navigate away from this page, then retry"} />
+            <Label title={"If image does not update when Status is \"Running\", navigate away from this page, then back and reapply Settings"} />
           </Section>
         </Column>
       </Columns>
