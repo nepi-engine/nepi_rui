@@ -639,7 +639,7 @@ class ROSConnectionStore {
       })
 
       if (this.connectedToROS) {
-        setTimeout(_pollOnce, 2000)
+        setTimeout(_pollOnce, 1000)
       }
     }
 
