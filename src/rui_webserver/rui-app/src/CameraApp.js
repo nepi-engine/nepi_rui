@@ -6,6 +6,9 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
+import Slider from "rc-slider"
+import Input from "./Input"
+
 import createShortUniqueValues from "./Utilities"
 
 import CameraViewer from "./CameraViewer"
@@ -15,12 +18,13 @@ import CameraViewer from "./CameraViewer"
 class CameraApp extends Component {
   constructor(props) {
     super(props)
-    this.state = { imageTopic: null, imageText: null, currentClassifierImgTopic: null, selectedClassifier: null }
+    this.state = { imageTopic: null, imageText: null, currentClassifierImgTopic: null, selectedClassifier: null, detectionThreshold: 0.3 }
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
+    this.onThresholdSliderValueChange = this.onThresholdSliderValueChange.bind(this)
   }
 
   // Function for creating image topic options.
@@ -73,10 +77,11 @@ class CameraApp extends Component {
     } = this.props.ros
     const {
       imageTopic,
-      selectedClassifier
+      selectedClassifier,
+      detectionThreshold
     } = this.state
 
-    startClassifier(imageTopic, selectedClassifier)
+    startClassifier(imageTopic, selectedClassifier, detectionThreshold)
     await this.setState({currentClassifierImgTopic: classifierImgTopic})
   }
 
@@ -87,6 +92,10 @@ class CameraApp extends Component {
 
     stopClassifier()
     //this.setState({currentClassifierImgTopic: null})
+  }
+
+  async onThresholdSliderValueChange(value) {
+    await this.setState({detectionThreshold: value / 100})
   }
 
   render() {
@@ -112,6 +121,20 @@ class CameraApp extends Component {
               <Select onChange={this.onClassifierSelected}>
                 {this.createImageClassifierOptions()}
               </Select>
+            </Label>
+            <Label title={"Detection Threshold"}>
+              <Input
+                disabled={true}
+                value={this.state.detectionThreshold}
+              />
+              <Slider
+                defaultValue={this.state.detectionThreshold}
+                disabled={false}
+                onChange={this.onThresholdSliderValueChange}
+                min={0.0}
+                max={100.0}
+                step={1.0}
+              />
             </Label>
             <ButtonMenu>
               <Button onClick={this.onApplyButtonPressed}>{"Apply"}</Button>

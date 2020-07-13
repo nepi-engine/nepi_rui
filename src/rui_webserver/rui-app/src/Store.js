@@ -728,14 +728,14 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  startClassifier(selectedImageTopic, selectedClassifier) {
+  startClassifier(selectedImageTopic, selectedClassifier, detectionThreshold) {
     this.publishMessage({
       name: "start_classifier",
       messageType: "num_sdk_msgs/ClassifierSelection",
       data: {
-        // TODO: Eliminate hard-coding here
         img_topic: selectedImageTopic,
-        classifier: selectedClassifier
+        classifier: selectedClassifier,
+        detection_threshold: detectionThreshold
       }
     })
   }
