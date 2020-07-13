@@ -128,16 +128,17 @@ class ROSConnectionStore {
   @observable topicQueryLock = false
   @observable topicNames = null
   @observable topicTypes = null
-  @observable imageTopics = []
+  @observable imageTopicsDetection = []
+  @observable imageTopics3DX = []
   @observable sensor3DXTopics = []
 
-  @observable imageFilter = null
+  @observable imageFilterDetection = null
+  @observable imageFilter3DX = null
 
   @observable last3DXUpdate = new Date()
 
   @observable classifiers = []
   @observable classifierImgTopic = null
-  @observable classifierImgIsPublished = false
 
   //@observable reportedClassifierImg = "Uninitialized"
   //@observable reportedClassifierName = "Uninitialized"
@@ -146,10 +147,15 @@ class ROSConnectionStore {
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
-        // get the image filter
-        const imageFilterJson = await getFileJson("img_filter.json")
-        if (imageFilterJson.filter) {
-          this.imageFilter = new RegExp(imageFilterJson.filter)
+        // get the image filters
+        const imageFilterDetectionJson = await getFileJson("img_filter_detection.json")
+        if (imageFilterDetectionJson.filter) {
+          this.imageFilterDetection = new RegExp(imageFilterDetectionJson.filter)
+        }
+
+        const imageFilter3DXJson = await getFileJson("img_filter_3dx.json")
+        if (imageFilter3DXJson.filter) {
+          this.imageFilter3DX = new RegExp(imageFilter3DXJson.filter)
         }
 
         // setup rosbridge connection
@@ -190,9 +196,10 @@ class ROSConnectionStore {
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
         var newSensor3DXs = this.updateSensor3DXTopics()
-        var newImageTopics = this.updateImageTopics()
+        var newDetectionImageTopics = this.updateDetectionImageTopics()
+        var new3DXImageTopics = this.update3DXImageTopics()
 
-        if (newPrefix || newSensor3DXs || newImageTopics) {
+        if (newPrefix || newSensor3DXs || newDetectionImageTopics || new3DXImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -245,30 +252,49 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  updateImageTopics() {
+  updateDetectionImageTopics() {
     // Function for updating image topics list
     var newImageTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
       if (this.topicTypes[i] === "sensor_msgs/Image") {
         // if we don't have a filter, or if we do and this topic name includes
         // the filter text (substring search) then push it onto the list
-        if (!this.imageFilter || this.imageFilter.test(this.topicNames[i])) {
+        if (!this.imageFilterDetection || this.imageFilterDetection.test(this.topicNames[i])) {
           newImageTopics.push(this.topicNames[i])
         }
       }
-    }
-    if (newImageTopics.includes(this.classifierImgTopic)) {
-      this.classifierImgIsPublished = true
-    }
-    else {
-      this.classifierImgIsPublished = false
     }
 
     // sort the image topics for comparison to work
     newImageTopics.sort()
 
-    if (!this.imageTopics.equals(newImageTopics)) {
-      this.imageTopics = newImageTopics
+    if (!this.imageTopicsDetection.equals(newImageTopics)) {
+      this.imageTopicsDetection = newImageTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  update3DXImageTopics() {
+    // Function for updating image topics list
+    var newImageTopics = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicTypes[i] === "sensor_msgs/Image") {
+        // if we don't have a filter, or if we do and this topic name includes
+        // the filter text (substring search) then push it onto the list
+        if (!this.imageFilter3DX || this.imageFilter3DX.test(this.topicNames[i])) {
+          newImageTopics.push(this.topicNames[i])
+        }
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newImageTopics.sort()
+
+    if (!this.imageTopics3DX.equals(newImageTopics)) {
+      this.imageTopics3DX = newImageTopics
       return true
     } else {
       return false

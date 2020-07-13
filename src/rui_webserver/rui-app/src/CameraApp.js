@@ -32,10 +32,10 @@ class CameraApp extends Component {
   createImageTopicsOptions() {
     var items = []
     items.push(<Option>{"None"}</Option>)
-    const { imageTopics } = this.props.ros
-    var uniqueNames = createShortUniqueValues(imageTopics)
-    for (var i = 0; i < imageTopics.length; i++) {
-      items.push(<Option value={imageTopics[i]}>{uniqueNames[i]}</Option>)
+    const { imageTopicsDetection } = this.props.ros
+    var uniqueNames = createShortUniqueValues(imageTopicsDetection)
+    for (var i = 0; i < imageTopicsDetection.length; i++) {
+      items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
     }
     return items
   }

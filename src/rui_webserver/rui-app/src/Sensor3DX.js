@@ -121,7 +121,7 @@ class Sensor3DX extends Component {
   }
 
   render() {
-    const { sensor3DXTopics, imageTopics } = this.props.ros
+    const { sensor3DXTopics, imageTopics3DX } = this.props.ros
     const NoneOption = <Option>None</Option>
 
     return (
@@ -144,7 +144,7 @@ class Sensor3DX extends Component {
                   value={this.state.imageTopic_0}
                 >
                   {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
+                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -155,7 +155,7 @@ class Sensor3DX extends Component {
                   value={this.state.imageTopic_1}
                 >
                   {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
+                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -166,7 +166,7 @@ class Sensor3DX extends Component {
                   value={this.state.imageTopic_2}
                 >
                   {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
+                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -177,7 +177,7 @@ class Sensor3DX extends Component {
                   value={this.state.imageTopic_3}
                 >
                   {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics, this.state.topic3DX)
+                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
                     : NoneOption}
                 </Select>
               </Label>
