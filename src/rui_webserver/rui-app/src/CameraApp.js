@@ -112,7 +112,7 @@ class CameraApp extends Component {
   }
 
   async onThresholdSliderValueChange(value) {
-    await this.setState({detectionThreshold: value / 100})
+    await this.setState({detectionThreshold: value})
   }
 
   render() {
@@ -148,9 +148,9 @@ class CameraApp extends Component {
                 defaultValue={this.state.detectionThreshold}
                 disabled={false}
                 onChange={this.onThresholdSliderValueChange}
-                min={0.0}
-                max={100.0}
-                step={1.0}
+                min={0.01}
+                max={1.0}
+                step={0.01}
               />
             </Label>
             <ButtonMenu>
