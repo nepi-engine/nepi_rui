@@ -22,6 +22,7 @@ class CameraApp extends Component {
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
+    this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.onThresholdSliderValueChange = this.onThresholdSliderValueChange.bind(this)
@@ -70,11 +71,25 @@ class CameraApp extends Component {
     })
   }
 
-  async onApplyButtonPressed() {
+  async waitForClassifierRunning() {
     const {
-      startClassifier,
+      reportedClassifierState,
       classifierImgTopic
     } = this.props.ros
+
+    // Delay the state transition until the classifier is actually running
+    // in order to avoid invoking CameraViewer's updateImageSource method (via
+    // componentDidUpdate()) until we can receive a real image with a valid size
+    if (reportedClassifierState !== "Running") {
+      await setTimeout(this.waitForClassifierRunning, 1000)
+    }
+    else {
+      await this.setState({currentClassifierImgTopic: classifierImgTopic})
+    }
+  }
+
+  async onApplyButtonPressed() {
+    const { startClassifier } = this.props.ros
     const {
       imageTopic,
       selectedClassifier,
@@ -82,7 +97,9 @@ class CameraApp extends Component {
     } = this.state
 
     startClassifier(imageTopic, selectedClassifier, detectionThreshold)
-    await this.setState({currentClassifierImgTopic: classifierImgTopic})
+
+    this.waitForClassifierRunning()
+
   }
 
   onStopButtonPressed() {
@@ -143,9 +160,6 @@ class CameraApp extends Component {
           </Section>
           <Section title={"Status"}>
             <Label title={reportedClassifierState} />
-          </Section>
-          <Section title={"Bug Work-around"}>
-            <Label title={"If image does not update when Status is \"Running\", navigate away from this page, then back and reapply Settings"} />
           </Section>
         </Column>
       </Columns>
