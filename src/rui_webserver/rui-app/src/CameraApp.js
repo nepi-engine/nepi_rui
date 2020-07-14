@@ -112,7 +112,12 @@ class CameraApp extends Component {
   }
 
   async onThresholdSliderValueChange(value) {
+    const {
+      updateDetectionThreshold
+    } = this.props.ros
+
     await this.setState({detectionThreshold: value})
+    updateDetectionThreshold(value)
   }
 
   render() {
@@ -139,6 +144,12 @@ class CameraApp extends Component {
                 {this.createImageClassifierOptions()}
               </Select>
             </Label>
+            <ButtonMenu>
+              <Button onClick={this.onApplyButtonPressed}>{"Apply"}</Button>
+              <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
+            </ButtonMenu>
+          </Section>
+          <Section title={"Parameters"}>  
             <Label title={"Detection Threshold"}>
               <Input
                 disabled={true}
@@ -148,15 +159,12 @@ class CameraApp extends Component {
                 defaultValue={this.state.detectionThreshold}
                 disabled={false}
                 onChange={this.onThresholdSliderValueChange}
+                onAfterChange={this.onThresholdSliderValueChange}
                 min={0.01}
                 max={1.0}
                 step={0.01}
               />
             </Label>
-            <ButtonMenu>
-              <Button onClick={this.onApplyButtonPressed}>{"Apply"}</Button>
-              <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
-            </ButtonMenu>
           </Section>
           <Section title={"Status"}>
             <Label title={reportedClassifierState} />

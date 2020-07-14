@@ -775,6 +775,22 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  updateDetectionThreshold(newThreshold, throttle = true)
+  {
+    // Re-use the 3DX throttler here -- no reason to create a new one,
+    // as the desired slider bar throttling is the same
+    if (throttle && this.isThrottled()) {
+      return
+    }
+
+    this.publishMessage({
+      name: "num_darknet_ros/set_threshold",
+      messageType: "std_msgs/Float32",
+      data: { data: newThreshold }
+    })
+  }
+
   // 3DX Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
