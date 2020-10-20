@@ -545,8 +545,8 @@ class ROSConnectionStore {
         args: {trig_val : this.triggerMask},
         msgKey: "status"
       })
-
-      this.triggerAutoRateHz = this.triggerStatus.auto_rate
+      // Leading '+' here keeps us from displaying trailing zeros by converting the string back to a number
+      this.triggerAutoRateHz = +this.triggerStatus.auto_rate.toFixed(2)
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 5000)
@@ -700,7 +700,13 @@ class ROSConnectionStore {
       }
     })
 
-    this.triggerAutoRateHz = freq
+    if (freq == 0) {
+      this.triggerAutoRateHz = freq
+    }
+    else {
+      this.triggerAutoRateHz = e.target.value
+    }
+
   }
 
   @action.bound
@@ -772,7 +778,13 @@ class ROSConnectionStore {
       }
     })
 
-    this.saveFreqHz = freq
+    //this.saveFreqHz = freq
+    if (freq == 0) {
+      this.saveFreqHz = 0
+    }
+    else {
+      this.saveFreqHz = e.target.value
+    }
   }
 
   @action.bound

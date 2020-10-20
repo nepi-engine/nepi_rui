@@ -286,7 +286,7 @@ class Dashboard extends Component {
           <Toggle onClick={onToggleSaveData} />
         </Label>
         <Label title={"Save Freq. (Hz)"}>
-          <Input value={round(saveFreqHz, 2)} onChange={onChangeSaveFreq} />
+          <Input value={saveFreqHz} onChange={onChangeSaveFreq} />
         </Label>
         <Label title={"Data Rate (MB/s)"}>
           <Input disabled value={round(systemStatusDiskRate, 3)} />
