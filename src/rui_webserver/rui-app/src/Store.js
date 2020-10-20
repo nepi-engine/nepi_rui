@@ -125,6 +125,8 @@ class ROSConnectionStore {
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
+  @observable saveFreqHz = 1.0
+
   @observable topicQueryLock = false
   @observable topicNames = null
   @observable topicTypes = null
@@ -751,6 +753,26 @@ class ROSConnectionStore {
         save_raw: false
       }
     })
+  }
+
+  @action.bound
+  onChangeSaveFreq(e) {
+    let freq = parseFloat(e.target.value)
+
+    if (isNaN(freq)) {
+      freq = 0
+    }
+
+    this.publishMessage({
+      name: "save_data_rate",
+      messageType: "num_sdk_msgs/SaveDataRate",
+      data: {
+        data_product: "all",
+        save_rate_hz: freq,
+      }
+    })
+
+    this.saveFreqHz = freq
   }
 
   @action.bound

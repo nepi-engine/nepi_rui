@@ -279,14 +279,17 @@ class Dashboard extends Component {
   }
 
   renderSaveData() {
-    const { systemStatusDiskRate, onToggleSaveData } = this.props.ros
+    const { onToggleSaveData, saveFreqHz, onChangeSaveFreq, systemStatusDiskRate } = this.props.ros
     return (
       <Section title={"Save Data"}>
-        <Label title={"Rate (MB/s)"}>
-          <Input disabled value={round(systemStatusDiskRate, 3)} />
-        </Label>
         <Label title={"Save Data"}>
           <Toggle onClick={onToggleSaveData} />
+        </Label>
+        <Label title={"Save Freq. (Hz)"}>
+          <Input value={round(saveFreqHz, 2)} onChange={onChangeSaveFreq} />
+        </Label>
+        <Label title={"Data Rate (MB/s)"}>
+          <Input disabled value={round(systemStatusDiskRate, 3)} />
         </Label>
       </Section>
     )
