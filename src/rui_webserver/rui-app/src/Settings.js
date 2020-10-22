@@ -28,7 +28,7 @@ class Settings extends Component {
     this.renderNUID = this.renderNUID.bind(this)
     this.nuidListener = this.nuidListener.bind(this)
     var listener = this.props.ros.setupNUIDListener(
-      "/numurus/3dx/100069",
+      "",
       this.nuidListener
     )
   }
@@ -38,7 +38,6 @@ class Settings extends Component {
   }
 
   nuidListener(message) {
-    console.log(message)
     this.setState({
       nuid: message.data
     })
@@ -84,7 +83,6 @@ class Settings extends Component {
   }
   renderNUID() {
     const { nuid } = this.state
-    console.log(this)
     return (
       <Section title={"NEPI"}>
         <Label title={"NUID"}>
@@ -125,3 +123,4 @@ class Settings extends Component {
     )
   }
 }
+export default Settings
