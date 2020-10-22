@@ -125,8 +125,6 @@ class ROSConnectionStore {
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
-  @observable saveFreqHz = 1.0
-
   @observable topicQueryLock = false
   @observable topicNames = null
   @observable topicTypes = null
@@ -372,6 +370,7 @@ class ROSConnectionStore {
       name: noPrefix ? name : `${this.rosPrefix}/${name}`,
       messageType
     })
+    console.log("subscribing to " + name)
     listener.subscribe(action(callback))
 
     // add to listeners that get unsubscribed
@@ -500,6 +499,17 @@ class ROSConnectionStore {
       })
     }
   }
+  setupNUIDListener(topic, callback) {
+    if (topic) {
+      return this.addListener({
+        name: topic + "/nuid",
+        messageType: "std_msgs/String",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
 
   async callSystemDefsService() {
     this.systemDefs = await this.callService({
@@ -545,8 +555,8 @@ class ROSConnectionStore {
         args: {trig_val : this.triggerMask},
         msgKey: "status"
       })
-      // Leading '+' here keeps us from displaying trailing zeros by converting the string back to a number
-      this.triggerAutoRateHz = +this.triggerStatus.auto_rate.toFixed(2)
+
+      this.triggerAutoRateHz = this.triggerStatus.auto_rate
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 5000)
@@ -700,13 +710,7 @@ class ROSConnectionStore {
       }
     })
 
-    if (freq == 0) {
-      this.triggerAutoRateHz = freq
-    }
-    else {
-      this.triggerAutoRateHz = e.target.value
-    }
-
+    this.triggerAutoRateHz = freq
   }
 
   @action.bound
@@ -759,32 +763,6 @@ class ROSConnectionStore {
         save_raw: false
       }
     })
-  }
-
-  @action.bound
-  onChangeSaveFreq(e) {
-    let freq = parseFloat(e.target.value)
-
-    if (isNaN(freq)) {
-      freq = 0
-    }
-
-    this.publishMessage({
-      name: "save_data_rate",
-      messageType: "num_sdk_msgs/SaveDataRate",
-      data: {
-        data_product: "all",
-        save_rate_hz: freq,
-      }
-    })
-
-    //this.saveFreqHz = freq
-    if (freq == 0) {
-      this.saveFreqHz = 0
-    }
-    else {
-      this.saveFreqHz = e.target.value
-    }
   }
 
   @action.bound

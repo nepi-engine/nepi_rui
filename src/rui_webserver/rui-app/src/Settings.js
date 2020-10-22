@@ -8,6 +8,7 @@ import Label from "./Label"
 import Button from "./Button"
 
 @inject("networkInfo")
+@inject("ros")
 @observer
 class Settings extends Component {
   constructor(props) {
@@ -17,17 +18,31 @@ class Settings extends Component {
       saveSettingsFileSize: "20.0",
       saveSettingsFilePrefix: "Lake Union",
       units: "metric",
-      unitsResolution: "Low"
+      unitsResolution: "Low",
+      nuid: "Not Available"
     }
 
     this.renderSaveSettings = this.renderSaveSettings.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderResetActions = this.renderResetActions.bind(this)
+    this.renderNUID = this.renderNUID.bind(this)
+    this.nuidListener = this.nuidListener.bind(this)
+    var listener = this.props.ros.setupNUIDListener(
+      "/numurus/3dx/100069",
+      this.nuidListener
+    )
   }
 
   componentDidMount() {
     this.props.networkInfo.fetch()
   }
+
+  nuidListener(message) {
+    console.log(message)
+    this.setState({
+      nuid: message.data
+    })
+  } 
 
   renderSaveSettings() {
     const { saveSettingsFileSize, saveSettingsFilePrefix } = this.state
@@ -67,6 +82,17 @@ class Settings extends Component {
       </Section>
     )
   }
+  renderNUID() {
+    const { nuid } = this.state
+    console.log(this)
+    return (
+      <Section title={"NEPI"}>
+        <Label title={"NUID"}>
+          <Input disabled value= {nuid} />
+        </Label>
+      </Section>
+    )
+  }
 
   renderResetActions() {
     return (
@@ -87,7 +113,10 @@ class Settings extends Component {
   render() {
     return (
       <Columns>
-        <Column>{this.renderSaveSettings()}</Column>
+        <Column>
+          {this.renderSaveSettings()}
+          {this.renderNUID()}
+        </Column>
         <Column>
           {this.renderNetworkInfo()}
           {this.renderResetActions()}
@@ -96,5 +125,3 @@ class Settings extends Component {
     )
   }
 }
-
-export default Settings
