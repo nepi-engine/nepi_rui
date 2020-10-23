@@ -27,10 +27,7 @@ class Settings extends Component {
     this.renderResetActions = this.renderResetActions.bind(this)
     this.renderNUID = this.renderNUID.bind(this)
     this.nuidListener = this.nuidListener.bind(this)
-    var listener = this.props.ros.setupNUIDListener(
-      "",
-      this.nuidListener
-    )
+    var listener = this.props.ros.setupNUIDListener(this.nuidListener)
   }
 
   componentDidMount() {

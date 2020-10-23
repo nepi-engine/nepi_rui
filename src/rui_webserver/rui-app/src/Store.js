@@ -500,15 +500,13 @@ class ROSConnectionStore {
       })
     }
   }
-  setupNUIDListener(topic, callback) {
-    if (topic) {
+  setupNUIDListener(callback) {
       return this.addListener({
-        name: "/nuid",
+        name: "nuid",
         messageType: "std_msgs/String",
         callback: callback,
         manageListener: false
       })
-    }
   }
 
   async callSystemDefsService() {
