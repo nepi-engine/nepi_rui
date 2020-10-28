@@ -142,6 +142,8 @@ class ROSConnectionStore {
   @observable classifiers = []
   @observable classifierImgTopic = null
 
+  @observable ip_addrs = []
+
   //@observable reportedClassifierImg = "Uninitialized"
   //@observable reportedClassifierName = "Uninitialized"
   @observable reportedClassifierState = "Uninitialized"
@@ -419,6 +421,7 @@ class ROSConnectionStore {
     // services
     this.callSystemDefsService()
     this.callImgClassifierListQueryService()
+    this.startPollingIPAddrQueryService()
     this.startPollingOpEnvironmentQueryService()
     this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
@@ -529,6 +532,22 @@ class ROSConnectionStore {
       messageType: "num_sdk_msgs/ImageClassifierListQuery",
       msgKey: "classifiers"
     })
+  }
+
+  async startPollingIPAddrQueryService() {
+    const _pollOnce = async () => {
+      this.ip_addrs = await this.callService({
+        name: "ip_addr_query",
+        messageType: "num_sdk_msgs/IPAddrQuery",
+        msgKey: "ip_addrs"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 3000)
+      }
+    }
+
+    _pollOnce()
   }
 
   async startPollingOpEnvironmentQueryService() {
@@ -821,6 +840,24 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  addIPAddr(addr) {
+    this.publishMessage({
+      name: "add_ip_addr",
+      messageType: "std_msgs/String",
+      data: { data: addr }
+    })
+  }
+
+  @action.bound
+  removeIPAddr(addr) {
+    this.publishMessage({
+      name: "remove_ip_addr",
+      messageType: "std_msgs/String",
+      data: { data: addr }
+    })
+  }
+
+  @action.bound
   updateDetectionThreshold(newThreshold, throttle = true)
   {
     // Re-use the 3DX throttler here -- no reason to create a new one,
@@ -915,19 +952,8 @@ class ROSConnectionStore {
   /////////////////////////////////////////////////////////////////////////
 }
 
-class NetworkInfoStore {
-  @observable ipAddress = null
-
-  @action.bound
-  async fetch() {
-    const networkInfo = await apiCall("networkinfo")
-    this.ipAddress = networkInfo.ipAddress
-  }
-}
-
 const stores = {
   ros: new ROSConnectionStore(),
-  networkInfo: new NetworkInfoStore()
 }
 
 export default stores
