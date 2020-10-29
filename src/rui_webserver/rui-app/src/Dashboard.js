@@ -273,16 +273,16 @@ class Dashboard extends Component {
         <Column>
           {this.renderDeviceInfo()}
           {this.renderSystemClock()}
-          {this.renderLocation()}
         </Column>
         <Column>
           {this.renderSystemStatus()}
+          {this.renderSaveData()}
           {this.renderDirection()}
         </Column>
         <Column>
           {this.renderSystemMessages()}
-          {this.renderSaveData()}
           {this.renderOrientation()}
+          {this.renderLocation()}
         </Column>
       </Columns>
     )
