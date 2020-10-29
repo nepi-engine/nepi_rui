@@ -464,7 +464,6 @@ class ROSConnectionStore {
         setTimeout(() => {
           this.heartbeat = false
         }, 500)
-
         this.systemStatus = message
         this.systemStatusDiskUsageMB = message.disk_usage
         this.systemStatusDiskRate = message.storage_rate
@@ -483,7 +482,7 @@ class ROSConnectionStore {
         this.systemStatusTempC =
           message.temperatures.length && message.temperatures[0]
         this.systemStatusWarnings = message.warnings && message.warnings.flags
-        this.rosLog(`Received status message`)
+        this.rosLog("Disk Usage: " + message.disk_usage + "\nTemperature: " + message.temperatures[0] + "\nwarnings:\n    " + message.warnings.flags[0] + "\n    " + message.warnings.flags[1] + "\n    " + message.warnings.flags[2])
       }
     })
   }
