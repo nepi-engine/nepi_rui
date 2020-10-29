@@ -8,7 +8,6 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
-import { TRIGGER_MASKS } from "./Store"
 
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
@@ -21,18 +20,12 @@ class Dashboard extends Component {
     super(props)
 
     this.state = {
-      deviceTriggerSWActive: true,
-      deviceTriggerDualCamsActive: true,
-      deviceTriggerToFCamActive: true,
-      deviceTrigger3DSonarActive: true,
-      deviceTriggerActualRateHz: "15.5",
-      deviceTriggerAutoRateHz: "20"
+      saveSettingsFilePrefix: "Lake Union"
     }
 
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
     this.renderSystemClock = this.renderSystemClock.bind(this)
     this.renderLocation = this.renderLocation.bind(this)
-    this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
     this.renderSystemStatus = this.renderSystemStatus.bind(this)
     this.renderDirection = this.renderDirection.bind(this)
     this.renderOrientation = this.renderOrientation.bind(this)
@@ -123,38 +116,6 @@ class Dashboard extends Component {
         </Label>
         <Label title={"Altitude (m)"}>
           <Input disabled value={navPosLocationAlt} />
-        </Label>
-      </Section>
-    )
-  }
-
-  renderTriggerSettings() {
-    const {
-      triggerAutoRateHz,
-      onChangeTriggerRate,
-      triggerMask,
-      onPressManualTrigger,
-      onToggleHWTriggerOutputEnabled,
-      onToggleHWTriggerInputEnabled
-    } = this.props.ros
-
-    return (
-      <Section title={"Trigger Settings"}>
-        <Label title={"Auto Rate (Hz)"}>
-          <Input value={triggerAutoRateHz} onChange={onChangeTriggerRate} />
-        </Label>
-
-        <ButtonMenu>
-          <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
-        </ButtonMenu>
-        <Label title={"Hardware Trigger Input Enable"}>
-          <Toggle onClick={onToggleHWTriggerInputEnabled} />
-        </Label>
-        <Label title={"Hardware Trigger Output Enable"}>
-          <Toggle
-            checked={triggerMask === TRIGGER_MASKS.OUTPUT_ENABLED}
-            onClick={onToggleHWTriggerOutputEnabled}
-          />
         </Label>
       </Section>
     )
@@ -280,6 +241,7 @@ class Dashboard extends Component {
 
   renderSaveData() {
     const { onToggleSaveData, saveFreqHz, onChangeSaveFreq, systemStatusDiskRate } = this.props.ros
+    const {saveSettingsFilePrefix} = this.state
     return (
       <Section title={"Save Data"}>
         <Label title={"Save Data"}>
@@ -291,8 +253,18 @@ class Dashboard extends Component {
         <Label title={"Data Rate (MB/s)"}>
           <Input disabled value={round(systemStatusDiskRate, 3)} />
         </Label>
+        <Label title={"File Name Prefix"}>
+          <Input
+            value={saveSettingsFilePrefix}
+            onChange={this.onUpdateSaveSettingFilePrefix}
+          />
+        </Label>
       </Section>
     )
+  }
+
+  onUpdateSaveSettingFilePrefix(e) {
+    this.setState({ saveSettingsFilePrefix: e.target.value })
   }
 
   render() {
@@ -304,7 +276,6 @@ class Dashboard extends Component {
           {this.renderLocation()}
         </Column>
         <Column>
-          {this.renderTriggerSettings()}
           {this.renderSystemStatus()}
           {this.renderDirection()}
         </Column>

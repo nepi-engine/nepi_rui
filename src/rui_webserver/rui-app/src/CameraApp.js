@@ -18,8 +18,7 @@ import CameraViewer from "./CameraViewer"
 class CameraApp extends Component {
   constructor(props) {
     super(props)
-    this.state = { imageTopic: null, imageText: null, currentClassifierImgTopic: null, selectedClassifier: null, detectionThreshold: 0.3 }
-
+    this.state = { imageTopic: null, imageText: null, currentClassifierImgTopic: this.props.ros.classifierImgTopic, selectedClassifier: null, detectionThreshold: 0.3 }
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
@@ -27,7 +26,6 @@ class CameraApp extends Component {
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.onThresholdSliderValueChange = this.onThresholdSliderValueChange.bind(this)
   }
-
   // Function for creating image topic options.
   createImageTopicsOptions() {
     var items = []

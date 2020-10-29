@@ -1,12 +1,12 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-
+import Toggle from "react-toggle"
+import { TRIGGER_MASKS } from "./Store"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Button from "./Button"
-
+import Button, { ButtonMenu } from "./Button"
 @inject("networkInfo")
 @inject("ros")
 @observer
@@ -15,16 +15,20 @@ class Settings extends Component {
     super(props)
 
     this.state = {
-      saveSettingsFileSize: "20.0",
-      saveSettingsFilePrefix: "Lake Union",
       units: "metric",
       unitsResolution: "Low",
-      nuid: "Not Available"
+      nuid: "Not Available",
+      deviceTriggerSWActive: true,
+      deviceTriggerDualCamsActive: true,
+      deviceTriggerToFCamActive: true,
+      deviceTrigger3DSonarActive: true,
+      deviceTriggerActualRateHz: "15.5",
+      deviceTriggerAutoRateHz: "20"
     }
 
-    this.renderSaveSettings = this.renderSaveSettings.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderResetActions = this.renderResetActions.bind(this)
+    this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
     this.renderNUID = this.renderNUID.bind(this)
     this.nuidListener = this.nuidListener.bind(this)
     var listener = this.props.ros.setupNUIDListener(this.nuidListener)
@@ -39,33 +43,36 @@ class Settings extends Component {
       nuid: message.data
     })
   } 
+  renderTriggerSettings() {
+    const {
+      triggerAutoRateHz,
+      onChangeTriggerRate,
+      triggerMask,
+      onPressManualTrigger,
+      onToggleHWTriggerOutputEnabled,
+      onToggleHWTriggerInputEnabled
+    } = this.props.ros
 
-  renderSaveSettings() {
-    const { saveSettingsFileSize, saveSettingsFilePrefix } = this.state
     return (
-      <Section title={"Save Settings"}>
-        <Label title={"Max File Size (MB)"}>
-          <Input
-            value={saveSettingsFileSize}
-            onChange={this.onUpdateSaveSettingFileSize}
-          />
+      <Section title={"Trigger Settings"}>
+        <Label title={"Auto Rate (Hz)"}>
+          <Input value={triggerAutoRateHz} onChange={onChangeTriggerRate} />
         </Label>
-        <Label title={"File Name Prefix"}>
-          <Input
-            value={saveSettingsFilePrefix}
-            onChange={this.onUpdateSaveSettingFilePrefix}
+
+        <ButtonMenu>
+          <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
+        </ButtonMenu>
+        <Label title={"Hardware Trigger Input Enable"}>
+          <Toggle onClick={onToggleHWTriggerInputEnabled} />
+        </Label>
+        <Label title={"Hardware Trigger Output Enable"}>
+          <Toggle
+            checked={triggerMask === TRIGGER_MASKS.OUTPUT_ENABLED}
+            onClick={onToggleHWTriggerOutputEnabled}
           />
         </Label>
       </Section>
     )
-  }
-
-  onUpdateSaveSettingFileSize(e) {
-    this.setState({ saveSettingsFileSize: e.target.value })
-  }
-
-  onUpdateSaveSettingFilePrefix(e) {
-    this.setState({ saveSettingsFilePrefix: e.target.value })
   }
 
   renderNetworkInfo() {
@@ -109,8 +116,8 @@ class Settings extends Component {
     return (
       <Columns>
         <Column>
-          {this.renderSaveSettings()}
           {this.renderNUID()}
+          {this.renderTriggerSettings()}
         </Column>
         <Column>
           {this.renderNetworkInfo()}

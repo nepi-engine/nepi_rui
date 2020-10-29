@@ -53,7 +53,6 @@ class App extends Component {
                 { path: "/sensor3DX", label: "3DX" }
               ]
             },
-            { path: "/files", label: "Files" },
             { path: "/settings", label: "Settings" }
           ]}
         />

@@ -35,7 +35,6 @@ class CameraViewer extends Component {
       containerWidth: null,
       containerHeight: null
     }
-
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
