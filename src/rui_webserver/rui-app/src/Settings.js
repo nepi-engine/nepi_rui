@@ -30,8 +30,9 @@ class Settings extends Component {
     this.onIPAddrValChange = this.onIPAddrValChange.bind(this)
     this.onAddButtonPressed = this.onAddButtonPressed.bind(this)
     this.onRemoveButtonPressed = this.onRemoveButtonPressed.bind(this)
+    this.onUserReset = this.onUserReset.bind(this)
+    this.onFactoryReset = this.onFactoryReset.bind(this)
 
-    this.renderSaveSettings = this.renderSaveSettings.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderResetActions = this.renderResetActions.bind(this)
     this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
@@ -96,6 +97,16 @@ class Settings extends Component {
     )
   }
 
+  async onUserReset() {
+    const { resetCfg } = this.props.ros
+    resetCfg(0) // Value per Reset.msg
+  }
+
+  async onFactoryReset() {
+    const { resetCfg } = this.props.ros
+    resetCfg(1) // Value per Reset.msg
+  }
+
   renderNetworkInfo() {
     const { ip_addrs } = this.props.ros
     const { ipAddrVal } = this.state
@@ -116,6 +127,7 @@ class Settings extends Component {
       </Section>
     )
   }
+
   renderNUID() {
     const { nuid } = this.state
     return (
@@ -131,13 +143,10 @@ class Settings extends Component {
     return (
       <Section title={"Reset"}>
         <Label>
-          <Button>{"User Reset"}</Button>
+          <Button onClick={this.onUserReset}>{"User Reset"}</Button>
         </Label>
         <Label>
-          <Button>{"Factory Reset"}</Button>
-        </Label>
-        <Label>
-          <Button>{"Reboot System"}</Button>
+          <Button onClick={this.onFactoryReset}>{"Factory Reset"}</Button>
         </Label>
       </Section>
     )

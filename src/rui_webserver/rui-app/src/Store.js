@@ -873,6 +873,15 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  resetCfg(resetVal) {
+    this.publishMessage({
+      name: "reset",
+      messageType: "num_sdk_msgs/Reset",
+      data: { reset_type: resetVal }
+    })
+  }
+
   // 3DX Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
