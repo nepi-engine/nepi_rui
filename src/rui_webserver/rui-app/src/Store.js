@@ -482,7 +482,12 @@ class ROSConnectionStore {
         this.systemStatusTempC =
           message.temperatures.length && message.temperatures[0]
         this.systemStatusWarnings = message.warnings && message.warnings.flags
-        this.rosLog("Disk Usage: " + message.disk_usage + "\nTemperature: " + message.temperatures[0] + "\nwarnings:\n    " + message.warnings.flags[0] + "\n    " + message.warnings.flags[1] + "\n    " + message.warnings.flags[2])
+        this.rosLog("Received Status Message\nInfo:")
+        var i
+        for(i in message.info_strings) {
+          this.rosLog("    " + i)
+        }
+        
       }
     })
   }
