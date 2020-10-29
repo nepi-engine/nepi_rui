@@ -133,6 +133,7 @@ class ROSConnectionStore {
   @observable imageTopicsDetection = []
   @observable imageTopics3DX = []
   @observable sensor3DXTopics = []
+  @observable resetTopics = []
 
   @observable imageFilterDetection = null
   @observable imageFilter3DX = null
@@ -200,10 +201,11 @@ class ROSConnectionStore {
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
         var newSensor3DXs = this.updateSensor3DXTopics()
+        var newResettables = this.updateResetTopics()
         var newDetectionImageTopics = this.updateDetectionImageTopics()
         var new3DXImageTopics = this.update3DXImageTopics()
 
-        if (newPrefix || newSensor3DXs || newDetectionImageTopics || new3DXImageTopics) {
+        if (newPrefix || newSensor3DXs || newResettables || newDetectionImageTopics || new3DXImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -325,6 +327,32 @@ class ROSConnectionStore {
 
     if (!this.sensor3DXTopics.equals(newSensor3DXTopics)) {
       this.sensor3DXTopics = newSensor3DXTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updateResetTopics() {
+    var newResetTopics = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      var topic_name_parts = this.topicNames[i].split("/")
+      var last_element = topic_name_parts.pop()
+      var topic_base = topic_name_parts.join("/")
+      if (
+        last_element === "reset" &&
+        this.topicTypes[i] === "num_sdk_msgs/Reset"
+      ) {
+        newResetTopics.push(topic_base)
+      }
+    }
+
+    // sort the topics for comparison to work
+    newResetTopics.sort()
+
+    if (!this.resetTopics.equals(newResetTopics)) {
+      this.resetTopics = newResetTopics
       return true
     } else {
       return false
@@ -490,7 +518,7 @@ class ROSConnectionStore {
         for(i in message.info_strings) {
           this.rosLog("    " + i)
         }
-        
+
       }
     })
   }
@@ -794,11 +822,11 @@ class ROSConnectionStore {
   @action.bound
   onChangeSaveFreq(e) {
     let freq = parseFloat(e.target.value)
-  
+
     if (isNaN(freq)) {
       freq = 0
     }
-  
+
     this.publishMessage({
       name: "save_data_rate",
       messageType: "num_sdk_msgs/SaveDataRate",
@@ -807,7 +835,7 @@ class ROSConnectionStore {
         save_rate_hz: freq,
       }
     })
-  
+
     //this.saveFreqHz = freq
     if (freq == 0) {
       this.saveFreqHz = 0
@@ -816,7 +844,7 @@ class ROSConnectionStore {
       this.saveFreqHz = e.target.value
     }
   }
-  
+
   @action.bound
   startClassifier(selectedImageTopic, selectedClassifier, detectionThreshold) {
     this.publishMessage({
@@ -874,11 +902,22 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  resetCfg(resetVal) {
+  saveCfg({baseTopic}) {
     this.publishMessage({
-      name: "reset",
+      name: baseTopic + "/save_config",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  resetCfg({baseTopic, resetVal}) {
+    this.publishMessage({
+      name: baseTopic + "/reset",
       messageType: "num_sdk_msgs/Reset",
-      data: { reset_type: resetVal }
+      data: { reset_type: resetVal },
+      noPrefix: true
     })
   }
 
