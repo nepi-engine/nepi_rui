@@ -546,7 +546,7 @@ class ROSConnectionStore {
         this.rosLog("Received Status Message:")
         var i
         for(i in message.info_strings) {
-          this.rosLog("    " + i)
+          this.rosLog("    " + message.info_strings[i].payload)
         }
 
       }
