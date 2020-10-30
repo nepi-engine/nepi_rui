@@ -8,6 +8,7 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
+import Styles from "./Styles"
 
 @inject("ros")
 @observer
@@ -27,7 +28,8 @@ class Settings extends Component {
       deviceTriggerAutoRateHz: "20",
       ipAddrVal: "0.0.0.0/24",
       configSubsys: "All",
-      advancedConfigDisabled: true
+      advancedConfigDisabled: true,
+      updatedDeviceId: ""
     }
 
     this.onIPAddrValChange = this.onIPAddrValChange.bind(this)
@@ -40,6 +42,10 @@ class Settings extends Component {
     this.onToggleAdvancedConfig = this.onToggleAdvancedConfig.bind(this)
     this.createConfigSubsysOptions = this.createConfigSubsysOptions.bind(this)
 
+    this.onDeviceIdChange = this.onDeviceIdChange.bind(this)
+    this.onDeviceIdKey = this.onDeviceIdKey.bind(this)
+
+    this.renderDeviceSettings = this.renderDeviceSettings.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderConfiguration = this.renderConfiguration.bind(this)
     this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
@@ -67,11 +73,42 @@ class Settings extends Component {
     removeIPAddr(ipAddrVal)
   }
 
+  async onDeviceIdChange(e) {
+    this.setState({ updatedDeviceId: e.target.value })
+    document.getElementById("device_id_update_text").style.color = Styles.vars.colors.red
+  }
+
+  async onDeviceIdKey(e) {
+    const {setDeviceID} = this.props.ros
+    if(e.key === 'Enter'){
+      setDeviceID({newDeviceID: this.state.updatedDeviceId})
+      document.getElementById("device_id_update_text").style.color = Styles.vars.colors.black
+    }
+  }
+
   nuidListener(message) {
     this.setState({
       nuid: message.data
     })
   }
+
+  renderDeviceSettings() {
+    const {deviceId} = this.props.ros
+    return (
+      <Section title={"Device"}>
+        <Label title={this.state.advancedConfigDisabled? "Device ID" : "Updated Device ID"}>
+          <Input
+            id={"device_id_update_text"}
+            value={this.state.advancedConfigDisabled? deviceId : this.state.updatedDeviceId }
+            disabled={this.state.advancedConfigDisabled}
+            onChange={this.onDeviceIdChange}
+            onKeyDown={this.onDeviceIdKey}
+          />
+        </Label>
+      </Section>
+    )
+  }
+
   renderTriggerSettings() {
     const {
       triggerAutoRateHz,
@@ -217,11 +254,6 @@ class Settings extends Component {
             <Button onClick={this.onUserReset}>{"User Reset"}</Button>
             <Button hidden={advancedConfigDisabled} onClick={this.onFactoryReset}>{"Factory Reset"}</Button>
           </ButtonMenu>
-        <Label title={"Advanced Settings Enable"}>
-          <Toggle
-            onClick={this.onToggleAdvancedConfig}>
-          </Toggle>
-        </Label>
       </Section>
     )
   }
@@ -230,6 +262,12 @@ class Settings extends Component {
     return (
       <Columns>
         <Column>
+          <Label title={"Advanced Settings Enable"}>
+            <Toggle
+              onClick={this.onToggleAdvancedConfig}>
+            </Toggle>
+          </Label>
+          {this.renderDeviceSettings()}
           {this.renderNUID()}
           {this.renderTriggerSettings()}
         </Column>

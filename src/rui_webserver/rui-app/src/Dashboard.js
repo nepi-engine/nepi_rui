@@ -21,7 +21,8 @@ class Dashboard extends Component {
     super(props)
 
     this.state = {
-      saveSettingsFilePrefix: ""
+      saveSettingsFilePrefix: "",
+      currDeviceId: ""
     }
 
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
@@ -38,7 +39,8 @@ class Dashboard extends Component {
 
   renderDeviceInfo() {
     const {
-      deviceName,
+      deviceType,
+      deviceId,
       deviceSerial,
       systemDefsFirmwareVersion,
       deviceInWater,
@@ -46,8 +48,11 @@ class Dashboard extends Component {
     } = this.props.ros
     return (
       <Section title={"Device Info"}>
-        <Label title={"Name"}>
-          <Input disabled value={deviceName} />
+        <Label title={"Type"}>
+          <Input disabled value={deviceType} />
+        </Label>
+        <Label title={"Device ID"}>
+          <Input disabled value={deviceId} />
         </Label>
         <Label title={"Serial Number"}>
           <Input disabled value={deviceSerial} />

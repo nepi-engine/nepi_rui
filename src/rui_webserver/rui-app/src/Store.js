@@ -114,7 +114,8 @@ class ROSConnectionStore {
   rosListeners = []
 
   @observable namespacePrefix = null
-  @observable deviceName = null
+  @observable deviceType = null
+  @observable deviceId = null
   @observable deviceSerial = null
   @observable deviceInWater = false
 
@@ -244,7 +245,7 @@ class ROSConnectionStore {
   }
 
   validPrefix() {
-    return this.namespacePrefix && this.deviceName && this.deviceSerial
+    return this.namespacePrefix && this.deviceType && this.deviceId
   }
 
   @action.bound
@@ -263,22 +264,22 @@ class ROSConnectionStore {
       ) {
         if (
           this.namespacePrefix !== topic_name_parts[1] &&
-          this.deviceName !== topic_name_parts[2] &&
-          this.deviceSerial !== topic_name_parts[3]
+          this.deviceType !== topic_name_parts[2] &&
+          this.deviceId !== topic_name_parts[3]
         ) {
           this.namespacePrefix = topic_name_parts[1]
-          this.deviceName = topic_name_parts[2]
-          this.deviceSerial = topic_name_parts[3]
+          this.deviceType = topic_name_parts[2]
+          this.deviceId = topic_name_parts[3]
           if (this.validPrefix()) {
             ret = true
             this.rosLog(
-              `Fetched device info ${this.namespacePrefix}/${this.deviceName}/${
-                this.deviceSerial
+              `Fetched device info ${this.namespacePrefix}/${this.deviceType}/${
+                this.deviceId
               }`
             )
             // And update the (fixed) classifier image topic
             this.classifierImgTopic = '/'
-            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceName, '/', this.deviceSerial, CLASSIFIER_IMG_TOPIC_SUFFIX)
+            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceType, '/', this.deviceId, CLASSIFIER_IMG_TOPIC_SUFFIX)
             break
           }
         }
@@ -407,7 +408,7 @@ class ROSConnectionStore {
   }
 
   get rosPrefix() {
-    return `/${this.namespacePrefix}/${this.deviceName}/${this.deviceSerial}`
+    return `/${this.namespacePrefix}/${this.deviceType}/${this.deviceId}`
   }
 
   publishMessage({ name, messageType, data, noPrefix = false }) {
@@ -498,7 +499,8 @@ class ROSConnectionStore {
     this.connectedToROS = false
 
     this.namespacePrefix = null
-    this.deviceName = null
+    this.deviceType = null
+    this.deviceId = null
     this.deviceSerial = null
 
     this.rosLog("Connection to rosbridge closed")
@@ -543,12 +545,11 @@ class ROSConnectionStore {
         this.systemStatusTempC =
           message.temperatures.length && message.temperatures[0]
         this.systemStatusWarnings = message.warnings && message.warnings.flags
-        this.rosLog("Received Status Message:")
+        //this.rosLog("Received Status Message:")
         var i
         for(i in message.info_strings) {
-          this.rosLog("    " + message.info_strings[i].payload)
+          this.rosLog(message.info_strings[i].payload)
         }
-
       }
     })
   }
@@ -580,6 +581,7 @@ class ROSConnectionStore {
       messageType: "num_sdk_msgs/SystemDefs",
       msgKey: "defs"
     })
+    this.deviceSerial = this.systemDefs.device_sn
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
     this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
   }
@@ -735,6 +737,15 @@ class ROSConnectionStore {
     }
 
     _pollOnce()
+  }
+
+  @action.bound
+  setDeviceID({newDeviceID}) {
+    this.publishMessage({
+      name: "set_device_id",
+      messageType: "std_msgs/String",
+      data: { data: newDeviceID }
+    })
   }
 
   @action.bound
