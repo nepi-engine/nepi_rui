@@ -146,7 +146,7 @@ class ROSConnectionStore {
 
   //@observable reportedClassifierImg = "Uninitialized"
   //@observable reportedClassifierName = "Uninitialized"
-  @observable reportedClassifierState = "Uninitialized"
+  @observable reportedClassifier = {}
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -665,10 +665,20 @@ class ROSConnectionStore {
 
   async startPollingImgClassifierStatusQueryService() {
     const _pollOnce = async () => {
-      this.reportedClassifierState = await this.callService({
+      this.reportedClassifier.state = await this.callService({
         name: "img_classifier_status_query",
         messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
         msgKey: "classifier_state"
+      })
+      this.reportedClassifier.img = await this.callService({
+        name: "img_classifier_status_query",
+        messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
+        msgKey: "selected_img_topic"
+      })
+      this.reportedClassifier.name = await this.callService({
+        name: "img_classifier_status_query",
+        messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
+        msgKey: "selected_classifier"
       })
 
       if (this.connectedToROS) {

@@ -18,7 +18,8 @@ import CameraViewer from "./CameraViewer"
 class CameraApp extends Component {
   constructor(props) {
     super(props)
-    this.state = { imageTopic: null, imageText: null, currentClassifierImgTopic: this.props.ros.classifierImgTopic, selectedClassifier: null, detectionThreshold: 0.3 }
+    var img = this.props.ros.reportedClassifier.img.split("/")
+    this.state = { imageTopic: null, imageText: img[img.length-2] + "/" + img[img.length-1], currentClassifierImgTopic: this.props.ros.classifierImgTopic, selectedClassifier: null, detectionThreshold: 0.3 }
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
@@ -33,7 +34,12 @@ class CameraApp extends Component {
     const { imageTopicsDetection } = this.props.ros
     var uniqueNames = createShortUniqueValues(imageTopicsDetection)
     for (var i = 0; i < imageTopicsDetection.length; i++) {
-      items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+      if(imageTopicsDetection[i] == this.props.ros.reportedClassifier.img){
+        items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+      } else{
+        items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+      }
+      
     }
     return items
   }
@@ -44,7 +50,11 @@ class CameraApp extends Component {
     items.push(<Option>{"None"}</Option>)
     const { classifiers } = this.props.ros
     for (var i = 0; i < classifiers.length; i++) {
-      items.push(<Option value={classifiers[i]}>{classifiers[i]}</Option>)
+      if(classifiers[i] == this.props.ros.reportedClassifier.name) {
+        items.push(<Option selected="selected" value={classifiers[i]}>{classifiers[i]}</Option>)
+      }else {
+        items.push(<Option value={classifiers[i]}>{classifiers[i]}</Option>)
+      }
     }
     return items
   }
@@ -71,14 +81,14 @@ class CameraApp extends Component {
 
   async waitForClassifierRunning() {
     const {
-      reportedClassifierState,
+      reportedClassifier,
       classifierImgTopic
     } = this.props.ros
 
     // Delay the state transition until the classifier is actually running
     // in order to avoid invoking CameraViewer's updateImageSource method (via
     // componentDidUpdate()) until we can receive a real image with a valid size
-    if (reportedClassifierState !== "Running") {
+    if (reportedClassifier.state !== "Running") {
       await setTimeout(this.waitForClassifierRunning, 1000)
     }
     else {
@@ -120,7 +130,7 @@ class CameraApp extends Component {
 
   render() {
     const {
-      reportedClassifierState
+      reportedClassifier
     } = this.props.ros
     return (
       <Columns>
@@ -133,12 +143,12 @@ class CameraApp extends Component {
         <Column>
           <Section title={"Settings"}>
             <Label title={"Image Topic"}>
-              <Select onChange={this.onImageTopicSelected}>
+              <Select id="ImgSelect" onChange={this.onImageTopicSelected}>
                 {this.createImageTopicsOptions()}
               </Select>
             </Label>
             <Label title={"Image Classifier"}>
-              <Select onChange={this.onClassifierSelected}>
+              <Select id="ClassifierSelect" onChange={this.onClassifierSelected}>
                 {this.createImageClassifierOptions()}
               </Select>
             </Label>
@@ -165,7 +175,7 @@ class CameraApp extends Component {
             </Label>
           </Section>
           <Section title={"Status"}>
-            <Label title={reportedClassifierState} />
+            <Label title={reportedClassifier.state} />
           </Section>
         </Column>
       </Columns>
