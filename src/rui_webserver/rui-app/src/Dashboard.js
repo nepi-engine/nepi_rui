@@ -8,6 +8,7 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
+import Styles from "./Styles"
 
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
@@ -20,7 +21,8 @@ class Dashboard extends Component {
     super(props)
 
     this.state = {
-      saveSettingsFilePrefix: "Lake Union"
+      saveSettingsFilePrefix: "",
+      currDeviceId: ""
     }
 
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
@@ -31,11 +33,14 @@ class Dashboard extends Component {
     this.renderOrientation = this.renderOrientation.bind(this)
     this.renderSystemMessages = this.renderSystemMessages.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
+    this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(this)
+    this.onKeySaveSettingFilePrefix = this.onKeySaveSettingFilePrefix.bind(this)
   }
 
   renderDeviceInfo() {
     const {
-      deviceName,
+      deviceType,
+      deviceId,
       deviceSerial,
       systemDefsFirmwareVersion,
       deviceInWater,
@@ -43,8 +48,11 @@ class Dashboard extends Component {
     } = this.props.ros
     return (
       <Section title={"Device Info"}>
-        <Label title={"Name"}>
-          <Input disabled value={deviceName} />
+        <Label title={"Type"}>
+          <Input disabled value={deviceType} />
+        </Label>
+        <Label title={"Device ID"}>
+          <Input disabled value={deviceId} />
         </Label>
         <Label title={"Serial Number"}>
           <Input disabled value={deviceSerial} />
@@ -239,9 +247,21 @@ class Dashboard extends Component {
     )
   }
 
+  onUpdateSaveSettingFilePrefix(e) {
+    this.setState({ saveSettingsFilePrefix: e.target.value })
+    document.getElementById("file_prefix_input").style.color = Styles.vars.colors.red
+  }
+
+  onKeySaveSettingFilePrefix(e) {
+    const {saveSettingsFilePrefix} = this.props.ros
+    if(e.key === 'Enter'){
+      saveSettingsFilePrefix({newFilePrefix: this.state.saveSettingsFilePrefix})
+      document.getElementById("file_prefix_input").style.color = Styles.vars.colors.black
+    }
+  }
+
   renderSaveData() {
     const { onToggleSaveData, saveFreqHz, onChangeSaveFreq, systemStatusDiskRate } = this.props.ros
-    const {saveSettingsFilePrefix} = this.state
     return (
       <Section title={"Save Data"}>
         <Label title={"Save Data"}>
@@ -255,16 +275,14 @@ class Dashboard extends Component {
         </Label>
         <Label title={"File Name Prefix"}>
           <Input
-            value={saveSettingsFilePrefix}
+            id={"file_prefix_input"}
+            value={this.state.saveSettingsFilePrefix}
             onChange={this.onUpdateSaveSettingFilePrefix}
+            onKeyDown={this.onKeySaveSettingFilePrefix}
           />
         </Label>
       </Section>
     )
-  }
-
-  onUpdateSaveSettingFilePrefix(e) {
-    this.setState({ saveSettingsFilePrefix: e.target.value })
   }
 
   render() {

@@ -11,11 +11,41 @@ const TRIGGER_MASKS = {
   DEFAULT: 0x7fffffff
 }
 
+// TODO: Would be better to query the display_name property of all nodes to generate
+// this dictionary... requires a new SDKNode service to do so
+const NODE_DISPLAY_NAMES = {
+  stereo_cam_mgr: "Stereo Camera",
+  config_mgr: "Config Manager",
+  nav_pos_mgr: "Nav./Pose/GPS",
+  network_mgr: "Network",
+  num_darknet_ros_mgr: "Classifier",
+  system_mgr: "System",
+  time_sync_mgr: "Time Sync",
+  trigger_mgr: "Triggering"
+}
+
 const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
 
 const UPDATE_PERIOD = 100 // ms between sending updates
 
-export { TRIGGER_MASKS }
+function displayNameFromNodeName(node_name) {
+  var display_name = NODE_DISPLAY_NAMES[node_name]
+  if (display_name) {
+    return display_name
+  }
+  return node_name
+}
+
+function nodeNameFromDisplayName(display_name) {
+  for( var node_name in NODE_DISPLAY_NAMES ) {
+    if (NODE_DISPLAY_NAMES[node_name] === display_name) {
+      return node_name
+    }
+  }
+  // Don't return anything if we don't find the display name -- callers can check for undefined
+}
+
+export { TRIGGER_MASKS, displayNameFromNodeName, nodeNameFromDisplayName }
 
 async function apiCall(endpoint) {
   try {
@@ -84,7 +114,8 @@ class ROSConnectionStore {
   rosListeners = []
 
   @observable namespacePrefix = null
-  @observable deviceName = null
+  @observable deviceType = null
+  @observable deviceId = null
   @observable deviceSerial = null
   @observable deviceInWater = false
 
@@ -133,6 +164,7 @@ class ROSConnectionStore {
   @observable imageTopicsDetection = []
   @observable imageTopics3DX = []
   @observable sensor3DXTopics = []
+  @observable resetTopics = []
 
   @observable imageFilterDetection = null
   @observable imageFilter3DX = null
@@ -200,10 +232,11 @@ class ROSConnectionStore {
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
         var newSensor3DXs = this.updateSensor3DXTopics()
+        var newResettables = this.updateResetTopics()
         var newDetectionImageTopics = this.updateDetectionImageTopics()
         var new3DXImageTopics = this.update3DXImageTopics()
 
-        if (newPrefix || newSensor3DXs || newDetectionImageTopics || new3DXImageTopics) {
+        if (newPrefix || newSensor3DXs || newResettables || newDetectionImageTopics || new3DXImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -212,7 +245,7 @@ class ROSConnectionStore {
   }
 
   validPrefix() {
-    return this.namespacePrefix && this.deviceName && this.deviceSerial
+    return this.namespacePrefix && this.deviceType && this.deviceId
   }
 
   @action.bound
@@ -231,22 +264,22 @@ class ROSConnectionStore {
       ) {
         if (
           this.namespacePrefix !== topic_name_parts[1] &&
-          this.deviceName !== topic_name_parts[2] &&
-          this.deviceSerial !== topic_name_parts[3]
+          this.deviceType !== topic_name_parts[2] &&
+          this.deviceId !== topic_name_parts[3]
         ) {
           this.namespacePrefix = topic_name_parts[1]
-          this.deviceName = topic_name_parts[2]
-          this.deviceSerial = topic_name_parts[3]
+          this.deviceType = topic_name_parts[2]
+          this.deviceId = topic_name_parts[3]
           if (this.validPrefix()) {
             ret = true
             this.rosLog(
-              `Fetched device info ${this.namespacePrefix}/${this.deviceName}/${
-                this.deviceSerial
+              `Fetched device info ${this.namespacePrefix}/${this.deviceType}/${
+                this.deviceId
               }`
             )
             // And update the (fixed) classifier image topic
             this.classifierImgTopic = '/'
-            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceName, '/', this.deviceSerial, CLASSIFIER_IMG_TOPIC_SUFFIX)
+            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceType, '/', this.deviceId, CLASSIFIER_IMG_TOPIC_SUFFIX)
             break
           }
         }
@@ -332,6 +365,32 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  updateResetTopics() {
+    var newResetTopics = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      var topic_name_parts = this.topicNames[i].split("/")
+      var last_element = topic_name_parts.pop()
+      var topic_base = topic_name_parts.join("/")
+      if (
+        last_element === "reset" &&
+        this.topicTypes[i] === "num_sdk_msgs/Reset"
+      ) {
+        newResetTopics.push(topic_base)
+      }
+    }
+
+    // sort the topics for comparison to work
+    newResetTopics.sort()
+
+    if (!this.resetTopics.equals(newResetTopics)) {
+      this.resetTopics = newResetTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
   destroyROSConnection() {
     this.rosAutoReconnect = false
     this.ros.off("connection", this.onConnectedToROS)
@@ -349,7 +408,7 @@ class ROSConnectionStore {
   }
 
   get rosPrefix() {
-    return `/${this.namespacePrefix}/${this.deviceName}/${this.deviceSerial}`
+    return `/${this.namespacePrefix}/${this.deviceType}/${this.deviceId}`
   }
 
   publishMessage({ name, messageType, data, noPrefix = false }) {
@@ -440,7 +499,8 @@ class ROSConnectionStore {
     this.connectedToROS = false
 
     this.namespacePrefix = null
-    this.deviceName = null
+    this.deviceType = null
+    this.deviceId = null
     this.deviceSerial = null
 
     this.rosLog("Connection to rosbridge closed")
@@ -485,12 +545,12 @@ class ROSConnectionStore {
         this.systemStatusTempC =
           message.temperatures.length && message.temperatures[0]
         this.systemStatusWarnings = message.warnings && message.warnings.flags
+        //this.rosLog("Received Status Message:")
         this.rosLog("Received Status Message\nWarnings:")
         var i
         for(i in message.info_strings) {
-          this.rosLog("    " + i)
+          this.rosLog(message.info_strings[i].payload)
         }
-        
       }
     })
   }
@@ -522,6 +582,7 @@ class ROSConnectionStore {
       messageType: "num_sdk_msgs/SystemDefs",
       msgKey: "defs"
     })
+    this.deviceSerial = this.systemDefs.device_sn
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
     this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
   }
@@ -690,6 +751,15 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  setDeviceID({newDeviceID}) {
+    this.publishMessage({
+      name: "set_device_id",
+      messageType: "std_msgs/String",
+      data: { data: newDeviceID }
+    })
+  }
+
+  @action.bound
   onToggleDeviceInWater() {
     this.deviceInWater = !this.deviceInWater
 
@@ -804,11 +874,11 @@ class ROSConnectionStore {
   @action.bound
   onChangeSaveFreq(e) {
     let freq = parseFloat(e.target.value)
-  
+
     if (isNaN(freq)) {
       freq = 0
     }
-  
+
     this.publishMessage({
       name: "save_data_rate",
       messageType: "num_sdk_msgs/SaveDataRate",
@@ -817,7 +887,7 @@ class ROSConnectionStore {
         save_rate_hz: freq,
       }
     })
-  
+
     //this.saveFreqHz = freq
     if (freq == 0) {
       this.saveFreqHz = 0
@@ -826,7 +896,7 @@ class ROSConnectionStore {
       this.saveFreqHz = e.target.value
     }
   }
-  
+
   @action.bound
   startClassifier(selectedImageTopic, selectedClassifier, detectionThreshold) {
     this.publishMessage({
@@ -884,11 +954,31 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  resetCfg(resetVal) {
+  saveCfg({baseTopic}) {
     this.publishMessage({
-      name: "reset",
+      name: baseTopic + "/save_config",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  resetCfg({baseTopic, resetVal}) {
+    this.publishMessage({
+      name: baseTopic + "/reset",
       messageType: "num_sdk_msgs/Reset",
-      data: { reset_type: resetVal }
+      data: { reset_type: resetVal },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  saveSettingsFilePrefix({newFilePrefix}) {
+    this.publishMessage({
+      name: "save_data_prefix",
+      messageType: "std_msgs/String",
+      data: { data: newFilePrefix }
     })
   }
 
