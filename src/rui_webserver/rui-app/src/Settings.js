@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import Toggle from "react-toggle"
-import { TRIGGER_MASKS } from "./Store"
+import { TRIGGER_MASKS, displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -41,7 +41,7 @@ class Settings extends Component {
     this.createConfigSubsysOptions = this.createConfigSubsysOptions.bind(this)
 
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
-    this.renderResetActions = this.renderResetActions.bind(this)
+    this.renderConfiguration = this.renderConfiguration.bind(this)
     this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
     this.renderNUID = this.renderNUID.bind(this)
 
@@ -110,10 +110,13 @@ class Settings extends Component {
       return resetTopics[0]
     }
     else {
-      for (var i = 1; i < resetTopics.length; i++) {
-        var node_name = resetTopics[i].split('/').pop()
-        if (node_name === configSubsys) {
-          return resetTopics[i]
+      var config_sys_node_name = nodeNameFromDisplayName(configSubsys)
+      if (config_sys_node_name) {
+        for (var i = 1; i < resetTopics.length; i++) {
+          var node_name = resetTopics[i].split('/').pop()
+          if (node_name === config_sys_node_name) {
+            return resetTopics[i]
+          }
         }
       }
       return 'UNKNOWN_NODE'
@@ -157,7 +160,8 @@ class Settings extends Component {
     var subsys_options = []
     subsys_options.push(<Option>{"All"}</Option>)
     for (var i = 1; i < resetTopics.length; i++) { // Skip the first one -- it is global /numurus/3dx/<s/n>
-      var subsys = resetTopics[i].split("/").pop()
+      var node_name = resetTopics[i].split("/").pop()
+      var subsys = displayNameFromNodeName(node_name)
       subsys_options.push(<Option>{subsys}</Option>)
     }
     return subsys_options
@@ -195,7 +199,7 @@ class Settings extends Component {
     )
   }
 
-  renderResetActions() {
+  renderConfiguration() {
     const { resetTopics } = this.props.ros
     const { advancedConfigDisabled } = this.state
     return (
@@ -231,7 +235,7 @@ class Settings extends Component {
         </Column>
         <Column>
           {this.renderNetworkInfo()}
-          {this.renderResetActions()}
+          {this.renderConfiguration()}
         </Column>
       </Columns>
     )

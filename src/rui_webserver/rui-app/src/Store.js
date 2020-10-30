@@ -11,11 +11,41 @@ const TRIGGER_MASKS = {
   DEFAULT: 0x7fffffff
 }
 
+// TODO: Would be better to query the display_name property of all nodes to generate
+// this dictionary... requires a new SDKNode service to do so
+const NODE_DISPLAY_NAMES = {
+  stereo_cam_mgr: "Stereo Camera",
+  config_mgr: "Config Manager",
+  nav_pos_mgr: "Nav./Pose/GPS",
+  network_mgr: "Network",
+  num_darknet_ros_mgr: "Classifier",
+  system_mgr: "System",
+  time_sync_mgr: "Time Sync",
+  trigger_mgr: "Triggering"
+}
+
 const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
 
 const UPDATE_PERIOD = 100 // ms between sending updates
 
-export { TRIGGER_MASKS }
+function displayNameFromNodeName(node_name) {
+  var display_name = NODE_DISPLAY_NAMES[node_name]
+  if (display_name) {
+    return display_name
+  }
+  return node_name
+}
+
+function nodeNameFromDisplayName(display_name) {
+  for( var node_name in NODE_DISPLAY_NAMES ) {
+    if (NODE_DISPLAY_NAMES[node_name] === display_name) {
+      return node_name
+    }
+  }
+  // Don't return anything if we don't find the display name -- callers can check for undefined
+}
+
+export { TRIGGER_MASKS, displayNameFromNodeName, nodeNameFromDisplayName }
 
 async function apiCall(endpoint) {
   try {
