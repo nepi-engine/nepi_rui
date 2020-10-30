@@ -921,6 +921,15 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  saveSettingsFilePrefix({newFilePrefix}) {
+    this.publishMessage({
+      name: "save_data_prefix",
+      messageType: "std_msgs/String",
+      data: { data: newFilePrefix }
+    })
+  }
+
   // 3DX Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
