@@ -513,7 +513,7 @@ class ROSConnectionStore {
         this.systemStatusTempC =
           message.temperatures.length && message.temperatures[0]
         this.systemStatusWarnings = message.warnings && message.warnings.flags
-        this.rosLog("Received Status Message\nInfo:")
+        this.rosLog("Received Status Message:")
         var i
         for(i in message.info_strings) {
           this.rosLog("    " + i)
