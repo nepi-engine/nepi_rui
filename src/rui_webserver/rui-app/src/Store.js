@@ -725,20 +725,9 @@ class ROSConnectionStore {
 
   async startPollingImgClassifierStatusQueryService() {
     const _pollOnce = async () => {
-      this.reportedClassifier.state = await this.callService({
+      this.reportedClassifier = await this.callService({
         name: "img_classifier_status_query",
-        messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
-        msgKey: "classifier_state"
-      })
-      this.reportedClassifier.img = await this.callService({
-        name: "img_classifier_status_query",
-        messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
-        msgKey: "selected_img_topic"
-      })
-      this.reportedClassifier.name = await this.callService({
-        name: "img_classifier_status_query",
-        messageType: "num_sdk_msgs/ImageClassifierStatusQuery",
-        msgKey: "selected_classifier"
+        messageType: "num_sdk_msgs/ImageClassifierStatusQuery"
       })
 
       if (this.connectedToROS) {
