@@ -21,10 +21,11 @@ class CameraApp extends Component {
     var img = this.props.ros.reportedClassifier.selected_img_topic.split("/")
     this.state = {
       imageTopic: null,
-      imageText: (this.props.ros.reportedClassifier.classifier_state == "Running")? img[img.length-2] + "/" + img[img.length-1] : null,
+      imageText: (this.props.ros.reportedClassifier.classifier_state === "Running")? img[img.length-2] + "/" + img[img.length-1] : null,
       // Only set currentClassifierImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
-      currentClassifierImgTopic: (this.props.ros.reportedClassifier.classifier_state == "Running")? this.props.ros.classifierImgTopic : null,
-      selectedClassifier: null, detectionThreshold: 0.3 }
+      currentClassifierImgTopic: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.classifierImgTopic : null,
+      selectedClassifier: null,
+      detectionThreshold: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3 }
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
@@ -39,7 +40,7 @@ class CameraApp extends Component {
     const { imageTopicsDetection } = this.props.ros
     var uniqueNames = createShortUniqueValues(imageTopicsDetection)
     for (var i = 0; i < imageTopicsDetection.length; i++) {
-      if(imageTopicsDetection[i] == this.props.ros.reportedClassifier.selected_img_topic){
+      if(imageTopicsDetection[i] === this.props.ros.reportedClassifier.selected_img_topic){
         items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
       } else{
         items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
@@ -55,7 +56,7 @@ class CameraApp extends Component {
     items.push(<Option>{"None"}</Option>)
     const { classifiers } = this.props.ros
     for (var i = 0; i < classifiers.length; i++) {
-      if(classifiers[i] == this.props.ros.reportedClassifier.selected_classifier) {
+      if(classifiers[i] === this.props.ros.reportedClassifier.selected_classifier) {
         items.push(<Option selected="selected" value={classifiers[i]}>{classifiers[i]}</Option>)
       }else {
         items.push(<Option value={classifiers[i]}>{classifiers[i]}</Option>)

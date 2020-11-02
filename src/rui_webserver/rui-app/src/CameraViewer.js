@@ -50,8 +50,7 @@ class CameraViewer extends Component {
       streamWidth,
       streamHeight
     } = this.state
-    const { width, height } = this.image
-    const { imageRecognitions } = this.props.ros
+    //const { imageRecognitions } = this.props.ros
     if (shouldUpdate && hasInitialized && this.canvas) {
       if (!containerWidth) {
         this.setState({ containerWidth: this.canvas.width })
@@ -70,6 +69,7 @@ class CameraViewer extends Component {
       context.clearRect(0, 0, streamWidth, streamHeight)
       context.drawImage(this.image, 0, 0, streamWidth, streamHeight)
 
+      /* -- TODO: Restore imageRecognitions when we have a need and are ready to use BoundingBoxes data type
       imageRecognitions.forEach(
         ({ label, roi: { x_offset, y_offset, width, height } }) => {
           context.beginPath()
@@ -85,6 +85,7 @@ class CameraViewer extends Component {
           )
         }
       )
+      */
 
       this.setState({ clockTime: moment() })
       requestAnimationFrame(this.updateFrame)

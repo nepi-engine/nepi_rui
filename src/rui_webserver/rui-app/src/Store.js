@@ -47,6 +47,7 @@ function nodeNameFromDisplayName(display_name) {
 
 export { TRIGGER_MASKS, displayNameFromNodeName, nodeNameFromDisplayName }
 
+/*
 async function apiCall(endpoint) {
   try {
     const r = await fetch(`${FLASK_URL}/api/${endpoint}`, {
@@ -58,6 +59,7 @@ async function apiCall(endpoint) {
     console.error(err)
   }
 }
+*/
 
 // gets a file through the flask api and parses it as Json
 async function getFileJson(filename) {
@@ -84,6 +86,7 @@ if (Array.prototype.equals)
     "Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code."
   )
 // attach the .equals method to Array's prototype to call it on any array
+// eslint-disable-next-line no-extend-native
 Array.prototype.equals = function(array) {
   // if the other array is a falsy value, return
   if (!array) return false
@@ -104,6 +107,7 @@ Array.prototype.equals = function(array) {
   return true
 }
 // Hide method from for-in loops
+// eslint-disable-next-line no-extend-native
 Object.defineProperty(Array.prototype, "equals", { enumerable: false })
 //////////////////////////////////////////////////////////////
 
@@ -799,7 +803,7 @@ class ROSConnectionStore {
       }
     })
 
-    if (freq == 0) {
+    if (freq === 0) {
       this.triggerAutoRateHz = freq
     }
     else {
@@ -877,7 +881,7 @@ class ROSConnectionStore {
     })
 
     //this.saveFreqHz = freq
-    if (freq == 0) {
+    if (freq === 0) {
       this.saveFreqHz = 0
     }
     else {

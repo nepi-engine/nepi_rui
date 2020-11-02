@@ -45,9 +45,10 @@ class Sensor3DX extends Component {
   // Function for creating topic options for Select input
   createTopicOptions(topics, filter) {
     var filteredTopics = topics
+    var i
     if (filter) {
       filteredTopics = []
-      for (var i = 0; i < topics.length; i++) {
+      for (i = 0; i < topics.length; i++) {
         // includes does a substring search
         if (topics[i].includes(filter)) {
           filteredTopics.push(topics[i])
@@ -58,7 +59,7 @@ class Sensor3DX extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
     var unique_names = createShortUniqueValues(filteredTopics)
-    for (var i = 0; i < filteredTopics.length; i++) {
+    for (i = 0; i < filteredTopics.length; i++) {
       items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
     }
     return items

@@ -52,7 +52,7 @@ class Settings extends Component {
     this.renderNUID = this.renderNUID.bind(this)
 
     this.nuidListener = this.nuidListener.bind(this)
-    var listener = this.props.ros.setupNUIDListener(this.nuidListener)
+    this.props.ros.setupNUIDListener(this.nuidListener)
   }
 
   async onIPAddrValChange(e) {
