@@ -4,7 +4,7 @@ After=roslaunch.service
 
 [Service]
 Type=simple
-User=numurus
+User=root
 ExecStart=/opt/numurus/ros/etc/start_rui.sh
 Restart=always
 
