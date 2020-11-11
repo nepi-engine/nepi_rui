@@ -26,6 +26,8 @@ class Control3DX extends Component {
       gainAdjustment: null,
       filterEnabled: false,
       filterAdjustment: null,
+      intensityEnabled: false,
+      intensityAdjustment: null,
       displayName3DX: null,
       pauseEnable: false,
       listener: null,
@@ -51,6 +53,8 @@ class Control3DX extends Component {
       gainAdjustment: message.gain_settings.adjustment,
       filterEnabled: message.filter_settings.enabled,
       filterAdjustment: message.filter_settings.adjustment,
+      intensityEnabled: message.intensity_settings.enabled,
+      intensityAdjustment: message.intensity_settings.adjustment,
       displayName3DX: message.display_name,
       pauseEnable: message.pause_enable
     })
@@ -141,6 +145,15 @@ class Control3DX extends Component {
           topic={this.props.topic}
           disabled={this.state.disabled}
           tooltip={"Adjustable generic filter."}
+        />
+
+        <EnableAdjustment
+          title="Intensity"
+          enabled={this.state.intensityEnabled}
+          adjustment={this.state.intensityAdjustment}
+          topic={this.props.topic}
+          disabled={this.state.disabled}
+          tooltip={"Adjustable source intensity."}
         />
       </Section>
     )
