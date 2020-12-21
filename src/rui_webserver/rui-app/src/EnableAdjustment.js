@@ -83,9 +83,28 @@ class EnableAdjustment extends Component {
     this.sendUpdate = this.sendUpdate.bind(this)
   }
 
+  componentWillReceiveProps(nextProps) {
+    const {enabled, adjustment, disabled} = nextProps
+    if (!disabled) {
+      this.setState({
+        checked: enabled,
+        value: Math.round(adjustment * 100.0),
+        scaled: adjustment
+      })
+    }
+    else {
+      this.setState({
+        checked: false,
+        value: 0,
+        scaled: 0
+      })
+    }
+  }
+
   // Lifecycle function called right after component updates.
   // The params of this component can be changed so we need to
   // react when that happens.
+  /*
   componentDidUpdate(prevProps, prevState, snapshot) {
     // make various props variables local constants
     const { enabled, adjustment, disabled } = this.props
@@ -115,6 +134,7 @@ class EnableAdjustment extends Component {
       })
     }
   }
+  */
 
   // Handler for toggle switch changes
   onToggle(event) {

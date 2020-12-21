@@ -97,9 +97,20 @@ class RangeAdjustment extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    const {min, max, disabled} = nextProps
+    if (!disabled) {
+      this.update(min, max)
+    }
+    else {
+      this.update(0,0)
+    }
+  }
+
   // Lifecycle function called right after component updates.
   // The params of this component can be changed so we need to
   // react when that happens.
+  /*
   componentDidUpdate(prevProps, prevState, snapshot) {
     // create local constants out of new(current) props values
     const { min, max, disabled } = this.props
@@ -134,6 +145,7 @@ class RangeAdjustment extends Component {
       })
     }
   }
+  */
 
   // Handler for slider changing the values
   onSliderChange(values) {
