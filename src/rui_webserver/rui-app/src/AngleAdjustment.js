@@ -78,34 +78,9 @@ class AngleAdjustment extends Component {
     this.sendUpdate = this.sendUpdate.bind(this)
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { offset, total, disabled } = nextProps
-    if (!disabled) {
-      this.setState({
-        offset: offset * 100.0,
-        total: total * 100.0,
-        scaled_offset: offset,
-        scaled_total: total,
-        input_offset: Math.round(offset * 100),
-        input_total: Math.round(total * 100)
-      })
-    }
-    else {
-      this.setState({
-        offset: 0,
-        total: 0,
-        scaled_offset: 0,
-        scaled_total: 0,
-        input_offset: 0,
-        input_total: 0
-      })
-    }
-  }
-
   // Lifecycle function called right after component updates.
   // The params of this component can be changed so we need to
   // react when that happens.
-  /*
   componentDidUpdate(prevProps, prevState, snapshot) {
     // get various fields from the new props values
     const { offset, total, disabled } = this.props
@@ -141,7 +116,6 @@ class AngleAdjustment extends Component {
       })
     }
   }
-  */
 
   // functions for updating state when values change
   onOffsetChange(value) {
