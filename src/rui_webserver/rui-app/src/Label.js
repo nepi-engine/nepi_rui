@@ -16,9 +16,9 @@ const styles = Styles.Create({
   }
 })
 
-const Label = ({ title, children }) => {
+const Label = ({ marginLeft, title, children }) => {
   return (
-    <div style={{ display: "flex", ...styles.root }}>
+    <div style={{ display: "flex", ...styles.root, marginLeft: marginLeft }}>
       <label style={styles.labelTitle}>{title}</label>
       <div style={styles.container}>{children}</div>
     </div>

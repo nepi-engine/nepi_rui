@@ -7,6 +7,7 @@ import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
 import PageLock from "./PageLock"
 
+import NEPI from "./NEPI"
 import Dashboard from "./Dashboard"
 import CameraApp from "./CameraApp"
 import Sensor3DX from "./Sensor3DX"
@@ -53,7 +54,8 @@ class App extends Component {
                 { path: "/sensor3DX", label: "3DX" }
               ]
             },
-            { path: "/settings", label: "Settings" }
+            { path: "/settings", label: "Settings" },
+            { path: "/NEPI", label: "NEPI" }
           ]}
         />
         <HorizontalDivider />
@@ -68,6 +70,7 @@ class App extends Component {
               component={props => <Files {...props} />}
             />
             <Route path="/settings" component={Settings} />
+            <Route path="/NEPI" component={NEPI} />
           </Switch>
         )}
       </Page>
