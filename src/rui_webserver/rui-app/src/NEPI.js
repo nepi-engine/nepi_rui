@@ -131,6 +131,7 @@ class NEPI extends Component {
   }
 
   renderNEPI() {
+    //const { NUID, DeviceAlias } = this.props.ros
     return(
       <Section title={"NEPI"}>
         <Label title="NEPI UID">
@@ -192,6 +193,11 @@ class NEPI extends Component {
             disabled value= {"300"}
           />
         </Label>
+        <Label title="Data to Transmit (MB)" marginLeft="15px">
+          <Input
+            disabled value= {"300"}
+          />
+        </Label>
         <ButtonMenu hidden={true}>
           <Button>{"Open Last LB Log"}</Button>
           <Button>{"Open Last HB Log"}</Button>
@@ -242,10 +248,11 @@ class NEPI extends Component {
               onChange={this.ROSLinkRateUp}
             />
           </Label>
-          <Label title="LB Queue Max Size (MB)">
+          <Label title="Unprocessed Data (KB)">
             <Input
               value={LBQueueMaxSize}
               onChange={this.LBQueueMaxSizeUp}
+              disabled="true"
             />
           </Label>
           <Label title="Comms Attempt Order">
@@ -254,7 +261,7 @@ class NEPI extends Component {
               </DragList>
             </div> */}
             <div onClick={this.toggleViewableOrder} style={{backgroundColor: Styles.vars.colors.grey0, display:"flex"}}>
-              <Select style={{flex: 1}}></Select>
+              <Select style={{flex: 1, backgroundColor: Styles.vars.colors.orange}}></Select>
             </div>
             <div hidden={!viewableOrder}>
             {items.map((item, index) => 
@@ -263,7 +270,7 @@ class NEPI extends Component {
                 textAlign: "center",
                 padding: `${Styles.vars.spacing.xs}`,
                 color: Styles.vars.colors.black,
-                backgroundColor: Styles.vars.colors.grey0,
+                backgroundColor: Styles.vars.colors.green,
                 cursor: "pointer",
                 }}>
                 <body style={{color: Styles.vars.colors.black}}>{item}</body>

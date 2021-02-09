@@ -180,6 +180,9 @@ class ROSConnectionStore {
 
   @observable ip_addrs = []
 
+  @observable NUID = ""
+  @observable NEPIStatus = null
+
   //@observable reportedClassifierImg = "Uninitialized"
   //@observable reportedClassifierName = "Uninitialized"
   @observable reportedClassifier = {}
@@ -483,6 +486,7 @@ class ROSConnectionStore {
 
     // services
     this.callSystemDefsService()
+    this.callNepiStatusService()
     this.callImgClassifierListQueryService()
     this.startPollingIPAddrQueryService()
     this.startPollingOpEnvironmentQueryService()
@@ -577,6 +581,17 @@ class ROSConnectionStore {
         callback: callback,
         manageListener: false
       })
+  }
+
+  async callNepiStatusService() {
+    console.warn("RUNNING")
+    this.NEPIStatus = await this.callService({
+      name: "nepi_edge_ros_bridge/nepi_status_query",
+      messageType: "num_sdk_msgs/NEPIStatusQuery",
+      msgKey: "status"
+    })
+    console.warn("WORKING")
+    this.NUID = this.NEPIStatus.nuid
   }
 
   async callSystemDefsService() {

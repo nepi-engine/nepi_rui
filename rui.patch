@@ -1,0 +1,58 @@
+diff --git a/src/rui_webserver/rui-app/src/NEPI.js b/src/rui_webserver/rui-app/src/NEPI.js
+index c67b4ec..7cb0fbc 100644
+--- a/src/rui_webserver/rui-app/src/NEPI.js
++++ b/src/rui_webserver/rui-app/src/NEPI.js
+@@ -131,11 +131,12 @@ class NEPI extends Component {
+   }
+ 
+   renderNEPI() {
++    const { NUID } = this.props.ros
+     return(
+       <Section title={"NEPI"}>
+         <Label title="NEPI UID">
+           <Input
+-            disabled value= {"100000001"}
++            disabled value= {NUID}
+           />
+         </Label>
+         <Label title="NEPI Device Alias">
+diff --git a/src/rui_webserver/rui-app/src/Store.js b/src/rui_webserver/rui-app/src/Store.js
+index ea235e1..e2241c9 100644
+--- a/src/rui_webserver/rui-app/src/Store.js
++++ b/src/rui_webserver/rui-app/src/Store.js
+@@ -180,6 +180,9 @@ class ROSConnectionStore {
+ 
+   @observable ip_addrs = []
+ 
++  @observable NUID = ""
++  @observable NEPIStatus = null
++
+   //@observable reportedClassifierImg = "Uninitialized"
+   //@observable reportedClassifierName = "Uninitialized"
+   @observable reportedClassifier = {}
+@@ -483,6 +486,7 @@ class ROSConnectionStore {
+ 
+     // services
+     this.callSystemDefsService()
++    this.callNepiStatusService()
+     this.callImgClassifierListQueryService()
+     this.startPollingIPAddrQueryService()
+     this.startPollingOpEnvironmentQueryService()
+@@ -579,6 +583,17 @@ class ROSConnectionStore {
+       })
+   }
+ 
++  async callNepiStatusService() {
++    console.warn("RUNNING")
++    this.NEPIStatus = await this.callService({
++      name: "nepi_edge_ros_bridge/nepi_status_query",
++      messageType: "num_sdk_msgs/NEPIStatusQuery",
++      msgKey: "status"
++    })
++    console.warn("WORKING")
++    this.NUID = this.NEPIStatus.nuid
++  }
++
+   async callSystemDefsService() {
+     this.systemDefs = await this.callService({
+       name: "system_defs_query",
