@@ -10,8 +10,6 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 var qr = require("qrcode")
 
-const list =["topic", "bopic", "nopic"]
-
 // const reorder = (list, startIndex, endIndex) => {
 //   const result = Array.from(list);
 //   const [removed] = result.splice(startIndex, 1);
@@ -27,30 +25,17 @@ class NEPI extends Component {
     super(props)
 
     this.state = {
-      enabled: false,
-      LBenabled: false,
-      items: ["test", "best", "nest"],
-      topics: [],
-      LBQueueMaxSize: 30,
       ROSLinkRate: 30,
       viewableTopics: false,
       viewableOrder: false,
     }
-    list.forEach(topic => {
-      this.state.topics.push({
-        id: topic,
-        on: false
-      });
-    })
-    this.onToggleCOMMS = this.onToggleCOMMS.bind(this)
     this.renderNEPI = this.renderNEPI.bind(this)
-    this.renderConnectionInformation = this.renderConnectionInformation.bind(this)
+    this.renderLBInformation = this.renderLBInformation.bind(this)
+    this.renderHBInformation = this.renderHBInformation.bind(this)
     this.renderConnectionSettings = this.renderConnectionSettings.bind(this)
     this.onToggleAutoConnect = this.onToggleAutoConnect.bind(this)
     this.onToggleHB = this.onToggleHB.bind(this)
     this.onToggleAutoOff = this.onToggleAutoOff.bind(this)
-    this.onToggleLB = this.onToggleLB.bind(this)
-    this.onToggleTopic = this.onToggleTopic.bind(this)
     this.renderLBLinkSettings = this.renderLBLinkSettings.bind(this)
     this.renderQR = this.renderQR.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
@@ -59,12 +44,7 @@ class NEPI extends Component {
     this.logToggle = this.logToggle.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
     this.toggleViewableOrder = this.toggleViewableOrder.bind(this)
-  }
-
-  onToggleCOMMS() {
-    const { enabled } = this.state
-    this.setState({enabled: !enabled})
-    this.renderQR()
+    this.onChangeAutoRate = this.onChangeAutoRate(this)
   }
 
   onToggleAutoConnect() {
@@ -79,20 +59,12 @@ class NEPI extends Component {
 
   }
 
-  onToggleLB() {
-    const { LBenabled } = this.state
-    this.setState({LBenabled: !LBenabled})
-  }
-
-  onToggleTopic(index) {
-    const { topics } = this.state
-    var upTopics = topics
-    upTopics[index] = {id: topics[index].id, on: !topics[index].on}
-    this.setState({topics: upTopics})
-    console.log(topics) 
-  }
 
   logToggle() {
+
+  }
+
+  onChangeAutoRate() {
 
   }
 
@@ -131,22 +103,23 @@ class NEPI extends Component {
   }
 
   renderNEPI() {
-    //const { NUID, DeviceAlias } = this.props.ros
+    const { NUID, alias, log_storage_enabled, onToggleLogStorage } = this.props.ros
     return(
       <Section title={"NEPI"}>
         <Label title="NEPI UID">
           <Input
-            disabled value= {"100000001"}
+            disabled value= {NUID}
           />
         </Label>
         <Label title="NEPI Device Alias">
           <Input
-            disabled value= {"3DX1"}
+            disabled value= {alias}
           />
         </Label>
         <Label title="Save Logs">
           <Toggle
-            onClick= {this.logToggle}
+            checked={log_storage_enabled}
+            onClick= {onToggleLogStorage}
           />
         </Label>
         <Label title="">
@@ -157,45 +130,64 @@ class NEPI extends Component {
   }
 
   renderQR() {
-    qr.toCanvas(document.getElementById("qrcode"), "test")
+    const { NUID } = this.props.ros
+    qr.toCanvas(document.getElementById("qrcode"), "NUID")
   }
 
-  renderConnectionInformation() {
+  renderLBInformation() {
+    const { lb_last_connection_time, lb_do_msg_count, lb_dt_msg_count } = this.props.ros
+    var date = Date.now()
+    var last = new Date (date - lb_last_connection_time.secs)
     return(
-      <Section title={"Connection Information"}>
+      <Section title={"LB Information"}>
         <Label title="Last Lb Link Connection (Y:Mo:D:H:M:S)">
           <Input
-            disabled value= {"2021:1:5:10:04:56"}
+            disabled value= {last.toString()}
           />
         </Label>
-        <Label title="Device Originated Messages" marginLeft="15px">
+        <Label title="Device Originated Messages">
           <Input
-            disabled value= {"234,567"}
+            disabled value= {lb_do_msg_count}
           />
         </Label>
-        <Label title="Device Terminated Messages" marginLeft="15px">
+        <Label title="Device Terminated Messages">
           <Input
-            disabled value= {"300"}
+            disabled value= {lb_dt_msg_count}
           />
         </Label>
-        <Label title="Last HB Link Connection (D:H:M)">
+        <ButtonMenu hidden={true}>
+          <Button>{"Open Last LB Log"}</Button>
+          <Button>{"Open Last HB Log"}</Button>
+        </ButtonMenu>
+      </Section>
+    )
+  }
+
+  renderHBInformation() {
+    const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, DataToTransfer } = this.props.ros
+    var date = Date.now()
+    var last = new Date (date - hb_last_connection_time.secs)
+    
+    return(
+      <Section title={"HB Information"}>
+        <Label title="Last Link Connection (Y:Mo:D:H:M:S)">
           <Input
-            disabled value= {"5:10:04"}
+            disabled value= {last.toString()}
           />
         </Label>
-        <Label title="Device Originated Messages" marginLeft="15px">
+        <Label title="Device Originated Data">
           <Input
-            disabled value= {"4,567"}
+            disabled value= {hb_do_transfered_mb}
           />
         </Label>
-        <Label title="Device Terminated Messages" marginLeft="15px">
+        <Label title="Device Terminated Data">
           <Input
-            disabled value= {"300"}
+            disabled value= {hb_dt_transfered_mb}
           />
         </Label>
-        <Label title="Data to Transmit (MB)" marginLeft="15px">
+        <Label title="Data to Transmit (MB)">
           <Input
-            disabled value= {"300"}
+            disabled value= {DataToTransfer}
           />
         </Label>
         <ButtonMenu hidden={true}>
@@ -207,7 +199,7 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { LBenabled } = this.state
+    const { lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
         <ButtonMenu>
@@ -215,23 +207,26 @@ class NEPI extends Component {
         </ButtonMenu>
         <Label title="Auto Rate (Attempts Per Hour)">
           <Input
-            placeholder= {"5"}
+            value= {auto_attempts_per_hour} 
+            onChange= {onChangeAutoRate}
           />
         </Label>
         <Label title="Enable HB Link">
           <Toggle
-            onClick={this.onToggleHB}>
+            checked={hb_enabled}
+            onClick={onToggleHB}>
           </Toggle>
         </Label>
         <Label title="Enable HB Auto Data Offloading">
           <Toggle
-            onClick={this.onToggleAutoOff}>
+            checked={hb_auto_data_offloading_enabled}
+            onClick={onToggleAutoOffloading}>
           </Toggle>
         </Label>
         <Label title="Enable LB Link">
           <Toggle
-            checked={LBenabled}
-            onClick={this.onToggleLB}>
+            checked={lb_enabled}
+            onClick={onToggleLB}>
           </Toggle>
         </Label>
       </Section>
@@ -239,7 +234,32 @@ class NEPI extends Component {
   }
 
   renderLBLinkSettings() {
-    const { topics, items, LBQueueMaxSize, ROSLinkRate, viewableTopics, viewableOrder } = this.state
+    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onToggleTopic } = this.props.ros
+    const { ROSLinkRate, viewableTopics, viewableOrder } = this.state
+    var sources = [{}]
+    var selected_sources = []
+    var i;
+    for(i = 0; i < lb_available_data_sources.length; i++) {
+      var split = lb_available_data_sources[i].split("/")
+      if(split.length != 1) {
+        sources[i] = {
+          long:lb_available_data_sources[i],
+          short:split[split.length - 2] + "/" + split[split.length - 1]
+        }
+      } else {
+        sources[i] = {
+          long:lb_available_data_sources[i],
+          short:split[split.length - 1]
+        }      }
+    }
+    for(i = 0; i < lb_selected_data_sources.length; i++) {
+      var split = lb_selected_data_sources[i].split("/")
+      if(split.length != 1) {
+        selected_sources[i] = split[split.length - 2] + "/" + split[split.length - 1]
+      } else {
+        selected_sources[i] = split[split.length - 1]
+      }
+    }
       return (
         <Section title={"LB Link Settings"}>
           <Label title="ROS Topic Link Rate (Per Hour)">
@@ -250,7 +270,7 @@ class NEPI extends Component {
           </Label>
           <Label title="Unprocessed Data (KB)">
             <Input
-              value={LBQueueMaxSize}
+              value={lb_data_queue_size_KB}
               onChange={this.LBQueueMaxSizeUp}
               disabled="true"
             />
@@ -264,13 +284,13 @@ class NEPI extends Component {
               <Select style={{flex: 1, backgroundColor: Styles.vars.colors.orange}}></Select>
             </div>
             <div hidden={!viewableOrder}>
-            {items.map((item, index) => 
+            {lb_comms_types.map((item, index) => 
             <div 
               style={{
                 textAlign: "center",
                 padding: `${Styles.vars.spacing.xs}`,
                 color: Styles.vars.colors.black,
-                backgroundColor: Styles.vars.colors.green,
+                backgroundColor: Styles.vars.colors.orange,
                 cursor: "pointer",
                 }}>
                 <body style={{color: Styles.vars.colors.black}}>{item}</body>
@@ -283,17 +303,17 @@ class NEPI extends Component {
               <Select style={{flex: 1}}></Select>
             </div>
             <div hidden={!viewableTopics}>
-            {topics.map((topic, index) => 
-            <div onClick={this.onToggleTopic.bind(this, index, topic.id, topic.on)} 
+            {sources.map((topic) => 
+            <div onClick={onToggleTopic} 
               style={{
                 textAlign: "center",
                 padding: `${Styles.vars.spacing.xs}`,
                 color: Styles.vars.colors.black,
-                backgroundColor: topic.on? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                backgroundColor: selected_sources.includes(topic.short)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
                 cursor: "pointer",
                 }}>
-                <body style={{color: Styles.vars.colors.black}}>{topic.id}</body>
-            </div>
+                <body data-topic={topic.long} style={{color: Styles.vars.colors.black}}>{topic.short}</body>
+            </div> 
             )}
             </div>
             
@@ -303,29 +323,34 @@ class NEPI extends Component {
   }
 
   render() {
-    const { enabled, LBenabled } = this.state
+    const { LBenabled } = this.state
+    const { NEPIenabled, onToggleNEPIComms } = this.props.ros
     return (
-      <Columns>
-        <Column>
-          <Label title={"Enable/Disable NEPI-COMMS"}>
-            <Toggle
-              onClick={this.onToggleCOMMS}>
-            </Toggle>
-          </Label>
-            <div hidden={!enabled}>
-            {this.renderNEPI()}
-            {this.renderConnectionInformation()}
+      <div>
+        <Label title={"Enable/Disable NEPI-COMMS"}>
+          <Toggle
+            checked={NEPIenabled}
+            onClick={onToggleNEPIComms}>
+          </Toggle>
+        </Label>
+        <Columns>
+          <Column>
+              <div hidden={!NEPIenabled}>
+              {this.renderNEPI()}
+              {this.renderConnectionSettings()}
+              </div>
+          </Column>
+          <Column>
+            <div hidden={!NEPIenabled}>
+            {this.renderLBInformation()}
+            {this.renderHBInformation()}
             </div>
-        </Column>
-        <Column>
-          <div hidden={!enabled}>
-          {this.renderConnectionSettings()}
-          </div>
-          <div hidden={!LBenabled || !enabled}>
-          {this.renderLBLinkSettings()}
-          </div>
-        </Column>
-      </Columns>
+            <div hidden={/*!LBenabled ||*/ !NEPIenabled}>
+            {this.renderLBLinkSettings()}
+            </div>
+          </Column>
+        </Columns>
+      </div>
     )
   }
 }

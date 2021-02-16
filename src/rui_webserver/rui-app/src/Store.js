@@ -2,6 +2,7 @@ import { observable, action } from "mobx"
 import moment from "moment"
 import ROS from "roslib"
 import cannon from "cannon"
+import { colors } from "./Styles"
 
 const ROS_WS_URL = `ws://${window.location.hostname}:9090`
 const FLASK_URL = `http://${window.location.hostname}:5003`
@@ -182,6 +183,24 @@ class ROSConnectionStore {
 
   @observable NUID = ""
   @observable NEPIStatus = null
+  @observable alias = ""
+  @observable lb_last_connection_time = null
+  @observable hb_last_connection_time = null
+  @observable lb_do_msg_count = "1"
+  @observable lb_dt_msg_count = null
+  @observable hb_do_transfered_mb = null
+  @observable hb_dt_transfered_mb = null
+  @observable lb_enabled = null
+  @observable hb_enabled = null
+  @observable lb_available_data_sources = null
+  @observable lb_selected_data_sources = null
+  @observable lb_comms_types = null
+  @observable auto_attempts_per_hour = null
+  @observable link_per_hour = null
+  @observable lb_data_queue_size_KB = null
+  @observable hb_auto_data_offloading_enabled = null
+  @observable log_storage_enabled = null
+
 
   //@observable reportedClassifierImg = "Uninitialized"
   //@observable reportedClassifierName = "Uninitialized"
@@ -584,14 +603,37 @@ class ROSConnectionStore {
   }
 
   async callNepiStatusService() {
-    console.warn("RUNNING")
-    this.NEPIStatus = await this.callService({
-      name: "nepi_edge_ros_bridge/nepi_status_query",
-      messageType: "num_sdk_msgs/NEPIStatusQuery",
-      msgKey: "status"
-    })
-    console.warn("WORKING")
-    this.NUID = this.NEPIStatus.nuid
+    const _pollOnce = async () => {
+      this.NEPIStatus = await this.callService({
+        name: "nepi_status_query",
+        messageType: "num_sdk_msgs/NEPIStatusQuery",
+        msgKey: "status"
+      })
+      this.NUID = this.NEPIStatus.nuid
+      this.alias = this.NEPIStatus.alias
+      this.NEPIenabled = this.NEPIStatus.enabled
+      this.lb_last_connection_time = this.NEPIStatus.lb_last_connection_time
+      this.hb_last_connection_time = this.NEPIStatus.hb_last_connection_time
+      this.lb_do_msg_count = this.NEPIStatus.lb_do_msg_count
+      this.lb_dt_msg_count = this.NEPIStatus.lb_dt_msg_count
+      this.hb_do_transfered_mb = this.NEPIStatus.hb_do_transfered_mb
+      this.hb_dt_transfered_mb = this.NEPIStatus.hb_dt_transfered_mb
+      //this.DataToTransfer = this.DataToTransfer
+      this.lb_enabled = this.NEPIStatus.lb_enabled
+      this.hb_enabled = this.NEPIStatus.hb_enabled
+      this.lb_available_data_sources = this.NEPIStatus.lb_available_data_sources
+      this.lb_selected_data_sources = this.NEPIStatus.lb_selected_data_sources
+      this.lb_comms_types = this.NEPIStatus.lb_comms_types
+      this.auto_attempts_per_hour = this.NEPIStatus.auto_attempts_per_hour
+      this.lb_data_queue_size_KB = this.NEPIStatus.lb_data_queue_size_KB
+      this.hb_auto_data_offloading_enabled = this.NEPIStatus.hb_auto_data_offloading_enabled
+      this.log_storage_enabled = this.NEPIStatus.log_storage_enabled
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 500)
+      }
+    }
+    _pollOnce()
   }
 
   async callSystemDefsService() {
@@ -755,6 +797,99 @@ class ROSConnectionStore {
     }
 
     _pollOnce()
+  }
+
+  @action.bound
+  onToggleTopic(e) {
+    const topic = e.target.getAttribute("data-topic")
+    if(!this.lb_selected_data_sources.includes(topic)) {
+      this.publishMessage({
+        name: "nepi_edge_ros_bridge/lb/select_data_sources",
+        messageType: "num_sdk_msgs/StringArray",
+        data: { entries: this.lb_selected_data_sources.concat(topic) }
+      })
+    } else {
+      var sources = this.lb_selected_data_sources.filter(function(value, index, arr) {
+        return value != topic
+      });
+      this.publishMessage({
+        name: "nepi_edge_ros_bridge/lb/select_data_sources",
+        messageType: "num_sdk_msgs/StringArray",
+        data: { entries: sources }
+      })
+    }
+  }
+
+  @action.bound
+  onToggleLB(e) {
+    const checked = e.target.checked
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/lb/enable",
+      messageType: "std_msgs/Bool",
+      data: { data: checked ? true : false }
+    })
+  }
+
+  @action.bound
+  onToggleAutoOffloading(e) {
+    const checked = e.target.checked
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/hb/set_auto_data_offloading",
+      messageType: "std_msgs/Bool",
+      data: { data: checked ? true : false }
+    })
+  }
+
+  @action.bound
+  onToggleHB(e) {
+    const checked = e.target.checked
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/hb/enable",
+      messageType: "std_msgs/Bool",
+      data: { data: checked ? true : false }
+    })
+  }
+
+  @action.bound
+  onToggleLogStorage(e) {
+    const checked = e.target.checked
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/enable_nepi_log_storage",
+      messageType: "std_msgs/Bool",
+      data: { data: checked ? true : false }
+    })
+  }
+
+  @action.bound
+  onToggleNEPIComms(e) {
+    const checked = e.target.checked
+    console.log("OPENING/CLOSING COMMS")
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/enable",
+      messageType: "std_msgs/Bool",
+      data: { data: checked ? true : false }
+    })
+    console.log("OPENED/CLOSED COMMS")
+  }
+
+  @action.bound
+  onChangeAutoRate(e) {
+    let rate = parseFloat(e.target.value)
+    if (isNaN(rate)) {
+      rate = 0
+    }
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/set_auto_attempts_per_hour",
+      messageType: "num_sdk_msgs/Float32",
+      data: {data: rate}
+    })
+
+    if (rate === 0) {
+      this.auto_attempts_per_hour = rate
+    }
+    else {
+      this.auto_attempts_per_hour = e.target.value
+    }
   }
 
   @action.bound
