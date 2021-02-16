@@ -863,13 +863,11 @@ class ROSConnectionStore {
   @action.bound
   onToggleNEPIComms(e) {
     const checked = e.target.checked
-    console.log("OPENING/CLOSING COMMS")
     this.publishMessage({
       name: "nepi_edge_ros_bridge/enable",
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
-    console.log("OPENED/CLOSED COMMS")
   }
 
   @action.bound

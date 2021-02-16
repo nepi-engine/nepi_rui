@@ -33,47 +33,12 @@ class NEPI extends Component {
     this.renderLBInformation = this.renderLBInformation.bind(this)
     this.renderHBInformation = this.renderHBInformation.bind(this)
     this.renderConnectionSettings = this.renderConnectionSettings.bind(this)
-    this.onToggleAutoConnect = this.onToggleAutoConnect.bind(this)
-    this.onToggleHB = this.onToggleHB.bind(this)
-    this.onToggleAutoOff = this.onToggleAutoOff.bind(this)
     this.renderLBLinkSettings = this.renderLBLinkSettings.bind(this)
     this.renderQR = this.renderQR.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
-    this.ROSLinkRateUp = this.ROSLinkRateUp.bind(this)
-    this.LBQueueMaxSizeUp = this.LBQueueMaxSizeUp.bind(this)
-    this.logToggle = this.logToggle.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
     this.toggleViewableOrder = this.toggleViewableOrder.bind(this)
     this.onChangeAutoRate = this.onChangeAutoRate(this)
-  }
-
-  onToggleAutoConnect() {
-
-  }
-
-  onToggleHB() {
-
-  }
-
-  onToggleAutoOff() {
-
-  }
-
-
-  logToggle() {
-
-  }
-
-  onChangeAutoRate() {
-
-  }
-
-  ROSLinkRateUp() {
-
-  }
-
-  LBQueueMaxSizeUp() {
-
   }
 
   onDragEnd(result) {
