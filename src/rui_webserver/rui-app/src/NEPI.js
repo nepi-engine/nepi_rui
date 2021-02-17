@@ -38,7 +38,6 @@ class NEPI extends Component {
     this.onDragEnd = this.onDragEnd.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
     this.toggleViewableOrder = this.toggleViewableOrder.bind(this)
-    this.onChangeAutoRate = this.onChangeAutoRate(this)
   }
 
   onDragEnd(result) {
@@ -129,7 +128,7 @@ class NEPI extends Component {
   }
 
   renderHBInformation() {
-    const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, DataToTransfer } = this.props.ros
+    const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, hb_data_queue_size_MB } = this.props.ros
     var date = Date.now()
     var last = new Date (date - hb_last_connection_time.secs)
     
@@ -142,17 +141,17 @@ class NEPI extends Component {
         </Label>
         <Label title="Device Originated Data">
           <Input
-            disabled value= {hb_do_transfered_mb}
+            disabled value= {hb_do_transfered_mb.toFixed(2)}
           />
         </Label>
         <Label title="Device Terminated Data">
           <Input
-            disabled value= {hb_dt_transfered_mb}
+            disabled value= {hb_dt_transfered_mb.toFixed(2)}
           />
         </Label>
         <Label title="Data to Transmit (MB)">
           <Input
-            disabled value= {DataToTransfer}
+            disabled value= {hb_data_queue_size_MB.toFixed(2)}
           />
         </Label>
         <ButtonMenu hidden={true}>
@@ -235,7 +234,7 @@ class NEPI extends Component {
           </Label>
           <Label title="Unprocessed Data (KB)">
             <Input
-              value={lb_data_queue_size_KB}
+              value={lb_data_queue_size_KB.toFixed(2)}
               onChange={this.LBQueueMaxSizeUp}
               disabled="true"
             />
@@ -288,8 +287,7 @@ class NEPI extends Component {
   }
 
   render() {
-    const { LBenabled } = this.state
-    const { NEPIenabled, onToggleNEPIComms } = this.props.ros
+    const { NEPIenabled, onToggleNEPIComms, lb_enabled } = this.props.ros
     return (
       <div>
         <Label title={"Enable/Disable NEPI-COMMS"}>
@@ -310,7 +308,7 @@ class NEPI extends Component {
             {this.renderLBInformation()}
             {this.renderHBInformation()}
             </div>
-            <div hidden={/*!LBenabled ||*/ !NEPIenabled}>
+            <div hidden={!lb_enabled || !NEPIenabled}>
             {this.renderLBLinkSettings()}
             </div>
           </Column>
