@@ -619,7 +619,6 @@ class ROSConnectionStore {
       this.lb_dt_msg_count = this.NEPIStatus.lb_dt_msg_count
       this.hb_do_transfered_mb = this.NEPIStatus.hb_do_transfered_mb
       this.hb_dt_transfered_mb = this.NEPIStatus.hb_dt_transfered_mb
-      //this.DataToTransfer = this.DataToTransfer
       this.lb_enabled = this.NEPIStatus.lb_enabled
       this.hb_enabled = this.NEPIStatus.hb_enabled
       this.lb_available_data_sources = this.NEPIStatus.lb_available_data_sources

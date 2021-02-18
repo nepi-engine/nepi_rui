@@ -39,7 +39,6 @@ class NEPI extends Component {
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
     this.toggleViewableOrder = this.toggleViewableOrder.bind(this)
   }
-
   onDragEnd(result) {
     // // commented out to prevent movement of comms order list.
     // if (!result.destination) {
@@ -95,7 +94,7 @@ class NEPI extends Component {
 
   renderQR() {
     const { NUID } = this.props.ros
-    qr.toCanvas(document.getElementById("qrcode"), "NUID")
+    qr.toCanvas(document.getElementById("qrcode"), NUID)
   }
 
   renderLBInformation() {
@@ -214,7 +213,8 @@ class NEPI extends Component {
         sources[i] = {
           long:lb_available_data_sources[i],
           short:split[split.length - 1]
-        }      }
+        }      
+      }
     }
     for(i = 0; i < lb_selected_data_sources.length; i++) {
       var split = lb_selected_data_sources[i].split("/")
@@ -226,7 +226,7 @@ class NEPI extends Component {
     }
       return (
         <Section title={"LB Link Settings"}>
-          <Label title="ROS Topic Link Rate (Per Hour)">
+          <Label title="Data Sets per Hour">
             <Input
               value={ROSLinkRate}
               onChange={this.ROSLinkRateUp}
@@ -315,6 +315,9 @@ class NEPI extends Component {
         </Columns>
       </div>
     )
+  }
+  componentDidMount() {
+    this.renderQR();
   }
 }
 export default NEPI
