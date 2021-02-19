@@ -99,8 +99,11 @@ class NEPI extends Component {
 
   renderLBInformation() {
     const { lb_last_connection_time, lb_do_msg_count, lb_dt_msg_count } = this.props.ros
-    var date = Date.now()
-    var last = new Date (date - lb_last_connection_time.secs)
+    if(!lb_last_connection_time == null) {
+      var last = new Date (Date.now() - lb_last_connection_time.secs)
+    } else {
+      var last = new Date (Date.now())
+    }
     return(
       <Section title={"LB Information"}>
         <Label title="Last Lb Link Connection (Y:Mo:D:H:M:S)">
@@ -128,9 +131,11 @@ class NEPI extends Component {
 
   renderHBInformation() {
     const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, hb_data_queue_size_MB } = this.props.ros
-    var date = Date.now()
-    var last = new Date (date - hb_last_connection_time.secs)
-    
+    if(!hb_last_connection_time == null) {
+      var last = new Date (Date.now() - hb_last_connection_time.secs)
+    } else {
+      var last = new Date (Date.now())
+    }
     return(
       <Section title={"HB Information"}>
         <Label title="Last Link Connection (Y:Mo:D:H:M:S)">
@@ -140,17 +145,17 @@ class NEPI extends Component {
         </Label>
         <Label title="Device Originated Data">
           <Input
-            disabled value= {hb_do_transfered_mb.toFixed(2)}
+            disabled value= {hb_do_transfered_mb != null ? hb_do_transfered_mb.toFixed(2) : "0.00"}
           />
         </Label>
         <Label title="Device Terminated Data">
           <Input
-            disabled value= {hb_dt_transfered_mb.toFixed(2)}
+            disabled value= {hb_dt_transfered_mb != null ? hb_dt_transfered_mb.toFixed(2) : "0.00"}
           />
         </Label>
         <Label title="Data to Transmit (MB)">
           <Input
-            disabled value= {hb_data_queue_size_MB.toFixed(2)}
+            disabled value= {hb_data_queue_size_MB != null ? hb_data_queue_size_MB.toFixed(2) : "0.00"}
           />
         </Label>
         <ButtonMenu hidden={true}>
@@ -199,29 +204,35 @@ class NEPI extends Component {
   renderLBLinkSettings() {
     const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onToggleTopic } = this.props.ros
     const { ROSLinkRate, viewableTopics, viewableOrder } = this.state
-    var sources = [{}]
+    var sources = []
     var selected_sources = []
     var i;
-    for(i = 0; i < lb_available_data_sources.length; i++) {
-      var split = lb_available_data_sources[i].split("/")
-      if(split.length != 1) {
-        sources[i] = {
-          long:lb_available_data_sources[i],
-          short:split[split.length - 2] + "/" + split[split.length - 1]
+
+    if (lb_available_data_sources != null) {
+      for(i = 0; i < lb_available_data_sources.length; i++) {
+        var split = lb_available_data_sources[i].split("/")
+        if(split.length != 1) {
+          sources[i] = {
+            long:lb_available_data_sources[i],
+            short:split[split.length - 2] + "/" + split[split.length - 1]
+          }
+        } else {
+          sources[i] = {
+            long:lb_available_data_sources[i],
+            short:split[split.length - 1]
+          }      
         }
-      } else {
-        sources[i] = {
-          long:lb_available_data_sources[i],
-          short:split[split.length - 1]
-        }      
       }
     }
-    for(i = 0; i < lb_selected_data_sources.length; i++) {
-      var split = lb_selected_data_sources[i].split("/")
-      if(split.length != 1) {
-        selected_sources[i] = split[split.length - 2] + "/" + split[split.length - 1]
-      } else {
-        selected_sources[i] = split[split.length - 1]
+
+    if (lb_selected_data_sources != null) {
+      for(i = 0; i < lb_selected_data_sources.length; i++) {
+        var split = lb_selected_data_sources[i].split("/")
+        if(split.length != 1) {
+          selected_sources[i] = split[split.length - 2] + "/" + split[split.length - 1]
+        } else {
+          selected_sources[i] = split[split.length - 1]
+        }
       }
     }
       return (
@@ -234,7 +245,7 @@ class NEPI extends Component {
           </Label>
           <Label title="Unprocessed Data (KB)">
             <Input
-              value={lb_data_queue_size_KB.toFixed(2)}
+              value={lb_data_queue_size_KB !== null ? lb_data_queue_size_KB.toFixed(2) : "0.00"}
               onChange={this.LBQueueMaxSizeUp}
               disabled="true"
             />
@@ -248,7 +259,7 @@ class NEPI extends Component {
               <Select style={{flex: 1, backgroundColor: Styles.vars.colors.orange}}></Select>
             </div>
             <div hidden={!viewableOrder}>
-            {lb_comms_types.map((item, index) => 
+            {lb_comms_types !== null ? lb_comms_types.map((item, index) => 
             <div 
               style={{
                 textAlign: "center",
@@ -259,7 +270,7 @@ class NEPI extends Component {
                 }}>
                 <body style={{color: Styles.vars.colors.black}}>{item}</body>
             </div>
-            )}
+            ) : <div></div>}
             </div>
           </Label>
           <Label title="Set Ros Topics to Link">
