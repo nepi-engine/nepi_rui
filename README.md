@@ -4,11 +4,7 @@ Description: Web server for the Resident User Interface of Numurus
 
 - Uses rosbridge to connect to ROS
 
-<img src="https://picknik.ai/assets/images/logo.jpg" width="100">
-
-Developed by Lucas Doyle, Dave Coleman, and Tyler Weaver at [PickNik Consulting](http://picknik.ai/)
-
-Travis CI: [![Build Status](https://travis-ci.com/PickNikRobotics/numurus_rui.svg?token=o9hPQnr2kShM9ckDs6J8&branch=master)](https://travis-ci.com/PickNikRobotics/numurus_rui)
+Developed by Josh Maximoff
 
 Architecture:
 ![Alt text](/resources/architecture.png?raw=true "Architecture")
@@ -138,8 +134,6 @@ Start the development server with:
         npm start
 
 Various other npm commands are available such as `build`, `lint`, etc. See the `scripts` section of `rui-app/package.json` for a full list of commands.
-
-If desired, you can deploy the newest version of the demo site (see https://picknikrobotics.github.io/numurus_rui/):
 
         npm run deploy
 
