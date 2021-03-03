@@ -190,6 +190,7 @@ class ROSConnectionStore {
   @observable lb_dt_msg_count = null
   @observable hb_do_transfered_mb = null
   @observable hb_dt_transfered_mb = null
+  @observable lb_data_sets_per_hour = null
   @observable lb_enabled = null
   @observable hb_enabled = null
   @observable lb_available_data_sources = null
@@ -619,6 +620,7 @@ class ROSConnectionStore {
       this.lb_dt_msg_count = this.NEPIStatus.lb_dt_msg_count
       this.hb_do_transfered_mb = this.NEPIStatus.hb_do_transfered_mb
       this.hb_dt_transfered_mb = this.NEPIStatus.hb_dt_transfered_mb
+      this.lb_data_sets_per_hour = this.NEPIStatus.lb_data_sets_per_hour
       this.lb_enabled = this.NEPIStatus.lb_enabled
       this.hb_enabled = this.NEPIStatus.hb_enabled
       this.lb_available_data_sources = this.NEPIStatus.lb_available_data_sources
@@ -897,6 +899,26 @@ class ROSConnectionStore {
     }
     else {
       this.auto_attempts_per_hour = e.target.value
+    }
+  }
+
+  @action.bound
+  onChangeDataSetsPerHour(e) {
+    let rate = parseFloat(e.target.value)
+    if (isNaN(rate)) {
+      rate = 0
+    }
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/lb/set_data_sets_per_hour",
+      messageType: "num_sdk_msgs/Float32",
+      data: {data: rate}
+    })
+
+    if (rate === 0) {
+      this.lb_data_sets_per_hour = rate
+    }
+    else {
+      this.lb_data_sets_per_hour = e.target.value
     }
   }
 

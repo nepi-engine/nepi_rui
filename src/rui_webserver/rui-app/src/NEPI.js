@@ -25,7 +25,6 @@ class NEPI extends Component {
     super(props)
 
     this.state = {
-      ROSLinkRate: 30,
       viewableTopics: false,
       viewableOrder: false,
     }
@@ -202,8 +201,8 @@ class NEPI extends Component {
   }
 
   renderLBLinkSettings() {
-    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onToggleTopic } = this.props.ros
-    const { ROSLinkRate, viewableTopics, viewableOrder } = this.state
+    const { lb_data_sets_per_hour, lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onChangeDataSetsPerHour, onToggleTopic } = this.props.ros
+    const { viewableTopics, viewableOrder } = this.state
     var sources = []
     var selected_sources = []
     var i;
@@ -239,8 +238,8 @@ class NEPI extends Component {
         <Section title={"LB Link Settings"}>
           <Label title="Data Sets per Hour">
             <Input
-              value={ROSLinkRate}
-              onChange={this.ROSLinkRateUp}
+              value={lb_data_sets_per_hour !== null ? lb_data_sets_per_hour : "0"}
+              onChange= {onChangeDataSetsPerHour}
             />
           </Label>
           <Label title="Unprocessed Data (KB)">
