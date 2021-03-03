@@ -801,6 +801,15 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  onNEPIConnectNow() {
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/connect_now",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
+  @action.bound
   onToggleTopic(e) {
     const topic = e.target.getAttribute("data-topic")
     if(!this.lb_selected_data_sources.includes(topic)) {

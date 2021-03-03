@@ -167,11 +167,11 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
+    const { onNEPIConnectNow, lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
         <ButtonMenu>
-          <Button>{"Connect Now"}</Button>
+          <Button onClick={onNEPIConnectNow}>{"Connect Now"}</Button>
         </ButtonMenu>
         <Label title="Auto Rate (Attempts Per Hour)">
           <Input
