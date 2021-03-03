@@ -99,16 +99,16 @@ class NEPI extends Component {
 
   renderLBInformation() {
     const { lb_last_connection_time, lb_do_msg_count, lb_dt_msg_count } = this.props.ros
-    if(!lb_last_connection_time == null) {
-      var last = new Date (Date.now() - lb_last_connection_time.secs)
+    if((lb_last_connection_time !== null) && (lb_last_connection_time.unix() !== 0)) {
+      var last = lb_last_connection_time.format("l h:mm:ss a")
     } else {
-      var last = new Date (Date.now())
+      last = "---"
     }
     return(
       <Section title={"LB Information"}>
-        <Label title="Last Lb Link Connection (Y:Mo:D:H:M:S)">
+        <Label title="Last Lb Link Connection">
           <Input
-            disabled value= {last.toString()}
+            disabled value= {last}
           />
         </Label>
         <Label title="Device Originated Messages">
@@ -131,16 +131,16 @@ class NEPI extends Component {
 
   renderHBInformation() {
     const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, hb_data_queue_size_MB } = this.props.ros
-    if(!hb_last_connection_time == null) {
-      var last = new Date (Date.now() - hb_last_connection_time.secs)
+    if ((hb_last_connection_time !== null) && (hb_last_connection_time.unix() !== 0)) {
+      var last = hb_last_connection_time.format("l h:mm:ss a")
     } else {
-      var last = new Date (Date.now())
+      last = "---"
     }
     return(
       <Section title={"HB Information"}>
-        <Label title="Last Link Connection (Y:Mo:D:H:M:S)">
+        <Label title="Last Link Connection">
           <Input
-            disabled value= {last.toString()}
+            disabled value= {last}
           />
         </Label>
         <Label title="Device Originated Data">

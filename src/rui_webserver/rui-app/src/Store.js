@@ -613,8 +613,8 @@ class ROSConnectionStore {
       this.NUID = this.NEPIStatus.nuid
       this.alias = this.NEPIStatus.alias
       this.NEPIenabled = this.NEPIStatus.enabled
-      this.lb_last_connection_time = this.NEPIStatus.lb_last_connection_time
-      this.hb_last_connection_time = this.NEPIStatus.hb_last_connection_time
+      this.lb_last_connection_time = moment.unix(this.NEPIStatus.lb_last_connection_time.secs)
+      this.hb_last_connection_time = moment.unix(this.NEPIStatus.hb_last_connection_time.secs)
       this.lb_do_msg_count = this.NEPIStatus.lb_do_msg_count
       this.lb_dt_msg_count = this.NEPIStatus.lb_dt_msg_count
       this.hb_do_transfered_mb = this.NEPIStatus.hb_do_transfered_mb
