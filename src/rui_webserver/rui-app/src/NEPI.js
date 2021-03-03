@@ -142,12 +142,12 @@ class NEPI extends Component {
             disabled value= {last}
           />
         </Label>
-        <Label title="Device Originated Data">
+        <Label title="Device Originated Data (MB)">
           <Input
             disabled value= {hb_do_transfered_mb != null ? hb_do_transfered_mb.toFixed(2) : "0.00"}
           />
         </Label>
-        <Label title="Device Terminated Data">
+        <Label title="Device Terminated Data (MB)">
           <Input
             disabled value= {hb_dt_transfered_mb != null ? hb_dt_transfered_mb.toFixed(2) : "0.00"}
           />
@@ -166,7 +166,7 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { onNEPIConnectNow, lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
+    const { lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
         <ButtonMenu>
