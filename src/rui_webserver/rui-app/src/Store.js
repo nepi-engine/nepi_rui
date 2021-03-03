@@ -2,7 +2,6 @@ import { observable, action } from "mobx"
 import moment from "moment"
 import ROS from "roslib"
 import cannon from "cannon"
-import { colors } from "./Styles"
 
 const ROS_WS_URL = `ws://${window.location.hostname}:9090`
 const FLASK_URL = `http://${window.location.hostname}:5003`
@@ -822,7 +821,7 @@ class ROSConnectionStore {
       })
     } else {
       var sources = this.lb_selected_data_sources.filter(function(value, index, arr) {
-        return value != topic
+        return value !== topic
       });
       this.publishMessage({
         name: "nepi_edge_ros_bridge/lb/select_data_sources",

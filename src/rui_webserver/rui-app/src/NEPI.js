@@ -6,7 +6,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
-import Select, { Option } from "./Select"
+import Select from "./Select"
 import Styles from "./Styles"
 var qr = require("qrcode")
 
@@ -210,7 +210,7 @@ class NEPI extends Component {
     if (lb_available_data_sources != null) {
       for(i = 0; i < lb_available_data_sources.length; i++) {
         var split = lb_available_data_sources[i].split("/")
-        if(split.length != 1) {
+        if(split.length !== 1) {
           sources[i] = {
             long:lb_available_data_sources[i],
             short:split[split.length - 2] + "/" + split[split.length - 1]
@@ -219,15 +219,15 @@ class NEPI extends Component {
           sources[i] = {
             long:lb_available_data_sources[i],
             short:split[split.length - 1]
-          }      
+          }
         }
       }
     }
 
     if (lb_selected_data_sources != null) {
       for(i = 0; i < lb_selected_data_sources.length; i++) {
-        var split = lb_selected_data_sources[i].split("/")
-        if(split.length != 1) {
+        split = lb_selected_data_sources[i].split("/")
+        if(split.length !== 1) {
           selected_sources[i] = split[split.length - 2] + "/" + split[split.length - 1]
         } else {
           selected_sources[i] = split[split.length - 1]
