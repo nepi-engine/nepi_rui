@@ -6,6 +6,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
+import BooleanIndicator from "./BooleanIndicator"
 import Select from "./Select"
 import Styles from "./Styles"
 var qr = require("qrcode")
@@ -166,9 +167,12 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
+    const { bot_running, lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
+        <Label title={"Connection in Progress"}>
+          <BooleanIndicator value={bot_running} />
+        </Label>
         <ButtonMenu>
           <Button onClick={onNEPIConnectNow}>{"Connect Now"}</Button>
         </ButtonMenu>
@@ -201,7 +205,7 @@ class NEPI extends Component {
   }
 
   renderLBLinkSettings() {
-    const { lb_data_sets_per_hour, lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onChangeDataSetsPerHour, onToggleTopic } = this.props.ros
+    const { lb_data_sets_per_hour, lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onNEPIDataSetNow, onChangeDataSetsPerHour, onToggleTopic } = this.props.ros
     const { viewableTopics, viewableOrder } = this.state
     var sources = []
     var selected_sources = []
@@ -236,6 +240,9 @@ class NEPI extends Component {
     }
       return (
         <Section title={"LB Link Settings"}>
+          <ButtonMenu>
+            <Button onClick={onNEPIDataSetNow}>{"Data Set Now"}</Button>
+          </ButtonMenu>
           <Label title="Data Sets per Hour">
             <Input
               value={lb_data_sets_per_hour !== null ? lb_data_sets_per_hour : "0"}

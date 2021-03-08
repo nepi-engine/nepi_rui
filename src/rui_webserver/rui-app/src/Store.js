@@ -183,6 +183,7 @@ class ROSConnectionStore {
   @observable NUID = ""
   @observable NEPIStatus = null
   @observable alias = ""
+  @observable bot_running = null
   @observable lb_last_connection_time = null
   @observable hb_last_connection_time = null
   @observable lb_do_msg_count = "1"
@@ -612,6 +613,7 @@ class ROSConnectionStore {
       })
       this.NUID = this.NEPIStatus.nuid
       this.alias = this.NEPIStatus.alias
+      this.bot_running = this.NEPIStatus.bot_running
       this.NEPIenabled = this.NEPIStatus.enabled
       this.lb_last_connection_time = moment.unix(this.NEPIStatus.lb_last_connection_time.secs)
       this.hb_last_connection_time = moment.unix(this.NEPIStatus.hb_last_connection_time.secs)
@@ -805,6 +807,15 @@ class ROSConnectionStore {
   onNEPIConnectNow() {
     this.publishMessage({
       name: "nepi_edge_ros_bridge/connect_now",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
+  @action.bound
+  onNEPIDataSetNow() {
+    this.publishMessage({
+      name: "nepi_edge_ros_bridge/lb/create_data_set_now",
       messageType: "std_msgs/Empty",
       data: {}
     })
