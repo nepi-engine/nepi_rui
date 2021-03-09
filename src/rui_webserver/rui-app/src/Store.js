@@ -595,14 +595,6 @@ class ROSConnectionStore {
       })
     }
   }
-  setupNUIDListener(callback) {
-      return this.addListener({
-        name: "nuid",
-        messageType: "std_msgs/String",
-        callback: callback,
-        manageListener: false
-      })
-  }
 
   async callNepiStatusService() {
     const _pollOnce = async () => {

@@ -19,7 +19,6 @@ class Settings extends Component {
     this.state = {
       units: "metric",
       unitsResolution: "Low",
-      nuid: "Not Available",
       deviceTriggerSWActive: true,
       deviceTriggerDualCamsActive: true,
       deviceTriggerToFCamActive: true,
@@ -49,10 +48,6 @@ class Settings extends Component {
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderConfiguration = this.renderConfiguration.bind(this)
     this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
-    this.renderNUID = this.renderNUID.bind(this)
-
-    this.nuidListener = this.nuidListener.bind(this)
-    this.props.ros.setupNUIDListener(this.nuidListener)
   }
 
   async onIPAddrValChange(e) {
@@ -84,12 +79,6 @@ class Settings extends Component {
       setDeviceID({newDeviceID: this.state.updatedDeviceId})
       document.getElementById("device_id_update_text").style.color = Styles.vars.colors.black
     }
-  }
-
-  nuidListener(message) {
-    this.setState({
-      nuid: message.data
-    })
   }
 
   renderDeviceSettings() {
@@ -231,17 +220,6 @@ class Settings extends Component {
     )
   }
 
-  renderNUID() {
-    const { nuid } = this.state
-    return (
-      <Section title={"NEPI"}>
-        <Label title={"NUID"}>
-          <Input disabled value= {nuid} />
-        </Label>
-      </Section>
-    )
-  }
-
   renderConfiguration() {
     const { resetTopics } = this.props.ros
     const { advancedConfigDisabled } = this.state
@@ -274,7 +252,6 @@ class Settings extends Component {
             </Toggle>
           </Label>
           {this.renderDeviceSettings()}
-          {this.renderNUID()}
           {this.renderTriggerSettings()}
         </Column>
         <Column>
