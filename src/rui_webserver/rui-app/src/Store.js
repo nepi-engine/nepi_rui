@@ -178,8 +178,8 @@ class ROSConnectionStore {
   @observable classifiers = []
   @observable classifierImgTopic = null
 
-  @observable ip_addrs = []
-
+  @observable ip_query_response = {}
+  
   @observable NUID = ""
   @observable NEPIStatus = null
   @observable alias = ""
@@ -661,10 +661,9 @@ class ROSConnectionStore {
 
   async startPollingIPAddrQueryService() {
     const _pollOnce = async () => {
-      this.ip_addrs = await this.callService({
+      this.ip_query_response = await this.callService({
         name: "ip_addr_query",
-        messageType: "num_sdk_msgs/IPAddrQuery",
-        msgKey: "ip_addrs"
+        messageType: "num_sdk_msgs/IPAddrQuery"
       })
 
       if (this.connectedToROS) {
@@ -1026,6 +1025,17 @@ class ROSConnectionStore {
       name: "hw_trigger_in_enab",
       messageType: "std_msgs/UInt32",
       data: { data: checked ? this.triggerMask : 0 }
+    })
+  }
+
+  @action.bound
+  onToggleDHCPEnabled(e) {
+    const checked = e.target.checked
+
+    this.publishMessage({
+      name: "enable_dhcp",
+      messageType: "std_msgs/Bool",
+      data: { data: checked }
     })
   }
 

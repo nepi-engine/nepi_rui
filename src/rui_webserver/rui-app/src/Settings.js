@@ -205,14 +205,20 @@ class Settings extends Component {
   }
 
   renderNetworkInfo() {
-    const { ip_addrs } = this.props.ros
+    const { ip_query_response, onToggleDHCPEnabled } = this.props.ros
     const { ipAddrVal } = this.state
     return (
       <Section title={"Network"}>
         <Label title={"Device IP Addresses"}>
           <pre style={{ height: "88px", overflowY: "auto" }}>
-            {ip_addrs.join('\n')}
+            {ip_query_response.ip_addrs.join('\n')}
           </pre>
+        </Label>
+        <Label title={"DHCP Enabled"}>
+        <Toggle
+          checked={ip_query_response.dhcp_enabled}
+          onClick= {onToggleDHCPEnabled}
+        />
         </Label>
         <Label>
           <Input value={ipAddrVal} onChange={ this.onIPAddrValChange} />
