@@ -5,6 +5,9 @@ import Section from "./Section"
 import EnableAdjustment from "./EnableAdjustment"
 import RangeAdjustment from "./RangeAdjustment"
 import AngleAdjustment from "./AngleAdjustment"
+import Toggle from "react-toggle"
+import Label from "./Label"
+import { Column, Columns } from "./Columns"
 
 @inject("ros")
 @observer
@@ -36,6 +39,7 @@ class Control3DX extends Component {
 
     this.updateListener = this.updateListener.bind(this)
     this.status3DXListener = this.status3DXListener.bind(this)
+    this.sendUpdate = this.sendUpdate.bind(this)
 
     this.updateListener()
   }
@@ -95,6 +99,17 @@ class Control3DX extends Component {
     }
   }
 
+   // Function for sending updated state through rosbridge
+   sendUpdate(topic, value, name, throttle = false) {
+    this.props.ros.publishAutoManualSelection3DX(
+      topic,
+      name,
+      true,
+      value,
+      throttle
+    )
+  }
+
   render() {
     return (
       <Section
@@ -119,15 +134,40 @@ class Control3DX extends Component {
             "Angular offset and total angle.  Expressed as a percentage of the sensor's native angular range."
           }
         />
-
-        <EnableAdjustment
-          title="Resolution"
-          enabled={this.state.resolutionEnabled}
-          adjustment={this.state.resolutionAdjustment}
-          topic={this.props.topic}
-          disabled={this.state.disabled}
-          tooltip={"Manual resolution scaling."}
-        />
+        <div>
+          <Label title={"Resolution"}>
+          </Label>
+          <Columns>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Low"}>
+              </Label>
+              <Toggle checked={this.state.resolutionAdjustment <= .25} onClick={() => {this.sendUpdate(this.props.topic, .25, "resolution")}}/>
+            </div>
+            </Column>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Medium"}>
+              </Label>
+              <Toggle checked={this.state.resolutionAdjustment > .25 && this.state.resolutionAdjustment <= .50} onClick={() => {this.sendUpdate(this.props.topic, .50, "resolution")}} />
+            </div>
+            </Column>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"High"}>
+              </Label>
+              <Toggle checked={this.state.resolutionAdjustment > .50 && this.state.resolutionAdjustment <= .75} onClick={() => {this.sendUpdate(this.props.topic, .75, "resolution")}} />
+            </div>
+            </Column>
+            <div align={"left"} textAlign={"left"}>
+            <Column>
+              <Label title={"Ultra"}>
+              </Label>
+              <Toggle checked={this.state.resolutionAdjustment > .75} onClick={() => {this.sendUpdate(this.props.topic, 1, "resolution")}} />
+            </Column>
+            </div>
+          </Columns>
+        </div>
 
         <EnableAdjustment
           title="Gain"
