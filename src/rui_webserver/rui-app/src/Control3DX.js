@@ -135,9 +135,13 @@ class Control3DX extends Component {
           }
         />
         <div>
-          <Label title={"Resolution"}>
-          </Label>
           <Columns>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Resolution"}>
+              </Label>
+            </div>
+            </Column>
             <Column>
             <div align={"left"} textAlign={"left"}>
               <Label title={"Low"}>
