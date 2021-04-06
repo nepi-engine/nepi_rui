@@ -884,33 +884,13 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onChangeAutoRate(e) {
-    let rate = parseFloat(e.target.value)
+  onChangeNEPI(topic, value) {
+    let rate = parseFloat(value)
     if (isNaN(rate)) {
       rate = 0
     }
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/set_auto_attempts_per_hour",
-      messageType: "num_sdk_msgs/Float32",
-      data: {data: rate}
-    })
-
-    if (rate === 0) {
-      this.auto_attempts_per_hour = rate
-    }
-    else {
-      this.auto_attempts_per_hour = e.target.value
-    }
-  }
-
-  @action.bound
-  onChangeDataSetsPerHour(e) {
-    let rate = parseFloat(e.target.value)
-    if (isNaN(rate)) {
-      rate = 0
-    }
-    this.publishMessage({
-      name: "nepi_edge_ros_bridge/lb/set_data_sets_per_hour",
+      name: topic,
       messageType: "num_sdk_msgs/Float32",
       data: {data: rate}
     })
@@ -919,7 +899,7 @@ class ROSConnectionStore {
       this.lb_data_sets_per_hour = rate
     }
     else {
-      this.lb_data_sets_per_hour = e.target.value
+      this.lb_data_sets_per_hour = value
     }
   }
 

@@ -28,6 +28,8 @@ class NEPI extends Component {
     this.state = {
       viewableTopics: false,
       viewableOrder: false,
+      autoRate: 0,
+      dataSetsPerHour: 0,
     }
     this.renderNEPI = this.renderNEPI.bind(this)
     this.renderLBInformation = this.renderLBInformation.bind(this)
@@ -38,6 +40,8 @@ class NEPI extends Component {
     this.onDragEnd = this.onDragEnd.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
     this.toggleViewableOrder = this.toggleViewableOrder.bind(this)
+    this.onUpdateText = this.onUpdateText.bind(this)
+    this.onKeyText = this.onKeyText.bind(this)
   }
   onDragEnd(result) {
     // // commented out to prevent movement of comms order list.
@@ -54,6 +58,24 @@ class NEPI extends Component {
     // this.setState({
     //   items
     // });
+  }
+
+  onUpdateText(e) {
+    var stateObject = function() {
+      const returnObj = {};
+      returnObj[this.target.id] = this.target.value;
+      return returnObj;
+    }.bind(e)();
+    this.setState( stateObject );
+    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+  }
+
+  onKeyText(e) {
+    const {onChangeNEPI} = this.props.ros
+    if(e.key === 'Enter'){
+      onChangeNEPI(e.target.dataset.topic, e.target.value)
+      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+    }
   }
 
   toggleViewableTopics() {
@@ -178,8 +200,11 @@ class NEPI extends Component {
         </ButtonMenu>
         <Label title="Auto Rate (Attempts Per Hour)">
           <Input
-            value= {auto_attempts_per_hour} 
-            onChange= {onChangeAutoRate}
+            id="autoRate"
+            data-topic="nepi_edge_ros_bridge/set_auto_attempts_per_hour"
+            value= {this.state.autoRate} 
+            onChange= {this.onUpdateText}
+            onKeyDown= {this.onKeyText}
           />
         </Label>
         <Label title="Enable HB Link">
@@ -245,8 +270,11 @@ class NEPI extends Component {
           </ButtonMenu>
           <Label title="Data Sets per Hour">
             <Input
-              value={lb_data_sets_per_hour !== null ? lb_data_sets_per_hour : "0"}
-              onChange= {onChangeDataSetsPerHour}
+              value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
+              id="dataSetsPerHour"
+              data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
+              onChange= {this.onUpdateText}
+              onKeyDown= {this.onKeyText}
             />
           </Label>
           <Label title="Unprocessed Data (KB)">
@@ -261,8 +289,8 @@ class NEPI extends Component {
               <DragList list={items} width="225px" callback={this.onDragEnd}>
               </DragList>
             </div> */}
-            <div onClick={this.toggleViewableOrder} style={{backgroundColor: Styles.vars.colors.grey0, display:"flex"}}>
-              <Select style={{flex: 1, backgroundColor: Styles.vars.colors.orange}}></Select>
+            <div onClick={this.toggleViewableOrder} style={{backgroundColor: Styles.vars.colors.orange}}>
+              <Select style={{backgroundColor: Styles.vars.colors.orange, width: "10px"}}></Select>
             </div>
             <div hidden={!viewableOrder}>
             {lb_comms_types !== null ? lb_comms_types.map((item, index) => 
@@ -280,8 +308,8 @@ class NEPI extends Component {
             </div>
           </Label>
           <Label title="Set Ros Topics to Link">
-            <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0, display:"flex"}}>
-              <Select style={{flex: 1}}></Select>
+            <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
+              <Select style={{width: "10px"}}></Select>
             </div>
             <div hidden={!viewableTopics}>
             {sources.map((topic) => 
