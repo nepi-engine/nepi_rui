@@ -43,8 +43,6 @@ class Dashboard extends Component {
       deviceId,
       deviceSerial,
       systemDefsFirmwareVersion,
-      deviceInWater,
-      onToggleDeviceInWater
     } = this.props.ros
     return (
       <Section title={"Device Info"}>
@@ -59,9 +57,6 @@ class Dashboard extends Component {
         </Label>
         <Label title={"Firmware Version"}>
           <Input disabled value={systemDefsFirmwareVersion} />
-        </Label>
-        <Label title={"In Water"}>
-          <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
         </Label>
       </Section>
     )

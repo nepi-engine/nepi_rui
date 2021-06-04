@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
+import Toggle from "react-toggle"
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -122,7 +123,7 @@ class Sensor3DX extends Component {
   }
 
   render() {
-    const { sensor3DXTopics, imageTopics3DX } = this.props.ros
+    const { sensor3DXTopics, imageTopics3DX, deviceInWater, onToggleDeviceInWater } = this.props.ros
     const NoneOption = <Option>None</Option>
 
     return (
@@ -181,6 +182,9 @@ class Sensor3DX extends Component {
                     ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
                     : NoneOption}
                 </Select>
+              </Label>
+              <Label title={"In Water"}>
+                <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
               </Label>
             </Section>
           </Column>
