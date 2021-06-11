@@ -28,8 +28,8 @@ class NEPI extends Component {
     this.state = {
       viewableTopics: false,
       viewableOrder: false,
-      autoRate: 0,
-      dataSetsPerHour: 0,
+      autoRate: this.props.ros.auto_attempts_per_hour,
+      dataSetsPerHour: this.props.ros.lb_data_sets_per_hour,
     }
     this.renderNEPI = this.renderNEPI.bind(this)
     this.renderLBInformation = this.renderLBInformation.bind(this)
@@ -189,7 +189,7 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { bot_running, lb_enabled, auto_attempts_per_hour, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow, onToggleHB, onToggleAutoOffloading, onToggleLB, onChangeAutoRate } = this.props.ros
+    const { bot_running, lb_enabled, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow, onToggleHB, onToggleAutoOffloading, onToggleLB } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
         <Label title={"Connection in Progress"}>
@@ -202,7 +202,7 @@ class NEPI extends Component {
           <Input
             id="autoRate"
             data-topic="nepi_edge_ros_bridge/set_auto_attempts_per_hour"
-            value= {this.state.autoRate} 
+            value= {this.state.autoRate}
             onChange= {this.onUpdateText}
             onKeyDown= {this.onKeyText}
           />
@@ -230,7 +230,7 @@ class NEPI extends Component {
   }
 
   renderLBLinkSettings() {
-    const { lb_data_sets_per_hour, lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onNEPIDataSetNow, onChangeDataSetsPerHour, onToggleTopic } = this.props.ros
+    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onNEPIDataSetNow, onToggleTopic } = this.props.ros
     const { viewableTopics, viewableOrder } = this.state
     var sources = []
     var selected_sources = []
@@ -293,8 +293,8 @@ class NEPI extends Component {
               <Select style={{backgroundColor: Styles.vars.colors.orange, width: "10px"}}></Select>
             </div>
             <div hidden={!viewableOrder}>
-            {lb_comms_types !== null ? lb_comms_types.map((item, index) => 
-            <div 
+            {lb_comms_types !== null ? lb_comms_types.map((item, index) =>
+            <div
               style={{
                 textAlign: "center",
                 padding: `${Styles.vars.spacing.xs}`,
@@ -312,8 +312,8 @@ class NEPI extends Component {
               <Select style={{width: "10px"}}></Select>
             </div>
             <div hidden={!viewableTopics}>
-            {sources.map((topic) => 
-            <div onClick={onToggleTopic} 
+            {sources.map((topic) =>
+            <div onClick={onToggleTopic}
               style={{
                 textAlign: "center",
                 padding: `${Styles.vars.spacing.xs}`,
@@ -322,10 +322,10 @@ class NEPI extends Component {
                 cursor: "pointer",
                 }}>
                 <body data-topic={topic.long} style={{color: Styles.vars.colors.black}}>{topic.short}</body>
-            </div> 
+            </div>
             )}
             </div>
-            
+
           </Label>
         </Section>
       )
