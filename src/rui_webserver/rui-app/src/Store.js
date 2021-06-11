@@ -21,7 +21,10 @@ const NODE_DISPLAY_NAMES = {
   num_darknet_ros_mgr: "Classifier",
   system_mgr: "System",
   time_sync_mgr: "Time Sync",
-  trigger_mgr: "Triggering"
+  trigger_mgr: "Triggering",
+  nepi_edge_ros_bridge: "NEPI",
+  gpsd_ros_client: "GPSD Client",
+  illumination_mgr: "Illumination"
 }
 
 const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
@@ -179,7 +182,7 @@ class ROSConnectionStore {
   @observable classifierImgTopic = null
 
   @observable ip_query_response = {}
-  
+
   @observable NUID = ""
   @observable NEPIStatus = null
   @observable alias = ""
