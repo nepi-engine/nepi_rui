@@ -137,14 +137,17 @@ class Settings extends Component {
     }
     else {
       var config_sys_node_name = nodeNameFromDisplayName(configSubsys)
-      if (config_sys_node_name) {
-        for (var i = 1; i < resetTopics.length; i++) {
-          var node_name = resetTopics[i].split('/').pop()
-          if (node_name === config_sys_node_name) {
-            return resetTopics[i]
-          }
+      if (!config_sys_node_name) {
+        // Just try with the original name in case this node doesn't have a Display Name
+        config_sys_node_name = configSubsys
+      }
+      for (var i = 1; i < resetTopics.length; i++) {
+        var node_name = resetTopics[i].split('/').pop()
+        if (node_name === config_sys_node_name) {
+          return resetTopics[i]
         }
       }
+
       return 'UNKNOWN_NODE'
     }
   }
