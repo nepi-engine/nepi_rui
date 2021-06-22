@@ -1,5 +1,4 @@
 #! /bin/bash
-sleep 5 #Hack to allow other components to start first
 source /opt/numurus/ros/setup.bash
 
 # The sys_env script must exist and be valid. The committed base file is
@@ -28,5 +27,6 @@ source ${RUI_HOME}/venv/bin/activate || echo "Failed to load venv"
 # Set environment variables
 export PYTHONPATH="$PYTHONPATH:$RUI_HOME/src"
 
-roslaunch numurus_rui numurus_rui.launch
+# Launch in "wait" mode to allow roscore to come up
+roslaunch --wait numurus_rui numurus_rui.launch
 #rosrun numurus_rui run_webserver.py

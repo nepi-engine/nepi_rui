@@ -1,5 +1,5 @@
 <launch>
-  <arg name="device_ns" value="$(env ROOTNAME)/$(env DEVICE_TYPE)/$(env DEVICE_SN)" />
+  <arg name="device_ns" value="$(env ROOTNAME)/$(env DEVICE_TYPE)/$(env DEVICE_ID)" />
 
   <!-- Everything lives in the device namespace -->
   <group ns="$(arg device_ns)">
