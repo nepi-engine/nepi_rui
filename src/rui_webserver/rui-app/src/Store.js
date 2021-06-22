@@ -11,6 +11,8 @@ const TRIGGER_MASKS = {
   DEFAULT: 0x7fffffff
 }
 
+const EULER_ORDER_FOR_CANNON = "YZX" // Only supported angle ordering for Cannon library quaternion.toEuler() function
+
 // TODO: Would be better to query the display_name property of all nodes to generate
 // this dictionary... requires a new SDKNode service to do so
 const NODE_DISPLAY_NAMES = {
@@ -156,6 +158,20 @@ class ROSConnectionStore {
   @observable navPosOrientationPitchRate = null
   @observable navPosOrientationRollAngle = null
   @observable navPosOrientationRollRate = null
+
+  @observable navPosStatus = null
+  @observable lastNavSatFix = null
+  @observable navSatFixRate = null
+  @observable lastImu = null
+  @observable imuRate = null
+  @observable navSrcFrame = null
+  @observable navTargetFrame = null
+  @observable navTransformXTrans = null
+  @observable navTransformYTrans = null
+  @observable navTransformZTrans = null
+  @observable navTransformXRot = null
+  @observable navTransformYRot = null
+  @observable navTransformZRot = null
 
   @observable imageRecognitions = []
 
@@ -516,6 +532,7 @@ class ROSConnectionStore {
     this.startPollingOpEnvironmentQueryService()
     this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
+    this.startPollingNavPosStatusService()
     this.startPollingTimeStatusService()
     this.startPollingImgClassifierStatusQueryService()
   }
@@ -734,13 +751,55 @@ class ROSConnectionStore {
         this.navPos.orientation.w
       )
       const vec = new cannon.Vec3()
-      q.toEuler(vec)
-      this.navPosOrientationYawAngle = vec.z * (180/Math.PI)
+      // cannon exception says "Euler order XYZ not supported yet,:" so we must switch X and Z manually here
+      //q.toEuler(vec, "XYZ")
+      q.toEuler(vec, EULER_ORDER_FOR_CANNON)
+      //this.navPosOrientationYawAngle = vec.z * (180/Math.PI)
+      this.navPosOrientationYawAngle = vec.x * (180/Math.PI)
       this.navPosOrientationPitchAngle = vec.y * (180/Math.PI)
-      this.navPosOrientationRollAngle = vec.x * (180/Math.PI)
+      //this.navPosOrientationRollAngle = vec.x * (180/Math.PI)
+      this.navPosOrientationRollAngle = vec.z * (180/Math.PI)
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 500)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  startPollingNavPosStatusService() {
+    const _pollOnce = async () => {
+      this.navPosStatus = await this.callService({
+        name: "nav_pos_status_query",
+        messageType: "num_sdk_msgs/NavPosStatusQuery",
+        msgKey: "status"
+      })
+
+      this.lastNavSatFix = this.navPosStatus.last_nav_sat_fix
+      this.navSatFixRate = this.navPosStatus.nav_sat_fix_rate
+      this.lastImu = this.navPosStatus.last_imu
+      this.imuRate = this.navPosStatus.imu_rate
+      this.navSrcFrame = this.navPosStatus.transform.header.frame_id
+      this.navTargetFrame = this.navPosStatus.transform.child_frame_id
+      this.navTransformXTrans = this.navPosStatus.transform.transform.translation.x
+      this.navTransformYTrans = this.navPosStatus.transform.transform.translation.y
+      this.navTransformZTrans = this.navPosStatus.transform.transform.translation.z
+
+      const q = new cannon.Quaternion(
+        this.navPosStatus.transform.transform.translation.x,
+        this.navPosStatus.transform.transform.translation.y,
+        this.navPosStatus.transform.transform.translation.z,
+        this.navPosStatus.transform.transform.translation.w
+      )
+      const vec = new cannon.Vec3()
+      q.toEuler(vec, EULER_ORDER_FOR_CANNON)
+      this.navTransformXRot = vec.x * (180/Math.PI)
+      this.navTransformYRot = vec.y * (180/Math.PI)
+      this.navTransformZRot = vec.z * (180/Math.PI)
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 2000)
       }
     }
 
@@ -894,7 +953,7 @@ class ROSConnectionStore {
     }
     this.publishMessage({
       name: topic,
-      messageType: "num_sdk_msgs/Float32",
+      messageType: "std_msgs/Float32",
       data: {data: rate}
     })
 
@@ -950,8 +1009,8 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onChangeTriggerRate(e) {
-    let freq = parseFloat(e.target.value)
+  onChangeTriggerRate(rate) {
+    let freq = parseFloat(rate)
 
     if (isNaN(freq)) {
       freq = 0
@@ -966,13 +1025,6 @@ class ROSConnectionStore {
         rate_hz: freq
       }
     })
-
-    if (freq === 0) {
-      this.triggerAutoRateHz = freq
-    }
-    else {
-      this.triggerAutoRateHz = e.target.value
-    }
   }
 
   @action.bound
@@ -1039,8 +1091,8 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onChangeSaveFreq(e) {
-    let freq = parseFloat(e.target.value)
+  onChangeSaveFreq(rate) {
+    let freq = parseFloat(rate)
 
     if (isNaN(freq)) {
       freq = 0
@@ -1055,13 +1107,7 @@ class ROSConnectionStore {
       }
     })
 
-    //this.saveFreqHz = freq
-    if (freq === 0) {
-      this.saveFreqHz = 0
-    }
-    else {
-      this.saveFreqHz = e.target.value
-    }
+    this.saveFreqHz = freq
   }
 
   @action.bound
@@ -1149,6 +1195,15 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  deleteAllData() {
+    this.publishMessage({
+      name: "clear_data_folder",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
   // 3DX Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
@@ -1225,6 +1280,107 @@ class ROSConnectionStore {
       console.warn("publishAngle3DX: sensor3DXTopicBase not set")
     }
   }
+  /////////////////////////////////////////////////////////////////////////
+
+  // Nav/Pose Control methods /////////////////////////////////////////////
+  @action.bound
+  onDisableFixedNavPose() {
+    this.publishMessage({
+      name: "nav_pos_mgr/clear_attitude_override",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+    this.publishMessage({
+      name: "nav_pos_mgr/clear_heading_override",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
+  @action.bound
+  onSetFixedOrientation(roll_deg, pitch_deg, yaw_deg, fixed_frame_id) {
+    var q = new cannon.Quaternion()
+    q.setFromEuler(roll_deg * (Math.PI/180), pitch_deg * (Math.PI/180), yaw_deg * (Math.PI/180), EULER_ORDER_FOR_CANNON) // Use YZX order because that's the only one available for the reverse operation
+    this.publishMessage({
+      name: "nav_pos_mgr/set_attitude_override",
+      messageType: "geometry_msgs/QuaternionStamped",
+      data: {
+        header: {
+          seq: 0,
+          stamp: {
+            sec: moment().unix(),
+            nsec: 0
+          },
+          frame_id: fixed_frame_id
+        },
+        quaternion: {
+          x: q.x,
+          y: q.y,
+          z: q.z,
+          w: q.w
+        }
+      }
+    })
+  }
+
+  @action.bound
+  onSetFixedGPS(latitude_deg, longitude_deg, altitude_m, fixed_frame_id) {
+    this.publishMessage({
+      name: "set_gps_fix",
+      messageType: "sensor_msgs/NavSatFix",
+      data: {
+        header: {
+          seq: 0,
+          stamp: {
+            sec: moment().unix(),
+            nsec: 0
+          },
+          frame_id: fixed_frame_id
+        },
+        status: {
+          status: 0, // Valid FIX
+          service: 1 // GPS
+        },
+        latitude: parseFloat(latitude_deg),
+        longitude: parseFloat(longitude_deg),
+        altitude: parseFloat(altitude_m),
+        position_covariance_type: 0 // Unknown
+      }
+    })
+  }
+
+  @action.bound
+  onSetHeading(heading_mag_deg) {
+    this.publishMessage({
+      name: "nav_pos_mgr/set_heading_override",
+      messageType: "num_sdk_msgs/Heading",
+      data: {
+        heading: parseFloat(heading_mag_deg),
+        true_north: false
+      }
+    })
+  }
+
+  @action.bound
+  onSetAHRSOffsets(x_trans, y_trans, z_trans, x_rot, y_rot, z_rot) {
+    this.publishMessage({
+      name: "nav_pos_mgr/set_ahrs_offset",
+      messageType: "num_sdk_msgs/Offset",
+      data: {
+        translation: {
+          x: parseFloat(x_trans),
+          y: parseFloat(y_trans),
+          z: parseFloat(z_trans),
+        },
+        rotation: {
+          x: parseFloat(x_rot),
+          y: parseFloat(y_rot),
+          z: parseFloat(z_rot)
+        }
+      }
+    })
+  }
+
   /////////////////////////////////////////////////////////////////////////
 }
 

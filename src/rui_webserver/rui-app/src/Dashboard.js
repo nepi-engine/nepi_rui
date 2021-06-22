@@ -22,19 +22,34 @@ class Dashboard extends Component {
 
     this.state = {
       saveSettingsFilePrefix: "",
-      currDeviceId: ""
+      currDeviceId: "",
+      allowFileDeletion: false,
+      saveFreq: this.props.ros.saveFreqHz
     }
 
+    this.onUpdateSaveFreqText = this.onUpdateSaveFreqText.bind(this)
+    this.onKeySaveFreqText = this.onKeySaveFreqText.bind(this);
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
     this.renderSystemClock = this.renderSystemClock.bind(this)
-    this.renderLocation = this.renderLocation.bind(this)
     this.renderSystemStatus = this.renderSystemStatus.bind(this)
-    this.renderDirection = this.renderDirection.bind(this)
-    this.renderOrientation = this.renderOrientation.bind(this)
     this.renderSystemMessages = this.renderSystemMessages.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
     this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(this)
     this.onKeySaveSettingFilePrefix = this.onKeySaveSettingFilePrefix.bind(this)
+    this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
+  }
+
+  onUpdateSaveFreqText(e) {
+    this.setState({saveFreq: e.target.value})
+    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+  }
+
+  onKeySaveFreqText(e) {
+    const {onChangeSaveFreq} = this.props.ros
+    if(e.key === 'Enter'){
+      onChangeSaveFreq(this.state.saveFreq)
+      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+    }
   }
 
   renderDeviceInfo() {
@@ -103,27 +118,6 @@ class Dashboard extends Component {
     )
   }
 
-  renderLocation() {
-    const {
-      navPosLocationLat,
-      navPosLocationLng,
-      navPosLocationAlt
-    } = this.props.ros
-    return (
-      <Section title={"Location"}>
-        <Label title={"Latitude"}>
-          <Input disabled value={navPosLocationLat} />
-        </Label>
-        <Label title={"Longitude"}>
-          <Input disabled value={navPosLocationLng} />
-        </Label>
-        <Label title={"Altitude (m)"}>
-          <Input disabled value={navPosLocationAlt} />
-        </Label>
-      </Section>
-    )
-  }
-
   renderSystemStatus() {
     const {
       heartbeat,
@@ -158,84 +152,10 @@ class Dashboard extends Component {
     )
   }
 
-  renderDirection() {
-    const {
-      navPosDirectionHeadingDeg,
-      navPosDirectionSpeedMpS
-    } = this.props.ros
-    return (
-      <Section title={"Direction"}>
-        <Label title={"Heading (deg)"}>
-          <Input disabled value={round(navPosDirectionHeadingDeg, 3)} />
-        </Label>
-        <Label title={"Speed (m/s)"}>
-          <Input disabled value={round(navPosDirectionSpeedMpS, 3)} />
-        </Label>
-      </Section>
-    )
-  }
-
-  renderOrientation() {
-    const {
-      navPosOrientationYawAngle,
-      navPosOrientationYawRate,
-      navPosOrientationPitchAngle,
-      navPosOrientationPitchRate,
-      navPosOrientationRollAngle,
-      navPosOrientationRollRate
-    } = this.props.ros
-    return (
-      <Section title={"Orientation"}>
-        <Label title={""}>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-            {"deg"}
-          </div>
-          <div style={{ display: "inline-block", width: "45%" }}>{"deg/s"}</div>
-        </Label>
-        <Label title={"Yaw"}>
-          <Input
-            disabled
-            style={{ width: "45%", float: "left" }}
-            value={round(navPosOrientationYawAngle, 3)}
-          />
-          <Input
-            disabled
-            style={{ width: "45%" }}
-            value={round(navPosOrientationYawRate, 3)}
-          />
-        </Label>
-        <Label title={"Pitch"}>
-          <Input
-            disabled
-            style={{ width: "45%", float: "left" }}
-            value={round(navPosOrientationPitchAngle, 3)}
-          />
-          <Input
-            disabled
-            style={{ width: "45%" }}
-            value={round(navPosOrientationPitchRate, 3)}
-          />
-        </Label>
-        <Label title={"Roll"}>
-          <Input
-            disabled
-            style={{ width: "45%", float: "left" }}
-            value={round(navPosOrientationRollAngle, 3)}
-          />
-          <Input
-            disabled
-            style={{ width: "45%" }}
-            value={round(navPosOrientationRollRate, 3)}
-          />
-        </Label>
-      </Section>
-    )
-  }
-
   renderSystemMessages() {
     return (
       <Section title={"System Messages"}>
-        <pre style={{ height: "220px", overflowY: "auto" }}>
+        <pre style={{ height: "400px", overflowY: "auto" }}>
           {this.props.ros.messageLog}
         </pre>
       </Section>
@@ -255,15 +175,19 @@ class Dashboard extends Component {
     }
   }
 
+  onToggleDataDeletion(e) {
+    this.setState({ allowFileDeletion: e.target.checked})
+  }
+
   renderSaveData() {
-    const { onToggleSaveData, saveFreqHz, onChangeSaveFreq, systemStatusDiskRate } = this.props.ros
+    const { onToggleSaveData, systemStatusDiskRate, deleteAllData } = this.props.ros
     return (
       <Section title={"Save Data"}>
         <Label title={"Save Data"}>
-          <Toggle onClick={onToggleSaveData} />
+          <Toggle id={"toggle_save_data"} onClick={onToggleSaveData} />
         </Label>
         <Label title={"Save Freq. (Hz)"}>
-          <Input value={saveFreqHz} onChange={onChangeSaveFreq} />
+          <Input id="saveFreqInput" value={this.state.saveFreq} onChange={this.onUpdateSaveFreqText} onKeyDown= {this.onKeySaveFreqText} />
         </Label>
         <Label title={"Data Rate (MB/s)"}>
           <Input disabled value={round(systemStatusDiskRate, 3)} />
@@ -276,9 +200,21 @@ class Dashboard extends Component {
             onKeyDown={this.onKeySaveSettingFilePrefix}
           />
         </Label>
+        <Label title={"Allow Data Deletion"}>
+          <Toggle onClick={this.onToggleDataDeletion} />
+        </Label>
+        <ButtonMenu>
+          <Button
+            onClick={deleteAllData}
+            hidden={!this.state.allowFileDeletion}>
+            {"Delete All Data"}
+          </Button>
+        </ButtonMenu>
       </Section>
     )
   }
+
+  //disabled={document.getElementById("toggle_save_data").value}>
 
   render() {
     return (
@@ -290,12 +226,9 @@ class Dashboard extends Component {
         <Column>
           {this.renderSystemStatus()}
           {this.renderSaveData()}
-          {this.renderDirection()}
         </Column>
         <Column>
           {this.renderSystemMessages()}
-          {this.renderOrientation()}
-          {this.renderLocation()}
         </Column>
       </Columns>
     )

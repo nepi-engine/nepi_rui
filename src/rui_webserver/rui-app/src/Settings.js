@@ -17,19 +17,15 @@ class Settings extends Component {
     super(props)
 
     this.state = {
-      units: "metric",
-      unitsResolution: "Low",
-      deviceTriggerSWActive: true,
-      deviceTriggerDualCamsActive: true,
-      deviceTriggerToFCamActive: true,
-      deviceTrigger3DSonarActive: true,
-      deviceTriggerActualRateHz: "15.5",
-      deviceTriggerAutoRateHz: "20",
+      autoRate: this.props.ros.triggerAutoRateHz,
       ipAddrVal: "0.0.0.0/24",
       configSubsys: "All",
       advancedConfigDisabled: true,
       updatedDeviceId: ""
     }
+
+    this.onUpdateAutoRateText = this.onUpdateAutoRateText.bind(this)
+    this.onKeyAutoRateText = this.onKeyAutoRateText.bind(this)
 
     this.onIPAddrValChange = this.onIPAddrValChange.bind(this)
     this.onAddButtonPressed = this.onAddButtonPressed.bind(this)
@@ -48,6 +44,19 @@ class Settings extends Component {
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderConfiguration = this.renderConfiguration.bind(this)
     this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
+  }
+
+  onUpdateAutoRateText(e) {
+    this.setState({autoRate: e.target.value});
+    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+  }
+
+  onKeyAutoRateText(e) {
+    const {onChangeTriggerRate} = this.props.ros
+    if(e.key === 'Enter'){
+      onChangeTriggerRate(this.state.autoRate)
+      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+    }
   }
 
   async onIPAddrValChange(e) {
@@ -100,8 +109,6 @@ class Settings extends Component {
 
   renderTriggerSettings() {
     const {
-      triggerAutoRateHz,
-      onChangeTriggerRate,
       triggerMask,
       onPressManualTrigger,
       onToggleHWTriggerOutputEnabled,
@@ -111,7 +118,7 @@ class Settings extends Component {
     return (
       <Section title={"Trigger Settings"}>
         <Label title={"Auto Rate (Hz)"}>
-          <Input value={triggerAutoRateHz} onChange={onChangeTriggerRate} />
+          <Input id="autoRateInput" value={this.state.autoRate} onChange={this.onUpdateAutoRateText} onKeyDown={this.onKeyAutoRateText} />
         </Label>
         <ButtonMenu>
           <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>

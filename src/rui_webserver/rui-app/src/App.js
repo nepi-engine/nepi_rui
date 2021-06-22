@@ -11,6 +11,7 @@ import NEPI from "./NEPI"
 import Dashboard from "./Dashboard"
 import CameraApp from "./CameraApp"
 import Sensor3DX from "./Sensor3DX"
+import NavPose from "./NavPose"
 import Files from "./Files"
 import Settings from "./Settings"
 
@@ -51,7 +52,8 @@ class App extends Component {
               label: "Applications",
               subItems: [
                 { path: "/detection", label: "Detection" },
-                { path: "/sensor3DX", label: "3DX" }
+                { path: "/sensor3DX", label: "3DX" },
+                { path: "/navPose", label: "Nav/Pose" }
               ]
             },
             { path: "/settings", label: "Settings" },
@@ -65,6 +67,7 @@ class App extends Component {
             <Route exact path="/" component={Dashboard} />
             <Route path="/detection" component={CameraApp} />
             <Route path="/sensor3DX" component={Sensor3DX} />
+            <Route path="/navPose" component={NavPose} />
             <Route
               path="/files/:path*"
               component={props => <Files {...props} />}
