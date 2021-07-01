@@ -21,9 +21,13 @@ catkin_python_setup()
 #############
 ## Install ##
 #############
-# install(PROGRAMS scripts/status_3dx_pub.py
-  # DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+## Mark executable scripts (Python etc.) for installation
+## in contrast to setup.py, you can choose the destination
+install(PROGRAMS
+    scripts/rui_config_mgr.py
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 catkin_install_python(
   PROGRAMS
 #    scripts/fake_data_pub.py

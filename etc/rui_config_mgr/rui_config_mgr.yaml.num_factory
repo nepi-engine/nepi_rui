@@ -1,0 +1,1 @@
+streaming_image_quality: 95                   # Image quality for images from web_video_server (1 = lowest, 100 = highest), lower values reduce bandwidth
