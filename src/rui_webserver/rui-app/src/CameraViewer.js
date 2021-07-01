@@ -7,6 +7,10 @@ import Button, { ButtonMenu } from "./Button"
 
 import Styles from "./Styles"
 
+import Toggle from "react-toggle"
+import Label from "./Label"
+import { Column, Columns } from "./Columns"
+
 const styles = Styles.Create({
   canvas: {
     width: "100%",
@@ -14,6 +18,10 @@ const styles = Styles.Create({
     transform: "scale(1)"
   }
 })
+
+const COMPRESSION_HIGH_QUALITY = 95
+const COMPRESSION_MED_QUALITY = 50
+const COMPRESSION_LOW_QUALITY = 10
 
 const PORT = 9091
 const ROS_WEBCAM_URL_BASE = `http://${
@@ -33,12 +41,15 @@ class CameraViewer extends Component {
       streamWidth: null,
       streamHeight: null,
       containerWidth: null,
-      containerHeight: null
+      containerHeight: null,
+      currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
+      hideQualitySelector: this.props.hideQualitySelector
     }
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
+    this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
   }
 
   updateFrame() {
@@ -100,7 +111,9 @@ class CameraViewer extends Component {
   updateImageSource() {
     if (this.props.imageTopic) {
       const { hasInitialized } = this.state
-      this.image = new Image()
+      if (!this.image) {
+        this.image = new Image() // EXPERIMENT -- Only create a new Image when strictly required
+      }
       this.image.crossOrigin = "Anonymous"
       this.image.onload = () => {
         if (!hasInitialized) {
@@ -119,7 +132,8 @@ class CameraViewer extends Component {
       }
     }
     if (this.image) {
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic
+      const { streamingImageQuality } = this.props.ros
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic + '&quality=' + streamingImageQuality
     }
   }
 
@@ -127,13 +141,16 @@ class CameraViewer extends Component {
   // Used to track changes in the image topic value
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { imageTopic } = this.props
-    if (prevProps.imageTopic !== imageTopic) {
+    if (prevProps.imageTopic !== imageTopic || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
       this.updateImageSource()
     }
   }
 
   componentWillUnmount() {
     this.setState({ shouldUpdate: false })
+    if (this.image) {
+      this.image.src = null
+    }
   }
 
   onTakeSnapshot() {
@@ -146,13 +163,82 @@ class CameraViewer extends Component {
     link.click()
   }
 
+  onChangeImageQuality(quality) {
+    this.props.ros.onChangeStreamingImageQuality(quality)
+    this.setState({currentStreamingImageQuality: quality})
+    this.updateImageSource()
+  }
+
   render() {
+    const {
+      streamingImageQuality
+    } = this.props.ros
+
+    if (streamingImageQuality !== this.state.currentStreamingImageQuality)
+    {
+      this.setState({currentStreamingImageQuality: streamingImageQuality})
+    }
+
     return (
       <Section title={this.props.title ? this.props.title : ""}>
         <canvas style={styles.canvas} ref={this.onCanvasRef} />
-        <ButtonMenu>
-          <Button onClick={this.onTakeSnapshot}>{"Take Snapshot"}</Button>
-        </ButtonMenu>
+        <Columns>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <Label title={"Quality"} />
+            }
+          </div>
+          </Column>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <div>
+                <Label title={"Low"} />
+                <Toggle
+                  checked={streamingImageQuality <= COMPRESSION_LOW_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_LOW_QUALITY)}}
+                />
+              </div>
+            }
+          </div>
+          </Column>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <div>
+                <Label title={"Medium"} />
+                <Toggle
+                  checked={streamingImageQuality >= COMPRESSION_MED_QUALITY && streamingImageQuality < COMPRESSION_HIGH_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_MED_QUALITY)}}
+                />
+              </div>
+            }
+          </div>
+          </Column>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <div>
+                <Label title={"High"} />
+                <Toggle
+                  checked={streamingImageQuality >= COMPRESSION_HIGH_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_HIGH_QUALITY)}}
+                />
+              </div>
+            }
+          </div>
+          </Column>
+          <Column>
+            <ButtonMenu>
+              <Button onClick={this.onTakeSnapshot}>{"Snapshot"}</Button>
+            </ButtonMenu>
+          </Column>
+        </Columns>
       </Section>
     )
   }

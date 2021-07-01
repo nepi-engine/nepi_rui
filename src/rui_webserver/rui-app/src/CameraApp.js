@@ -144,6 +144,7 @@ class CameraApp extends Component {
           <CameraViewer
             imageTopic={this.state.currentClassifierImgTopic}
             title={this.state.imageText}
+            hideQualitySelector={false}
           />
         </Column>
         <Column>

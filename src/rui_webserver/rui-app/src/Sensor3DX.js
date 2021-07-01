@@ -200,20 +200,24 @@ class Sensor3DX extends Component {
             <CameraViewer
               imageTopic={this.state.imageTopic_0}
               title={this.state.imageText_0}
+              hideQualitySelector={false}
             />
             <CameraViewer
               imageTopic={this.state.imageTopic_2}
               title={this.state.imageText_2}
+              hideQualitySelector={true}
             />
           </Column>
           <Column>
             <CameraViewer
               imageTopic={this.state.imageTopic_1}
               title={this.state.imageText_1}
+              hideQualitySelector={true}
             />
             <CameraViewer
               imageTopic={this.state.imageTopic_3}
               title={this.state.imageText_3}
+              hideQualitySelector={true}
             />
           </Column>
         </Columns>

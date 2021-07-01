@@ -227,6 +227,8 @@ class ROSConnectionStore {
   //@observable reportedClassifierName = "Uninitialized"
   @observable reportedClassifier = {}
 
+  @observable streamingImageQuality = 95
+
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
@@ -523,6 +525,7 @@ class ROSConnectionStore {
     // listeners
     this.setupImageRecognitionListener()
     this.setupImageSystemStatusListener()
+    this.setupRUISettingsListener()
 
     // services
     this.callSystemDefsService()
@@ -614,6 +617,16 @@ class ROSConnectionStore {
         manageListener: false
       })
     }
+  }
+
+  setupRUISettingsListener() {
+    this.addListener({
+      name: "rui_config_mgr/settings",
+      messageType: "num_sdk_msgs/RUISettings",
+      callback: message => {
+        this.streamingImageQuality = message.streaming_image_quality
+      }
+    })
   }
 
   async callNepiStatusService() {
@@ -1378,6 +1391,16 @@ class ROSConnectionStore {
           z: parseFloat(z_rot)
         }
       }
+    })
+  }
+
+  @action.bound
+  onChangeStreamingImageQuality(quality) {
+    this.streamingImageQuality = quality
+    this.publishMessage({
+      name: "rui_config_mgr/set_streaming_image_quality",
+      messageType: "std_msgs/UInt8",
+      data: { data: quality }
     })
   }
 
