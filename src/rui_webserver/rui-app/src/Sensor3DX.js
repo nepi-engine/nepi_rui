@@ -75,13 +75,13 @@ class Sensor3DX extends Component {
     this.setState({
       topic3DX: value,
       topic3DXText: text === "None" ? null : text,
-      imageTopic_0: "None",
-      imageText_0: null,
-      imageTopic_1: "None",
-      imageText_1: null,
-      imageTopic_2: "None",
-      imageText_2: null,
-      imageTopic_3: "None",
+      imageTopic_0: this.props.ros.sensor3DXTopics[idx - 1].concat("/img_0/image_raw"),
+      imageText_0: "img_0/image_raw",
+      imageTopic_1: this.props.ros.sensor3DXTopics[idx - 1].concat("/alt/image_raw"),
+      imageText_1: "alt/image_raw",
+      imageTopic_2: this.props.ros.sensor3DXTopics[idx - 1].concat("/img_1/image_raw"),
+      imageText_2: "img_1/image_raw",
+      imageTopic_3: null,
       imageText_3: null
     })
   }
