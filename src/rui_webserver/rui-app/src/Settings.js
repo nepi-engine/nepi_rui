@@ -10,6 +10,10 @@ import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
+function round(value, decimals = 0) {
+  return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
+
 @inject("ros")
 @observer
 class Settings extends Component {
@@ -21,11 +25,14 @@ class Settings extends Component {
       ipAddrVal: "0.0.0.0/24",
       configSubsys: "All",
       advancedConfigDisabled: true,
-      updatedDeviceId: ""
+      updatedDeviceId: "",
+      tx_bandwidth_limit: this.props.ros.bandwidth_usage_query_response.tx_limit_mbps
     }
 
     this.onUpdateAutoRateText = this.onUpdateAutoRateText.bind(this)
     this.onKeyAutoRateText = this.onKeyAutoRateText.bind(this)
+    this.onUpdateTXRateLimitText = this.onUpdateTXRateLimitText.bind(this)
+    this.onKeyTXRateLimitText = this.onKeyTXRateLimitText.bind(this)
 
     this.onIPAddrValChange = this.onIPAddrValChange.bind(this)
     this.onAddButtonPressed = this.onAddButtonPressed.bind(this)
@@ -55,6 +62,19 @@ class Settings extends Component {
     const {onChangeTriggerRate} = this.props.ros
     if(e.key === 'Enter'){
       onChangeTriggerRate(this.state.autoRate)
+      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+  onUpdateTXRateLimitText(e) {
+    this.setState({tx_bandwidth_limit: e.target.value});
+    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+  }
+
+  onKeyTXRateLimitText(e) {
+    const {onChangeTXRateLimit} = this.props.ros
+    if(e.key === 'Enter'){
+      onChangeTXRateLimit(this.state.tx_bandwidth_limit)
       document.getElementById(e.target.id).style.color = Styles.vars.colors.black
     }
   }
@@ -204,7 +224,7 @@ class Settings extends Component {
   }
 
   renderNetworkInfo() {
-    const { ip_query_response, onToggleDHCPEnabled } = this.props.ros
+    const { ip_query_response, onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
     return (
       <Section title={"Network"}>
@@ -226,6 +246,20 @@ class Settings extends Component {
           <Button onClick={this.onAddButtonPressed}>{"Add"}</Button>
           <Button onClick={this.onRemoveButtonPressed}>{"Remove"}</Button>
         </ButtonMenu>
+        <Label title={"TX Data Rate (Mbps)"}>
+          <Input disabled value={round(bandwidth_usage_query_response.tx_rate_mbps, 2)} />
+        </Label>
+        <Label title={"RX Data Rate (Mbps)"}>
+          <Input disabled value={round(bandwidth_usage_query_response.rx_rate_mbps, 2)} />
+        </Label>
+        <Label title={"TX Rate Limit (Mbps)"}>
+          <Input
+            id="txRateLimit"
+            value={this.state.tx_bandwidth_limit}
+            onChange={this.onUpdateTXRateLimitText}
+            onKeyDown={this.onKeyTXRateLimitText}
+          />
+        </Label>
       </Section>
     )
   }

@@ -199,6 +199,8 @@ class ROSConnectionStore {
 
   @observable ip_query_response = {}
 
+  @observable bandwidth_usage_query_response = {}
+
   @observable NUID = ""
   @observable NEPIStatus = null
   @observable alias = ""
@@ -532,6 +534,7 @@ class ROSConnectionStore {
     this.callNepiStatusService()
     this.callImgClassifierListQueryService()
     this.startPollingIPAddrQueryService()
+    this.startPollingBandwidthUsageService()
     this.startPollingOpEnvironmentQueryService()
     this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
@@ -689,6 +692,21 @@ class ROSConnectionStore {
       this.ip_query_response = await this.callService({
         name: "ip_addr_query",
         messageType: "num_sdk_msgs/IPAddrQuery"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 3000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingBandwidthUsageService() {
+    const _pollOnce = async () => {
+      this.bandwidth_usage_query_response = await this.callService({
+        name: "bandwidth_usage_query",
+        messageType: "num_sdk_msgs/BandwidthUsageQuery",
       })
 
       if (this.connectedToROS) {
@@ -1037,6 +1055,21 @@ class ROSConnectionStore {
         sw_trig_mask: this.triggerMask,
         rate_hz: freq
       }
+    })
+  }
+
+  @action.bound
+  onChangeTXRateLimit(limit) {
+    let lim = parseInt(limit)
+
+    if (isNaN(lim)) {
+      lim = -1
+    }
+
+    this.publishMessage({
+      name: "set_tx_bw_limit_mbps",
+      messageType: "std_msgs/Int32",
+      data: { data: lim }
     })
   }
 
