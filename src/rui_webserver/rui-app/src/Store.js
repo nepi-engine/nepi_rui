@@ -219,8 +219,8 @@ class ROSConnectionStore {
   @observable lb_comms_types = null
   @observable auto_attempts_per_hour = null
   @observable link_per_hour = null
-  @observable lb_data_queue_size_KB = null
-  @observable hb_data_queue_size_MB = null
+  @observable lb_data_queue_size_kb = null
+  @observable hb_data_queue_size_mb = null
   @observable hb_auto_data_offloading_enabled = null
   @observable log_storage_enabled = null
 
@@ -656,8 +656,8 @@ class ROSConnectionStore {
       this.lb_selected_data_sources = this.NEPIStatus.lb_selected_data_sources
       this.lb_comms_types = this.NEPIStatus.lb_comms_types
       this.auto_attempts_per_hour = this.NEPIStatus.auto_attempts_per_hour
-      this.lb_data_queue_size_KB = this.NEPIStatus.lb_data_queue_size_KB
-      this.hb_data_queue_size_MB = this.NEPIStatus.hb_data_queue_size_MB
+      this.lb_data_queue_size_kb = this.NEPIStatus.lb_data_queue_size_kb
+      this.hb_data_queue_size_mb = this.NEPIStatus.hb_data_queue_size_mb
       this.hb_auto_data_offloading_enabled = this.NEPIStatus.hb_auto_data_offloading_enabled
       this.log_storage_enabled = this.NEPIStatus.log_storage_enabled
 

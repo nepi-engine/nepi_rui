@@ -152,7 +152,7 @@ class NEPI extends Component {
   }
 
   renderHBInformation() {
-    const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, hb_data_queue_size_MB } = this.props.ros
+    const { hb_last_connection_time, hb_do_transfered_mb, hb_dt_transfered_mb, hb_data_queue_size_mb } = this.props.ros
     if ((hb_last_connection_time !== null) && (hb_last_connection_time.unix() !== 0)) {
       var last = hb_last_connection_time.format("l h:mm:ss a")
     } else {
@@ -177,7 +177,7 @@ class NEPI extends Component {
         </Label>
         <Label title="Data to Transmit (MB)">
           <Input
-            disabled value= {hb_data_queue_size_MB != null ? hb_data_queue_size_MB.toFixed(2) : "0.00"}
+            disabled value= {hb_data_queue_size_mb != null ? hb_data_queue_size_mb.toFixed(2) : "0.00"}
           />
         </Label>
         <ButtonMenu hidden={true}>
@@ -230,7 +230,7 @@ class NEPI extends Component {
   }
 
   renderLBLinkSettings() {
-    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_KB, onNEPIDataSetNow, onToggleTopic } = this.props.ros
+    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_kb, onNEPIDataSetNow, onToggleTopic } = this.props.ros
     const { viewableTopics, viewableOrder } = this.state
     var sources = []
     var selected_sources = []
@@ -279,7 +279,7 @@ class NEPI extends Component {
           </Label>
           <Label title="Unprocessed Data (KB)">
             <Input
-              value={lb_data_queue_size_KB !== null ? lb_data_queue_size_KB.toFixed(2) : "0.00"}
+              value={lb_data_queue_size_kb !== null ? lb_data_queue_size_kb.toFixed(2) : "0.00"}
               onChange={this.LBQueueMaxSizeUp}
               disabled="true"
             />

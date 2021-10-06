@@ -215,7 +215,7 @@ class Settings extends Component {
   createConfigSubsysOptions(resetTopics) {
     var subsys_options = []
     subsys_options.push(<Option>{"All"}</Option>)
-    for (var i = 1; i < resetTopics.length; i++) { // Skip the first one -- it is global /numurus/3dx/<s/n>
+    for (var i = 1; i < resetTopics.length; i++) { // Skip the first one -- it is global /numurus/dev_3dx/<s/n>
       var node_name = resetTopics[i].split("/").pop()
       var subsys = displayNameFromNodeName(node_name)
       subsys_options.push(<Option>{subsys}</Option>)
