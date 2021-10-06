@@ -1060,7 +1060,7 @@ class ROSConnectionStore {
 
   @action.bound
   onChangeTXRateLimit(limit) {
-    let lim = parseInt(limit)
+    let lim = parseInt(limit, 10)
 
     if (isNaN(lim)) {
       lim = -1
