@@ -13,3 +13,4 @@ pyOpenSSL==19.1.0
 autobahn==19.11.2
 pyasn1==0.4.8
 service_identity==18.1.0
+future
