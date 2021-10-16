@@ -1,21 +1,23 @@
 #! /bin/bash
 source /opt/numurus/ros/setup.bash
 
+SYS_ENV_FILE=/opt/numurus/sys_env.bash
+
 # The sys_env script must exist and be valid. The committed base file is
 # (intentionally) not valid because TBD fields are not populated
-if [ ! -f /opt/numurus/ros/etc/sys_env.bash ]; then
-	echo "ERROR! Could not find /opt/numurus/ros/etc/sys_env.bash"
+if [ ! -f ${SYS_ENV_FILE} ]; then
+	echo "ERROR! Could not find ${SYS_ENV_FILE}"
 	exit 1
 fi
 
-source /opt/numurus/ros/etc/sys_env.bash
+source ${SYS_ENV_FILE}
 if [ "$DEVICE_TYPE" = "TBD" ]; then
-	echo "ERROR! DEVICE_TYPE must be set in /opt/numurus/ros/sys_env.bash"
+	echo "ERROR! DEVICE_TYPE must be set in ${SYS_ENV_FILE}"
 	exit 1
 fi
 
 if [ "$DEVICE_SN" = "TBD" ]; then
-	echo "ERROR! DEVICE_SN must be set in /opt/numurus/ros/sys_env.bash"
+	echo "ERROR! DEVICE_SN must be set in ${SYS_ENV_FILE}"
 	exit 1
 fi
 
