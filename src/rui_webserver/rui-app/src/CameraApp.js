@@ -25,7 +25,7 @@ class CameraApp extends Component {
       // Only set currentClassifierImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
       currentClassifierImgTopic: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.classifierImgTopic : null,
       selectedClassifier: null,
-      detectionThreshold: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3 }
+      detectionThreshold: (this.props.ros.reportedClassifier.classifier_state === "Running")? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3 }
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
