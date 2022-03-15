@@ -30,6 +30,7 @@ const NODE_DISPLAY_NAMES = {
 }
 
 const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
+const TARG_LOCALIZER_IMG_TOPIC_SUFFIX = '/target_localizer/localization_image'
 
 const UPDATE_PERIOD = 100 // ms between sending updates
 
@@ -196,6 +197,7 @@ class ROSConnectionStore {
 
   @observable classifiers = []
   @observable classifierImgTopic = null
+  @observable targLocalizerImgTopic = null
 
   @observable ip_query_response = {}
 
@@ -331,6 +333,9 @@ class ROSConnectionStore {
             // And update the (fixed) classifier image topic
             this.classifierImgTopic = '/'
             this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceType, '/', this.deviceId, CLASSIFIER_IMG_TOPIC_SUFFIX)
+
+            this.targLocalizerImgTopic = '/'
+            this.targLocalizerImgTopic = this.targLocalizerImgTopic.concat(this.namespacePrefix, '/', this.deviceType, '/', this.deviceId, TARG_LOCALIZER_IMG_TOPIC_SUFFIX)
             break
           }
         }

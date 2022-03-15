@@ -1,4 +1,5 @@
 import React, { Component } from "react"
+import Toggle from "react-toggle"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
@@ -22,16 +23,18 @@ class CameraApp extends Component {
     this.state = {
       imageTopic: null,
       imageText: (this.props.ros.reportedClassifier.classifier_state === "Running")? img[img.length-2] + "/" + img[img.length-1] : null,
-      // Only set currentClassifierImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
-      currentClassifierImgTopic: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.classifierImgTopic : null,
+      // Only set currentDisplayImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
+      currentDisplayImgTopic: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.classifierImgTopic : null,
       selectedClassifier: null,
-      detectionThreshold: (this.props.ros.reportedClassifier.classifier_state === "Running")? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3 }
+      detectionThreshold: (this.props.ros.reportedClassifier.classifier_state === "Running")? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3,
+      localizerEnabled: false}
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.onThresholdSliderValueChange = this.onThresholdSliderValueChange.bind(this)
+    this.onToggleRunLocalizer = this.onToggleRunLocalizer.bind(this)
   }
   // Function for creating image topic options.
   createImageTopicsOptions() {
@@ -88,17 +91,37 @@ class CameraApp extends Component {
   async waitForClassifierRunning() {
     const {
       reportedClassifier,
-      classifierImgTopic
+      classifierImgTopic,
+      targLocalizerImgTopic
     } = this.props.ros
+
+    const { localizerEnabled } = this.state
 
     // Delay the state transition until the classifier is actually running
     // in order to avoid invoking CameraViewer's updateImageSource method (via
     // componentDidUpdate()) until we can receive a real image with a valid size
     if (reportedClassifier.classifier_state !== "Running") {
-      await setTimeout(this.waitForClassifierRunning, 1000)
+      await setTimeout(this.waitForClassifierRunning, 250)
     }
     else {
-      await this.setState({currentClassifierImgTopic: classifierImgTopic})
+      await this.setState({currentDisplayImgTopic: (localizerEnabled==false)? classifierImgTopic : targLocalizerImgTopic})
+    }
+  }
+
+  async onToggleRunLocalizer(e) {
+    const {
+      reportedClassifier,
+      classifierImgTopic,
+      targLocalizerImgTopic
+    } = this.props.ros
+
+    // Always update the local state
+    this.setState({localizerEnabled: e.target.checked})
+
+    // If classifier is already running, update the image topic directly
+    if (reportedClassifier.classifier_state === "Running")
+    {
+      await this.setState({currentDisplayImgTopic: (e.target.checked==false)? classifierImgTopic : targLocalizerImgTopic})
     }
   }
 
@@ -122,7 +145,7 @@ class CameraApp extends Component {
     } = this.props.ros
 
     stopClassifier()
-    //this.setState({currentClassifierImgTopic: null})
+    //this.setState({currentDisplayImgTopic: null})
   }
 
   async onThresholdSliderValueChange(value) {
@@ -142,7 +165,7 @@ class CameraApp extends Component {
       <Columns>
         <Column>
           <CameraViewer
-            imageTopic={this.state.currentClassifierImgTopic}
+            imageTopic={this.state.currentDisplayImgTopic}
             title={this.state.imageText}
             hideQualitySelector={false}
           />
@@ -163,6 +186,9 @@ class CameraApp extends Component {
               <Button onClick={this.onApplyButtonPressed}>{"Apply"}</Button>
               <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
             </ButtonMenu>
+            <Label title={"Calculate Range/Bearing"}>
+              <Toggle id={"toggle_run_localizer"} onClick={this.onToggleRunLocalizer} />
+            </Label>
           </Section>
           <Section title={"Parameters"}>
             <Label title={"Detection Threshold"}>
