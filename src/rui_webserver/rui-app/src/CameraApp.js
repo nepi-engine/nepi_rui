@@ -104,7 +104,7 @@ class CameraApp extends Component {
       await setTimeout(this.waitForClassifierRunning, 250)
     }
     else {
-      await this.setState({currentDisplayImgTopic: (localizerEnabled==false)? classifierImgTopic : targLocalizerImgTopic})
+      await this.setState({currentDisplayImgTopic: (localizerEnabled===false)? classifierImgTopic : targLocalizerImgTopic})
     }
   }
 
@@ -121,7 +121,7 @@ class CameraApp extends Component {
     // If classifier is already running, update the image topic directly
     if (reportedClassifier.classifier_state === "Running")
     {
-      await this.setState({currentDisplayImgTopic: (e.target.checked==false)? classifierImgTopic : targLocalizerImgTopic})
+      await this.setState({currentDisplayImgTopic: (e.target.checked===false)? classifierImgTopic : targLocalizerImgTopic})
     }
   }
 
@@ -186,7 +186,7 @@ class CameraApp extends Component {
               <Button onClick={this.onApplyButtonPressed}>{"Apply"}</Button>
               <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
             </ButtonMenu>
-            <Label title={"Calculate Range/Bearing"}>
+            <Label title={"Enable Smart Targeting \u2122"}>
               <Toggle id={"toggle_run_localizer"} onClick={this.onToggleRunLocalizer} />
             </Label>
           </Section>
