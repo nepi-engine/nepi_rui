@@ -232,6 +232,7 @@ class ROSConnectionStore {
   @observable reportedClassifier = {}
 
   @observable streamingImageQuality = 95
+  @observable nepiHbAutoDataOffloadingCheckboxVisible = false
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -633,6 +634,7 @@ class ROSConnectionStore {
       messageType: "num_sdk_msgs/RUISettings",
       callback: message => {
         this.streamingImageQuality = message.streaming_image_quality
+        this.nepiHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
       }
     })
   }

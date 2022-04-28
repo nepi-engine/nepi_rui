@@ -13,6 +13,7 @@ class RUICfgMgrNode:
     def publish_settings(self):
         # Gather all settings for the message
         self.settings_msg.streaming_image_quality = rospy.get_param("~streaming_image_quality", self.DEFAULT_IMAGE_QUALITY)
+        self.settings_msg.nepi_hb_auto_offload_visible = rospy.get_param("~nepi_hb_auto_offload_visible", False)
 
         # Publish it
         self.settings_pub.publish(self.settings_msg)

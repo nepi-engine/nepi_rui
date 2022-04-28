@@ -127,8 +127,8 @@ class NEPI extends Component {
       last = "---"
     }
     return(
-      <Section title={"LB Information"}>
-        <Label title="Last Lb Link Connection">
+      <Section title={"LB-Message Info."}>
+        <Label title="Last Link Connection">
           <Input
             disabled value= {last}
           />
@@ -159,7 +159,7 @@ class NEPI extends Component {
       last = "---"
     }
     return(
-      <Section title={"HB Information"}>
+      <Section title={"HB-Data Info."}>
         <Label title="Last Link Connection">
           <Input
             disabled value= {last}
@@ -189,7 +189,8 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { bot_running, lb_enabled, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow, onToggleHB, onToggleAutoOffloading, onToggleLB } = this.props.ros
+    const { bot_running, lb_enabled, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow,
+            onToggleHB, onToggleAutoOffloading, onToggleLB, nepiHbAutoDataOffloadingCheckboxVisible } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
         <Label title={"Connection in Progress"}>
@@ -207,24 +208,26 @@ class NEPI extends Component {
             onKeyDown= {this.onKeyText}
           />
         </Label>
-        <Label title="Enable HB Link">
-          <Toggle
-            checked={hb_enabled}
-            onClick={onToggleHB}>
-          </Toggle>
-        </Label>
-        <Label title="Enable HB Auto Data Offloading">
-          <Toggle
-            checked={hb_auto_data_offloading_enabled}
-            onClick={onToggleAutoOffloading}>
-          </Toggle>
-        </Label>
-        <Label title="Enable LB Link">
+        <Label title="Enable LB-Message Link">
           <Toggle
             checked={lb_enabled}
             onClick={onToggleLB}>
           </Toggle>
         </Label>
+        <Label title="Enable HB-Data Link">
+          <Toggle
+            checked={hb_enabled}
+            onClick={onToggleHB}>
+          </Toggle>
+        </Label>
+        <div hidden={!nepiHbAutoDataOffloadingCheckboxVisible}>
+          <Label title="Enable HB-Data Auto Offloading">
+            <Toggle
+              checked={hb_auto_data_offloading_enabled}
+              onClick={onToggleAutoOffloading}>
+            </Toggle>
+          </Label>
+        </div>
       </Section>
     )
   }
@@ -264,7 +267,7 @@ class NEPI extends Component {
       }
     }
       return (
-        <Section title={"LB Link Settings"}>
+        <Section title={"LB-Message Link Settings"}>
           <ButtonMenu>
             <Button onClick={onNEPIDataSetNow}>{"Data Set Now"}</Button>
           </ButtonMenu>
