@@ -34,12 +34,16 @@ class Control3DX extends Component {
       displayName3DX: null,
       pauseEnable: false,
       listener: null,
-      disabled: false
+      disabled: false,
+      frame3D: null,
+      stitchedCloudEnabled: false
     }
 
     this.updateListener = this.updateListener.bind(this)
     this.status3DXListener = this.status3DXListener.bind(this)
     this.sendUpdate = this.sendUpdate.bind(this)
+    this.set3DFrame = this.set3DFrame.bind(this)
+    this.toggleStitchedCloudEnable = this.toggleStitchedCloudEnable.bind(this)
 
     this.updateListener()
   }
@@ -60,7 +64,9 @@ class Control3DX extends Component {
       intensityEnabled: message.intensity_settings.enabled,
       intensityAdjustment: message.intensity_settings.adjustment,
       displayName3DX: message.display_name,
-      pauseEnable: message.pause_enable
+      pauseEnable: message.pause_enable,
+      frame3D: message.frame_3d,
+      stitchedCloudEnabled: message.stitched_cloud_enabled
     })
   }
 
@@ -107,6 +113,20 @@ class Control3DX extends Component {
       true,
       value,
       throttle
+    )
+  }
+
+  set3DFrame(topic, value) {
+    this.props.ros.publishSetPointcloudTargetFrame(
+      topic,
+      value
+    )
+  }
+
+  toggleStitchedCloudEnable(topic) {
+    this.props.ros.publishStitchedCloudEnabled(
+      topic,
+      !this.state.stitchedCloudEnabled
     )
   }
 
@@ -199,6 +219,39 @@ class Control3DX extends Component {
           disabled={this.state.disabled}
           tooltip={"Adjustable source intensity."}
         />
+
+        <div>
+          <Columns>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Pointclouds"}>
+              </Label>
+            </div>
+            </Column>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Earth"}>
+              </Label>
+              <Toggle checked={this.state.frame3D === "map"} onClick={() => {this.set3DFrame(this.props.topic, "map")}}/>
+            </div>
+            </Column>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Sensor"}>
+              </Label>
+              <Toggle checked={this.state.frame3D === "3dx_center_frame"} onClick={() => {this.set3DFrame(this.props.topic, "3dx_center_frame")}}/>
+            </div>
+            </Column>
+            <Column>
+            <div align={"left"} textAlign={"left"}>
+              <Label title={"Stitched"}>
+              </Label>
+              <Toggle checked={this.state.stitchedCloudEnabled === true} onClick={() => {this.toggleStitchedCloudEnable(this.props.topic)}}/>
+            </div>
+            </Column>
+          </Columns>
+        </div>
+
       </Section>
     )
   }

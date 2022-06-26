@@ -1333,6 +1333,37 @@ class ROSConnectionStore {
       console.warn("publishAngle3DX: sensor3DXTopicBase not set")
     }
   }
+
+  publishSetPointcloudTargetFrame(topic, value) {
+    if (topic) {
+      this.publishMessage({
+        name: topic + "/set_pointcloud_target_frame",
+        messageType: "std_msgs/String",
+        noPrefix: true,
+        data: {
+          data: value
+        }
+      })
+    } else {
+      console.warn("publishSetPointcloudTargetFrame: sensor3DXTopicBase not set")
+    }
+  }
+
+  publishStitchedCloudEnabled(topic, enabled) {
+    if (topic) {
+      this.publishMessage({
+        name: topic + "/enable_stitched_cloud",
+        messageType: "std_msgs/Bool",
+        noPrefix: true,
+        data: {
+          data: enabled
+        }
+      })
+    } else {
+      console.warn("publishStitchedCloudEnabled: sensor3DXTopicBase not set")
+    }
+  }
+
   /////////////////////////////////////////////////////////////////////////
 
   // Nav/Pose Control methods /////////////////////////////////////////////
