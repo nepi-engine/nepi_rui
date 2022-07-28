@@ -15,7 +15,7 @@ import NavPose from "./NavPose"
 import Files from "./Files"
 import Settings from "./Settings"
 
-const IS_DEBUG = window.location.hostname === "localhost"
+//const IS_DEBUG = window.location.hostname === "localhost"
 
 @inject("ros")
 @withRouter
@@ -25,7 +25,8 @@ class App extends Component {
     super(props)
 
     this.state = {
-      pageLocked: !IS_DEBUG
+      //pageLocked: !IS_DEBUG
+      pageLocked: false
     }
 
     this.onUnlockPage = this.onUnlockPage.bind(this)
