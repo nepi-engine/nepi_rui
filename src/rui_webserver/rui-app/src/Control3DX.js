@@ -242,6 +242,7 @@ class Control3DX extends Component {
               <Toggle checked={this.state.frame3D === "3dx_center_frame"} onClick={() => {this.set3DFrame(this.props.topic, "3dx_center_frame")}}/>
             </div>
             </Column>
+            {/* Comment out stitching enable/disable until it is working better	  
             <Column>
             <div align={"left"} textAlign={"left"}>
               <Label title={"Stitched"}>
@@ -249,6 +250,7 @@ class Control3DX extends Component {
               <Toggle checked={this.state.stitchedCloudEnabled === true} onClick={() => {this.toggleStitchedCloudEnable(this.props.topic)}}/>
             </div>
             </Column>
+            */}
           </Columns>
         </div>
 
