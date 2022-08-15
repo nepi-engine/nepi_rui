@@ -32,12 +32,12 @@ class Sensor3DX extends Component {
       // these are not an array because state values are not
       // mutable, making dealing with an array in the state
       // object obnoxious
-      imageTopic_0: props.ros.sensor3DXTopics[0].concat("/img_0/image_raw"),
-      imageText_0: "img_0/image_raw",
-      imageTopic_1: props.ros.sensor3DXTopics[0].concat("/alt/image_raw"),
-      imageText_1: "alt/image_raw",
-      imageTopic_2: props.ros.sensor3DXTopics[0].concat("/img_1/image_raw"),
-      imageText_2: "img_1/image_raw",
+      imageTopic_0: (props.ros.sensor3DXTopics.length > 0)? props.ros.sensor3DXTopics[0].concat("/img_0/image_raw") : null,
+      imageText_0: (props.ros.sensor3DXTopics.length > 0)? "img_0/image_raw" : null,
+      imageTopic_1: null,
+      imageText_1: null,
+      imageTopic_2: null,
+      imageText_2: null,
       imageTopic_3: null,
       imageText_3: null
     }

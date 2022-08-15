@@ -5,7 +5,7 @@ import { observer, inject } from "mobx-react"
 import Page from "./Page"
 import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
-import PageLock from "./PageLock"
+//import PageLock from "./PageLock"
 
 import NEPI from "./NEPI"
 import Dashboard from "./Dashboard"
@@ -15,37 +15,21 @@ import NavPose from "./NavPose"
 import Files from "./Files"
 import Settings from "./Settings"
 
-//const IS_DEBUG = window.location.hostname === "localhost"
+const IS_LOCAL = window.location.hostname === "localhost"
 
 @inject("ros")
 @withRouter
 @observer
 class App extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      //pageLocked: !IS_DEBUG
-      pageLocked: false
-    }
-
-    this.onUnlockPage = this.onUnlockPage.bind(this)
-  }
 
   componentDidMount() {
     this.props.ros.checkROSConnection()
   }
 
-  onUnlockPage(e) {
-    this.setState({ pageLocked: false })
-  }
-
   render() {
-    const { pageLocked } = this.state
     return (
       <Page>
         <Nav
-          pageLocked={pageLocked}
           pages={[
             { path: "/", label: "Dashboard" },
             {
@@ -62,8 +46,6 @@ class App extends Component {
           ]}
         />
         <HorizontalDivider />
-        {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}
-        {!pageLocked && (
           <Switch>
             <Route exact path="/" component={Dashboard} />
             <Route path="/detection" component={CameraApp} />
@@ -76,7 +58,7 @@ class App extends Component {
             <Route path="/settings" component={Settings} />
             <Route path="/NEPI" component={NEPI} />
           </Switch>
-        )}
+        
       </Page>
     )
   }

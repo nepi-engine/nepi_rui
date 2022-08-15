@@ -124,7 +124,7 @@ NavItem.defaultProps = {
 
 class Nav extends Component {
   render() {
-    const { pages, pageLocked } = this.props
+    const { pages } = this.props
     return (
       <div style={styles.root}>
         <Columns>
@@ -133,7 +133,6 @@ class Nav extends Component {
               <img src={logo} alt={"logo"} max-width={"50%"} height={"auto"}/>
             </div>
           </Column>
-          {!pageLocked && (
             <Column style={{ flex: 3 }}>
               {pages.map(({ path, label, subItems }) => {
                 return (
@@ -147,7 +146,6 @@ class Nav extends Component {
                 )
               })}
             </Column>
-          )}
         </Columns>
       </div>
     )
