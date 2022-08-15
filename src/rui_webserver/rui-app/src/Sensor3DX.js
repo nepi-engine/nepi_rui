@@ -129,6 +129,32 @@ class Sensor3DX extends Component {
     return (
       <React.Fragment>
         <Columns>
+          <Column equalWidth={false}>
+            <CameraViewer
+              imageTopic={this.state.imageTopic_0}
+              title={this.state.imageText_0}
+              hideQualitySelector={false}
+            />
+            { /* TODO: Restore when we are ready for dynamically sized and positioned multi-view
+            <CameraViewer
+              imageTopic={this.state.imageTopic_2}
+              title={this.state.imageText_2}
+              hideQualitySelector={true}
+            />
+          </Column>
+          <Column>
+            <CameraViewer
+              imageTopic={this.state.imageTopic_1}
+              title={this.state.imageText_1}
+              hideQualitySelector={true}
+            />
+            <CameraViewer
+              imageTopic={this.state.imageTopic_3}
+              title={this.state.imageText_3}
+              hideQualitySelector={true}
+            />
+            */ }
+          </Column>
           <Column>
             <Section title={"3DX Sensor"}>
               <Label title={"3DX Sensor Selection"}>
@@ -139,7 +165,7 @@ class Sensor3DX extends Component {
                   {this.createTopicOptions(sensor3DXTopics)}
                 </Select>
               </Label>
-              <Label title={"Selected Image 1"}>
+              <Label title={"Selected Image"}>
                 <Select
                   id="topicSelect_0"
                   onChange={this.onImageTopicSelected}
@@ -150,6 +176,7 @@ class Sensor3DX extends Component {
                     : NoneOption}
                 </Select>
               </Label>
+              { /* TODO: Restore when we are ready for dynamically sized and positioned multi-view
               <Label title={"Selected Image 2"}>
                 <Select
                   id="topicSelect_1"
@@ -183,44 +210,18 @@ class Sensor3DX extends Component {
                     : NoneOption}
                 </Select>
               </Label>
+              */ }
               <Label title={"In Water"}>
                 <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
               </Label>
             </Section>
-          </Column>
-          <Column>
             <Control3DX
               topic={this.state.topic3DX}
               title={this.state.topic3DXText}
             />
           </Column>
         </Columns>
-        <Columns>
-          <Column>
-            <CameraViewer
-              imageTopic={this.state.imageTopic_0}
-              title={this.state.imageText_0}
-              hideQualitySelector={false}
-            />
-            <CameraViewer
-              imageTopic={this.state.imageTopic_2}
-              title={this.state.imageText_2}
-              hideQualitySelector={true}
-            />
-          </Column>
-          <Column>
-            <CameraViewer
-              imageTopic={this.state.imageTopic_1}
-              title={this.state.imageText_1}
-              hideQualitySelector={true}
-            />
-            <CameraViewer
-              imageTopic={this.state.imageTopic_3}
-              title={this.state.imageText_3}
-              hideQualitySelector={true}
-            />
-          </Column>
-        </Columns>
+
       </React.Fragment>
     )
   }

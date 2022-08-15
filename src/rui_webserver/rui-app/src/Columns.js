@@ -16,6 +16,10 @@ const equalStyle = {
   flex: 1
 }
 
+const doubleStyle = {
+  flex: 2
+}
+
 const firstStyle = {
   textAlign: "left",
   paddingLeft: 0
@@ -46,8 +50,8 @@ export const Column = ({
     ...(last ? lastStyle : {}),
     ...((first && last) || centered ? singleStyle : {}),
     ...(first && last ? singleStyle : {}),
-    ...(equalWidth ? equalStyle : {}),
-    ...(style || {})
+    ...(equalWidth ? equalStyle : doubleStyle),
+     ...(style || {})
   })
 
   return <div style={colStyle}>{children}</div>
