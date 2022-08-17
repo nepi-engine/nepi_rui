@@ -29,6 +29,8 @@ class Control3DX extends Component {
       gainAdjustment: null,
       filterEnabled: false,
       filterAdjustment: null,
+      enhancementEnabled: false,
+      enhancementAdjustment: null,
       intensityEnabled: false,
       intensityAdjustment: null,
       displayName3DX: null,
@@ -61,6 +63,8 @@ class Control3DX extends Component {
       gainAdjustment: message.gain_settings.adjustment,
       filterEnabled: message.filter_settings.enabled,
       filterAdjustment: message.filter_settings.adjustment,
+      enhancementEnabled: message.enhancement_settings.enabled,
+      enhancementAdjustment: message.enhancement_settings.adjustment,
       intensityEnabled: message.intensity_settings.enabled,
       intensityAdjustment: message.intensity_settings.adjustment,
       displayName3DX: message.display_name,
@@ -212,6 +216,15 @@ class Control3DX extends Component {
         />
 
         <EnableAdjustment
+          title="Enhancement"
+          enabled={this.state.enhancementEnabled}
+          adjustment={this.state.enhancementAdjustment}
+          topic={this.props.topic}
+          disabled={this.state.disabled}
+          tooltip={"Adjustable image correction/enhancement"}
+        />
+
+        <EnableAdjustment
           title="Intensity"
           enabled={this.state.intensityEnabled}
           adjustment={this.state.intensityAdjustment}
@@ -242,7 +255,7 @@ class Control3DX extends Component {
               <Toggle checked={this.state.frame3D === "3dx_center_frame"} onClick={() => {this.set3DFrame(this.props.topic, "3dx_center_frame")}}/>
             </div>
             </Column>
-            {/* Comment out stitching enable/disable until it is working better	  
+            {/* Comment out stitching enable/disable until it is working better
             <Column>
             <div align={"left"} textAlign={"left"}>
               <Label title={"Stitched"}>
