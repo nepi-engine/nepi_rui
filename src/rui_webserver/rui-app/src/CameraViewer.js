@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import moment from "moment"
+//import moment from "moment"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
@@ -37,7 +37,7 @@ class CameraViewer extends Component {
     this.state = {
       hasInitialized: false,
       shouldUpdate: true,
-      clockTime: moment(),
+      //clockTime: moment(),
       streamWidth: null,
       streamHeight: null,
       containerWidth: null,
@@ -98,7 +98,7 @@ class CameraViewer extends Component {
       )
       */
 
-      this.setState({ clockTime: moment() })
+      //this.setState({ clockTime: moment() })
       requestAnimationFrame(this.updateFrame)
     }
   }
@@ -154,13 +154,14 @@ class CameraViewer extends Component {
   }
 
   onTakeSnapshot() {
-    const { clockTime } = this.state
-    const link = window.document.createElement("a")
-    const dt = this.canvas.toDataURL("image/png")
-    window.location.href = dt
-    link.href = dt
-    link.setAttribute("download", `frame-${clockTime.format()}.png`)
-    link.click()
+    this.props.ros.onSnapshotEventTriggered()
+    //const { clockTime } = this.state
+    //const link = window.document.createElement("a")
+    //const dt = this.canvas.toDataURL("image/png")
+    //window.location.href = dt
+    //link.href = dt
+    //link.setAttribute("download", `frame-${clockTime.format()}.png`)
+    //link.click()
   }
 
   onChangeImageQuality(quality) {

@@ -913,6 +913,15 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  onSnapshotEventTriggered() {
+    this.publishMessage({
+      name: "snapshot_event",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
+  @action.bound
   onToggleTopic(e) {
     const topic = e.target.getAttribute("data-topic")
     if(!this.lb_selected_data_sources.includes(topic)) {
