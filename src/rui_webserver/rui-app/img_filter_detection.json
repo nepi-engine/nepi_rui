@@ -1,3 +1,3 @@
 {
-    "filter": "[left|right]_raw/image_raw_color$"
+    "filter": "[img_0|img_1|alt]/image_raw"
 }
