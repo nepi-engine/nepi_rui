@@ -199,11 +199,11 @@ class ROSConnectionStore {
   @observable classifierImgTopic = null
   @observable targLocalizerImgTopic = null
 
-  @observable ip_query_response = {}
+  @observable ip_query_response = null
 
-  @observable bandwidth_usage_query_response = {}
+  @observable bandwidth_usage_query_response = null
 
-  @observable NUID = ""
+  @observable NUID = "INVALID"
   @observable NEPIStatus = null
   @observable alias = ""
   @observable bot_running = null
@@ -229,7 +229,7 @@ class ROSConnectionStore {
 
   //@observable reportedClassifierImg = "Uninitialized"
   //@observable reportedClassifierName = "Uninitialized"
-  @observable reportedClassifier = {}
+  @observable reportedClassifier = null
 
   @observable streamingImageQuality = 95
   @observable nepiHbAutoDataOffloadingCheckboxVisible = false
@@ -1063,6 +1063,10 @@ class ROSConnectionStore {
         rate_hz: freq
       }
     })
+
+    // Update the state variable -- if rejected, will get set back on next periodic update
+    // This allows the text entry box to immediately switch to using the state variable
+    this.triggerAutoRateHz = freq
   }
 
   @action.bound
@@ -1078,6 +1082,9 @@ class ROSConnectionStore {
       messageType: "std_msgs/Int32",
       data: { data: lim }
     })
+
+    // Update locally for display purposes... will be corrected on next periodic update if value is rejected
+    this.bandwidth_usage_query_response.tx_limit_mbps = lim
   }
 
   @action.bound
@@ -1117,6 +1124,9 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked }
     })
+
+    // Set local immediately, will correct on next update if values is rejected
+    this.ip_query_response.dhcp_enabled = checked
   }
 
   @action.bound

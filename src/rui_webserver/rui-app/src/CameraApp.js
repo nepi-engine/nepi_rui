@@ -19,14 +19,17 @@ import CameraViewer from "./CameraViewer"
 class CameraApp extends Component {
   constructor(props) {
     super(props)
-    var img = this.props.ros.reportedClassifier.selected_img_topic.split("/")
+    var img = (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
+    var classifier_running = ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
+      true : false
     this.state = {
       imageTopic: null,
-      imageText: (this.props.ros.reportedClassifier.classifier_state === "Running")? img[img.length-2] + "/" + img[img.length-1] : null,
+      imageText: (classifier_running === true)?
+        img[img.length-2] + "/" + img[img.length-1] : null,
       // Only set currentDisplayImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
-      currentDisplayImgTopic: (this.props.ros.reportedClassifier.classifier_state === "Running")? this.props.ros.classifierImgTopic : null,
+      currentDisplayImgTopic: (classifier_running === true)? this.props.ros.classifierImgTopic : null,
       selectedClassifier: null,
-      detectionThreshold: (this.props.ros.reportedClassifier.classifier_state === "Running")? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3,
+      detectionThreshold: (classifier_running === true)? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3,
       localizerEnabled: false}
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
@@ -43,7 +46,7 @@ class CameraApp extends Component {
     const { imageTopicsDetection } = this.props.ros
     var uniqueNames = createShortUniqueValues(imageTopicsDetection)
     for (var i = 0; i < imageTopicsDetection.length; i++) {
-      if(imageTopicsDetection[i] === this.props.ros.reportedClassifier.selected_img_topic){
+      if((this.props.ros.reportedClassifier !== null) && (imageTopicsDetection[i] === this.props.ros.reportedClassifier.selected_img_topic)){
         items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
       } else{
         items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
@@ -59,7 +62,7 @@ class CameraApp extends Component {
     items.push(<Option>{"None"}</Option>)
     const { classifiers } = this.props.ros
     for (var i = 0; i < classifiers.length; i++) {
-      if(classifiers[i] === this.props.ros.reportedClassifier.selected_classifier) {
+      if((this.props.ros.reportedClassifier !== null) && (classifiers[i] === this.props.ros.reportedClassifier.selected_classifier)) {
         items.push(<Option selected="selected" value={classifiers[i]}>{classifiers[i]}</Option>)
       }else {
         items.push(<Option value={classifiers[i]}>{classifiers[i]}</Option>)
@@ -163,7 +166,7 @@ class CameraApp extends Component {
     } = this.props.ros
     return (
       <Columns>
-        <Column>
+        <Column equalWidth={false}>
           <CameraViewer
             imageTopic={this.state.currentDisplayImgTopic}
             title={this.state.imageText}
@@ -208,7 +211,7 @@ class CameraApp extends Component {
             </Label>
           </Section>
           <Section title={"Status"}>
-            <Label title={reportedClassifier.classifier_state} />
+            <Label title={(reportedClassifier !== null)? reportedClassifier.classifier_state : "Unknown"} />
           </Section>
         </Column>
       </Columns>

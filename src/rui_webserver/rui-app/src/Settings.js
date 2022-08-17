@@ -22,11 +22,13 @@ class Settings extends Component {
 
     this.state = {
       autoRate: this.props.ros.triggerAutoRateHz,
+      autoRateUserEditing: false,
       ipAddrVal: "0.0.0.0/24",
       configSubsys: "All",
       advancedConfigDisabled: true,
       updatedDeviceId: "",
-      tx_bandwidth_limit: this.props.ros.bandwidth_usage_query_response.tx_limit_mbps
+      tx_bandwidth_limit: (this.props.ros.bandwidth_usage_query_response !== null)? this.props.ros.bandwidth_usage_query_response.tx_limit_mbps : -1,
+      tx_bandwidth_user_editing: false
     }
 
     this.onUpdateAutoRateText = this.onUpdateAutoRateText.bind(this)
@@ -55,12 +57,14 @@ class Settings extends Component {
 
   onUpdateAutoRateText(e) {
     this.setState({autoRate: e.target.value});
+    this.setState({autoRateUserEditing: true});
     document.getElementById(e.target.id).style.color = Styles.vars.colors.red
   }
 
   onKeyAutoRateText(e) {
-    const {onChangeTriggerRate} = this.props.ros
+    const {onChangeTriggerRate, } = this.props.ros
     if(e.key === 'Enter'){
+      this.setState({autoRateUserEditing: false});
       onChangeTriggerRate(this.state.autoRate)
       document.getElementById(e.target.id).style.color = Styles.vars.colors.black
     }
@@ -68,12 +72,14 @@ class Settings extends Component {
 
   onUpdateTXRateLimitText(e) {
     this.setState({tx_bandwidth_limit: e.target.value});
+    this.setState({tx_bandwidth_user_editing: true});
     document.getElementById(e.target.id).style.color = Styles.vars.colors.red
   }
 
   onKeyTXRateLimitText(e) {
     const {onChangeTXRateLimit} = this.props.ros
     if(e.key === 'Enter'){
+      this.setState({tx_bandwidth_user_editing: false});
       onChangeTXRateLimit(this.state.tx_bandwidth_limit)
       document.getElementById(e.target.id).style.color = Styles.vars.colors.black
     }
@@ -132,13 +138,18 @@ class Settings extends Component {
       triggerMask,
       onPressManualTrigger,
       onToggleHWTriggerOutputEnabled,
-      onToggleHWTriggerInputEnabled
+      onToggleHWTriggerInputEnabled,
+      triggerAutoRateHz
     } = this.props.ros
 
     return (
       <Section title={"Trigger Settings"}>
         <Label title={"Auto Rate (Hz)"}>
-          <Input id="autoRateInput" value={this.state.autoRate} onChange={this.onUpdateAutoRateText} onKeyDown={this.onKeyAutoRateText} />
+          <Input
+            id="autoRateInput"
+            value={(this.state.autoRateUserEditing === true)? this.state.autoRate : triggerAutoRateHz}
+            onChange={this.onUpdateAutoRateText} onKeyDown={this.onKeyAutoRateText}
+          />
         </Label>
         <ButtonMenu>
           <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
@@ -230,12 +241,12 @@ class Settings extends Component {
       <Section title={"Network"}>
         <Label title={"Device IP Addresses"}>
           <pre style={{ height: "88px", overflowY: "auto" }}>
-            {ip_query_response.ip_addrs.join('\n')}
+            {(ip_query_response !== null)? ip_query_response.ip_addrs.join('\n') : null}
           </pre>
         </Label>
         <Label title={"DHCP Enabled"}>
         <Toggle
-          checked={ip_query_response.dhcp_enabled}
+          checked={(ip_query_response !== null)? ip_query_response.dhcp_enabled : false}
           onClick= {onToggleDHCPEnabled}
         />
         </Label>
@@ -247,15 +258,16 @@ class Settings extends Component {
           <Button onClick={this.onRemoveButtonPressed}>{"Remove"}</Button>
         </ButtonMenu>
         <Label title={"TX Data Rate (Mbps)"}>
-          <Input disabled value={round(bandwidth_usage_query_response.tx_rate_mbps, 2)} />
+          <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.tx_rate_mbps, 2) : -1.0} />
         </Label>
         <Label title={"RX Data Rate (Mbps)"}>
-          <Input disabled value={round(bandwidth_usage_query_response.rx_rate_mbps, 2)} />
+          <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.rx_rate_mbps, 2) : -1.0} />
         </Label>
         <Label title={"TX Rate Limit (Mbps)"}>
           <Input
             id="txRateLimit"
-            value={this.state.tx_bandwidth_limit}
+            value={((this.state.tx_bandwidth_user_editing === true) || (bandwidth_usage_query_response === null))?
+              this.state.tx_bandwidth_limit : bandwidth_usage_query_response.tx_limit_mbps}
             onChange={this.onUpdateTXRateLimitText}
             onKeyDown={this.onKeyTXRateLimitText}
           />
