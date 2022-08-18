@@ -10,6 +10,9 @@ import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
 import Styles from "./Styles"
 
+// TODO: This is redundant with the one defined in APP.js
+const IS_LOCAL = window.location.hostname === "localhost"
+
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
 }
@@ -70,8 +73,33 @@ class Dashboard extends Component {
         <Label title={"Serial Number"}>
           <Input disabled value={deviceSerial} />
         </Label>
-        <Label title={"Firmware Version"}>
+        <Label title={"Firmware"}>
           <Input disabled value={systemDefsFirmwareVersion} />
+        </Label>
+      </Section>
+    )
+  }
+
+  renderSledInfo() {
+    const {
+      sledConnected,
+      sledType,
+      sledFirmwareVersion,
+      eggFirmwareVersion,
+    } = this.props.ros
+    return (
+      <Section title={"Sled Info"}>
+        <Label title={"Connected"}>
+          <BooleanIndicator value={sledConnected} />
+        </Label>
+        <Label title={"Type"}>
+          <Input disabled value={sledType} />
+        </Label>
+        <Label title={"Firmware"}>
+          <Input disabled value={sledFirmwareVersion} />
+        </Label>
+        <Label title={"Sensor Firmware"}>
+          <Input disabled value={eggFirmwareVersion} />
         </Label>
       </Section>
     )
@@ -84,7 +112,6 @@ class Dashboard extends Component {
       clockTZ,
       onToggleClockUTCMode,
       clockNTP,
-      clockPPS,
       onSyncUTCToDevice
     } = this.props.ros
 
@@ -95,9 +122,6 @@ class Dashboard extends Component {
       <Section title={"System Clock"}>
         <Label title={"NTP"}>
           <BooleanIndicator value={clockNTP} />
-        </Label>
-        <Label title={"PPS"}>
-          <BooleanIndicator value={clockPPS} />
         </Label>
         <Label title={"Time"}>
           <Input disabled value={time} />
@@ -111,9 +135,10 @@ class Dashboard extends Component {
         <Label title={"UTC"}>
           <Toggle checked={clockUTCMode} onClick={onToggleClockUTCMode} />
         </Label>
+        {IS_LOCAL &&
         <ButtonMenu>
           <Button onClick={onSyncUTCToDevice}>{"Sync Clocks"}</Button>
-        </ButtonMenu>
+        </ButtonMenu>}
       </Section>
     )
   }
