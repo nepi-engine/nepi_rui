@@ -15,7 +15,7 @@ import NavPose from "./NavPose"
 import Files from "./Files"
 import Settings from "./Settings"
 
-const IS_LOCAL = window.location.hostname === "localhost"
+//const IS_LOCAL = window.location.hostname === "localhost"
 
 @inject("ros")
 @withRouter
@@ -58,7 +58,7 @@ class App extends Component {
             <Route path="/settings" component={Settings} />
             <Route path="/NEPI" component={NEPI} />
           </Switch>
-        
+
       </Page>
     )
   }
