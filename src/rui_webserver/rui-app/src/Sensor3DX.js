@@ -25,15 +25,15 @@ class Sensor3DX extends Component {
 
     this.state = {
       // 3DX Sensor topic to subscribe to and update
-      topic3DX: props.ros.sensor3DXTopics[0],
-      topic3DXText: createShortUniqueValues(props.ros.sensor3DXTopics)[0],
+      topic3DX: (props.ros.sensor3DXTopics.length === 1)? props.ros.sensor3DXTopics[0] : null,
+      topic3DXText: (props.ros.sensor3DXTopics.length === 1)? createShortUniqueValues(props.ros.sensor3DXTopics)[0] : null,
 
       // image topics and names for the quad image display
       // these are not an array because state values are not
       // mutable, making dealing with an array in the state
       // object obnoxious
-      imageTopic_0: (props.ros.sensor3DXTopics.length > 0)? props.ros.sensor3DXTopics[0].concat("/img_0/image_raw") : null,
-      imageText_0: (props.ros.sensor3DXTopics.length > 0)? "img_0/image_raw" : null,
+      imageTopic_0: (props.ros.sensor3DXTopics.length === 1)? props.ros.sensor3DXTopics[0].concat("/img_0/image_raw") : null,
+      imageText_0: (props.ros.sensor3DXTopics.length === 1)? "img_0/image_raw" : null,
       imageTopic_1: null,
       imageText_1: null,
       imageTopic_2: null,
