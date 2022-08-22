@@ -40,8 +40,6 @@ class CameraViewer extends Component {
       //clockTime: moment(),
       streamWidth: null,
       streamHeight: null,
-      containerWidth: null,
-      containerHeight: null,
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
       hideQualitySelector: this.props.hideQualitySelector
     }
@@ -56,20 +54,16 @@ class CameraViewer extends Component {
     const {
       shouldUpdate,
       hasInitialized,
-      containerWidth,
-      containerHeight,
       streamWidth,
       streamHeight
     } = this.state
     //const { imageRecognitions } = this.props.ros
     if (shouldUpdate && hasInitialized && this.canvas) {
-      if (!containerWidth) {
-        this.setState({ containerWidth: this.canvas.width })
+      if (this.canvas.width !== streamWidth) {
         this.canvas.width = streamWidth
       }
 
-      if (!containerHeight) {
-        this.setState({ containerHeight: this.canvas.height })
+      if (this.canvas.height !== streamHeight) {
         this.canvas.height = streamHeight
       }
 
@@ -116,19 +110,17 @@ class CameraViewer extends Component {
       }
       this.image.crossOrigin = "Anonymous"
       this.image.onload = () => {
-        if (!hasInitialized) {
-          const { width, height } = this.image
-          this.setState(
-            {
-              hasInitialized: true,
-              streamWidth: width,
-              streamHeight: height
-            },
-            () => {
-              requestAnimationFrame(this.updateFrame)
-            }
-          )
-        }
+        const { width, height } = this.image
+        this.setState(
+          {
+            hasInitialized: true,
+            streamWidth: width,
+            streamHeight: height
+          },
+          () => {
+            requestAnimationFrame(this.updateFrame)
+          }
+        )
       }
     }
     if (this.image) {
