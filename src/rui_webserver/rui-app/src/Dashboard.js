@@ -135,7 +135,7 @@ class Dashboard extends Component {
         <Label title={"UTC"}>
           <Toggle checked={clockUTCMode} onClick={onToggleClockUTCMode} />
         </Label>
-        {IS_LOCAL &&
+        {(IS_LOCAL === false) &&
         <ButtonMenu>
           <Button onClick={onSyncUTCToDevice}>{"Sync Clocks"}</Button>
         </ButtonMenu>}
