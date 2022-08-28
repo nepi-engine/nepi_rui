@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import Toggle from "react-toggle"
-import { TRIGGER_MASKS, displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
+import { displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -135,10 +135,10 @@ class Settings extends Component {
 
   renderTriggerSettings() {
     const {
-      triggerMask,
+      //triggerMask,
       onPressManualTrigger,
-      onToggleHWTriggerOutputEnabled,
-      onToggleHWTriggerInputEnabled,
+      //onToggleHWTriggerOutputEnabled,
+      //onToggleHWTriggerInputEnabled,
       triggerAutoRateHz
     } = this.props.ros
 
@@ -155,12 +155,15 @@ class Settings extends Component {
           <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
         </ButtonMenu>
         <Label title={"Hardware Trigger Input Enable"}>
-          <Toggle onClick={onToggleHWTriggerInputEnabled} />
+          <Toggle
+            checked={false}
+            disabled={true}
+          />
         </Label>
         <Label title={"Hardware Trigger Output Enable"}>
           <Toggle
-            checked={triggerMask === TRIGGER_MASKS.OUTPUT_ENABLED}
-            onClick={onToggleHWTriggerOutputEnabled}
+            checked={true}
+            disabled={true}
           />
         </Label>
       </Section>
