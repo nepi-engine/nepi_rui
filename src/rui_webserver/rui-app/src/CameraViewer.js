@@ -104,7 +104,6 @@ class CameraViewer extends Component {
 
   updateImageSource() {
     if (this.props.imageTopic) {
-      const { hasInitialized } = this.state
       if (!this.image) {
         this.image = new Image() // EXPERIMENT -- Only create a new Image when strictly required
       }
