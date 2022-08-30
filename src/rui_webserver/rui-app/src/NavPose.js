@@ -19,7 +19,6 @@ class NavPose extends Component {
     super(props)
 
     this.state = {
-      fixedNavPoseDisabled: false,
       fixedRoll: 0.0,
       fixedPitch: 0.0,
       fixedYaw: 0.0,
@@ -42,7 +41,9 @@ class NavPose extends Component {
     this.renderPanTilt = this.renderPanTilt.bind(this)
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
-    this.onToggleFixedNavPose = this.onToggleFixedNavPose.bind(this)
+    this.onToggleFixedPositionData = this.onToggleFixedPositionData.bind(this)
+    this.onToggleFixedOrientationData = this.onToggleFixedOrientationData.bind(this)
+    this.onToggleFixedHeadingData = this.onToggleFixedHeadingData.bind(this)
     this.onToggleNavPoseOffsets = this.onToggleNavPoseOffsets.bind(this)
   }
   onUpdateText(e) {
@@ -117,7 +118,7 @@ class NavPose extends Component {
   }
 
   onKeyText(e) {
-    const {onSetFixedOrientation, onSetFixedGPS, onSetHeading, onSetAHRSOffsets} = this.props.ros
+    const {onSetFixedOrientation, onSetFixedGPS, onSetFixedHeading, onSetAHRSOffsets} = this.props.ros
     if(e.key === 'Enter'){
       if ((e.target.id === "FixedRoll") || (e.target.id === "FixedPitch") || (e.target.id === "FixedYaw"))
       {
@@ -152,7 +153,7 @@ class NavPose extends Component {
       {
         var headingElement = document.getElementById("FixedHeading")
         headingElement.style.color = Styles.vars.colors.black
-        onSetHeading(headingElement.value)
+        onSetFixedHeading(headingElement.value)
       }
       else if ((e.target.id === "XTranslation") || (e.target.id === "YTranslation") || (e.target.id === "ZTranslation") ||
                (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation"))
@@ -181,17 +182,34 @@ class NavPose extends Component {
     }
   }
 
-  async onToggleFixedNavPose() {
-    const {onDisableFixedNavPose} = this.props.ros
-    var disabled = this.state.fixedNavPoseDisabled
-    this.setState({fixedNavPoseDisabled: !disabled})
+  async onToggleFixedPositionData() {
+    const {onEnableFixedGPS, navPosGPSIsFixed} = this.props.ros
+    var enabled = !navPosGPSIsFixed
+    onEnableFixedGPS(enabled)
 
-    if (false === this.state.fixedNavPoseDisabled) {
-      onDisableFixedNavPose()
-      // And update all the text
-      this.setState({fixedRoll: 0.0, fixedPitch: 0.0, fixedYaw: 0.0,
-                     fixedLatitude: 0.0, fixedLongitude: 0.0, fixedAltitude: 0.0,
-                     fixedHeading:0.0})
+    if (false === enabled) {
+      // Update all the text
+      this.setState({fixedLatitude: 0.0, fixedLongitude: 0.0, fixedAltitude: 0.0})
+    }
+  }
+
+  async onToggleFixedOrientationData() {
+    const {onEnableFixedOrientation, navPosOrientationIsFixed} = this.props.ros
+    var enabled = !navPosOrientationIsFixed
+    onEnableFixedOrientation(enabled)
+
+    if (false === enabled) {
+      this.setState({fixedRoll: 0.0, fixedPitch: 0.0, fixedYaw: 0.0})
+    }
+  }
+
+  async onToggleFixedHeadingData() {
+    const {onEnableFixedHeading, navPosHeadingIsFixed} = this.props.ros
+    var enabled = !navPosHeadingIsFixed
+    onEnableFixedHeading(enabled)
+
+    if (false === enabled) {
+      this.setState({fixedHeading: 0.0})
     }
   }
 
@@ -203,22 +221,22 @@ class NavPose extends Component {
   renderFixedNavPos() {
     return (
       <Section title={"Fixed NAV/POSE Data"}>
-        <Label title={"Enable Fixed Nav/Pose Data"}>
-          <Toggle
-            onClick={this.onToggleFixedNavPose}
-            defaultChecked={!this.state.fixedNavPoseDisabled}
-          />
-        </Label>
         <Columns>
           <Column>
+            <Label title={"Fixed Location"}>
+              <Toggle
+                onClick={this.onToggleFixedPositionData}
+                checked={this.props.ros.navPosGPSIsFixed}
+              />
+            </Label>
             <Label title={"Latitude"}>
               <Input
-                value={this.state.fixedLatitude !== null ? this.state.fixedLatitude : "0"}
+                value={this.state.fixedLatitude !== null? this.state.fixedLatitude : "0"}
                 id="FixedLatitude"
                 data-topic="set_gps_fix"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
@@ -229,7 +247,7 @@ class NavPose extends Component {
                 data-topic="set_gps_fix"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
@@ -240,12 +258,24 @@ class NavPose extends Component {
                 data-topic="set_gps_fix"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosGPSIsFixed)}
                 style={{ width: "80%" }}
+              />
+            </Label>
+            <Label title={"Fixed Heading"}>
+              <Toggle
+                onClick={this.onToggleFixedHeadingData}
+                checked={this.props.ros.navPosHeadingIsFixed}
               />
             </Label>
           </Column>
           <Column>
+            <Label title={"Fixed Orientation"}>
+              <Toggle
+                onClick={this.onToggleFixedOrientationData}
+                checked={this.props.ros.navPosOrientationIsFixed}
+              />
+            </Label>
             <Label title={"Roll (deg)"}>
               <Input
                 value={this.state.fixedRoll !== null ? this.state.fixedRoll : "0"}
@@ -254,7 +284,7 @@ class NavPose extends Component {
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosOrientationIsFixed)}
               />
             </Label>
             <Label title={"Pitch (deg)"}>
@@ -265,7 +295,7 @@ class NavPose extends Component {
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosOrientationIsFixed)}
               />
             </Label>
             <Label title={"Yaw (deg)"}>
@@ -276,10 +306,10 @@ class NavPose extends Component {
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosOrientationIsFixed)}
               />
             </Label>
-            <Label title={"Heading (deg., magnetic)"}>
+            <Label title={"Heading (deg)"}>
               <Input
                 value={this.state.fixedHeading !== null ? this.state.fixedHeading : "0"}
                 id="FixedHeading"
@@ -287,7 +317,7 @@ class NavPose extends Component {
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={this.state.fixedNavPoseDisabled}
+                disabled={!(this.props.ros.navPosHeadingIsFixed)}
               />
             </Label>
           </Column>

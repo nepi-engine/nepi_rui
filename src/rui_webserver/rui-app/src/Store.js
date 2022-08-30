@@ -161,6 +161,9 @@ class ROSConnectionStore {
   @observable navPosOrientationRollRate = null
 
   @observable navPosStatus = null
+  @observable navPosGPSIsFixed = false
+  @observable navPosOrientationIsFixed = false
+  @observable navPosHeadingIsFixed = false
   @observable lastNavSatFix = null
   @observable navSatFixRate = null
   @observable lastImu = null
@@ -814,10 +817,13 @@ class ROSConnectionStore {
         msgKey: "status"
       })
 
+      this.navPosGPSIsFixed = this.navPosStatus.lat_lon_alt_is_fixed
       this.lastNavSatFix = this.navPosStatus.last_nav_sat_fix
       this.navSatFixRate = this.navPosStatus.nav_sat_fix_rate
+      this.navPosOrientationIsFixed = this.navPosStatus.orientation_is_fixed
       this.lastImu = this.navPosStatus.last_imu
       this.imuRate = this.navPosStatus.imu_rate
+      this.navPosHeadingIsFixed = this.navPosStatus.heading_is_fixed
       this.navSrcFrame = this.navPosStatus.transform.header.frame_id
       this.navTargetFrame = this.navPosStatus.transform.child_frame_id
       this.navTransformXTrans = this.navPosStatus.transform.transform.translation.x
@@ -1387,16 +1393,20 @@ class ROSConnectionStore {
 
   // Nav/Pose Control methods /////////////////////////////////////////////
   @action.bound
-  onDisableFixedNavPose() {
+  onEnableFixedOrientation(enable) {
     this.publishMessage({
-      name: "nav_pos_mgr/clear_attitude_override",
-      messageType: "std_msgs/Empty",
-      data: {}
+      name: "nav_pos_mgr/enable_attitude_override",
+      messageType: "std_msgs/Bool",
+      data: { data: enable }
     })
+  }
+
+  @action.bound
+  onEnableFixedHeading(enable) {
     this.publishMessage({
-      name: "nav_pos_mgr/clear_heading_override",
-      messageType: "std_msgs/Empty",
-      data: {}
+      name: "nav_pos_mgr/enable_heading_override",
+      messageType: "std_msgs/Bool",
+      data: { data: enable }
     })
   }
 
@@ -1427,18 +1437,18 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onSetFixedGPS(latitude_deg, longitude_deg, altitude_m, fixed_frame_id) {
+  onSetFixedGPS(latitude_deg, longitude_deg, altitude_m) {
     this.publishMessage({
-      name: "set_gps_fix",
+      name: "set_gps_fix_override",
       messageType: "sensor_msgs/NavSatFix",
       data: {
         header: {
           seq: 0,
           stamp: {
-            sec: moment().unix(),
+            sec: 0,
             nsec: 0
           },
-          frame_id: fixed_frame_id
+          frame_id: "n/a"
         },
         status: {
           status: 0, // Valid FIX
@@ -1453,13 +1463,22 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onSetHeading(heading_mag_deg) {
+  onEnableFixedGPS(enabled) {
+    this.publishMessage({
+      name: "enable_gps_fix_override",
+      messageType: "std_msgs/Bool",
+      data: { data: enabled }
+    })
+  }
+
+  @action.bound
+  onSetFixedHeading(heading_mag_deg) {
     this.publishMessage({
       name: "nav_pos_mgr/set_heading_override",
       messageType: "num_sdk_msgs/Heading",
       data: {
         heading: parseFloat(heading_mag_deg),
-        true_north: false
+        true_north: false // Hardcoded -- RUI doesn't expose true vs magnetic distinction
       }
     })
   }
