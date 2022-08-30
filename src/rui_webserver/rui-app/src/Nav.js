@@ -5,12 +5,17 @@ import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
 
 import logo from "./logo.png"
+import powered_by_nepi from "./powered_by_nepi.png"
 
 const styles = Styles.Create({
   logo: {
     // backgroundColor: Styles.vars.colors.grey0
+    //width: "150px",
     width: "150px",
     //height: "40px"
+  },
+  powered_by_nepi: {
+    width: "150px",
   },
   navItem: {
     display: "inline-block",
@@ -129,23 +134,32 @@ class Nav extends Component {
       <div style={styles.root}>
         <Columns>
           <Column>
-            <div style={styles.logo}>
-              <img src={logo} alt={"logo"} max-width={"50%"} height={"auto"}/>
-            </div>
+            <Columns>
+                <Column>
+                  <div style={styles.logo}>
+                    <img src={logo} alt={"logo"} max-width={"50%"} height={"auto"}/>
+                  </div>
+                </Column>
+                <Column>
+                  <div style={styles.powered_by_nepi}>
+                    <img src={powered_by_nepi} alt={"powered_by_nepi"} max-width={"50%"} height={"auto"}/>
+                  </div>
+                </Column>
+            </Columns>
           </Column>
-            <Column style={{ flex: 3 }}>
-              {pages.map(({ path, label, subItems }) => {
-                return (
-                  <NavItem
-                    active={path === window.location.pathname}
-                    path={path}
-                    label={label}
-                    key={label}
-                    subItems={subItems}
-                  />
-                )
-              })}
-            </Column>
+          <Column style={{ flex: 3 }}>
+            {pages.map(({ path, label, subItems }) => {
+              return (
+                <NavItem
+                  active={path === window.location.pathname}
+                  path={path}
+                  label={label}
+                  key={label}
+                  subItems={subItems}
+                />
+              )
+            })}
+          </Column>
         </Columns>
       </div>
     )
