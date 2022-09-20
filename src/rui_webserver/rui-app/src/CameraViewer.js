@@ -176,7 +176,7 @@ class CameraViewer extends Component {
     }
 
     return (
-      <Section title={this.props.title ? this.props.title : ""}>
+      <Section title={this.props.title}>
         <canvas style={styles.canvas} ref={this.onCanvasRef} />
         <Columns>
           <Column>
