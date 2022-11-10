@@ -203,7 +203,6 @@ class ROSConnectionStore {
   @observable targLocalizerImgTopic = null
 
   @observable ip_query_response = null
-
   @observable bandwidth_usage_query_response = null
   @observable wifi_query_response = null
 

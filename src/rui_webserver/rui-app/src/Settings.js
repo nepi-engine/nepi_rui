@@ -250,10 +250,10 @@ class Settings extends Component {
           </pre>
         </Label>
         <Label title={"DHCP Enabled"}>
-        <Toggle
-          checked={(ip_query_response !== null)? ip_query_response.dhcp_enabled : false}
-          onClick= {onToggleDHCPEnabled}
-        />
+          <Toggle
+            checked={(ip_query_response !== null)? ip_query_response.dhcp_enabled : false}
+            onClick= {onToggleDHCPEnabled}
+          />
         </Label>
         <Label>
           <Input value={ipAddrVal} onChange={ this.onIPAddrValChange} />
