@@ -99,7 +99,7 @@ class CameraViewer extends Component {
 
   onCanvasRef(ref) {
     this.canvas = ref
-    this.updateImageSource()
+    //this.updateImageSource()
   }
 
   updateImageSource() {
@@ -142,6 +142,10 @@ class CameraViewer extends Component {
     if (this.image) {
       this.image.src = null
     }
+  }
+
+  componentDidMount() {
+    this.updateImageSource()
   }
 
   onTakeSnapshot() {
