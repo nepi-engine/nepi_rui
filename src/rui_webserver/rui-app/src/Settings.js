@@ -238,8 +238,10 @@ class Settings extends Component {
   }
 
   renderNetworkInfo() {
-    const { ip_query_response, onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
+    const { ip_query_response, wifi_query_response, onToggleDHCPEnabled, 
+            onToggleWifiAPEnabled, bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
+    const has_wifi = wifi_query_response? wifi_query_response.has_wifi : false
     return (
       <Section title={"Network"}>
         <Label title={"Device IP Addresses"}>
@@ -260,6 +262,20 @@ class Settings extends Component {
           <Button onClick={this.onAddButtonPressed}>{"Add"}</Button>
           <Button onClick={this.onRemoveButtonPressed}>{"Remove"}</Button>
         </ButtonMenu>
+        <div hidden={has_wifi === false}>
+          <Label title={"WiFi AP Enabled"} marginTop={Styles.vars.spacing.medium}>
+            <Toggle
+              checked={(wifi_query_response !== null)? wifi_query_response.wifi_ap_enabled : false}
+              onClick= {onToggleWifiAPEnabled}
+            />
+          </Label>
+          <Label title={"WiFi AP Name"} >
+            <Input disabled value={(wifi_query_response !== null)? wifi_query_response.wifi_ap_name : "n/a"}/>
+          </Label>
+          <Label title={"WiFi AP Password"} hidden={!has_wifi}>
+            <Input disabled value={(wifi_query_response !== null)? wifi_query_response.wifi_ap_password : "n/a"}/>
+          </Label>
+        </div>        
         <Label title={"TX Data Rate (Mbps)"}>
           <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.tx_rate_mbps, 2) : -1.0} />
         </Label>

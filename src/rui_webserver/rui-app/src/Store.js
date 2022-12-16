@@ -205,6 +205,7 @@ class ROSConnectionStore {
   @observable ip_query_response = null
 
   @observable bandwidth_usage_query_response = null
+  @observable wifi_query_response = null
 
   @observable NUID = "INVALID"
   @observable NEPIStatus = null
@@ -544,6 +545,7 @@ class ROSConnectionStore {
     this.callImgClassifierListQueryService()
     this.startPollingIPAddrQueryService()
     this.startPollingBandwidthUsageService()
+    this.startPollingWifiQueryService()
     this.startPollingOpEnvironmentQueryService()
     this.startPollingTriggerStatusQueryService()
     this.startPollingNavPosService()
@@ -725,6 +727,21 @@ class ROSConnectionStore {
     }
 
     _pollOnce()
+  }
+
+  async startPollingWifiQueryService() {
+    const _pollOnce = async () => {
+      this.wifi_query_response = await this.callService({
+        name: "wifi_query",
+        messageType: "num_sdk_msgs/WifiQuery",
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 3000)
+      }
+    }
+
+    _pollOnce()    
   }
 
   async startPollingOpEnvironmentQueryService() {
@@ -1142,6 +1159,17 @@ class ROSConnectionStore {
 
     // Set local immediately, will correct on next update if values is rejected
     this.ip_query_response.dhcp_enabled = checked
+  }
+
+  @action.bound
+  onToggleWifiAPEnabled(e) {
+    const checked = e.target.checked
+
+    this.publishMessage({
+      name: "enable_wifi_access_point",
+      messageType: "std_msgs/Bool",
+      data: { data: checked }
+    })
   }
 
   @action.bound
