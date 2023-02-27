@@ -133,6 +133,8 @@ class ROSConnectionStore {
   @observable systemDefsFirmwareVersion = null
   @observable systemDefsDiskCapacity = null
 
+  @observable systemSoftwareStatus = null
+
   @observable systemStatus = null
   @observable heartbeat = false
   @observable systemStatusDiskUsageMB = null
@@ -536,6 +538,7 @@ class ROSConnectionStore {
 
     // services
     this.callSystemDefsService()
+    this.callSystemSoftwareStatusQueryService()
     this.callNepiStatusService()
     this.callImgClassifierListQueryService()
     this.startPollingIPAddrQueryService()
@@ -686,6 +689,41 @@ class ROSConnectionStore {
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
     this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
   }
+
+  @action.bound
+  async callSystemSoftwareStatusQueryService() {
+    this.systemSoftwareStatus = await this.callService({
+      name: "sw_update_status_query",
+      messageType: "num_sdk_msgs/SystemSoftwareStatusQuery"
+    })
+  }
+
+  @action.bound
+  async onInstallFullSysImg(new_img_filename) {
+    this.publishMessage({
+      name: "install_new_image",
+      messageType: "std_msgs/String",
+      data: { data: new_img_filename }
+    })    
+  }
+
+  @action.bound
+  async onSwitchActiveInactiveRootfs() {
+    this.publishMessage({
+      name: "switch_active_inactive_rootfs",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
+  @action.bound
+  async onStartSysBackup() {
+    this.publishMessage({
+      name: "archive_inactive_rootfs",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }  
 
   async callImgClassifierListQueryService() {
     this.classifiers = await this.callService({
