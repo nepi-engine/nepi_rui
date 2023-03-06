@@ -4,14 +4,6 @@
   <!-- Everything lives in the device namespace -->
   <group ns="$(arg device_ns)">
 
-    <!-- Must run rosbridge_websocket -->
-    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" >
-       <arg name="address" value="0.0.0.0"/>
-       <arg name="port" value="9090"/>
-       <!-- Use a long unregister_timeout as a work-around for the well-known unregister rospy bug -->
-       <arg name="unregister_timeout" value="31536000"/>
-    </include>
-
     <node name="run_webserver" pkg="numurus_rui" type="run_webserver.py" respawn="true" output="log" />
 
     <rosparam command="load" file="/opt/numurus/ros/etc/rui_config_mgr/rui_config_mgr.yaml" ns="rui_config_mgr" />
