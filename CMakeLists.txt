@@ -30,9 +30,7 @@ install(PROGRAMS
 
 catkin_install_python(
   PROGRAMS
-#    scripts/fake_data_pub.py
-#    scripts/fake_status_pub.py
-     scripts/run_webserver.py
+    scripts/run_webserver.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   # Install etc files (startup scripts, factory configs, etc.) to the global (not project) etc destination

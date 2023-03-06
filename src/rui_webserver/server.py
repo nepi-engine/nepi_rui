@@ -5,8 +5,6 @@ import socket
 from flask import Flask, send_from_directory, send_file, jsonify, g
 from flask_cors import CORS
 
-import rospy
-
 from rui_webserver.config import APP_BUILD_PATH, DATA_PATH
 
 
