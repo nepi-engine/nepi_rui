@@ -1,4 +1,4 @@
-# numurus_rui
+# nepi_rui
 
 Description: Web server for the Resident User Interface of Numurus
 
@@ -7,21 +7,13 @@ Description: Web server for the Resident User Interface of Numurus
 Architecture:
 ![Alt text](/resources/architecture.png?raw=true "Architecture")
 
-## Preliminary Notes
-1. The instructions below are specific to building and running stand-alone version of the RUI. In general, the RUI is now built within a larger workspace, e.g., jetson_3dsc_ws, and not all instruction are relevant -- particularly those related to workspace setup
-- Back-end is "built" and installed by building the top-level workspace
-- Front-end should be built from the (final) installation target folder as the Python virtualenv is not portable, must be populated at its final location.
-- Running the RUI is largely automated now simply by installing the numurus_rui.service script (cp to /etc/systemd/system) and enabling it (systemctl enable numurus_rui).
-2. The instructions and terminal commands specify the "kinetic" ROS release at some points, though you can substitute "melodic" or presumably other future versions to match your system's ROS install.
-3. The RUI relies on node.js 8.11.1, which has some noted vulnerabilities -- it should be updated to later node version.
-4. The RUI relies on Python 2.7, which is EOL -- pip will start failing in Jan. 2021, and then, if not sooner, will need to port everything to Python 3.
-5. For certain targets (like Jetson TX-2) it is easiest to build the RUI directly on the target by installing all dependencies and following the instructions below. For other targets without easy internet access (like the KRM module), it is best to build in a container on a local host and rsync the results directly to the target's rootfs media as described later in the document.  
 
-## Install
+## Build/Install Preliminaries
+The preliminary steps in this section are typically only required once during new system bring-up.
 
-### Build from Source
-
-1. [Install ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
+### NEPI Pre-installed Dependencies
+The following setup steps are typically already complete in the NEPI Rootfs. They are preserved here in case the NEPI RUI must be built on a non-conformant system.
+1. [Install ROS Melodic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
 
         sudo apt-get install python python-wstool python-catkin-tools python-pip
 
@@ -30,94 +22,44 @@ Architecture:
         pip install --user -U pip
         pip install --user virtualenv
 
-   Note: if you get the error ``ImportError: cannot import name main``, open a new terminal and retry the last command.
+   Note: if you get the error ``ImportError: cannot import name main``, open a new terminal and retry the last command.        
 
 1. Install nvm (node version manager):
 
         curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
         export NVM_DIR="$HOME/.nvm"
-        nvm install 8.11.1
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+        nvm install 18 # Latest LTS version
 
-   Note: don't miss the install script's instructions: "Close and reopen your terminal to start using nvm or run the following to use it now"
+### Python Virtualenv Setup Steps (One-time)
+The following steps set up the python virtualenv for the RUI backend. This sequence typically only needs to be run once -- and always from the final install location for nepi_rui since virtualenv folders cannot be moved around the system.
 
-1. Re-use or create a Catkin workspace:
-
-        mkdir -p ~/ws_numurus/src
-        cd ~/ws_numurus/src
-
-1. Download the required repositories and install any dependencies. Note this requires SSH key authentication setup with Github.
-
-        git clone git@github.com:PickNikRobotics/numurus_rui.git
-        wstool init .
-        wstool merge numurus_rui/numurus_rui.rosinstall
-        wstool update
-        rosdep install --from-paths . --ignore-src --rosdistro kinetic
-
-1. Setup the virtual environment:
-
-        cd ~/ws_numurus/src/numurus_rui
         python -m virtualenv venv
-
-1. Source the virtual environment and environment variables:
-
-        cd ~/ws_numurus/src/numurus_rui
-        source ./devenv.sh
-
-1. Install Python and javascript dependencies:
-
-        cd ~/ws_numurus/src/numurus_rui
+        source ./devnev.sh
         pip install -r requirements.txt
-        cd src/rui_webserver/rui-app/ && npm install
 
-1. Build the frontend:
+where the final two steps should be rerun any time Python dependencies as specified in requirements.txt are altered.
 
-        cd ~/ws_numurus/src/numurus_rui/src/rui_webserver/rui-app/ && npm run build
+### NPM Package Install Steps (One-time)
+The following steps install the Node/React/etc. packages required for the RUI frontend. This sequence typically only needs to be run once -- and always from the final install location for nepi_rui.
 
-1. Configure and build the workspace:
+        source ./devenv.sh
+        cd src/rui_webserver/rui-app && npm install
 
-        cd ~/ws_numurus/
-        catkin config --extend /opt/ros/kinetic --cmake-args -DCMAKE_BUILD_TYPE=Release
-        catkin build
+where the final two steps should be rerun any time Node packages as specified in package.json are altered.
 
-   Note: if you get the error ``ImportError: No module named em`` try the following fix:
+## Deprecation Warnings
+1. The RUI relies on node.js 8.11.1, which has some noted vulnerabilities -- it should be updated to later node version.
 
-        pip install empy
-   (This should no longer be necessary as empy has been added to requirements.txt)
-
-1. Source the workspace:
-
-        source devel/setup.bash
-
-   Note: consider adding this to your .bashrc
-
-## Development
-
-### Quick update code repositories
-
-To make sure you have the latest repos:
-
-        cd ~/ws_numurus/src/numurus_rui
-        git checkout master
-        git pull origin master
-        cd ..
-        wstool merge numurus_rui/numurus_rui.rosinstall
-        wstool update
-        rosdep install --from-paths . --ignore-src --rosdistro kinetic
+1. The RUI relies on Python 2.7, which is EOL. Everything should be ported to Python 3.
 
 ## Development
 
 When developing, always source the `devenv.sh` to ensure the correct versions of Python, node and define environment variables:
 
-        cd ~/ws_numurus/src/numurus_rui
-        . devenv.sh
-
-If working with the numurus dev board, you can also use `. boardenv.sh` instead of `devenv.sh`. This script will make it so that ROS nodes running on your computer connect to the ROS master on the device.
-
-For it to work, you must add this line to your `etc/hosts` file:
-
-        192.168.179.101 num-sb1-zynq
-
-Additionally, this script makes some assumptions about which ethernet port you've plugged the device into, so users may need to modify `$NUMURUS_BOARD_INTERFACE` variable within the script.
+        cd /opt/nepi/nepi_rui
+        source devenv.sh
 
 ### Frontend
 
@@ -127,94 +69,41 @@ To build the frontend run this command in `src/rui_webserver/rui-app/`:
 
 Building the frontend is necessary after initial checkout (as the frontend build is not stored in the repo), but after that only necessary when making changes to frontend code.
 
-Start the development server with:
-
-        npm start
-
-Various other npm commands are available such as `build`, `lint`, etc. See the `scripts` section of `rui-app/package.json` for a full list of commands.
-
-        npm run deploy
-
 ### Backend
 
 When changing backend code, run the webserver with:
 
-    rosrun numurus_rui run_webserver.py
+    rosrun nepi_rui run_webserver.py
 
-### Rosbridge
+## Targets without internet access
 
-In all cases, rosbridge needs to run:
-
-        roslaunch numurus_rui rosbridge.launch
-
-## Production
-
-### Installing the module
-To copy this module to the device (using boardenv above) please run this from the directory above this module:
-
-        rsync --info=progress2 -avzhe ssh --exclude node_modules --exclude .git numurus_rui/ root@num-sb1-zynq:/opt/numurus/ros/share/numurus_rui
-
-Note that if you've built the module directly on the target, you can omit the `ssh` portion of the command.
-
-### Targets without internet access
-
-Some targets do not have internet access, so installation of dependencies is best done in a QEMU environment on a development host in a `chroot` of the mounted root filesystem media of the target. RUI-specific steps are preserved here for posterity, but refer to the Numurus Zynq FW Developer's Guide for the complete QEMU instructions.
-
-Please eject the SD card and use qemu to create a new python venv in the root of this module
+Some targets do not have internet access, so installation of dependencies is best done in a QEMU environment on a development host in a `chroot` of the mounted root filesystem media of the target or a loopback device that cotains the complete rootfs of the target. Briefly, that involves the following steps on the host system (where we assume that the filesystem media/loopback is mounted at /mnt/nepi_rootfs)
 
         sudo apt install qemu-user-static
-        mkdir ~/mnt/rootfs
-        sudo mount /dev/mmcblk0p2 ~/mnt/rootfs
-        sudo mount -t proc proc ~/mnt/rootfs/proc
-        cp $(which qemu-arm-static) ~/mnt/rootfs
-        cp etc/resolv.conf ~/mnt/rootfs/etc/resolv.conf
-        sudo chroot ~/mnt/rootfs /bin/bash
+        sudo mount -t proc proc ~/mnt/nepi_rootfs/proc
+        cp $(which qemu-arm-static) ~/mnt/nepi_rootfs
+        cp etc/resolv.conf ~/mnt/nepi_rootfs/etc/resolv.conf
+        sudo chroot ~/mnt/nepi_rootfs /bin/bash
 
-Once this is complete, you can proceed to install dependencies and set up the Python virtual environment as below. When finished unmount and eject the SD card and put it back in the device
+Once this is complete, you can proceed to install dependencies and set up the Python virtual environment as described above. When finished unmount the rootfs media or loopback and load on the target.
 
-### Preparing the target
+## Running on the target
 
-Ensure the ROS dependencies and Python virtual env are installed to the target.
+The web server backend can be manually started with
 
-1. Go to the directory where the package is located and install ROS dependencies
+        /opt/nepi/nepi_rui/etc/start_rui.sh        
 
-        cd /opt/numurus/ros/share/numurus_rui
-        rosdep install --from-paths . --ignore-src --rosdistro kinetic
+after which the webserver should be available on port 5003 of any IP address assigned to the device.
 
-1. Create and populate the venv
+## Automate Start-up
+A start-up script is provided at `nepi_rui/etc/start_rui.sh`. This can be automatically run by installing `systemd` services file `nepi_rui/launch/nepi_rui.service`:
 
-        python -m virtualenv venv
-        . prodenv.sh
-        pip install -r requirements.txt
+        sudo cp /opt/nepi/nepi_rui/etc/nepi_rui.service /etc/systemd/system
+        sudo systemctl enable nepi_rui
 
-### Running on the target
+The `nepi_rui.service` unit requires the `roslaunch.service` provided in the `nepi_edge_sdk_base` repository to guarantee that `rosbridge` is also launched, so ensure this is also installed and enabled on the taget device.
 
-To run the webserver in production on the device, run the following in separate terminals:
-
-        ssh root@num-sb1-zynq
-        cd /opt/numurus/ros/share/numurus_rui
-        . ../../setup.bash
-        . prodenv.sh
-        roslaunch numurus_rui rosbridge.launch
-
-        ssh root@num-sb1-zynq
-        cd /opt/numurus/ros/share/numurus_rui
-        . ../../setup.bash
-        . prodenv.sh
-        rosrun numurus_rui run_webserver.py
-
-
-### Automate Start-up
-In final production `rosbridge.launch` should be launched from an include tag in a system launch file. The same is difficult to achieve for the run_webserver.py node, as it requires running from the venv, which can't readily be activated within a launch file. Instead, a start-up script is provided at `numurus_rui/launch/start_rui.sh`. This can be automatically run by installing `systemd` services file `numurus_rui/launch/numurus_rui.service`:
-
-
-        cp /opt/numurus/ros/share/numurus_rui/launch/start_rui.sh /opt/numurus
-        sudo cp /opt/numurus/ros/share/numurus_rui/launch/numurus_rui.service /etc/systemd/system
-        sudo systemctl enable numurus_rui
-
-The `numurus_rui.service` unit requires the `roslaunch.service` provided in the `num_sdk_base` repository to guarantee that `rosbridge` is also launched, so ensure this is also installed and enabled on the taget device.
-
-### Image Source Filter
+## Image Source Filter
 
 The file `img_filter.json` located in the `rui-app` directory can be used to filter the image source topics visible in the UI.  The filter is a regular expression that is tested on the full topic string before adding the image topic to the drop down menus.
 
