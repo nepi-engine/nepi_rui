@@ -4,8 +4,8 @@ import { Link } from "react-router-dom"
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
 
-import logo from "./logo.png"
-import powered_by_nepi from "./powered_by_nepi.png"
+//import logo from "./logos/3dx_logo.png"
+import powered_by_nepi from "./logos/powered_by_nepi.png"
 
 const styles = Styles.Create({
   logo: {
@@ -137,7 +137,7 @@ class Nav extends Component {
             <Columns>
                 <Column>
                   <div style={styles.logo}>
-                    <img src={logo} alt={"logo"} max-width={"50%"} height={"auto"}/>
+                    YOUR LOGO HERE
                   </div>
                 </Column>
                 <Column>
