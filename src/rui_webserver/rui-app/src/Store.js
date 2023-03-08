@@ -20,7 +20,7 @@ const NODE_DISPLAY_NAMES = {
   config_mgr: "Config Manager",
   nav_pos_mgr: "Nav./Pose/GPS",
   network_mgr: "Network",
-  num_darknet_ros_mgr: "Classifier",
+  nepi_darknet_ros_mgr: "Classifier",
   system_mgr: "System",
   time_sync_mgr: "Time Sync",
   trigger_mgr: "Triggering",
@@ -302,7 +302,7 @@ class ROSConnectionStore {
   }
 
   validPrefix() {
-    return this.namespacePrefix && this.deviceType && this.deviceId
+    return this.namespacePrefix && this.deviceId
   }
 
   @action.bound
@@ -317,29 +317,25 @@ class ROSConnectionStore {
       var topic_name_parts = this.topicNames[i].split("/")
       if (
         topic_name_parts[topic_name_parts.length - 1] === "system_status" &&
-        this.topicTypes[i] === "num_sdk_msgs/SystemStatus"
+        this.topicTypes[i] === "nepi_ros_interfaces/SystemStatus"
       ) {
         if (
           this.namespacePrefix !== topic_name_parts[1] &&
-          this.deviceType !== topic_name_parts[2] &&
-          this.deviceId !== topic_name_parts[3]
+          this.deviceId !== topic_name_parts[2]
         ) {
           this.namespacePrefix = topic_name_parts[1]
-          this.deviceType = topic_name_parts[2]
-          this.deviceId = topic_name_parts[3]
+          this.deviceId = topic_name_parts[2]
           if (this.validPrefix()) {
             ret = true
             this.rosLog(
-              `Fetched device info ${this.namespacePrefix}/${this.deviceType}/${
-                this.deviceId
-              }`
+              `Fetched device info ${this.namespacePrefix}/${this.deviceId}`
             )
             // And update the (fixed) classifier image topic
             this.classifierImgTopic = '/'
-            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceType, '/', this.deviceId, CLASSIFIER_IMG_TOPIC_SUFFIX)
+            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceId, CLASSIFIER_IMG_TOPIC_SUFFIX)
 
             this.targLocalizerImgTopic = '/'
-            this.targLocalizerImgTopic = this.targLocalizerImgTopic.concat(this.namespacePrefix, '/', this.deviceType, '/', this.deviceId, TARG_LOCALIZER_IMG_TOPIC_SUFFIX)
+            this.targLocalizerImgTopic = this.targLocalizerImgTopic.concat(this.namespacePrefix, '/', this.deviceId, TARG_LOCALIZER_IMG_TOPIC_SUFFIX)
             break
           }
         }
@@ -408,7 +404,7 @@ class ROSConnectionStore {
       var topic_base = topic_name_parts.join("/")
       if (
         last_element === "status_3dx" &&
-        this.topicTypes[i] === "num_sdk_msgs/Status3DX"
+        this.topicTypes[i] === "nepi_ros_interfaces/Status3DX"
       ) {
         newSensor3DXTopics.push(topic_base)
       }
@@ -433,7 +429,7 @@ class ROSConnectionStore {
       var topic_base = topic_name_parts.join("/")
       if (
         last_element === "reset" &&
-        this.topicTypes[i] === "num_sdk_msgs/Reset"
+        this.topicTypes[i] === "nepi_ros_interfaces/Reset"
       ) {
         newResetTopics.push(topic_base)
       }
@@ -468,7 +464,7 @@ class ROSConnectionStore {
   }
 
   get rosPrefix() {
-    return `/${this.namespacePrefix}/${this.deviceType}/${this.deviceId}`
+    return `/${this.namespacePrefix}/${this.deviceId}`
   }
 
   publishMessage({ name, messageType, data, noPrefix = false }) {
@@ -574,7 +570,7 @@ class ROSConnectionStore {
   setupImageRecognitionListener() {
     this.addListener({
       name: "/fake_image_recognition",
-      messageType: "num_sdk_msgs/Annotation",
+      messageType: "nepi_ros_interfaces/Annotation",
       callback: message => {
         this.imageRecognitions = [message]
       },
@@ -585,7 +581,7 @@ class ROSConnectionStore {
   setupImageSystemStatusListener() {
     this.addListener({
       name: "system_status",
-      messageType: "num_sdk_msgs/SystemStatus",
+      messageType: "nepi_ros_interfaces/SystemStatus",
       callback: message => {
         // turn heartbeat on for half a second
         this.heartbeat = true
@@ -624,7 +620,7 @@ class ROSConnectionStore {
     if (topic) {
       return this.addListener({
         name: topic + "/status_3dx",
-        messageType: "num_sdk_msgs/Status3DX",
+        messageType: "nepi_ros_interfaces/Status3DX",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -635,7 +631,7 @@ class ROSConnectionStore {
   setupRUISettingsListener() {
     this.addListener({
       name: "rui_config_mgr/settings",
-      messageType: "num_sdk_msgs/RUISettings",
+      messageType: "nepi_ros_interfaces/RUISettings",
       callback: message => {
         this.streamingImageQuality = message.streaming_image_quality
         this.nepiHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
@@ -647,7 +643,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.NEPIStatus = await this.callService({
         name: "nepi_status_query",
-        messageType: "num_sdk_msgs/NEPIStatusQuery",
+        messageType: "nepi_ros_interfaces/NEPIStatusQuery",
         msgKey: "status"
       })
       this.NUID = this.NEPIStatus.nuid
@@ -682,9 +678,10 @@ class ROSConnectionStore {
   async callSystemDefsService() {
     this.systemDefs = await this.callService({
       name: "system_defs_query",
-      messageType: "num_sdk_msgs/SystemDefs",
+      messageType: "nepi_ros_interfaces/SystemDefs",
       msgKey: "defs"
     })
+    this.deviceType = this.systemDefs.device_type
     this.deviceSerial = this.systemDefs.device_sn
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
     this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
@@ -693,7 +690,7 @@ class ROSConnectionStore {
   async callImgClassifierListQueryService() {
     this.classifiers = await this.callService({
       name: "img_classifier_list_query",
-      messageType: "num_sdk_msgs/ImageClassifierListQuery",
+      messageType: "nepi_ros_interfaces/ImageClassifierListQuery",
       msgKey: "classifiers"
     })
   }
@@ -702,7 +699,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.ip_query_response = await this.callService({
         name: "ip_addr_query",
-        messageType: "num_sdk_msgs/IPAddrQuery"
+        messageType: "nepi_ros_interfaces/IPAddrQuery"
       })
 
       if (this.connectedToROS) {
@@ -717,7 +714,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.bandwidth_usage_query_response = await this.callService({
         name: "bandwidth_usage_query",
-        messageType: "num_sdk_msgs/BandwidthUsageQuery",
+        messageType: "nepi_ros_interfaces/BandwidthUsageQuery",
       })
 
       if (this.connectedToROS) {
@@ -732,7 +729,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.wifi_query_response = await this.callService({
         name: "wifi_query",
-        messageType: "num_sdk_msgs/WifiQuery",
+        messageType: "nepi_ros_interfaces/WifiQuery",
       })
 
       if (this.connectedToROS) {
@@ -747,7 +744,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.opEnv = await this.callService({
         name: "op_environment_query",
-        messageType: "num_sdk_msgs/OpEnvironmentQuery",
+        messageType: "nepi_ros_interfaces/OpEnvironmentQuery",
         msgKey: "op_env"
       })
 
@@ -765,7 +762,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.triggerStatus = await this.callService({
         name: "trigger_status_query",
-        messageType: "num_sdk_msgs/TriggerStatusQuery",
+        messageType: "nepi_ros_interfaces/TriggerStatusQuery",
         args: {trig_val : this.triggerMask},
         msgKey: "status"
       })
@@ -784,7 +781,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.navPos = await this.callService({
         name: "nav_pos_query",
-        messageType: "num_sdk_msgs/NavPosQuery",
+        messageType: "nepi_ros_interfaces/NavPosQuery",
         msgKey: "nav_pos"
       })
 
@@ -829,7 +826,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.navPosStatus = await this.callService({
         name: "nav_pos_status_query",
-        messageType: "num_sdk_msgs/NavPosStatusQuery",
+        messageType: "nepi_ros_interfaces/NavPosStatusQuery",
         msgKey: "status"
       })
 
@@ -870,7 +867,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.timeStatus = await this.callService({
         name: "time_status_query",
-        messageType: "num_sdk_msgs/TimeStatus",
+        messageType: "nepi_ros_interfaces/TimeStatus",
         msgKey: "time_status"
       })
 
@@ -905,7 +902,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.reportedClassifier = await this.callService({
         name: "img_classifier_status_query",
-        messageType: "num_sdk_msgs/ImageClassifierStatusQuery"
+        messageType: "nepi_ros_interfaces/ImageClassifierStatusQuery"
       })
 
       if (this.connectedToROS) {
@@ -949,7 +946,7 @@ class ROSConnectionStore {
     if(!this.lb_selected_data_sources.includes(topic)) {
       this.publishMessage({
         name: "nepi_edge_ros_bridge/lb/select_data_sources",
-        messageType: "num_sdk_msgs/StringArray",
+        messageType: "nepi_ros_interfaces/StringArray",
         data: { entries: this.lb_selected_data_sources.concat(topic) }
       })
     } else {
@@ -958,7 +955,7 @@ class ROSConnectionStore {
       });
       this.publishMessage({
         name: "nepi_edge_ros_bridge/lb/select_data_sources",
-        messageType: "num_sdk_msgs/StringArray",
+        messageType: "nepi_ros_interfaces/StringArray",
         data: { entries: sources }
       })
     }
@@ -1087,7 +1084,7 @@ class ROSConnectionStore {
 
     this.publishMessage({
       name: "set_periodic_sw_trig",
-      messageType: "num_sdk_msgs/PeriodicSwTrig",
+      messageType: "nepi_ros_interfaces/PeriodicSwTrig",
       data: {
         enabled: freq > 0,
         sw_trig_mask: this.triggerMask,
@@ -1187,7 +1184,7 @@ class ROSConnectionStore {
 
     this.publishMessage({
       name: "save_data",
-      messageType: "num_sdk_msgs/SaveData",
+      messageType: "nepi_ros_interfaces/SaveData",
       data: {
         save_continuous: checked,
         save_raw: false
@@ -1205,7 +1202,7 @@ class ROSConnectionStore {
 
     this.publishMessage({
       name: "save_data_rate",
-      messageType: "num_sdk_msgs/SaveDataRate",
+      messageType: "nepi_ros_interfaces/SaveDataRate",
       data: {
         data_product: "all",
         save_rate_hz: freq,
@@ -1219,7 +1216,7 @@ class ROSConnectionStore {
   startClassifier(selectedImageTopic, selectedClassifier, detectionThreshold) {
     this.publishMessage({
       name: "start_classifier",
-      messageType: "num_sdk_msgs/ClassifierSelection",
+      messageType: "nepi_ros_interfaces/ClassifierSelection",
       data: {
         img_topic: selectedImageTopic,
         classifier: selectedClassifier,
@@ -1265,7 +1262,7 @@ class ROSConnectionStore {
     }
 
     this.publishMessage({
-      name: "num_darknet_ros/set_threshold",
+      name: "nepi_darknet_ros/set_threshold",
       messageType: "std_msgs/Float32",
       data: { data: newThreshold }
     })
@@ -1285,7 +1282,7 @@ class ROSConnectionStore {
   resetCfg({baseTopic, resetVal}) {
     this.publishMessage({
       name: baseTopic + "/reset",
-      messageType: "num_sdk_msgs/Reset",
+      messageType: "nepi_ros_interfaces/Reset",
       data: { reset_type: resetVal },
       noPrefix: true
     })
@@ -1334,7 +1331,7 @@ class ROSConnectionStore {
     if (topic) {
       this.publishMessage({
         name: topic + "/set_" + name,
-        messageType: "num_sdk_msgs/AutoManualSelection3DX",
+        messageType: "nepi_ros_interfaces/AutoManualSelection3DX",
         noPrefix: true,
         data: {
           enabled: checked,
@@ -1354,7 +1351,7 @@ class ROSConnectionStore {
     if (topic) {
       this.publishMessage({
         name: topic + "/set_range",
-        messageType: "num_sdk_msgs/Range3DX",
+        messageType: "nepi_ros_interfaces/Range3DX",
         noPrefix: true,
         data: {
           min_range: min,
@@ -1374,7 +1371,7 @@ class ROSConnectionStore {
     if (topic) {
       this.publishMessage({
         name: topic + "/set_angle",
-        messageType: "num_sdk_msgs/Angle3DX",
+        messageType: "nepi_ros_interfaces/Angle3DX",
         noPrefix: true,
         data: {
           angle_offset: offset,
@@ -1502,7 +1499,7 @@ class ROSConnectionStore {
   onSetFixedHeading(heading_mag_deg) {
     this.publishMessage({
       name: "nav_pos_mgr/set_heading_override",
-      messageType: "num_sdk_msgs/Heading",
+      messageType: "nepi_ros_interfaces/Heading",
       data: {
         heading: parseFloat(heading_mag_deg),
         true_north: false // Hardcoded -- RUI doesn't expose true vs magnetic distinction
@@ -1514,7 +1511,7 @@ class ROSConnectionStore {
   onSetAHRSOffsets(x_trans, y_trans, z_trans, x_rot, y_rot, z_rot) {
     this.publishMessage({
       name: "nav_pos_mgr/set_ahrs_offset",
-      messageType: "num_sdk_msgs/Offset",
+      messageType: "nepi_ros_interfaces/Offset",
       data: {
         translation: {
           x: parseFloat(x_trans),
