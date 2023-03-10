@@ -1300,7 +1300,7 @@ class ROSConnectionStore {
     }
 
     this.publishMessage({
-      name: "nepi_darknet_ros/set_threshold",
+      name: "nepi_darknet_ros_mgr/set_threshold",
       messageType: "std_msgs/Float32",
       data: { data: newThreshold }
     })
