@@ -4,18 +4,15 @@ import { Link } from "react-router-dom"
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
 
-//import logo from "./logos/3dx_logo.png"
-import powered_by_nepi from "./logos/powered_by_nepi.png"
+import logo from "./logos/logo.webp"
+import powered_by_nepi from "./logos/powered_by_nepi.webp"
 
 const styles = Styles.Create({
   logo: {
-    // backgroundColor: Styles.vars.colors.grey0
-    //width: "150px",
-    width: "150px",
-    //height: "40px"
+    width: "100%",
   },
   powered_by_nepi: {
-    width: "150px",
+    width: "100%"
   },
   navItem: {
     display: "inline-block",
@@ -137,12 +134,12 @@ class Nav extends Component {
             <Columns>
                 <Column>
                   <div style={styles.logo}>
-                    YOUR LOGO HERE
+                    <img src={logo} alt={""} height={"auto"}/>
                   </div>
                 </Column>
                 <Column>
                   <div style={styles.powered_by_nepi}>
-                    <img src={powered_by_nepi} alt={"powered_by_nepi"} max-width={"50%"} height={"auto"}/>
+                    <img src={powered_by_nepi} alt={""} height={"auto"}/>
                   </div>
                 </Column>
             </Columns>
