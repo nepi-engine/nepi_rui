@@ -21,7 +21,7 @@ var qr = require("qrcode")
 
 @inject("ros")
 @observer
-class NEPI extends Component {
+class NEPIConnect extends Component {
   constructor(props) {
     super(props)
 
@@ -31,11 +31,11 @@ class NEPI extends Component {
       autoRate: this.props.ros.auto_attempts_per_hour,
       dataSetsPerHour: this.props.ros.lb_data_sets_per_hour,
     }
-    this.renderNEPI = this.renderNEPI.bind(this)
+    this.renderNEPIConnect = this.renderNEPIConnect.bind(this)
     this.renderLBInformation = this.renderLBInformation.bind(this)
     this.renderHBInformation = this.renderHBInformation.bind(this)
     this.renderConnectionSettings = this.renderConnectionSettings.bind(this)
-    this.renderLBLinkSettings = this.renderLBLinkSettings.bind(this)
+    this.renderLBSettings = this.renderLBSettings.bind(this)
     this.renderQR = this.renderQR.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
@@ -71,9 +71,9 @@ class NEPI extends Component {
   }
 
   onKeyText(e) {
-    const {onChangeNEPI} = this.props.ros
+    const {onChangeNEPIConnect} = this.props.ros
     if(e.key === 'Enter'){
-      onChangeNEPI(e.target.dataset.topic, e.target.value)
+      onChangeNEPIConnect(e.target.dataset.topic, e.target.value)
       document.getElementById(e.target.id).style.color = Styles.vars.colors.black
     }
   }
@@ -87,10 +87,10 @@ class NEPI extends Component {
     this.setState({viewableOrder: set})
   }
 
-  renderNEPI() {
+  renderNEPIConnect() {
     const { NUID, alias, log_storage_enabled, onToggleLogStorage } = this.props.ros
     return(
-      <Section title={"NEPI"}>
+      <Section title={"NEPI Connect"}>
         <Label title="NEPI UID">
           <Input
             disabled value= {NUID}
@@ -128,7 +128,7 @@ class NEPI extends Component {
     }
     return(
       <Section title={"LB-Message Info."}>
-        <Label title="Last Link Connection">
+        <Label title="Last Connection">
           <Input
             disabled value= {last}
           />
@@ -160,7 +160,7 @@ class NEPI extends Component {
     }
     return(
       <Section title={"HB-Data Info."}>
-        <Label title="Last Link Connection">
+        <Label title="Last Connection">
           <Input
             disabled value= {last}
           />
@@ -189,38 +189,38 @@ class NEPI extends Component {
   }
 
   renderConnectionSettings() {
-    const { bot_running, lb_enabled, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectNow,
-            onToggleHB, onToggleAutoOffloading, onToggleLB, nepiHbAutoDataOffloadingCheckboxVisible } = this.props.ros
+    const { bot_running, lb_enabled, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectConnectNow,
+            onToggleHB, onToggleAutoOffloading, onToggleLB, nepiHbLinkAutoDataOffloadingCheckboxVisible } = this.props.ros
     return(
       <Section title={"Connection Settings"}>
         <Label title={"Connection in Progress"}>
           <BooleanIndicator value={bot_running} />
         </Label>
         <ButtonMenu>
-          <Button onClick={onNEPIConnectNow}>{"Connect Now"}</Button>
+          <Button onClick={onNEPIConnectConnectNow}>{"Connect Now"}</Button>
         </ButtonMenu>
         <Label title="Auto Rate (Attempts Per Hour)">
           <Input
             id="autoRate"
-            data-topic="nepi_edge_ros_bridge/set_auto_attempts_per_hour"
+            data-topic="nepi_link_ros_bridge/set_auto_attempts_per_hour"
             value= {this.state.autoRate}
             onChange= {this.onUpdateText}
             onKeyDown= {this.onKeyText}
           />
         </Label>
-        <Label title="Enable LB-Message Link">
+        <Label title="Enable LB-Message">
           <Toggle
             checked={lb_enabled}
             onClick={onToggleLB}>
           </Toggle>
         </Label>
-        <Label title="Enable HB-Data Link">
+        <Label title="Enable HB-Data">
           <Toggle
             checked={hb_enabled}
             onClick={onToggleHB}>
           </Toggle>
         </Label>
-        <div hidden={!nepiHbAutoDataOffloadingCheckboxVisible}>
+        <div hidden={!nepiHbLinkAutoDataOffloadingCheckboxVisible}>
           <Label title="Enable HB-Data Auto Offloading">
             <Toggle
               checked={hb_auto_data_offloading_enabled}
@@ -232,8 +232,8 @@ class NEPI extends Component {
     )
   }
 
-  renderLBLinkSettings() {
-    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_kb, onNEPIDataSetNow, onToggleTopic } = this.props.ros
+  renderLBSettings() {
+    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_kb, onNEPIConnectDataSetNow, onToggleTopic } = this.props.ros
     const { viewableTopics, viewableOrder } = this.state
     var sources = []
     var selected_sources = []
@@ -267,15 +267,15 @@ class NEPI extends Component {
       }
     }
       return (
-        <Section title={"LB-Message Link Settings"}>
+        <Section title={"LB-Message Settings"}>
           <ButtonMenu>
-            <Button onClick={onNEPIDataSetNow}>{"Data Set Now"}</Button>
+            <Button onClick={onNEPIConnectDataSetNow}>{"Data Set Now"}</Button>
           </ButtonMenu>
           <Label title="Data Sets per Hour">
             <Input
               value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
               id="dataSetsPerHour"
-              data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
+              data-topic="nepi_link_ros_bridge/lb/set_data_sets_per_hour"
               onChange= {this.onUpdateText}
               onKeyDown= {this.onKeyText}
             />
@@ -335,29 +335,29 @@ class NEPI extends Component {
   }
 
   render() {
-    const { NEPIenabled, onToggleNEPIComms, lb_enabled } = this.props.ros
+    const { NEPIConnectenabled, onToggleNEPIConnectComms, lb_enabled } = this.props.ros
     return (
       <div>
-        <Label title={"Enable/Disable NEPI-COMMS"}>
+        <Label title={"Enable/Disable NEPI Connect"}>
           <Toggle
-            checked={NEPIenabled}
-            onClick={onToggleNEPIComms}>
+            checked={NEPIConnectenabled}
+            onClick={onToggleNEPIConnectComms}>
           </Toggle>
         </Label>
         <Columns>
           <Column>
-              <div hidden={!NEPIenabled}>
-              {this.renderNEPI()}
+              <div hidden={!NEPIConnectenabled}>
+              {this.renderNEPIConnect()}
               {this.renderConnectionSettings()}
               </div>
           </Column>
           <Column>
-            <div hidden={!NEPIenabled}>
+            <div hidden={!NEPIConnectenabled}>
             {this.renderLBInformation()}
             {this.renderHBInformation()}
             </div>
-            <div hidden={!lb_enabled || !NEPIenabled}>
-            {this.renderLBLinkSettings()}
+            <div hidden={!lb_enabled || !NEPIConnectenabled}>
+            {this.renderLBSettings()}
             </div>
           </Column>
         </Columns>
@@ -368,4 +368,4 @@ class NEPI extends Component {
     this.renderQR();
   }
 }
-export default NEPI
+export default NEPIConnect

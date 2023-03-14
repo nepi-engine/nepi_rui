@@ -7,7 +7,7 @@ import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
 //import PageLock from "./PageLock"
 
-import NEPI from "./NEPI"
+import NEPIConnect from "./NEPIConnect"
 import Dashboard from "./Dashboard"
 import CameraApp from "./CameraApp"
 import Sensor3DX from "./Sensor3DX"
@@ -43,8 +43,8 @@ class App extends Component {
               ]
             },
             { path: "/settings", label: "Settings" },
-            { path: "/NEPI", label: "NEPI" },
-            { path: "/software_update", label: "Software"}
+            { path: "/software_update", label: "Software"},
+            { path: "/nepi_connect", label: "NEPI Connect" }
           ]}
         />
         <HorizontalDivider />
@@ -58,7 +58,7 @@ class App extends Component {
             component={props => <Files {...props} />}
           />
           <Route path="/settings" component={Settings} />
-          <Route path="/NEPI" component={NEPI} />
+          <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/software_update" component={SoftwareUpdate} />
         </Switch>
       </Page>

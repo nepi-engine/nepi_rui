@@ -24,7 +24,7 @@ const NODE_DISPLAY_NAMES = {
   system_mgr: "System",
   time_sync_mgr: "Time Sync",
   trigger_mgr: "Triggering",
-  nepi_edge_ros_bridge: "NEPI",
+  nepi_link_ros_bridge: "NEPI Connect",
   gpsd_ros_client: "GPSD Client",
   illumination_mgr: "Illumination"
 }
@@ -209,7 +209,7 @@ class ROSConnectionStore {
   @observable wifi_query_response = null
 
   @observable NUID = "INVALID"
-  @observable NEPIStatus = null
+  @observable NEPIConnectStatus = null
   @observable alias = ""
   @observable bot_running = null
   @observable lb_last_connection_time = null
@@ -225,7 +225,6 @@ class ROSConnectionStore {
   @observable lb_selected_data_sources = null
   @observable lb_comms_types = null
   @observable auto_attempts_per_hour = null
-  @observable link_per_hour = null
   @observable lb_data_queue_size_kb = null
   @observable hb_data_queue_size_mb = null
   @observable hb_auto_data_offloading_enabled = null
@@ -237,7 +236,7 @@ class ROSConnectionStore {
   @observable reportedClassifier = null
 
   @observable streamingImageQuality = 95
-  @observable nepiHbAutoDataOffloadingCheckboxVisible = false
+  @observable nepiLinkHbAutoDataOffloadingCheckboxVisible = false
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -637,39 +636,39 @@ class ROSConnectionStore {
       messageType: "nepi_ros_interfaces/RUISettings",
       callback: message => {
         this.streamingImageQuality = message.streaming_image_quality
-        this.nepiHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
+        this.nepiLinkHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
       }
     })
   }
 
   async callNepiStatusService() {
     const _pollOnce = async () => {
-      this.NEPIStatus = await this.callService({
-        name: "nepi_status_query",
-        messageType: "nepi_ros_interfaces/NEPIStatusQuery",
+      this.NEPIConnectStatus = await this.callService({
+        name: "nepi_link_status_query",
+        messageType: "nepi_ros_interfaces/NEPIConnectStatusQuery",
         msgKey: "status"
       })
-      this.NUID = this.NEPIStatus.nuid
-      this.alias = this.NEPIStatus.alias
-      this.bot_running = this.NEPIStatus.bot_running
-      this.NEPIenabled = this.NEPIStatus.enabled
-      this.lb_last_connection_time = moment.unix(this.NEPIStatus.lb_last_connection_time.secs)
-      this.hb_last_connection_time = moment.unix(this.NEPIStatus.hb_last_connection_time.secs)
-      this.lb_do_msg_count = this.NEPIStatus.lb_do_msg_count
-      this.lb_dt_msg_count = this.NEPIStatus.lb_dt_msg_count
-      this.hb_do_transfered_mb = this.NEPIStatus.hb_do_transfered_mb
-      this.hb_dt_transfered_mb = this.NEPIStatus.hb_dt_transfered_mb
-      this.lb_data_sets_per_hour = this.NEPIStatus.lb_data_sets_per_hour
-      this.lb_enabled = this.NEPIStatus.lb_enabled
-      this.hb_enabled = this.NEPIStatus.hb_enabled
-      this.lb_available_data_sources = this.NEPIStatus.lb_available_data_sources
-      this.lb_selected_data_sources = this.NEPIStatus.lb_selected_data_sources
-      this.lb_comms_types = this.NEPIStatus.lb_comms_types
-      this.auto_attempts_per_hour = this.NEPIStatus.auto_attempts_per_hour
-      this.lb_data_queue_size_kb = this.NEPIStatus.lb_data_queue_size_kb
-      this.hb_data_queue_size_mb = this.NEPIStatus.hb_data_queue_size_mb
-      this.hb_auto_data_offloading_enabled = this.NEPIStatus.hb_auto_data_offloading_enabled
-      this.log_storage_enabled = this.NEPIStatus.log_storage_enabled
+      this.NUID = this.NEPIConnectStatus.nuid
+      this.alias = this.NEPIConnectStatus.alias
+      this.bot_running = this.NEPIConnectStatus.bot_running
+      this.NEPIConnectenabled = this.NEPIConnectStatus.enabled
+      this.lb_last_connection_time = moment.unix(this.NEPIConnectStatus.lb_last_connection_time.secs)
+      this.hb_last_connection_time = moment.unix(this.NEPIConnectStatus.hb_last_connection_time.secs)
+      this.lb_do_msg_count = this.NEPIConnectStatus.lb_do_msg_count
+      this.lb_dt_msg_count = this.NEPIConnectStatus.lb_dt_msg_count
+      this.hb_do_transfered_mb = this.NEPIConnectStatus.hb_do_transfered_mb
+      this.hb_dt_transfered_mb = this.NEPIConnectStatus.hb_dt_transfered_mb
+      this.lb_data_sets_per_hour = this.NEPIConnectStatus.lb_data_sets_per_hour
+      this.lb_enabled = this.NEPIConnectStatus.lb_enabled
+      this.hb_enabled = this.NEPIConnectStatus.hb_enabled
+      this.lb_available_data_sources = this.NEPIConnectStatus.lb_available_data_sources
+      this.lb_selected_data_sources = this.NEPIConnectStatus.lb_selected_data_sources
+      this.lb_comms_types = this.NEPIConnectStatus.lb_comms_types
+      this.auto_attempts_per_hour = this.NEPIConnectStatus.auto_attempts_per_hour
+      this.lb_data_queue_size_kb = this.NEPIConnectStatus.lb_data_queue_size_kb
+      this.hb_data_queue_size_mb = this.NEPIConnectStatus.hb_data_queue_size_mb
+      this.hb_auto_data_offloading_enabled = this.NEPIConnectStatus.hb_auto_data_offloading_enabled
+      this.log_storage_enabled = this.NEPIConnectStatus.log_storage_enabled
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 500)
@@ -952,18 +951,18 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onNEPIConnectNow() {
+  onNEPIConnectConnectNow() {
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/connect_now",
+      name: "nepi_link_ros_bridge/connect_now",
       messageType: "std_msgs/Empty",
       data: {}
     })
   }
 
   @action.bound
-  onNEPIDataSetNow() {
+  onNEPIConnectDataSetNow() {
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/lb/create_data_set_now",
+      name: "nepi_link_ros_bridge/lb/create_data_set_now",
       messageType: "std_msgs/Empty",
       data: {}
     })
@@ -983,7 +982,7 @@ class ROSConnectionStore {
     const topic = e.target.getAttribute("data-topic")
     if(!this.lb_selected_data_sources.includes(topic)) {
       this.publishMessage({
-        name: "nepi_edge_ros_bridge/lb/select_data_sources",
+        name: "nepi_link_ros_bridge/lb/select_data_sources",
         messageType: "nepi_ros_interfaces/StringArray",
         data: { entries: this.lb_selected_data_sources.concat(topic) }
       })
@@ -992,7 +991,7 @@ class ROSConnectionStore {
         return value !== topic
       });
       this.publishMessage({
-        name: "nepi_edge_ros_bridge/lb/select_data_sources",
+        name: "nepi_link_ros_bridge/lb/select_data_sources",
         messageType: "nepi_ros_interfaces/StringArray",
         data: { entries: sources }
       })
@@ -1003,7 +1002,7 @@ class ROSConnectionStore {
   onToggleLB(e) {
     const checked = e.target.checked
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/lb/enable",
+      name: "nepi_link_ros_bridge/lb/enable",
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
@@ -1013,7 +1012,7 @@ class ROSConnectionStore {
   onToggleAutoOffloading(e) {
     const checked = e.target.checked
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/hb/set_auto_data_offloading",
+      name: "nepi_link_ros_bridge/hb/set_auto_data_offloading",
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
@@ -1023,7 +1022,7 @@ class ROSConnectionStore {
   onToggleHB(e) {
     const checked = e.target.checked
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/hb/enable",
+      name: "nepi_link_ros_bridge/hb/enable",
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
@@ -1033,24 +1032,24 @@ class ROSConnectionStore {
   onToggleLogStorage(e) {
     const checked = e.target.checked
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/enable_nepi_log_storage",
+      name: "nepi_link_ros_bridge/enable_nepi_log_storage",
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
   }
 
   @action.bound
-  onToggleNEPIComms(e) {
+  onToggleNEPIConnectComms(e) {
     const checked = e.target.checked
     this.publishMessage({
-      name: "nepi_edge_ros_bridge/enable",
+      name: "nepi_link_ros_bridge/enable",
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
   }
 
   @action.bound
-  onChangeNEPI(topic, value) {
+  onChangeNEPIConnect(topic, value) {
     let rate = parseFloat(value)
     if (isNaN(rate)) {
       rate = 0
