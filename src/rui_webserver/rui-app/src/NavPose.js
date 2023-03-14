@@ -403,7 +403,6 @@ class NavPose extends Component {
               <Input
                 value={(this.state.zRotation !== null) && (this.state.zRotation !== navTransformZRot) ? this.state.zRotation : navTransformZRot}
                 id="ZRotation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled={this.state.manualNavPoseOffsetsDisabled}
@@ -564,9 +563,7 @@ class NavPose extends Component {
             <Label title={"Translation (m)"}/>
             <Label title={"X"}>
               <Input
-                //value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
                 id="PTXTranslation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled
@@ -575,9 +572,7 @@ class NavPose extends Component {
             </Label>
             <Label title={"Y"}>
               <Input
-                //value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
                 id="PTYTranslation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled
@@ -586,9 +581,7 @@ class NavPose extends Component {
             </Label>
             <Label title={"Z"}>
               <Input
-                //value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
                 id="PTZTranslation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled
@@ -600,9 +593,7 @@ class NavPose extends Component {
             <Label title={"Rotation (deg)"}/>
             <Label title={"X"}>
               <Input
-                //value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
                 id="PTXRotation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled
@@ -611,9 +602,7 @@ class NavPose extends Component {
             </Label>
             <Label title={"Y"}>
               <Input
-                //value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
                 id="PTYRotation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled
@@ -622,9 +611,7 @@ class NavPose extends Component {
             </Label>
             <Label title={"Z"}>
               <Input
-                //value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
                 id="PTZRotation"
-                //data-topic="nepi_edge_ros_bridge/lb/set_data_sets_per_hour"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 disabled
