@@ -16,7 +16,7 @@ import CameraViewer from "./CameraViewer"
 
 @inject("ros")
 @observer
-class CameraApp extends Component {
+class DetectionApp extends Component {
   constructor(props) {
     super(props)
     var img = (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
@@ -219,4 +219,4 @@ class CameraApp extends Component {
   }
 }
 
-export default CameraApp
+export default DetectionApp

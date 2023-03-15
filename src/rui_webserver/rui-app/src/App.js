@@ -9,7 +9,7 @@ import HorizontalDivider from "./HorizontalDivider"
 
 import NEPIConnect from "./NEPIConnect"
 import Dashboard from "./Dashboard"
-import CameraApp from "./CameraApp"
+import DetectionApp from "./DetectionApp"
 import Sensor3DX from "./Sensor3DX"
 import NavPose from "./NavPose"
 import Files from "./Files"
@@ -50,7 +50,7 @@ class App extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-          <Route path="/detection" component={CameraApp} />
+          <Route path="/detection" component={DetectionApp} />
           <Route path="/sensor3DX" component={Sensor3DX} />
           <Route path="/navPose" component={NavPose} />
           <Route
