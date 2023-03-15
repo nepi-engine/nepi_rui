@@ -18,7 +18,7 @@ const EULER_ORDER_FOR_CANNON = "YZX" // Only supported angle ordering for Cannon
 const NODE_DISPLAY_NAMES = {
   stereo_cam_mgr: "Stereo Camera",
   config_mgr: "Config Manager",
-  nav_pos_mgr: "Nav./Pose/GPS",
+  nav_pose_mgr: "Nav./Pose/GPS",
   network_mgr: "Network",
   nepi_darknet_ros_mgr: "Classifier",
   system_mgr: "System",
@@ -149,23 +149,23 @@ class ROSConnectionStore {
   @observable clockNTP = false
   @observable clockPPS = false
 
-  @observable navPos = null
-  @observable navPosLocationLat = null
-  @observable navPosLocationLng = null
-  @observable navPosLocationAlt = null
-  @observable navPosDirectionHeadingDeg = null
-  @observable navPosDirectionSpeedMpS = null
-  @observable navPosOrientationYawAngle = null
-  @observable navPosOrientationYawRate = null
-  @observable navPosOrientationPitchAngle = null
-  @observable navPosOrientationPitchRate = null
-  @observable navPosOrientationRollAngle = null
-  @observable navPosOrientationRollRate = null
+  @observable navPose = null
+  @observable navPoseLocationLat = null
+  @observable navPoseLocationLng = null
+  @observable navPoseLocationAlt = null
+  @observable navPoseDirectionHeadingDeg = null
+  @observable navPoseDirectionSpeedMpS = null
+  @observable navPoseOrientationYawAngle = null
+  @observable navPoseOrientationYawRate = null
+  @observable navPoseOrientationPitchAngle = null
+  @observable navPoseOrientationPitchRate = null
+  @observable navPoseOrientationRollAngle = null
+  @observable navPoseOrientationRollRate = null
 
-  @observable navPosStatus = null
-  @observable navPosGPSIsFixed = false
-  @observable navPosOrientationIsFixed = false
-  @observable navPosHeadingIsFixed = false
+  @observable navPoseStatus = null
+  @observable navPoseGPSIsFixed = false
+  @observable navPoseOrientationIsFixed = false
+  @observable navPoseHeadingIsFixed = false
   @observable lastNavSatFix = null
   @observable navSatFixRate = null
   @observable lastImu = null
@@ -545,8 +545,8 @@ class ROSConnectionStore {
     this.startPollingWifiQueryService()
     this.startPollingOpEnvironmentQueryService()
     this.startPollingTriggerStatusQueryService()
-    this.startPollingNavPosService()
-    this.startPollingNavPosStatusService()
+    this.startPollingNavPoseService()
+    this.startPollingNavPoseStatusService()
     this.startPollingTimeStatusService()
     this.startPollingImgClassifierStatusQueryService()
   }
@@ -814,42 +814,42 @@ class ROSConnectionStore {
     _pollOnce()
   }
 
-  startPollingNavPosService() {
+  startPollingNavPoseService() {
     const _pollOnce = async () => {
-      this.navPos = await this.callService({
-        name: "nav_pos_query",
-        messageType: "nepi_ros_interfaces/NavPosQuery",
-        msgKey: "nav_pos"
+      this.navPose = await this.callService({
+        name: "nav_pose_query",
+        messageType: "nepi_ros_interfaces/NavPoseQuery",
+        msgKey: "nav_pose"
       })
 
-      this.navPosLocationLat = this.navPos.fix.latitude
-      this.navPosLocationLng = this.navPos.fix.longitude
-      this.navPosLocationAlt = this.navPos.fix.altitude
-      this.navPosDirectionHeadingDeg = this.navPos.heading
+      this.navPoseLocationLat = this.navPose.fix.latitude
+      this.navPoseLocationLng = this.navPose.fix.longitude
+      this.navPoseLocationAlt = this.navPose.fix.altitude
+      this.navPoseDirectionHeadingDeg = this.navPose.heading
 
       // magnitude of linear_velocity?
-      let { x, y, z } = this.navPos.linear_velocity
-      this.navPosDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
+      let { x, y, z } = this.navPose.linear_velocity
+      this.navPoseDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)
 
-      this.navPosOrientationYawRate = this.navPos.angular_velocity.z * (180/Math.PI)
-      this.navPosOrientationPitchRate = this.navPos.angular_velocity.y * (180/Math.PI)
-      this.navPosOrientationRollRate = this.navPos.angular_velocity.x * (180/Math.PI)
+      this.navPoseOrientationYawRate = this.navPose.angular_velocity.z * (180/Math.PI)
+      this.navPoseOrientationPitchRate = this.navPose.angular_velocity.y * (180/Math.PI)
+      this.navPoseOrientationRollRate = this.navPose.angular_velocity.x * (180/Math.PI)
 
       const q = new cannon.Quaternion(
-        this.navPos.orientation.x,
-        this.navPos.orientation.y,
-        this.navPos.orientation.z,
-        this.navPos.orientation.w
+        this.navPose.orientation.x,
+        this.navPose.orientation.y,
+        this.navPose.orientation.z,
+        this.navPose.orientation.w
       )
       const vec = new cannon.Vec3()
       // cannon exception says "Euler order XYZ not supported yet,:" so we must switch X and Z manually here
       //q.toEuler(vec, "XYZ")
       q.toEuler(vec, EULER_ORDER_FOR_CANNON)
-      //this.navPosOrientationYawAngle = vec.z * (180/Math.PI)
-      this.navPosOrientationYawAngle = vec.x * (180/Math.PI)
-      this.navPosOrientationPitchAngle = vec.y * (180/Math.PI)
-      //this.navPosOrientationRollAngle = vec.x * (180/Math.PI)
-      this.navPosOrientationRollAngle = vec.z * (180/Math.PI)
+      //this.navPoseOrientationYawAngle = vec.z * (180/Math.PI)
+      this.navPoseOrientationYawAngle = vec.x * (180/Math.PI)
+      this.navPoseOrientationPitchAngle = vec.y * (180/Math.PI)
+      //this.navPoseOrientationRollAngle = vec.x * (180/Math.PI)
+      this.navPoseOrientationRollAngle = vec.z * (180/Math.PI)
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 500)
@@ -859,32 +859,32 @@ class ROSConnectionStore {
     _pollOnce()
   }
 
-  startPollingNavPosStatusService() {
+  startPollingNavPoseStatusService() {
     const _pollOnce = async () => {
-      this.navPosStatus = await this.callService({
-        name: "nav_pos_status_query",
-        messageType: "nepi_ros_interfaces/NavPosStatusQuery",
+      this.navPoseStatus = await this.callService({
+        name: "nav_pose_status_query",
+        messageType: "nepi_ros_interfaces/NavPoseStatusQuery",
         msgKey: "status"
       })
 
-      this.navPosGPSIsFixed = this.navPosStatus.lat_lon_alt_is_fixed
-      this.lastNavSatFix = this.navPosStatus.last_nav_sat_fix
-      this.navSatFixRate = this.navPosStatus.nav_sat_fix_rate
-      this.navPosOrientationIsFixed = this.navPosStatus.orientation_is_fixed
-      this.lastImu = this.navPosStatus.last_imu
-      this.imuRate = this.navPosStatus.imu_rate
-      this.navPosHeadingIsFixed = this.navPosStatus.heading_is_fixed
-      this.navSrcFrame = this.navPosStatus.transform.header.frame_id
-      this.navTargetFrame = this.navPosStatus.transform.child_frame_id
-      this.navTransformXTrans = this.navPosStatus.transform.transform.translation.x
-      this.navTransformYTrans = this.navPosStatus.transform.transform.translation.y
-      this.navTransformZTrans = this.navPosStatus.transform.transform.translation.z
+      this.navPoseGPSIsFixed = this.navPoseStatus.lat_lon_alt_is_fixed
+      this.lastNavSatFix = this.navPoseStatus.last_nav_sat_fix
+      this.navSatFixRate = this.navPoseStatus.nav_sat_fix_rate
+      this.navPoseOrientationIsFixed = this.navPoseStatus.orientation_is_fixed
+      this.lastImu = this.navPoseStatus.last_imu
+      this.imuRate = this.navPoseStatus.imu_rate
+      this.navPoseHeadingIsFixed = this.navPoseStatus.heading_is_fixed
+      this.navSrcFrame = this.navPoseStatus.transform.header.frame_id
+      this.navTargetFrame = this.navPoseStatus.transform.child_frame_id
+      this.navTransformXTrans = this.navPoseStatus.transform.transform.translation.x
+      this.navTransformYTrans = this.navPoseStatus.transform.transform.translation.y
+      this.navTransformZTrans = this.navPoseStatus.transform.transform.translation.z
 
       const q = new cannon.Quaternion(
-        this.navPosStatus.transform.transform.translation.x,
-        this.navPosStatus.transform.transform.translation.y,
-        this.navPosStatus.transform.transform.translation.z,
-        this.navPosStatus.transform.transform.translation.w
+        this.navPoseStatus.transform.transform.translation.x,
+        this.navPoseStatus.transform.transform.translation.y,
+        this.navPoseStatus.transform.transform.translation.z,
+        this.navPoseStatus.transform.transform.translation.w
       )
       const vec = new cannon.Vec3()
       q.toEuler(vec, EULER_ORDER_FOR_CANNON)
@@ -1456,7 +1456,7 @@ class ROSConnectionStore {
   @action.bound
   onEnableFixedOrientation(enable) {
     this.publishMessage({
-      name: "nav_pos_mgr/enable_attitude_override",
+      name: "nav_pose_mgr/enable_attitude_override",
       messageType: "std_msgs/Bool",
       data: { data: enable }
     })
@@ -1465,7 +1465,7 @@ class ROSConnectionStore {
   @action.bound
   onEnableFixedHeading(enable) {
     this.publishMessage({
-      name: "nav_pos_mgr/enable_heading_override",
+      name: "nav_pose_mgr/enable_heading_override",
       messageType: "std_msgs/Bool",
       data: { data: enable }
     })
@@ -1476,7 +1476,7 @@ class ROSConnectionStore {
     var q = new cannon.Quaternion()
     q.setFromEuler(roll_deg * (Math.PI/180), pitch_deg * (Math.PI/180), yaw_deg * (Math.PI/180), EULER_ORDER_FOR_CANNON) // Use YZX order because that's the only one available for the reverse operation
     this.publishMessage({
-      name: "nav_pos_mgr/set_attitude_override",
+      name: "nav_pose_mgr/set_attitude_override",
       messageType: "geometry_msgs/QuaternionStamped",
       data: {
         header: {
@@ -1535,7 +1535,7 @@ class ROSConnectionStore {
   @action.bound
   onSetFixedHeading(heading_mag_deg) {
     this.publishMessage({
-      name: "nav_pos_mgr/set_heading_override",
+      name: "nav_pose_mgr/set_heading_override",
       messageType: "nepi_ros_interfaces/Heading",
       data: {
         heading: parseFloat(heading_mag_deg),
@@ -1547,7 +1547,7 @@ class ROSConnectionStore {
   @action.bound
   onSetAHRSOffsets(x_trans, y_trans, z_trans, x_rot, y_rot, z_rot) {
     this.publishMessage({
-      name: "nav_pos_mgr/set_ahrs_offset",
+      name: "nav_pose_mgr/set_ahrs_offset",
       messageType: "nepi_ros_interfaces/Offset",
       data: {
         translation: {

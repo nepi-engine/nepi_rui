@@ -35,9 +35,9 @@ class NavPose extends Component {
       zRotation: null
     }
 
-    this.renderFixedNavPos = this.renderFixedNavPos.bind(this)
-    this.renderExternalNavPos = this.renderExternalNavPos.bind(this)
-    this.renderCurrentNavPos = this.renderCurrentNavPos.bind(this)
+    this.renderFixedNavPose = this.renderFixedNavPose.bind(this)
+    this.renderExternalNavPose = this.renderExternalNavPose.bind(this)
+    this.renderCurrentNavPose = this.renderCurrentNavPose.bind(this)
     this.renderPanTilt = this.renderPanTilt.bind(this)
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
@@ -183,8 +183,8 @@ class NavPose extends Component {
   }
 
   async onToggleFixedPositionData() {
-    const {onEnableFixedGPS, navPosGPSIsFixed} = this.props.ros
-    var enabled = !navPosGPSIsFixed
+    const {onEnableFixedGPS, navPoseGPSIsFixed} = this.props.ros
+    var enabled = !navPoseGPSIsFixed
     onEnableFixedGPS(enabled)
 
     if (false === enabled) {
@@ -194,8 +194,8 @@ class NavPose extends Component {
   }
 
   async onToggleFixedOrientationData() {
-    const {onEnableFixedOrientation, navPosOrientationIsFixed} = this.props.ros
-    var enabled = !navPosOrientationIsFixed
+    const {onEnableFixedOrientation, navPoseOrientationIsFixed} = this.props.ros
+    var enabled = !navPoseOrientationIsFixed
     onEnableFixedOrientation(enabled)
 
     if (false === enabled) {
@@ -204,8 +204,8 @@ class NavPose extends Component {
   }
 
   async onToggleFixedHeadingData() {
-    const {onEnableFixedHeading, navPosHeadingIsFixed} = this.props.ros
-    var enabled = !navPosHeadingIsFixed
+    const {onEnableFixedHeading, navPoseHeadingIsFixed} = this.props.ros
+    var enabled = !navPoseHeadingIsFixed
     onEnableFixedHeading(enabled)
 
     if (false === enabled) {
@@ -218,7 +218,7 @@ class NavPose extends Component {
     this.setState({manualNavPoseOffsetsDisabled: !disabled})
   }
 
-  renderFixedNavPos() {
+  renderFixedNavPose() {
     return (
       <Section title={"Fixed NAV/POSE Data"}>
         <Columns>
@@ -226,7 +226,7 @@ class NavPose extends Component {
             <Label title={"Fixed Location"}>
               <Toggle
                 onClick={this.onToggleFixedPositionData}
-                checked={this.props.ros.navPosGPSIsFixed}
+                checked={this.props.ros.navPoseGPSIsFixed}
               />
             </Label>
             <Label title={"Latitude"}>
@@ -236,7 +236,7 @@ class NavPose extends Component {
                 data-topic="set_gps_fix"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={!(this.props.ros.navPosGPSIsFixed)}
+                disabled={!(this.props.ros.navPoseGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
@@ -247,7 +247,7 @@ class NavPose extends Component {
                 data-topic="set_gps_fix"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={!(this.props.ros.navPosGPSIsFixed)}
+                disabled={!(this.props.ros.navPoseGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
@@ -258,14 +258,14 @@ class NavPose extends Component {
                 data-topic="set_gps_fix"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={!(this.props.ros.navPosGPSIsFixed)}
+                disabled={!(this.props.ros.navPoseGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
             <Label title={"Fixed Heading"}>
               <Toggle
                 onClick={this.onToggleFixedHeadingData}
-                checked={this.props.ros.navPosHeadingIsFixed}
+                checked={this.props.ros.navPoseHeadingIsFixed}
               />
             </Label>
           </Column>
@@ -273,51 +273,51 @@ class NavPose extends Component {
             <Label title={"Fixed Orientation"}>
               <Toggle
                 onClick={this.onToggleFixedOrientationData}
-                checked={this.props.ros.navPosOrientationIsFixed}
+                checked={this.props.ros.navPoseOrientationIsFixed}
               />
             </Label>
             <Label title={"Roll (deg)"}>
               <Input
                 value={this.state.fixedRoll !== null ? this.state.fixedRoll : "0"}
                 id="FixedRoll"
-                data-topic="nav_pos_mgr/set_attitude_override"
+                data-topic="nav_pose_mgr/set_attitude_override"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={!(this.props.ros.navPosOrientationIsFixed)}
+                disabled={!(this.props.ros.navPoseOrientationIsFixed)}
               />
             </Label>
             <Label title={"Pitch (deg)"}>
               <Input
                 value={this.state.fixedPitch !== null ? this.state.fixedPitch : "0"}
                 id="FixedPitch"
-                data-topic="nav_pos_mgr/set_attitude_override"
+                data-topic="nav_pose_mgr/set_attitude_override"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={!(this.props.ros.navPosOrientationIsFixed)}
+                disabled={!(this.props.ros.navPoseOrientationIsFixed)}
               />
             </Label>
             <Label title={"Yaw (deg)"}>
               <Input
                 value={this.state.fixedYaw !== null ? this.state.fixedYaw : "0"}
                 id="FixedYaw"
-                data-topic="nav_pos_mgr/set_attitude_override"
+                data-topic="nav_pose_mgr/set_attitude_override"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={!(this.props.ros.navPosOrientationIsFixed)}
+                disabled={!(this.props.ros.navPoseOrientationIsFixed)}
               />
             </Label>
             <Label title={"Heading (deg)"}>
               <Input
                 value={this.state.fixedHeading !== null ? this.state.fixedHeading : "0"}
                 id="FixedHeading"
-                data-topic="nav_pos_mgr/set_heading_override"
+                data-topic="nav_pose_mgr/set_heading_override"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
                 style={{width: "60%"}}
-                disabled={!(this.props.ros.navPosHeadingIsFixed)}
+                disabled={!(this.props.ros.navPoseHeadingIsFixed)}
               />
             </Label>
           </Column>
@@ -326,7 +326,7 @@ class NavPose extends Component {
     )
   }
 
-  renderExternalNavPos() {
+  renderExternalNavPose() {
     const {
       navSrcFrame,
       navTargetFrame,
@@ -434,19 +434,19 @@ class NavPose extends Component {
     )
   }
 
-  renderCurrentNavPos() {
+  renderCurrentNavPose() {
     const {
-      navPosDirectionHeadingDeg,
-      navPosDirectionSpeedMpS,
-      navPosLocationLat,
-      navPosLocationLng,
-      navPosLocationAlt,
-      navPosOrientationYawAngle,
-      navPosOrientationYawRate,
-      navPosOrientationPitchAngle,
-      navPosOrientationPitchRate,
-      navPosOrientationRollAngle,
-      navPosOrientationRollRate,
+      navPoseDirectionHeadingDeg,
+      navPoseDirectionSpeedMpS,
+      navPoseLocationLat,
+      navPoseLocationLng,
+      navPoseLocationAlt,
+      navPoseOrientationYawAngle,
+      navPoseOrientationYawRate,
+      navPoseOrientationPitchAngle,
+      navPoseOrientationPitchRate,
+      navPoseOrientationRollAngle,
+      navPoseOrientationRollRate,
     } = this.props.ros
     return (
       <Section title={"Nav/Pose Output"}>
@@ -458,28 +458,28 @@ class NavPose extends Component {
             <Label title={"Latitude"}>
               <Input
                 disabled
-                value={round(navPosLocationLat, 6)}
+                value={round(navPoseLocationLat, 6)}
                 style={{ width: "80%" }}
               />
             </Label>
             <Label title={"Longitude"}>
               <Input
                 disabled
-                value={round(navPosLocationLng, 6)}
+                value={round(navPoseLocationLng, 6)}
                 style={{ width: "80%" }}
               />
             </Label>
             <Label title={"Altitude (m)"}>
               <Input
                 disabled
-                value={round(navPosLocationAlt, 2)}
+                value={round(navPoseLocationAlt, 2)}
                 style={{ width: "80%" }}
               />
             </Label>
             <Label title={"Speed (m/s)"}>
               <Input
                 disabled
-                value={round(navPosDirectionSpeedMpS, 2)}
+                value={round(navPoseDirectionSpeedMpS, 2)}
                 style={{ width: "80%" }}
               />
             </Label>
@@ -500,43 +500,43 @@ class NavPose extends Component {
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
-                value={round(navPosOrientationYawAngle, 3)}
+                value={round(navPoseOrientationYawAngle, 3)}
               />
               <Input
                 disabled
                 style={{ width: "45%" }}
-                value={round(navPosOrientationYawRate, 3)}
+                value={round(navPoseOrientationYawRate, 3)}
               />
             </Label>
             <Label title={"Pitch"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
-                value={round(navPosOrientationPitchAngle, 3)}
+                value={round(navPoseOrientationPitchAngle, 3)}
               />
               <Input
                 disabled
                 style={{ width: "45%" }}
-                value={round(navPosOrientationPitchRate, 3)}
+                value={round(navPoseOrientationPitchRate, 3)}
               />
             </Label>
             <Label title={"Yaw"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
-                value={round(navPosOrientationRollAngle, 3)}
+                value={round(navPoseOrientationRollAngle, 3)}
               />
               <Input
                 disabled
                 style={{ width: "45%" }}
-                value={round(navPosOrientationRollRate, 3)}
+                value={round(navPoseOrientationRollRate, 3)}
               />
             </Label>
             <Label title={"Heading (deg)"}>
               <Input
                 disabled
                 style={{ width: "80%" }}
-                value={round(navPosDirectionHeadingDeg, 2)}
+                value={round(navPoseDirectionHeadingDeg, 2)}
               />
             </Label>
           </Column>
@@ -647,11 +647,11 @@ class NavPose extends Component {
     return (
       <Columns>
         <Column>
-          {this.renderCurrentNavPos()}
-          {this.renderExternalNavPos()}
+          {this.renderCurrentNavPose()}
+          {this.renderExternalNavPose()}
         </Column>
         <Column>
-          {this.renderFixedNavPos()}
+          {this.renderFixedNavPose()}
           {this.renderPanTilt()}
         </Column>
       </Columns>
@@ -662,11 +662,11 @@ class NavPose extends Component {
 /*
 <Columns>
   <Column>
-    {this.renderCurrentNavPos()}
-    {this.renderExternalNavPos()}
+    {this.renderCurrentNavPose()}
+    {this.renderExternalNavPose()}
   </Column>
   <Column>
-    {this.renderFixedNavPos()}
+    {this.renderFixedNavPose()}
     {this.renderPanTilt()}
   </Column>
 </Columns>
