@@ -9,6 +9,7 @@ export const Create = function(rules) {
 }
 
 export const colors = {
+  nepi_blue: "#002C45",
   black: "#1c1d20",
   white: "#ffffff",
   orange: "#ffd000",
