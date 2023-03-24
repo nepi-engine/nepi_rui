@@ -30,8 +30,7 @@
     "react-toggle": "4.0.2",
     "react-typography": "0.16.13",
     "roslib": "0.20.0",
-    "typography": "0.16.17",
-    "typography-theme-noriega": "0.15.10"
+    "typography": "0.16.17"
   },
   "scripts": {
     "start": "PORT=3006 react-app-rewired start",

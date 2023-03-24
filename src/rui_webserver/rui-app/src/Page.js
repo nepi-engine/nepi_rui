@@ -1,7 +1,7 @@
 import React from "react"
 import { TypographyStyle, GoogleFont } from "react-typography"
 import Typography from "typography"
-import theme from "typography-theme-noriega"
+import theme from "./nepi-rui-typography-theme"
 
 import Styles from "./Styles"
 
