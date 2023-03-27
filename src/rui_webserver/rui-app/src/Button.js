@@ -1,4 +1,4 @@
-import React from "react"
+import React, { Component } from "react"
 
 import Styles from "./Styles"
 
@@ -11,25 +11,63 @@ const styles = Styles.Create({
     padding: `${Styles.vars.spacing.xs} ${Styles.vars.spacing.small}`,
     color: Styles.vars.colors.black
   },
+  buttonDown: {
+    border: "none",
+    textAlign: "center",
+    backgroundColor: Styles.vars.colors.blue,
+    cursor: "pointer",
+    padding: `${Styles.vars.spacing.xs} ${Styles.vars.spacing.small}`,
+    color: Styles.vars.colors.black    
+  },
   menuContainer: {
     marginTop: Styles.vars.spacing.small,
     textAlign: "right"
   }
 })
 
-const Button = props => {
-  const { style, children } = props
+class Button extends Component {
+  constructor(props) {
+    super(props)
+  
+    this.state = {
+      actualStyle: {
+        ...styles.button,
+        ...this.props.style
+      }
+    }
 
-  const actualStyle = {
-    ...styles.button,
-    ...style
+    this.onButtonDown = this.onButtonDown.bind(this)
+    this.onButtonUp = this.onButtonUp.bind(this)
   }
 
-  return (
-    <button {...props} style={actualStyle}>
-      {children}
-    </button>
-  )
+  onButtonDown() {
+    const { style } = this.props
+    this.setState({
+      actualStyle: {
+        ...styles.buttonDown,
+        ...style,
+      }
+    })
+  }
+
+  onButtonUp() {
+    const { style } = this.props
+    this.setState({
+      actualStyle: {
+        ...style,
+        ...styles.button
+      }
+    })
+  }
+
+  render (){
+    const { children } = this.props
+    return (
+      <button {...this.props} style={this.state.actualStyle} onMouseDown={this.onButtonDown} onMouseUp={this.onButtonUp}>
+        {children}
+      </button>
+    )
+  }
 }
 
 export default Button
