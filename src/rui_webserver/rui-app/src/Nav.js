@@ -68,25 +68,46 @@ class SubNavMenu extends Component {
 
   render() {
     const { active, subItems } = this.props
+
+    var subitemActive = false
+    for (const sub in subItems) {
+      if (subItems[sub].path === window.location.pathname) {
+        subitemActive = true
+        break
+      }
+    }
+    
     const style = {
       ...styles.navItem,
-      ...(active ? styles.activeNavItem : {}),
+      /*...(active? styles.activeNavItem : {}),*/
       position: "relative"
     }
+
+    const activeStyle = {
+      ...styles.navItem,
+      ...styles.activeNavItem,
+      position: "relative"
+    }
+
+    const activeAbsoluteStyle = {
+      ...styles.activeNavItem
+    }
+
     const subStyle = {
       ...styles.navItem,
       ...styles.subNavItem
     }
 
     return (
-      <div style={style} onMouseEnter={this.showMenu}>
-        <div>{this.props.label}</div>
+
+      <div style={(active || subitemActive)? activeStyle : style} onMouseEnter={this.showMenu} /*onMouseLeave={this.closeMenu}*/>
+        <div style={(active || subitemActive)? activeAbsoluteStyle : {}}>{this.props.label}</div>
         {this.state.showMenu ? (
           <ul style={subStyle}>
             {subItems.map(({ path, label }) => {
               return (
                 <li>
-                  <Link style={style} to={path}>
+                  <Link style={(path === window.location.pathname)? activeStyle : style} to={path}>
                     {" "}
                     {label}{" "}
                   </Link>
