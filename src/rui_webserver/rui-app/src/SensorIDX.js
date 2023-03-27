@@ -14,19 +14,19 @@ import createShortUniqueValues from "./Utilities"
 @inject("ros")
 @observer
 
-// Sensor3DX Application page
-class Sensor3DX extends Component {
+// SensorIDX Application page
+class SensorIDX extends Component {
   constructor(props) {
     super(props)
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
-    this.onTopic3DXSelected = this.onTopic3DXSelected.bind(this)
+    this.onTopicIDXSelected = this.onTopicIDXSelected.bind(this)
     this.createTopicOptions = this.createTopicOptions.bind(this)
 
     this.state = {
-      // 3DX Sensor topic to subscribe to and update
-      topic3DX: (props.ros.sensor3DXTopics.length === 1)? props.ros.sensor3DXTopics[0] : null,
-      topic3DXText: (props.ros.sensor3DXTopics.length === 1)? createShortUniqueValues(props.ros.sensor3DXTopics)[0] : null,
+      // IDX Sensor topic to subscribe to and update
+      topicIDX: (props.ros.sensor3DXTopics.length === 1)? props.ros.sensor3DXTopics[0] : null,
+      topicIDXText: (props.ros.sensor3DXTopics.length === 1)? createShortUniqueValues(props.ros.sensor3DXTopics)[0] : null,
 
       // image topics and names for the quad image display
       // these are not an array because state values are not
@@ -66,15 +66,15 @@ class Sensor3DX extends Component {
     return items
   }
 
-  // Handler for 3DX Sensor topic selection
-  onTopic3DXSelected(event) {
+  // Handler for IDX Sensor topic selection
+  onTopicIDXSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value
 
     this.setState({
-      topic3DX: value,
-      topic3DXText: idx === 0 ? null : text,
+      topicIDX: value,
+      topicIDXText: idx === 0 ? null : text,
       imageTopic_0: idx === 0 ? null : this.props.ros.sensor3DXTopics[idx - 1].concat("/img_0/image_raw"),
       imageText_0: idx === 0 ? null : "img_0/image_raw",
       imageTopic_1: idx === 0 ? null : this.props.ros.sensor3DXTopics[idx - 1].concat("/alt/image_raw"),
@@ -156,11 +156,11 @@ class Sensor3DX extends Component {
             */ }
           </Column>
           <Column>
-            <Section title={"3DX Sensor"}>
-              <Label title={"3DX Sensor Selection"}>
+            <Section title={"IDX Sensor"}>
+              <Label title={"IDX Sensor Selection"}>
                 <Select
-                  onChange={this.onTopic3DXSelected}
-                  value={this.state.topic3DX}
+                  onChange={this.onTopicIDXSelected}
+                  value={this.state.topicIDX}
                 >
                   {this.createTopicOptions(sensor3DXTopics)}
                 </Select>
@@ -171,8 +171,8 @@ class Sensor3DX extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_0}
                 >
-                  {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
+                  {this.state.topicIDX
+                    ? this.createTopicOptions(imageTopics3DX, this.state.topicIDX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -183,8 +183,8 @@ class Sensor3DX extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_1}
                 >
-                  {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
+                  {this.state.topicIDX
+                    ? this.createTopicOptions(imageTopicsIDX, this.state.topicIDX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -194,8 +194,8 @@ class Sensor3DX extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_2}
                 >
-                  {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
+                  {this.state.topicIDX
+                    ? this.createTopicOptions(imageTopicsIDX, this.state.topicIDX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -205,8 +205,8 @@ class Sensor3DX extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_3}
                 >
-                  {this.state.topic3DX
-                    ? this.createTopicOptions(imageTopics3DX, this.state.topic3DX)
+                  {this.state.topicIDX
+                    ? this.createTopicOptions(imageTopicsIDX, this.state.topicIDX)
                     : NoneOption}
                 </Select>
               </Label>
@@ -216,15 +216,14 @@ class Sensor3DX extends Component {
               </Label>
             </Section>
             <Control3DX
-              topic={this.state.topic3DX}
-              title={this.state.topic3DXText}
+              topic={this.state.topicIDX}
+              title={this.state.topicIDXText}
             />
           </Column>
         </Columns>
-
       </React.Fragment>
     )
   }
 }
 
-export default Sensor3DX
+export default SensorIDX

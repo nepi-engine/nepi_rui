@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Route, Switch, withRouter } from "react-router-dom"
+import { Route, Switch, withRouter, Link } from "react-router-dom"
 import { observer, inject } from "mobx-react"
 
 import Page from "./Page"
@@ -10,9 +10,8 @@ import HorizontalDivider from "./HorizontalDivider"
 import NEPIConnect from "./NEPIConnect"
 import Dashboard from "./Dashboard"
 import DetectionApp from "./DetectionApp"
-import Sensor3DX from "./Sensor3DX"
+import SensorIDX from "./SensorIDX"
 import NavPose from "./NavPose"
-import Files from "./Files"
 import Settings from "./Settings"
 import SoftwareUpdate from "./SoftwareUpdate"
 
@@ -34,32 +33,69 @@ class App extends Component {
           pages={[
             { path: "/", label: "Dashboard" },
             {
+              path: "/input",
+              label: "Input",
+              subItems: [
+                { path: "/imagery", label: "Imagery" },
+                { path: "/navPose", label: "NavPose" }
+              ]
+            },
+            {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/detection", label: "Detection" },
-                { path: "/sensor3DX", label: "3DX" },
-                { path: "/navPose", label: "Nav/Pose" }
+                { path: "/ai", label: "AI" },
+                { path: "/automation", label: "Automation"},
               ]
             },
-            { path: "/settings", label: "Settings" },
-            { path: "/software_update", label: "Software"},
-            { path: "/nepi_connect", label: "NEPI Connect" }
+            {
+              path: "/setup",
+              label: "Setup",
+              subItems: [
+                { path: "/settings", label: "Settings" },
+                { path: "/software_update", label: "Software"}
+              ]
+            },
+            { path: "/nepi_connect", label: "Connect" },
+            {
+              path: "/help",
+              label: "Help",
+              subItems: [
+                { path: "/faq", label: "FAQ" },
+                { path: "/youtube", label: "Youtube" },
+                { path: "/manuals", label: "Manuals" },
+                { path: "/systemLogs", label: "System Logs" },
+                { path: "/license", label: "License"}
+              ]
+            }
           ]}
         />
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-          <Route path="/detection" component={DetectionApp} />
-          <Route path="/sensor3DX" component={Sensor3DX} />
+          <Route path="/imagery" component={SensorIDX} />
           <Route path="/navPose" component={NavPose} />
-          <Route
-            path="/files/:path*"
-            component={props => <Files {...props} />}
-          />
+          <Route path="/ai" component={DetectionApp} />
+          { /*<Route path="/automation" component={Automation} />*/ }
           <Route path="/settings" component={Settings} />
-          <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/software_update" component={SoftwareUpdate} />
+          <Route path="/nepi_connect" component={NEPIConnect} />
+
+          <Route path="/faq">
+            <Link to={{ pathname: "http://numurus.com" }} target="_blank">
+              Click for Online FAQ (will open in new tab)
+            </Link>
+          </Route>
+          <Route path="/youtube">
+            <Link to={{ pathname: "http://youtube.com" }} target="_blank">
+              Click for Numurus YouTube Channel (will open in new tab)
+            </Link>
+          </Route>
+          <Route path="/manuals">
+            <Link to={{ pathname: "http://numurus.com" }} target="_blank">
+              Click for Online Manuals (will open in new tab)
+            </Link>
+          </Route>
         </Switch>
       </Page>
     )
