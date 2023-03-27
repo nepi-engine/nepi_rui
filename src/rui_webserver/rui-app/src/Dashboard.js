@@ -13,8 +13,8 @@ import Styles from "./Styles"
 // TODO: This is redundant with the one defined in APP.js
 const IS_LOCAL = window.location.hostname === "localhost"
 
-function round(value, decimals = 0) {
-  return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+function roundWithSuffix(value, decimals, suffix) {
+  return value && (value.toFixed(decimals) + " " + suffix)
 }
 
 @inject("ros")
@@ -148,7 +148,7 @@ class Dashboard extends Component {
       heartbeat,
       systemStatusDiskUsageMB,
       systemStatusTempC,
-      systemDefsDiskCapacity,
+      systemDefsDiskCapacityMB,
       diskUsagePercent
     } = this.props.ros
 
@@ -157,21 +157,21 @@ class Dashboard extends Component {
         <Label title={"Heartbeat"}>
           <BooleanIndicator value={heartbeat} />
         </Label>
-
-        <Label title={"Temp (C)"}>
-          <Input disabled value={round(systemStatusTempC, 2)} />
+        
+        <Label title={"Temperature"}>
+          <Input disabled value={roundWithSuffix(systemStatusTempC, 1, "\u00B0C")} />
         </Label>
 
         <Label title={"Storage"}>
           <Input disabled value={diskUsagePercent} />
         </Label>
 
-        <Label title={"Capacity (MB)"}>
-          <Input disabled value={systemDefsDiskCapacity} />
+        <Label title={"Capacity"}>
+          <Input disabled value={roundWithSuffix(systemDefsDiskCapacityMB / 1000.0, 1, "GB")} />
         </Label>
 
-        <Label title={"Used (MB)"}>
-          <Input disabled value={round(systemStatusDiskUsageMB)} />
+        <Label title={"Used"}>
+          <Input disabled value={roundWithSuffix(systemStatusDiskUsageMB / 1000.0, 1, "GB")} />
         </Label>
       </Section>
     )
@@ -214,8 +214,8 @@ class Dashboard extends Component {
         <Label title={"Save Freq. (Hz)"}>
           <Input id="saveFreqInput" value={this.state.saveFreq} onChange={this.onUpdateSaveFreqText} onKeyDown= {this.onKeySaveFreqText} />
         </Label>
-        <Label title={"Data Rate (MB/s)"}>
-          <Input disabled value={round(systemStatusDiskRate, 3)} />
+        <Label title={"Data Rate"}>
+          <Input disabled value={roundWithSuffix(systemStatusDiskRate, 3, "MB/s")} />
         </Label>
         <Label title={"File Name Prefix"}>
           <Input

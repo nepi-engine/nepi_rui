@@ -131,7 +131,7 @@ class ROSConnectionStore {
 
   @observable systemDefs = null
   @observable systemDefsFirmwareVersion = null
-  @observable systemDefsDiskCapacity = null
+  @observable systemDefsDiskCapacityMB = null
 
   @observable systemSoftwareStatus = null
 
@@ -601,7 +601,7 @@ class ROSConnectionStore {
         }
 
         this.diskUsagePercent = `${parseInt(
-          100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacity,
+          100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacityMB,
           10
         )}%`
 
@@ -686,7 +686,7 @@ class ROSConnectionStore {
     this.deviceType = this.systemDefs.device_type
     this.deviceSerial = this.systemDefs.device_sn
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
-    this.systemDefsDiskCapacity = this.systemDefs.disk_capacity
+    this.systemDefsDiskCapacityMB = this.systemDefs.disk_capacity
   }
 
   @action.bound
