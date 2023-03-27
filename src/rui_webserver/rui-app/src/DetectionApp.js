@@ -164,6 +164,9 @@ class DetectionApp extends Component {
     const {
       reportedClassifier
     } = this.props.ros
+
+    const detectionThreshPercentageString = (this.state.detectionThreshold * 100.0).toFixed(0) + "%"
+    
     return (
       <Columns>
         <Column equalWidth={false}>
@@ -197,7 +200,7 @@ class DetectionApp extends Component {
             <Label title={"Detection Threshold"}>
               <Input
                 disabled={true}
-                value={this.state.detectionThreshold}
+                value={detectionThreshPercentageString}
               />
               <Slider
                 defaultValue={this.state.detectionThreshold}
