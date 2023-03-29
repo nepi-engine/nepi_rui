@@ -20,7 +20,7 @@ const styles = Styles.Create({
     marginRight: Styles.vars.spacing.small,
     textTransform: "uppercase",
     cursor: "pointer",
-    textDecoration: "underline"
+    textDecoration: "underline",
   },
   activeNavItem: {
     color: Styles.vars.colors.blue,
@@ -29,7 +29,7 @@ const styles = Styles.Create({
   subNavItem: {
     backgroundColor: Styles.vars.colors.grey2,
     position: "absolute",
-    marginTop: Styles.vars.spacing.small,
+    marginTop: 0,
     marginLeft: 0,
     marginRight: Styles.vars.spacing.small,
     left: 0,
@@ -100,7 +100,7 @@ class SubNavMenu extends Component {
 
     return (
 
-      <div style={(active || subitemActive)? activeStyle : style} onMouseEnter={this.showMenu} /*onMouseLeave={this.closeMenu}*/>
+      <div style={(active || subitemActive)? activeStyle : style} onMouseEnter={this.showMenu} onMouseLeave={this.closeMenu}>
         <div style={(active || subitemActive)? activeAbsoluteStyle : {}}>{this.props.label}</div>
         {this.state.showMenu ? (
           <ul style={subStyle}>
