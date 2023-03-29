@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Route, Switch, withRouter, Link } from "react-router-dom"
+import { Route, Switch, withRouter } from "react-router-dom"
 import { observer, inject } from "mobx-react"
 
 import Page from "./Page"
@@ -14,6 +14,7 @@ import SensorIDX from "./SensorIDX"
 import NavPose from "./NavPose"
 import Settings from "./Settings"
 import SoftwareUpdate from "./SoftwareUpdate"
+import Help from "./Help"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -33,8 +34,8 @@ class App extends Component {
           pages={[
             { path: "/", label: "Dashboard" },
             {
-              path: "/input",
-              label: "Input",
+              path: "/sensors",
+              label: "Sensors",
               subItems: [
                 { path: "/imagery", label: "Imagery" },
                 { path: "/navPose", label: "NavPose" }
@@ -48,25 +49,18 @@ class App extends Component {
                 { path: "/automation", label: "Automation"},
               ]
             },
+            { path: "/nepi_connect", label: "Connect" },
             {
-              path: "/setup",
-              label: "Setup",
+              path: "/system",
+              label: "System",
               subItems: [
-                { path: "/settings", label: "Settings" },
+                { path: "/admin", label: "Admin" },
                 { path: "/software_update", label: "Software"}
               ]
             },
-            { path: "/nepi_connect", label: "Connect" },
-            {
-              path: "/help",
+            { 
+              path: "/help", 
               label: "Help",
-              subItems: [
-                { path: "/faq", label: "FAQ" },
-                { path: "/youtube", label: "Youtube" },
-                { path: "/manuals", label: "Manuals" },
-                { path: "/systemLogs", label: "System Logs" },
-                { path: "/license", label: "License"}
-              ]
             }
           ]}
         />
@@ -77,25 +71,10 @@ class App extends Component {
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
           { /*<Route path="/automation" component={Automation} />*/ }
-          <Route path="/settings" component={Settings} />
+          <Route path="/admin" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
-
-          <Route path="/faq">
-            <Link to={{ pathname: "http://numurus.com" }} target="_blank">
-              Click for Online FAQ (will open in new tab)
-            </Link>
-          </Route>
-          <Route path="/youtube">
-            <Link to={{ pathname: "http://youtube.com" }} target="_blank">
-              Click for Numurus YouTube Channel (will open in new tab)
-            </Link>
-          </Route>
-          <Route path="/manuals">
-            <Link to={{ pathname: "http://numurus.com" }} target="_blank">
-              Click for Online Manuals (will open in new tab)
-            </Link>
-          </Route>
+          <Route path="/help" component={Help} />
         </Switch>
       </Page>
     )

@@ -55,7 +55,8 @@ export const fontSize = {
 
 export const lineHeights = {
   regular: em(1.5),
-  small: em(1.25)
+  small: em(1.25),
+  xl: em(3)
 }
 
 export default {
