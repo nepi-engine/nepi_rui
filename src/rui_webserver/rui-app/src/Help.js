@@ -20,7 +20,7 @@ const Help = () => {
           </Link>
         </div>
         <div>
-          <Link to={{ pathname: "http://youtube.com" }} target="_blank" style={styles.link_style}>
+          <Link to={{ pathname: "http://youtube.com/@Numurus" }} target="_blank" style={styles.link_style}>
               Numurus YouTube Channel (will open in new tab)
             </Link>
         </div>
@@ -30,7 +30,7 @@ const Help = () => {
           </Link>
         </div>
         <div>
-          <Link to={{ pathname: "nepi_license.html" }} target="_blank" style={styles.link_style}>
+          <Link to={{ pathname: "Numurus - Software License Terms.html" }} target="_blank" style={styles.link_style}>
             NEPI license (will open in a new tab)
           </Link>
         </div>
