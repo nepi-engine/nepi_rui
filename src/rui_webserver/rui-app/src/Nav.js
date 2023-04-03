@@ -152,7 +152,7 @@ class Nav extends Component {
       <div style={styles.root}>
         <Columns>
           <Column>
-            <Columns>
+            <Columns alignColumns={"flex-end" /* Bottom-justified logo images */}>
                 <Column>
                   <div style={styles.logo}>
                     <img src={logo} alt={""} height={"auto"}/>
