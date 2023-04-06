@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-import Toggle from "react-toggle"
+//import Toggle from "react-toggle"
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -8,7 +8,8 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 
 import CameraViewer from "./CameraViewer"
-import Control3DX from "./Control3DX"
+//import Control3DX from "./Control3DX"
+import ControlIDX from "./ControlIDX"
 import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
@@ -22,24 +23,37 @@ class SensorIDX extends Component {
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onTopicIDXSelected = this.onTopicIDXSelected.bind(this)
     this.createTopicOptions = this.createTopicOptions.bind(this)
+    this.createImageOptions = this.createImageOptions.bind(this)
 
+    const idxSensorNamespaces = Object.keys(props.ros.idxSensors)
+    const idxSensorCount = idxSensorNamespaces.length
+    var defaultImageTopic = null
+    var defaultImageText = null
+
+    if (idxSensorCount === 1) {
+      const sensorNamespace = idxSensorNamespaces[0]
+      const capabilities = props.ros.idxSensors[sensorNamespace]
+      if (capabilities !== null) {
+        if (capabilities.has_color_2d_image) {
+          defaultImageTopic = sensorNamespace.concat("/idx/color_2d_image")
+          defaultImageText = 'Color 2D'
+        }
+        else if (capabilities.has_bw_2d_image) {
+          defaultImageTopic = sensorNamespace.concat("/idx/bw_2d_image")
+          defaultImageText = 'B&W 2D'
+        }
+        // TODO: Other image types as a default?
+      }
+    }
+
+    
     this.state = {
       // IDX Sensor topic to subscribe to and update
-      topicIDX: (props.ros.sensor3DXTopics.length === 1)? props.ros.sensor3DXTopics[0] : null,
-      topicIDXText: (props.ros.sensor3DXTopics.length === 1)? createShortUniqueValues(props.ros.sensor3DXTopics)[0] : null,
-
-      // image topics and names for the quad image display
-      // these are not an array because state values are not
-      // mutable, making dealing with an array in the state
-      // object obnoxious
-      imageTopic_0: (props.ros.sensor3DXTopics.length === 1)? props.ros.sensor3DXTopics[0].concat("/img_0/image_raw") : null,
-      imageText_0: (props.ros.sensor3DXTopics.length === 1)? "img_0/image_raw" : null,
-      imageTopic_1: null,
-      imageText_1: null,
-      imageTopic_2: null,
-      imageText_2: null,
-      imageTopic_3: null,
-      imageText_3: null
+      currentIDXNamespace: (idxSensorCount === 1)? idxSensorNamespaces[0] : null,
+      currentIDXNamespaceText: (idxSensorCount === 1)? createShortUniqueValues([idxSensorNamespaces[0]]) : "No sensor selected",
+      
+      imageTopic_0: defaultImageTopic,
+      imageText_0: defaultImageText
     }
   }
 
@@ -66,23 +80,65 @@ class SensorIDX extends Component {
     return items
   }
 
+  createImageOptions(idxSensorNamespace) {
+    var items = []
+    items.push(<Option>{"None"}</Option>)
+
+    const capabilities = this.props.ros.idxSensors[idxSensorNamespace]
+    if (capabilities !== null) {
+      if (capabilities.has_color_2d_image === true) {
+        items.push(<Option value={idxSensorNamespace.concat('/idx/color_2d_image')}>{'Color 2D'}</Option>)
+      }
+      if (capabilities.has_bw_2d_image === true) {
+        items.push(<Option value={idxSensorNamespace.concat('/idx/bw_2d_image')}>{'B&W 2D'}</Option>)
+      }
+      if (capabilities.has_depth_map === true) {
+        items.push(<Option value={idxSensorNamespace.concat('/idx/depth_map')}>{'Depth Map'}</Option>)
+      }
+      if (capabilities.has_depth_image === true) {
+        items.push(<Option value={idxSensorNamespace.concat('/idx/depth_image')}>{'Depth Image'}</Option>)
+      }
+      if (capabilities.has_pointcloud_image === true) {
+        items.push(<Option value={idxSensorNamespace.concat('/idx/pointcloud_image')}>{'Pointcloud Img'}</Option>)
+      }
+    }
+    return items    
+  }
+
   // Handler for IDX Sensor topic selection
   onTopicIDXSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value
 
+    // Handle the "None" option -- always index 0
+    if (idx === 0) {
+      this.setState({
+        currentIDXNamespace: null,
+        currentIDXNamespaceText: "No sensor selected",
+        imageTopic_0: null,
+        imageText_0: null        
+      })
+      return
+    }
+
+    var autoSelectedImgTopic = null
+    var autoSelectedImgTopicText = null
+    const capabilities = this.props.ros.idxSensors[value]
+    if (capabilities.has_color_2d_image) {
+      autoSelectedImgTopic = value.concat("/idx/color_2d_image")
+      autoSelectedImgTopicText = 'Color 2D'
+    }
+    else if (capabilities.has_bw_2d_image) {
+      autoSelectedImgTopic = value.concat("/idx/bw_2d_image")
+      autoSelectedImgTopicText = 'B&W 2D'      
+    }
+
     this.setState({
-      topicIDX: value,
-      topicIDXText: idx === 0 ? null : text,
-      imageTopic_0: idx === 0 ? null : this.props.ros.sensor3DXTopics[idx - 1].concat("/img_0/image_raw"),
-      imageText_0: idx === 0 ? null : "img_0/image_raw",
-      imageTopic_1: idx === 0 ? null : this.props.ros.sensor3DXTopics[idx - 1].concat("/alt/image_raw"),
-      imageText_1: idx === 0 ? null : "alt/image_raw",
-      imageTopic_2: idx === 0 ? null : this.props.ros.sensor3DXTopics[idx - 1].concat("/img_1/image_raw"),
-      imageText_2: idx === 0 ? null : "img_1/image_raw",
-      imageTopic_3: null,
-      imageText_3: null
+      currentIDXNamespace: value,
+      currentIDXNamespaceText: text,
+      imageTopic_0: autoSelectedImgTopic,
+      imageText_0: autoSelectedImgTopicText
     })
   }
 
@@ -92,38 +148,14 @@ class SensorIDX extends Component {
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value
 
-    switch (event.currentTarget.id) {
-      case "topicSelect_0":
-        this.setState({
-          imageTopic_0: value,
-          imageText_0: text === "None" ? null : text
-        })
-        break
-      case "topicSelect_1":
-        this.setState({
-          imageTopic_1: value,
-          imageText_1: text === "None" ? null : text
-        })
-        break
-      case "topicSelect_2":
-        this.setState({
-          imageTopic_2: value,
-          imageText_2: text === "None" ? null : text
-        })
-        break
-      case "topicSelect_3":
-        this.setState({
-          imageTopic_3: value,
-          imageText_3: text === "None" ? null : text
-        })
-        break
-      default:
-        console.warn("Unexpected target ID: " + event.currentTarget.id)
-    }
+    this.setState({
+      imageTopic_0: value,
+      imageText_0: text === "None" ? null : text
+    })
   }
 
   render() {
-    const { sensor3DXTopics, imageTopics3DX, deviceInWater, onToggleDeviceInWater } = this.props.ros
+    const { idxSensors, /*sensor3DXTopics*, imageTopics3DX,*/ deviceInWater, onToggleDeviceInWater } = this.props.ros
     const NoneOption = <Option>None</Option>
 
     return (
@@ -135,34 +167,15 @@ class SensorIDX extends Component {
               title={this.state.imageText_0}
               hideQualitySelector={false}
             />
-            { /* TODO: Restore when we are ready for dynamically sized and positioned multi-view
-            <CameraViewer
-              imageTopic={this.state.imageTopic_2}
-              title={this.state.imageText_2}
-              hideQualitySelector={true}
-            />
-          </Column>
-          <Column>
-            <CameraViewer
-              imageTopic={this.state.imageTopic_1}
-              title={this.state.imageText_1}
-              hideQualitySelector={true}
-            />
-            <CameraViewer
-              imageTopic={this.state.imageTopic_3}
-              title={this.state.imageText_3}
-              hideQualitySelector={true}
-            />
-            */ }
           </Column>
           <Column>
             <Section title={"IDX Sensor"}>
               <Label title={"IDX Sensor Selection"}>
                 <Select
                   onChange={this.onTopicIDXSelected}
-                  value={this.state.topicIDX}
+                  value={this.state.currentIDXNamespace}
                 >
-                  {this.createTopicOptions(sensor3DXTopics)}
+                  {this.createTopicOptions(Object.keys(idxSensors))}
                 </Select>
               </Label>
               <Label title={"Selected Image"}>
@@ -171,53 +184,20 @@ class SensorIDX extends Component {
                   onChange={this.onImageTopicSelected}
                   value={this.state.imageTopic_0}
                 >
-                  {this.state.topicIDX
-                    ? this.createTopicOptions(imageTopics3DX, this.state.topicIDX)
+                  {this.state.currentIDXNamespace
+                    ? this.createImageOptions(this.state.currentIDXNamespace)
                     : NoneOption}
                 </Select>
               </Label>
-              { /* TODO: Restore when we are ready for dynamically sized and positioned multi-view
-              <Label title={"Selected Image 2"}>
-                <Select
-                  id="topicSelect_1"
-                  onChange={this.onImageTopicSelected}
-                  value={this.state.imageTopic_1}
-                >
-                  {this.state.topicIDX
-                    ? this.createTopicOptions(imageTopicsIDX, this.state.topicIDX)
-                    : NoneOption}
-                </Select>
-              </Label>
-              <Label title={"Selected Image 3"}>
-                <Select
-                  id="topicSelect_2"
-                  onChange={this.onImageTopicSelected}
-                  value={this.state.imageTopic_2}
-                >
-                  {this.state.topicIDX
-                    ? this.createTopicOptions(imageTopicsIDX, this.state.topicIDX)
-                    : NoneOption}
-                </Select>
-              </Label>
-              <Label title={"Selected Image 4"}>
-                <Select
-                  id="topicSelect_3"
-                  onChange={this.onImageTopicSelected}
-                  value={this.state.imageTopic_3}
-                >
-                  {this.state.topicIDX
-                    ? this.createTopicOptions(imageTopicsIDX, this.state.topicIDX)
-                    : NoneOption}
-                </Select>
-              </Label>
-              */ }
+              {/*
               <Label title={"In Water"}>
                 <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
               </Label>
+                  */}
             </Section>
-            <Control3DX
-              topic={this.state.topicIDX}
-              title={this.state.topicIDXText}
+            <ControlIDX
+              idxSensorNamespace={this.state.currentIDXNamespace}
+              title={this.state.currentIDXNamespaceText}
             />
           </Column>
         </Columns>

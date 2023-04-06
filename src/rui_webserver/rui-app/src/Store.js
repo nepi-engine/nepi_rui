@@ -193,6 +193,7 @@ class ROSConnectionStore {
   @observable imageTopicsDetection = []
   @observable imageTopics3DX = []
   @observable sensor3DXTopics = []
+  @observable idxSensors = {}
   @observable resetTopics = []
 
   @observable imageFilterDetection = null
@@ -290,11 +291,12 @@ class ROSConnectionStore {
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
         var newSensor3DXs = this.updateSensor3DXTopics()
+        var newSensorIDXs = this.updateIDXSensorList()
         var newResettables = this.updateResetTopics()
         var newDetectionImageTopics = this.updateDetectionImageTopics()
         var new3DXImageTopics = this.update3DXImageTopics()
 
-        if (newPrefix || newSensor3DXs || newResettables || newDetectionImageTopics || new3DXImageTopics) {
+        if (newPrefix || newSensor3DXs || newSensorIDXs || newResettables || newDetectionImageTopics || new3DXImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -422,6 +424,32 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  updateIDXSensorList() {
+    var idx_sensors_changed = false
+    var sensors_detected = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicNames[i].includes("/idx/")) {
+        const idx_sensor_namespace = this.topicNames[i].split("/idx")[0]
+        sensors_detected.push(idx_sensor_namespace)
+        if (!(idx_sensor_namespace in this.idxSensors)) {
+          //this.idxSensors[idx_sensor_namespace] = null // Initialize an empty object
+          idx_sensors_changed = true
+          this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Will update this.idxSensors upon successful call
+        }
+      }
+    }
+
+    // Now clean out any sensors that are no longer detected
+    for (const key in Object.keys(this.idxSensors)) {
+      if (!(key in sensors_detected)) {
+        delete this.idxSensors[key]
+        idx_sensors_changed = true
+      }
+    }
+    return idx_sensors_changed
+  }
+
+  @action.bound
   updateResetTopics() {
     var newResetTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
@@ -505,7 +533,7 @@ class ROSConnectionStore {
     return new Promise(resolve => {
       const client = new ROS.Service({
         ros: this.ros,
-        name: `${this.rosPrefix}/${name}`,
+        name: name.startsWith('/')? name : `${this.rosPrefix}/${name}`,
         serviceType: messageType
       })
       const request = new ROS.ServiceRequest(args)
@@ -630,6 +658,18 @@ class ROSConnectionStore {
     }
   }
 
+  setupIDXStatusListener(idxSensorNamespace, callback) {
+    if (idxSensorNamespace) {
+      return this.addListener({
+        name: idxSensorNamespace + "/idx/status",
+        messageType: "nepi_ros_interfaces/IDXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
   setupRUISettingsListener() {
     this.addListener({
       name: "rui_config_mgr/settings",
@@ -687,6 +727,15 @@ class ROSConnectionStore {
     this.deviceSerial = this.systemDefs.device_sn
     this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
     this.systemDefsDiskCapacityMB = this.systemDefs.disk_capacity
+  }
+
+  @action.bound
+  async callIDXCapabilitiesQueryService(idxSensorNamespace) {
+    const capabilities = await this.callService({
+      name: idxSensorNamespace + "/idx/capabilities_query",
+      messageType: "nepi_ros_interfaces/IDXCapabilitiesQuery",  
+    })
+    this.idxSensors[idxSensorNamespace] = capabilities
   }
 
   @action.bound
@@ -1352,6 +1401,25 @@ class ROSConnectionStore {
     }
     this.last3DXUpdate = now
     return false
+  }
+
+  publishValue(
+    topic,
+    msgType,
+    value,
+    throttle = true,
+    noPrefix = false,
+  ) {
+    if (throttle && this.isThrottled()) {
+      return
+    }
+
+    this.publishMessage({
+      name: topic,
+      messageType: msgType,
+      data: {data: Number(value)},
+      noPrefix: noPrefix,
+    })
   }
 
   publishAutoManualSelection3DX(
