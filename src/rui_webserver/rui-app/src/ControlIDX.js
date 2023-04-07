@@ -145,6 +145,7 @@ class ControlIDX extends Component {
           max={100}
           disabled={this.state.disabled}
           tooltip={"Adjustable contrast"}
+          unit={"%"}
         />
         : null}
 
@@ -159,7 +160,8 @@ class ControlIDX extends Component {
             max={100}
             disabled={this.state.disabled}
             tooltip={"Adjustable brightness"}
-      />
+            unit={"%"}
+        />
         : null}
 
         {(capabilities && capabilities.adjustable_thresholding)?
@@ -173,6 +175,7 @@ class ControlIDX extends Component {
             max={100}
             disabled={this.state.disabled}
             tooltip={"Adjustable thresholding"}
+            unit={"%"}
         />
         : null}
 
