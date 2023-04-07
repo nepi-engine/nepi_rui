@@ -132,14 +132,19 @@ class SliderAdjustment extends Component {
     // Indicates discrete step size for slider bar. Automatically set to 1 if stepMapping is defined
     step: PropTypes.Number,
     
-    invisibleSlider: PropTypes.Bool
+    // Makes the slider invisible for keyboard/joystick controlled incrementers
+    invisibleSlider: PropTypes.Bool,
+
+    // Provides a suffix for the text box
+    unit: PropTypes.string
   }
   
   defaultProps = {
     step: 1,
     markSteps: false,
     invisibleSlider: false,
-    scaled: 1
+    scaled: 1,
+    unit: " "
   }
 
   constructor(props) {
@@ -167,7 +172,7 @@ class SliderAdjustment extends Component {
       return this.props.onSliderChangeOverride(new_value)
     }
     
-    var value_to_publish
+    var value_to_publish = new_value * this.props.scaled
     if (this.props.stepMapping)
     {
       if (this.props.publishStepIndex)
@@ -238,6 +243,9 @@ class SliderAdjustment extends Component {
       this.props.adjustment : Math.round((this.props.adjustment/this.props.scaled) * roundingVal) / roundingVal
     var newInputVal = this.props.stepMapping?
       this.props.stepMapping[newSliderVal] : newSliderVal
+    if (this.props.unit) {
+      newInputVal = newInputVal.toString() + this.props.unit
+    }
 
     return (
       <div style={{ display: "flex", ...styles.root, ...marginStyle}}>
@@ -265,7 +273,6 @@ class SliderAdjustment extends Component {
         <Input
           style={(this.props.invisibleSlider === true)? styles.invisible_slider_input : styles.input}
           disabled={true}
-          backgroundOverride={Styles.vars.colors.white}
           value={newInputVal}
         />
       </div>
