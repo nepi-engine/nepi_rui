@@ -231,9 +231,6 @@ class ROSConnectionStore {
   @observable hb_auto_data_offloading_enabled = null
   @observable log_storage_enabled = null
 
-
-  //@observable reportedClassifierImg = "Uninitialized"
-  //@observable reportedClassifierName = "Uninitialized"
   @observable reportedClassifier = null
 
   @observable streamingImageQuality = 95
@@ -1335,22 +1332,6 @@ class ROSConnectionStore {
       name: "remove_ip_addr",
       messageType: "std_msgs/String",
       data: { data: addr }
-    })
-  }
-
-  @action.bound
-  updateDetectionThreshold(newThreshold, throttle = true)
-  {
-    // Re-use the 3DX throttler here -- no reason to create a new one,
-    // as the desired slider bar throttling is the same
-    if (throttle && this.isThrottled()) {
-      return
-    }
-
-    this.publishMessage({
-      name: "nepi_darknet_ros_mgr/set_threshold",
-      messageType: "std_msgs/Float32",
-      data: { data: newThreshold }
     })
   }
 
