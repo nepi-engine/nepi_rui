@@ -60,6 +60,14 @@ class Button extends Component {
     })
   }
 
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (prevProps.style.backgroundColor !== this.props.style.backgroundColor) {
+      this.setState({
+        actualStyle: this.props.style
+      })
+    }
+  }
+
   render (){
     const { children } = this.props
     return (
