@@ -155,7 +155,7 @@ class SensorIDX extends Component {
   }
 
   render() {
-    const { idxSensors, /*sensor3DXTopics*, imageTopics3DX,*/ deviceInWater, onToggleDeviceInWater } = this.props.ros
+    const { idxSensors, /*sensor3DXTopics*, imageTopics3DX, deviceInWater, onToggleDeviceInWater */ } = this.props.ros
     const NoneOption = <Option>None</Option>
 
     return (

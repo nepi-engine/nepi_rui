@@ -1,7 +1,6 @@
-import React, { Component } from "react"
+import React from "react"
 
 import Styles from "./Styles"
-import Button from "./Button"
 import Input from "./Input"
 
 const styles = Styles.Create({
@@ -39,6 +38,7 @@ export const ColoredTextIndicator = props => {
   const { indicator_color, style, text } = props
 
   const actualStyle = {
+    ...styles.base,
     ...indicator_color,
     ...style
   }
