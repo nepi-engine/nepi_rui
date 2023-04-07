@@ -2,6 +2,7 @@ import React from "react"
 
 import Styles from "./Styles"
 import Input from "./Input"
+import Button from "./Button"
 
 const styles = Styles.Create({
   base: {
@@ -33,6 +34,22 @@ export const indicator_colors = Styles.Create({
     color: Styles.vars.colors.white
   }
 })
+
+export const ColoredIndicator = props => {
+  const { indicator_color, style } = props
+
+  const actualStyle = {
+    ...styles.base,
+    ...indicator_color,
+    ...style
+  }
+
+  return (
+    <Button {...props} style={actualStyle} disabled>
+      {" "}
+    </Button>
+  )
+}
 
 export const ColoredTextIndicator = props => {
   const { indicator_color, style, text } = props
