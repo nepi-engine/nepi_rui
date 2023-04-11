@@ -739,7 +739,7 @@ class ROSConnectionStore {
   async callSystemSoftwareStatusQueryService() {
     this.systemSoftwareStatus = await this.callService({
       name: "sw_update_status_query",
-      messageType: "num_sdk_msgs/SystemSoftwareStatusQuery"
+      messageType: "nepi_ros_interfaces/SystemSoftwareStatusQuery"
     })
   }
 
