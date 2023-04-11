@@ -1,0 +1,28 @@
+.Automation {
+    text-align: center;
+  }
+  
+  .automation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .listboxes-container {
+    display: flex;
+    justify-content: space-between;
+    width: 40%; /* Adjust this value according to your desired spacing */
+    margin-bottom: 20px; /* Add some space between the listboxes container and the inputs container */
+  }
+  
+  .ListBox {
+    flex: 1;
+    margin: 0 20px; /* Increase the spacing between the listboxes */
+  }
+  
+  .inputs-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  

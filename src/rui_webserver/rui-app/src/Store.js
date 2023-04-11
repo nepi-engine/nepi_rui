@@ -236,6 +236,14 @@ class ROSConnectionStore {
   @observable streamingImageQuality = 95
   @observable nepiLinkHbAutoDataOffloadingCheckboxVisible = false
 
+  @observable scripts = []
+  @observable running_scripts = []
+  @observable scriptEnabled = false
+  @observable launchScript = false
+  @observable stopScript = false
+  @observable scriptStatus = null
+  @observable systemStats = null
+
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
@@ -574,6 +582,15 @@ class ROSConnectionStore {
     this.startPollingNavPoseStatusService()
     this.startPollingTimeStatusService()
     this.startPollingImgClassifierStatusQueryService()
+
+    // automation manager services
+    this.startPollingGetScriptsService()  // populate listbox with files
+    this.startPollingGetRunningScriptsService()  // populate listbox with active files
+    //this.startPollingSetScriptEnabledService() // set scripts enabled to be true or false
+    //this.startPollingLaunchScriptService() // invoke script execution
+    //this.startPollingStopScriptService() // stop script execution
+    //this.startPollingGetScriptStatusQueryService() // get status of script
+    //this.startPollingGetSystemStatsQueryService() // get script and system status
   }
 
   @action.bound
@@ -996,6 +1013,106 @@ class ROSConnectionStore {
     _pollOnce()
   }
 
+  async startPollingGetScriptsService() {
+    const _pollOnce = async () => {
+      this.scripts = await this.callService({
+        name: "get_scripts",
+        messageType: "nepi_ros_interfaces/GetScriptsQuery"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 5000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingGetRunningScriptsService() {
+    const _pollOnce = async () => {
+      this.running_scripts = await this.callService({
+        name: "get_running_scripts",
+        messageType: "nepi_ros_interfaces/GetRunningScriptsQuery"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 5000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingSetScriptEnabledService() {
+    const _pollOnce = async () => {
+      this.scriptEnabled = await this.callService({
+        name: "set_script_enabled",
+        messageType: "nepi_ros_interfaces/SetScriptEnabled"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startLaunchScriptService(item) {
+    const _pollOnce = async () => {
+      this.launchScript = await this.callService({
+        name: "launch_script",
+        messageType: "nepi_ros_interfaces/LaunchScript",
+        args: {script : item}
+      })
+    }
+    _pollOnce()
+  }
+
+
+  async stopLaunchScriptService(item) {
+    const _pollOnce = async () => {
+      this.stopScript = await this.callService({
+        name: "stop_script",
+        messageType: "nepi_ros_interfaces/StopScript",
+        args: {script : item}
+      })
+    }
+    _pollOnce()
+  }
+
+  async startPollingGetScriptStatusQueryService() {
+    const _pollOnce = async () => {
+      this.scriptStatus = await this.callService({
+        name: "get_script_status",
+        messageType: "nepi_ros_interfaces/GetScriptStatusQuery"
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingGetSystemStatsQueryService(item) {
+    const _pollOnce = async () => {
+      this.systemStats = await this.callService({
+        name: "get_system_stats",
+        messageType: "nepi_ros_interfaces/GetSystemStatsQuery",
+        args: {script : item}
+      })
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+  //=====
+  
   @action.bound
   onNEPIConnectConnectNow() {
     this.publishMessage({

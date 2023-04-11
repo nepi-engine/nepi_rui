@@ -15,6 +15,7 @@ import NavPose from "./NavPose"
 import Settings from "./Settings"
 import SoftwareUpdate from "./SoftwareUpdate"
 import Help from "./Help"
+import Automation from "./Automation"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -70,7 +71,7 @@ class App extends Component {
           <Route path="/imagery" component={SensorIDX} />
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
-          { /*<Route path="/automation" component={Automation} />*/ }
+          <Route path="/automation" component={Automation} />
           <Route path="/admin" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
