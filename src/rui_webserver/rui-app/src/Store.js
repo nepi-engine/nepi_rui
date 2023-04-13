@@ -243,6 +243,7 @@ class ROSConnectionStore {
   @observable stopScript = false
   @observable scriptStatus = null
   @observable systemStats = null
+  @observable scriptForPolledStats = null
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -1101,7 +1102,7 @@ class ROSConnectionStore {
       this.systemStats = await this.callService({
         name: "get_system_stats",
         messageType: "nepi_ros_interfaces/GetSystemStatsQuery",
-        args: {script : item}
+        args: {script : this.scriptForPolledStats}
       })
 
       if (this.connectedToROS) {
@@ -1109,7 +1110,14 @@ class ROSConnectionStore {
       }
     }
 
-    _pollOnce()
+    const firstCall = (this.scriptForPolledStats === null)
+    this.scriptForPolledStats = item
+    
+    // Only launch this once, then just change state to start polling a different script
+    if (firstCall === true) {
+      _pollOnce()
+    }
+    
   }
   //=====
   
