@@ -1,9 +1,20 @@
 import React, { Component } from 'react';
 import { observer, inject } from "mobx-react"
 import { toJS } from 'mobx';
+
+import Section from "./Section"
+import { Columns, Column } from "./Columns"
+import Label from "./Label"
+import Input from "./Input"
+import Button, { ButtonMenu } from "./Button"
 import ListBox from './ListBox';
 import './ListBox.css';
 import './Automation.css';
+
+// Utilities
+function bytesToKBString(bytes) {
+  return ((bytes/1024.0).toFixed(2) + "KB")
+}
 
 @inject("ros")
 @observer
@@ -12,146 +23,192 @@ class Automation extends Component {
     super(props);
 
     this.state = {
-      selectedScript: '',
-      input1: '',
-      input2: '',
-      input3: '',
-      toggleEnabled: true,
+      automationSelectedScript: '',
+      runningSelectedScript: ''
     };
 
-    this.handleScriptSelect = this.handleScriptSelect.bind(this)
+    this.handleAutomationScriptSelect = this.handleAutomationScriptSelect.bind(this)
+    this.handleRunningScriptSelect = this.handleRunningScriptSelect.bind(this)
+    this.handleStopScriptClick = this.handleStopScriptClick.bind(this)
+    this.handleStartScriptClick = this.handleStartScriptClick.bind(this)
 
     this.prevRunningScripts = null;
-
-      //this.startPollingSetScriptEnabledService() // set scripts enabled to be true or false
-    //this.startPollingLaunchScriptService() // invoke script execution
-    //stores.startPollingStopScriptService() // stop script execution
-    //stores.startPollingGetScriptStatusQueryService() // get status of script
-    //stores.startPollingGetSystemStatsQueryService() // get script and system status
   }
 
-  handleScriptSelect = (item) => {
+  handleAutomationScriptSelect = (item) => {
     //alert(`You have selected ${item}`);
-    this.setState({ selectedScript: item });
-
-    this.props.ros.startLaunchScriptService(item);
+    this.setState({ automationSelectedScript: item, runningSelectedScript: '' });
     this.props.ros.startPollingGetSystemStatsQueryService(item) // get script and system status
   };
 
+  handleRunningScriptSelect = (item) => {
+    this.setState({ runningSelectedScript: item, automationSelectedScript: '' })
+    this.props.ros.startPollingGetSystemStatsQueryService(item) // get script and system status
+  }
 
-  // Add handleStopScriptClick method
+  handleStartScriptClick = () => {
+    // Start the currently selected script
+    const scriptToLaunch = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
+    if (scriptToLaunch) {
+      this.props.ros.startLaunchScriptService(scriptToLaunch);
+    }
+  }
+
   handleStopScriptClick = () => {
     // Stop the currently selected script
-    if (this.state.selectedScript) {
-      this.props.ros.stopLaunchScriptService(this.state.selectedScript);
+    const scriptToStop = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
+    if (scriptToStop) {
+      this.props.ros.stopLaunchScriptService(scriptToStop);
     }
   };
-
   
   render() {
-
-    const { scripts, running_scripts, selectedScript, systemStats} = this.props.ros;
+    const { scripts, running_scripts, systemStats} = this.props.ros;
     let filesForListBox = [];
-    let activeFilesForListBox = [];
-    let _systemStats = [];
+    let runningFilesForListBox = [];
 
     //console.log('Automation scripts:', scripts);
     filesForListBox = toJS(scripts)  
-  //  console.log('Automation scripts (filesForListBox):', filesForListBox);
-    console.log('systemStats:', systemStats);
-    _systemStats = toJS(systemStats)
-    console.log('_systemStats:', _systemStats);
-    console.log('_systemStats:', _systemStats && _systemStats.cpu_percent);
-    console.log('_systemStats:', _systemStats && _systemStats.disk_usage);
-    console.log('_systemStats:', _systemStats && _systemStats.memory_usage);
-    console.log('_systemStats:', _systemStats && _systemStats.swap_info);
-    console.log('_systemStats:', _systemStats && _systemStats.file_size);
+    //  console.log('Automation scripts (filesForListBox):', filesForListBox);
+    //console.log('systemStats:', systemStats);
+    //_systemStats = toJS(systemStats)
+    //console.log('_systemStats:', _systemStats);
+    //console.log('_systemStats:', _systemStats && _systemStats.cpu_percent);
+    //console.log('_systemStats:', _systemStats && _systemStats.disk_usage);
+    //console.log('_systemStats:', _systemStats && _systemStats.memory_usage);
+    //console.log('_systemStats:', _systemStats && _systemStats.swap_info);
+    //console.log('_systemStats:', _systemStats && _systemStats.file_size);
     
-    activeFilesForListBox = toJS(running_scripts);
-    console.log('Running scripts (activeFilesForListBox):', activeFilesForListBox);
+    runningFilesForListBox = toJS(running_scripts);
+    //console.log('Running scripts (runningFilesForListBox):', runningFilesForListBox);
 
+    const selectedScript = (this.state.automationSelectedScript !== '')? 
+      this.state.automationSelectedScript : this.state.runningSelectedScript
+    
     return (
-        <div className="Automation">
-          <h1>Automation</h1>
-          <div className="automation-container">
-            <div className="listboxes-container">
-              <div className="listbox-wrapper">
-                <label htmlFor="automationScriptsListBox" className="listbox-label">AUTOMATION Scripts</label>
-                <ListBox id="automationScriptsListBox" items={filesForListBox.scripts} selectedItem={selectedScript} onSelect={this.handleScriptSelect} style={{ color: 'black', backgroundColor: 'white' }} />
-              </div>
-              <div className="listbox-wrapper">
-                <label htmlFor="activeScriptsListBox" className="listbox-label">ACTIVE Scripts</label>
-                <ListBox id="activeScriptsListBox" items={activeFilesForListBox.running_scripts} readOnly style={{ color: 'black', backgroundColor: 'white' }} />
-              </div>
-            </div>
-            <div className="inputs-container">
-            <div className="readonly-input">
-              <label htmlFor="scriptName">Script Name:</label>
-              <input type="text" id="scriptName" value={this.state.selectedScript || ''} readOnly style={{ color: 'black', backgroundColor: 'white' }} />
-            </div>
-            <div className="readonly-input">
-              <label htmlFor="fileSize">File Size:</label>
-              <input type="text" id="fileSize" value={_systemStats && typeof _systemStats.file_size !== 'undefined' ? JSON.stringify(_systemStats.file_size) : ''} readOnly style={{ color: 'black', backgroundColor: 'white' }} />
-            </div>
-            <div className="readonly-input">
-          <label htmlFor="cpuPercent">CPU Percent:</label>
-          <input
-            type="text"
-            id="cpuPercent"
-            value={_systemStats && typeof _systemStats.cpu_percent !== 'undefined' ? JSON.stringify(_systemStats.cpu_percent) : ''}
-            readOnly
-            style={{ color: 'black', backgroundColor: 'white' }}
-          />
-        </div>
-        <div className="readonly-input">
-          <label htmlFor="memoryUsage">Memory Usage:</label>
-          <input
-            type="text"
-            id="memoryUsage"
-            value={_systemStats && typeof _systemStats.memory_usage !== 'undefined' ? JSON.stringify(_systemStats.memory_usage) : ''}
-            readOnly
-            style={{ color: 'black', backgroundColor: 'white' }}
-          />
-        </div>
-        <div className="readonly-input">
-          <label htmlFor="swapInfo">Swap Info:</label>
-          <input
-            type="text"
-            id="swapInfo"
-            value={_systemStats && typeof _systemStats.swap_info !== 'undefined' ? JSON.stringify(_systemStats.swap_info) : ''}
-            readOnly
-            style={{ color: 'black', backgroundColor: 'white' }}
-          />
-        </div>
-        <div className="readonly-input">
-          <label htmlFor="diskUsage">Disk Usage:</label>
-          <input
-            type="text"
-            id="diskUsage"
-            value={_systemStats && typeof _systemStats.disk_usage !== 'undefined' ? JSON.stringify(_systemStats.disk_usage) : ''}
-            readOnly
-            style={{ color: 'black', backgroundColor: 'white' }}
-          />
-        </div>
-            <div className="readonly-input">
-              <label htmlFor="runToCompletion">Run to Completion:</label>
-              <input type="text" id="runToCompletion" value={_systemStats && typeof _systemStats.completed_runs !== 'undefined' ? JSON.stringify(_systemStats.completed_runs) : ''} readOnly style={{ color: 'black', backgroundColor: 'white' }} />            
-            </div>
-            <div className="readonly-input">
-              <label htmlFor="manualStops">Manual Stops:</label>
-              <input type="text" id="manualStops" value={_systemStats && typeof _systemStats.stopped_manually !== 'undefined' ? JSON.stringify(_systemStats.stopped_manually) : ''} readOnly style={{ color: 'black', backgroundColor: 'white' }} />
-            </div>
-            <div className="button-container">
-            <label htmlFor="stopScriptButton">Stop Script:</label>
-            <button id="stopScriptButton" onClick={this.handleStopScriptClick}>
-              Stop
-            </button>
-          </div>
-          </div>
-        </div>
-      </div>
-    );
+      <Columns>
+        <Column>
+          <Section title={"Automation Scripts"}>
+            <ListBox 
+              id="automationScriptsListBox" 
+              items={filesForListBox.scripts} 
+              selectedItem={this.state.automationSelectedScript} 
+              onSelect={this.handleAutomationScriptSelect} 
+              style={{ color: 'black', backgroundColor: 'white' }}
+            />
+          </Section>
+        </Column>
+        <Column>
+          <Section title={"Running Scripts"}>
+            <ListBox 
+              id="runningScriptsListBox" 
+              items={runningFilesForListBox.running_scripts} 
+              selectedItem={this.state.runningSelectedScript}
+              onSelect={this.handleRunningScriptSelect} 
+              style={{ color: 'black', backgroundColor: 'white' }} 
+            />
+          </Section>
+        </Column>
+        <Column>
+          <Section title={"Control and Status"}>
+            <Label title={"File name"} >
+              <Input 
+                disabled 
+                value={selectedScript || ''} 
+                style={{width: '100%'}} 
+              />
+            </Label>
+            <Label title={"File size"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.file_size_bytes !== 'undefined'? bytesToKBString(systemStats.file_size_bytes) : ''} 
+                style={{width: '100%'}}
+              />
+            </Label>
+            <Label title={"CPU Usage"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.cpu_percent !== 'undefined'? 
+                  systemStats.cpu_percent.toFixed(1) + "%" 
+                  : ''} 
+                style={{width: '100%'}} 
+              />
+            </Label>
+            <Label title={"Memory Usage"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.memory_percent !== 'undefined'? 
+                  systemStats.memory_percent.toFixed(1) + "%"
+                  : ''} 
+                  style={{width: '100%'}} 
+                />
+            </Label>
+            <Label title={"Run Time"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.run_time_s !== 'undefined'?
+                  systemStats.run_time_s.toFixed(1) + "s" 
+                  : ''} 
+                style={{width: '100%'}} 
+              />
+            </Label>
+            <Label title={"Cumulative Run Time"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.cumulative_run_time_s !== 'undefined'?
+                  systemStats.cumulative_run_time_s.toFixed(1) + "s" 
+                  : ''} 
+                style={{width: '100%'}} 
+              />
+            </Label>
+            <Label title={"Started Count"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.started_runs !== 'undefined'? 
+                  systemStats.started_runs
+                  : ''}
+                style={{width: '100%'}} 
+              />
+            </Label>
+            <Label title={"Completion Count"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.completed_runs !== 'undefined'? 
+                  systemStats.completed_runs
+                  : ''}
+                style={{width: '100%'}} 
+              />
+            </Label>
+            <Label title={"Error Count"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.error_runs !== 'undefined'? 
+                  systemStats.error_runs
+                  : ''}
+                style={{width: '100%'}} 
+              />
+            </Label>            
+            <Label title={"Stop Count"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.stopped_manually !== 'undefined'?
+                  systemStats.stopped_manually
+                  : ''} 
+                style={{width: '100%'}} 
+              />
+            </Label>
+            {(selectedScript !== '')?
+              <ButtonMenu>
+                <Button disabled={selectedScript === ''} onClick={this.handleStartScriptClick}>{"Start"}</Button>
+                <Button disabled={selectedScript === ''} onClick={this.handleStopScriptClick}>{"Stop"}</Button>
+              </ButtonMenu>
+              : null
+            }
+          </Section>
+        </Column>
+      </Columns>
+    )
   }
-}
+};
 
 export default Automation;
