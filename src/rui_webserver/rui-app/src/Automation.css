@@ -1,0 +1,12 @@
+.Automation {
+    text-align: center;
+  }
+  
+  .ListBox {
+    flex: 1;
+    margin: 0;
+    height: 60vh;
+    width: 100%;
+  }
+
+  

@@ -5,72 +5,78 @@ import { observer, inject } from "mobx-react"
 import Page from "./Page"
 import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
-import PageLock from "./PageLock"
+//import PageLock from "./PageLock"
 
+import NEPIConnect from "./NEPIConnect"
 import Dashboard from "./Dashboard"
-import CameraApp from "./CameraApp"
-import Sensor3DX from "./Sensor3DX"
-import Files from "./Files"
+import DetectionApp from "./DetectionApp"
+import SensorIDX from "./SensorIDX"
+import NavPose from "./NavPose"
 import Settings from "./Settings"
+import SoftwareUpdate from "./SoftwareUpdate"
+import Help from "./Help"
+import Automation from "./Automation"
 
-const IS_DEBUG = window.location.hostname === "localhost"
+//const IS_LOCAL = window.location.hostname === "localhost"
 
 @inject("ros")
 @withRouter
 @observer
 class App extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      pageLocked: !IS_DEBUG
-    }
-
-    this.onUnlockPage = this.onUnlockPage.bind(this)
-  }
 
   componentDidMount() {
     this.props.ros.checkROSConnection()
   }
 
-  onUnlockPage(e) {
-    this.setState({ pageLocked: false })
-  }
-
   render() {
-    const { pageLocked } = this.state
     return (
       <Page>
         <Nav
-          pageLocked={pageLocked}
           pages={[
             { path: "/", label: "Dashboard" },
+            {
+              path: "/sensors",
+              label: "Sensors",
+              subItems: [
+                { path: "/imagery", label: "Imagery" },
+                { path: "/navPose", label: "NavPose" }
+              ]
+            },
             {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/detection", label: "Detection" },
-                { path: "/sensor3DX", label: "3DX" }
+                { path: "/ai", label: "AI" },
+                { path: "/automation", label: "Automation"},
               ]
             },
-            { path: "/files", label: "Files" },
-            { path: "/settings", label: "Settings" }
+            { path: "/nepi_connect", label: "Connect" },
+            {
+              path: "/system",
+              label: "System",
+              subItems: [
+                { path: "/admin", label: "Admin" },
+                { path: "/software_update", label: "Software"}
+              ]
+            },
+            { 
+              path: "/help", 
+              label: "Help",
+            }
           ]}
         />
         <HorizontalDivider />
-        {pageLocked && <PageLock onUnlockPage={this.onUnlockPage} />}
-        {!pageLocked && (
-          <Switch>
-            <Route exact path="/" component={Dashboard} />
-            <Route path="/detection" component={CameraApp} />
-            <Route path="/sensor3DX" component={Sensor3DX} />
-            <Route
-              path="/files/:path*"
-              component={props => <Files {...props} />}
-            />
-            <Route path="/settings" component={Settings} />
-          </Switch>
-        )}
+        <Switch>
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/imagery" component={SensorIDX} />
+          <Route path="/navPose" component={NavPose} />
+          <Route path="/ai" component={DetectionApp} />
+          <Route path="/automation" component={Automation} />
+          <Route path="/admin" component={Settings} />
+          <Route path="/software_update" component={SoftwareUpdate} />
+          <Route path="/nepi_connect" component={NEPIConnect} />
+          <Route path="/help" component={Help} />
+        </Switch>
       </Page>
     )
   }

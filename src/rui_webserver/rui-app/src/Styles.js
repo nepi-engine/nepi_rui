@@ -9,6 +9,7 @@ export const Create = function(rules) {
 }
 
 export const colors = {
+  nepi_blue: "#002C45",
   black: "#1c1d20",
   white: "#ffffff",
   orange: "#ffd000",
@@ -31,7 +32,8 @@ const unitString = function(unit) {
 export const em = unitString("em")
 export const px = unitString("px")
 
-export const pageWidth = px(1080)
+//export const pageWidth = px(1080)
+export const pageWidth = px(1920)
 
 export const spacing = {
   xs: px(4),
@@ -53,7 +55,8 @@ export const fontSize = {
 
 export const lineHeights = {
   regular: em(1.5),
-  small: em(1.25)
+  small: em(1.25),
+  xl: em(3)
 }
 
 export default {

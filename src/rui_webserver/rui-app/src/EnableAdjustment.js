@@ -93,6 +93,7 @@ class EnableAdjustment extends Component {
     // this tests to see if a Status3DX message updated our
     // values through the props
     if (
+      this.state.checked !== enabled ||
       prevProps.enabled !== enabled ||
       prevProps.adjustment !== adjustment ||
       (!disabled && prevProps.disabled)

@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(numurus_rui)
+project(nepi_rui)
 
 # Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS num_sdk_msgs rosbridge_server rospy)
+find_package(catkin REQUIRED COMPONENTS nepi_ros_interfaces rosbridge_server rospy)
 
 ###################################
 ## Catkin specific configuration ##
 ###################################
 catkin_package(
   CATKIN_DEPENDS
-    num_sdk_msgs
+    nepi_ros_interfaces
     rosbridge_server
 )
 catkin_python_setup()
@@ -21,14 +21,16 @@ catkin_python_setup()
 #############
 ## Install ##
 #############
-# install(PROGRAMS scripts/status_3dx_pub.py
-  # DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+## Mark executable scripts (Python etc.) for installation
+## in contrast to setup.py, you can choose the destination
+install(PROGRAMS
+    scripts/rui_config_mgr.py
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 catkin_install_python(
   PROGRAMS
-#    scripts/fake_data_pub.py
-#    scripts/fake_status_pub.py
-     scripts/run_webserver.py
+    scripts/run_webserver.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
   # Install etc files (startup scripts, factory configs, etc.) to the global (not project) etc destination

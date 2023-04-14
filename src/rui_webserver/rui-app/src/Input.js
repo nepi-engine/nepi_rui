@@ -12,12 +12,13 @@ const styles = Styles.Create({
 })
 
 const Input = props => {
-  const { style, children, disabled } = props
+  const { style, children, disabled, backgroundOverride } = props
 
   const actualStyle = {
     ...styles.root,
     ...style,
-    ...(disabled ? styles.disabled : {})
+    ...(disabled ? styles.disabled : {}),
+    ...(backgroundOverride? {backgroundColor: backgroundOverride} : {})
   }
 
   return (
@@ -28,7 +29,8 @@ const Input = props => {
 }
 
 Input.defaultProps = {
-  disabled: false
+  disabled: false,
+  backgroundOverride: null
 }
 
 export default Input

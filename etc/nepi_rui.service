@@ -1,11 +1,11 @@
 [Unit]
-Description=The Numurus RUI Webserver
+Description=The NEPI RUI Webserver
 After=roslaunch.service
 
 [Service]
 Type=simple
-User=numurus
-ExecStart=/opt/numurus/ros/etc/start_rui.sh
+User=root
+ExecStart=/opt/nepi/nepi_rui/etc/start_rui.sh
 Restart=always
 
 [Install]

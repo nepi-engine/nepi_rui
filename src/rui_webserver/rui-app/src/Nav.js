@@ -4,11 +4,15 @@ import { Link } from "react-router-dom"
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
 
-import logo from "./logo.png"
+import logo from "./logos/logo.webp"
+import powered_by_nepi from "./logos/powered_by_nepi.webp"
 
 const styles = Styles.Create({
   logo: {
-    // backgroundColor: Styles.vars.colors.grey0
+    width: "100%",
+  },
+  powered_by_nepi: {
+    width: "100%"
   },
   navItem: {
     display: "inline-block",
@@ -16,7 +20,7 @@ const styles = Styles.Create({
     marginRight: Styles.vars.spacing.small,
     textTransform: "uppercase",
     cursor: "pointer",
-    textDecoration: "underline"
+    textDecoration: "underline",
   },
   activeNavItem: {
     color: Styles.vars.colors.blue,
@@ -25,7 +29,7 @@ const styles = Styles.Create({
   subNavItem: {
     backgroundColor: Styles.vars.colors.grey2,
     position: "absolute",
-    marginTop: Styles.vars.spacing.small,
+    marginTop: 0,
     marginLeft: 0,
     marginRight: Styles.vars.spacing.small,
     left: 0,
@@ -64,25 +68,46 @@ class SubNavMenu extends Component {
 
   render() {
     const { active, subItems } = this.props
+
+    var subitemActive = false
+    for (const sub in subItems) {
+      if (subItems[sub].path === window.location.pathname) {
+        subitemActive = true
+        break
+      }
+    }
+    
     const style = {
       ...styles.navItem,
-      ...(active ? styles.activeNavItem : {}),
+      /*...(active? styles.activeNavItem : {}),*/
       position: "relative"
     }
+
+    const activeStyle = {
+      ...styles.navItem,
+      ...styles.activeNavItem,
+      position: "relative"
+    }
+
+    const activeAbsoluteStyle = {
+      ...styles.activeNavItem
+    }
+
     const subStyle = {
       ...styles.navItem,
       ...styles.subNavItem
     }
 
     return (
-      <div style={style} onMouseEnter={this.showMenu}>
-        <div>{this.props.label}</div>
+
+      <div style={(active || subitemActive)? activeStyle : style} onMouseEnter={this.showMenu} onMouseLeave={this.closeMenu}>
+        <div style={(active || subitemActive)? activeAbsoluteStyle : {}}>{this.props.label}</div>
         {this.state.showMenu ? (
           <ul style={subStyle}>
             {subItems.map(({ path, label }) => {
               return (
                 <li>
-                  <Link style={style} to={path}>
+                  <Link style={(path === window.location.pathname)? activeStyle : style} to={path}>
                     {" "}
                     {label}{" "}
                   </Link>
@@ -122,30 +147,37 @@ NavItem.defaultProps = {
 
 class Nav extends Component {
   render() {
-    const { pages, pageLocked } = this.props
+    const { pages } = this.props
     return (
       <div style={styles.root}>
         <Columns>
           <Column>
-            <div style={styles.logo}>
-              <img src={logo} alt={"logo"} />
-            </div>
+            <Columns alignColumns={"flex-end" /* Bottom-justified logo images */}>
+                <Column>
+                  <div style={styles.logo}>
+                    <img src={logo} alt={""} height={"auto"}/>
+                  </div>
+                </Column>
+                <Column>
+                  <div style={styles.powered_by_nepi}>
+                    <img src={powered_by_nepi} alt={""} height={"auto"}/>
+                  </div>
+                </Column>
+            </Columns>
           </Column>
-          {!pageLocked && (
-            <Column style={{ flex: 3 }}>
-              {pages.map(({ path, label, subItems }) => {
-                return (
-                  <NavItem
-                    active={path === window.location.pathname}
-                    path={path}
-                    label={label}
-                    key={label}
-                    subItems={subItems}
-                  />
-                )
-              })}
-            </Column>
-          )}
+          <Column style={{ flex: 3 }}>
+            {pages.map(({ path, label, subItems }) => {
+              return (
+                <NavItem
+                  active={path === window.location.pathname}
+                  path={path}
+                  label={label}
+                  key={label}
+                  subItems={subItems}
+                />
+              )
+            })}
+          </Column>
         </Columns>
       </div>
     )

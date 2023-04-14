@@ -1,0 +1,19 @@
+.ListBox {
+  list-style: none;
+  padding: 0;
+  border: 1px solid #ccc;
+  overflow-y: scroll;
+  background-color: #000; /* Change the background-color to black */
+}
+
+.ListBox li {
+  padding: 0px;
+  cursor: pointer;
+  color: #fff; /* Add this line to make the text color white, for better visibility on the black background */
+  margin-bottom: 0
+}
+
+.ListBox li.selected {
+  background-color: #007bff;
+  color: #fff;
+}

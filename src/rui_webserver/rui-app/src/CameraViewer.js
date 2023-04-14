@@ -1,11 +1,15 @@
 import React, { Component } from "react"
-import moment from "moment"
+//import moment from "moment"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Button, { ButtonMenu } from "./Button"
 
 import Styles from "./Styles"
+
+import Toggle from "react-toggle"
+import Label from "./Label"
+import { Column, Columns } from "./Columns"
 
 const styles = Styles.Create({
   canvas: {
@@ -14,6 +18,10 @@ const styles = Styles.Create({
     transform: "scale(1)"
   }
 })
+
+const COMPRESSION_HIGH_QUALITY = 95
+const COMPRESSION_MED_QUALITY = 50
+const COMPRESSION_LOW_QUALITY = 10
 
 const PORT = 9091
 const ROS_WEBCAM_URL_BASE = `http://${
@@ -29,38 +37,33 @@ class CameraViewer extends Component {
     this.state = {
       hasInitialized: false,
       shouldUpdate: true,
-      clockTime: moment(),
+      //clockTime: moment(),
       streamWidth: null,
       streamHeight: null,
-      containerWidth: null,
-      containerHeight: null
+      currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
+      hideQualitySelector: this.props.hideQualitySelector
     }
-
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
+    this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
   }
 
   updateFrame() {
     const {
       shouldUpdate,
       hasInitialized,
-      containerWidth,
-      containerHeight,
       streamWidth,
       streamHeight
     } = this.state
-    const { width, height } = this.image
-    const { imageRecognitions } = this.props.ros
+    //const { imageRecognitions } = this.props.ros
     if (shouldUpdate && hasInitialized && this.canvas) {
-      if (!containerWidth) {
-        this.setState({ containerWidth: this.canvas.width })
+      if (this.canvas.width !== streamWidth) {
         this.canvas.width = streamWidth
       }
 
-      if (!containerHeight) {
-        this.setState({ containerHeight: this.canvas.height })
+      if (this.canvas.height !== streamHeight) {
         this.canvas.height = streamHeight
       }
 
@@ -71,6 +74,7 @@ class CameraViewer extends Component {
       context.clearRect(0, 0, streamWidth, streamHeight)
       context.drawImage(this.image, 0, 0, streamWidth, streamHeight)
 
+      /* -- TODO: Restore imageRecognitions when we have a need and are ready to use BoundingBoxes data type
       imageRecognitions.forEach(
         ({ label, roi: { x_offset, y_offset, width, height } }) => {
           context.beginPath()
@@ -86,40 +90,41 @@ class CameraViewer extends Component {
           )
         }
       )
+      */
 
-      this.setState({ clockTime: moment() })
+      //this.setState({ clockTime: moment() })
       requestAnimationFrame(this.updateFrame)
     }
   }
 
   onCanvasRef(ref) {
     this.canvas = ref
-    this.updateImageSource()
+    //this.updateImageSource()
   }
 
   updateImageSource() {
     if (this.props.imageTopic) {
-      const { hasInitialized } = this.state
-      this.image = new Image()
+      if (!this.image) {
+        this.image = new Image() // EXPERIMENT -- Only create a new Image when strictly required
+      }
       this.image.crossOrigin = "Anonymous"
       this.image.onload = () => {
-        if (!hasInitialized) {
-          const { width, height } = this.image
-          this.setState(
-            {
-              hasInitialized: true,
-              streamWidth: width,
-              streamHeight: height
-            },
-            () => {
-              requestAnimationFrame(this.updateFrame)
-            }
-          )
-        }
+        const { width, height } = this.image
+        this.setState(
+          {
+            hasInitialized: true,
+            streamWidth: width,
+            streamHeight: height
+          },
+          () => {
+            requestAnimationFrame(this.updateFrame)
+          }
+        )
       }
     }
     if (this.image) {
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic
+      const { streamingImageQuality } = this.props.ros
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic + '&quality=' + streamingImageQuality
     }
   }
 
@@ -127,32 +132,109 @@ class CameraViewer extends Component {
   // Used to track changes in the image topic value
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { imageTopic } = this.props
-    if (prevProps.imageTopic !== imageTopic) {
+    if (prevProps.imageTopic !== imageTopic || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
       this.updateImageSource()
     }
   }
 
   componentWillUnmount() {
     this.setState({ shouldUpdate: false })
+    if (this.image) {
+      this.image.src = null
+    }
+  }
+
+  componentDidMount() {
+    this.updateImageSource()
   }
 
   onTakeSnapshot() {
-    const { clockTime } = this.state
-    const link = window.document.createElement("a")
-    const dt = this.canvas.toDataURL("image/png")
-    window.location.href = dt
-    link.href = dt
-    link.setAttribute("download", `frame-${clockTime.format()}.png`)
-    link.click()
+    this.props.ros.onSnapshotEventTriggered()
+    //const { clockTime } = this.state
+    //const link = window.document.createElement("a")
+    //const dt = this.canvas.toDataURL("image/png")
+    //window.location.href = dt
+    //link.href = dt
+    //link.setAttribute("download", `frame-${clockTime.format()}.png`)
+    //link.click()
+  }
+
+  onChangeImageQuality(quality) {
+    this.props.ros.onChangeStreamingImageQuality(quality)
+    this.setState({currentStreamingImageQuality: quality})
+    this.updateImageSource()
   }
 
   render() {
+    const {
+      streamingImageQuality
+    } = this.props.ros
+
+    if (streamingImageQuality !== this.state.currentStreamingImageQuality)
+    {
+      this.setState({currentStreamingImageQuality: streamingImageQuality})
+    }
+
     return (
-      <Section title={this.props.title ? this.props.title : ""}>
+      <Section title={this.props.title}>
         <canvas style={styles.canvas} ref={this.onCanvasRef} />
-        <ButtonMenu>
-          <Button onClick={this.onTakeSnapshot}>{"Take Snapshot"}</Button>
-        </ButtonMenu>
+        <Columns>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <Label title={"Quality"} />
+            }
+          </div>
+          </Column>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <div>
+                <Label title={"Low"} />
+                <Toggle
+                  checked={streamingImageQuality <= COMPRESSION_LOW_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_LOW_QUALITY)}}
+                />
+              </div>
+            }
+          </div>
+          </Column>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <div>
+                <Label title={"Medium"} />
+                <Toggle
+                  checked={streamingImageQuality >= COMPRESSION_MED_QUALITY && streamingImageQuality < COMPRESSION_HIGH_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_MED_QUALITY)}}
+                />
+              </div>
+            }
+          </div>
+          </Column>
+          <Column>
+          <div align={"left"} textAlign={"left"}>
+            { this.state.hideQualitySelector ?
+              null :
+              <div>
+                <Label title={"High"} />
+                <Toggle
+                  checked={streamingImageQuality >= COMPRESSION_HIGH_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_HIGH_QUALITY)}}
+                />
+              </div>
+            }
+          </div>
+          </Column>
+          <Column>
+            <ButtonMenu>
+              <Button onClick={this.onTakeSnapshot}>{"Snapshot"}</Button>
+            </ButtonMenu>
+          </Column>
+        </Columns>
       </Section>
     )
   }
