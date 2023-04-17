@@ -233,103 +233,86 @@ class NEPIConnect extends Component {
     const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_kb, onNEPIConnectDataSetNow, onToggleTopic } = this.props.ros
     const { viewableTopics, viewableOrder } = this.state
     var sources = []
-    var selected_sources = []
+    //var selected_sources = []
     var i;
 
     if (lb_available_data_sources != null) {
+      const shortSources = createShortUniqueValues(lb_available_data_sources)
       for(i = 0; i < lb_available_data_sources.length; i++) {
-        var split = lb_available_data_sources[i].split("/")
-        if(split.length !== 1) {
-          sources[i] = {
-            long:lb_available_data_sources[i],
-            short:split[split.length - 2] + "/" + split[split.length - 1]
-          }
-        } else {
-          sources[i] = {
-            long:lb_available_data_sources[i],
-            short:split[split.length - 1]
-          }
+        sources[i] = {
+          long:lb_available_data_sources[i],
+          short:shortSources[i]
         }
       }
     }
+    
+    return (
+      <Section title={"Low Bandwidth Data Config"}>
+        <ButtonMenu>
+          <Button onClick={onNEPIConnectDataSetNow}>{"Capture Data Now"}</Button>
+        </ButtonMenu>
+        <Label title="Data Rate per Hour">
+          <Input
+            value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
+            id="dataSetsPerHour"
+            data-topic="nepi_link_ros_bridge/lb/set_data_sets_per_hour"
+            onChange= {this.onUpdateText}
+            onKeyDown= {this.onKeyText}
+          />
+        </Label>
+        <Label title="Unprocessed Data (KB)">
+          <Input
+            value={lb_data_queue_size_kb !== null ? lb_data_queue_size_kb.toFixed(2) : "0.00"}
+            onChange={this.LBQueueMaxSizeUp}
+            disabled="true"
+          />
+        </Label>
+        <Label title="Comms Attempt Order">
+          {/* <div>
+            <DragList list={items} width="225px" callback={this.onDragEnd}>
+            </DragList>
+          </div> */}
+          <div onClick={this.toggleViewableOrder} style={{backgroundColor: Styles.vars.colors.orange}}>
+            <Select style={{backgroundColor: Styles.vars.colors.orange, width: "10px"}}/>
+          </div>
+          <div hidden={!viewableOrder}>
+          {lb_comms_types !== null ? lb_comms_types.map((item, index) =>
+          <div
+            style={{
+              textAlign: "center",
+              padding: `${Styles.vars.spacing.xs}`,
+              color: Styles.vars.colors.black,
+              backgroundColor: Styles.vars.colors.orange,
+              cursor: "pointer",
+              }}>
+              <body style={{color: Styles.vars.colors.black}}>{item}</body>
+          </div>
+          ) : <div></div>}
+          </div>
+        </Label>
+        <Label title="Data Topics">
+          <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
+            <Select style={{width: "10px"}}/>
+          </div>
+          <div hidden={!viewableTopics}>
+          {sources.map((topic) =>
+          <div onClick={onToggleTopic}
+            style={{
+              textAlign: "center",
+              padding: `${Styles.vars.spacing.xs}`,
+              color: Styles.vars.colors.black,
+              backgroundColor: (lb_selected_data_sources && lb_selected_data_sources.includes(topic.long))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+              cursor: "pointer",
+              }}>
+              <body data-topic={topic.long} style={{color: Styles.vars.colors.black}}>{topic.short}</body>
+          </div>
+          )}
+          </div>
 
-    if (lb_selected_data_sources != null) {
-      for(i = 0; i < lb_selected_data_sources.length; i++) {
-        split = lb_selected_data_sources[i].split("/")
-        if(split.length !== 1) {
-          selected_sources[i] = split[split.length - 2] + "/" + split[split.length - 1]
-        } else {
-          selected_sources[i] = split[split.length - 1]
-        }
-      }
-    }
-      return (
-        <Section title={"Low Bandwidth Data Config"}>
-          <ButtonMenu>
-            <Button onClick={onNEPIConnectDataSetNow}>{"Capture Data Now"}</Button>
-          </ButtonMenu>
-          <Label title="Data Rate per Hour">
-            <Input
-              value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
-              id="dataSetsPerHour"
-              data-topic="nepi_link_ros_bridge/lb/set_data_sets_per_hour"
-              onChange= {this.onUpdateText}
-              onKeyDown= {this.onKeyText}
-            />
-          </Label>
-          <Label title="Unprocessed Data (KB)">
-            <Input
-              value={lb_data_queue_size_kb !== null ? lb_data_queue_size_kb.toFixed(2) : "0.00"}
-              onChange={this.LBQueueMaxSizeUp}
-              disabled="true"
-            />
-          </Label>
-          <Label title="Comms Attempt Order">
-            {/* <div>
-              <DragList list={items} width="225px" callback={this.onDragEnd}>
-              </DragList>
-            </div> */}
-            <div onClick={this.toggleViewableOrder} style={{backgroundColor: Styles.vars.colors.orange}}>
-              <Select style={{backgroundColor: Styles.vars.colors.orange, width: "10px"}}/>
-            </div>
-            <div hidden={!viewableOrder}>
-            {lb_comms_types !== null ? lb_comms_types.map((item, index) =>
-            <div
-              style={{
-                textAlign: "center",
-                padding: `${Styles.vars.spacing.xs}`,
-                color: Styles.vars.colors.black,
-                backgroundColor: Styles.vars.colors.orange,
-                cursor: "pointer",
-                }}>
-                <body style={{color: Styles.vars.colors.black}}>{item}</body>
-            </div>
-            ) : <div></div>}
-            </div>
-          </Label>
-          <Label title="Data Topics">
-            <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
-              <Select style={{width: "10px"}}/>
-            </div>
-            <div hidden={!viewableTopics}>
-            {sources.map((topic) =>
-            <div onClick={onToggleTopic}
-              style={{
-                textAlign: "center",
-                padding: `${Styles.vars.spacing.xs}`,
-                color: Styles.vars.colors.black,
-                backgroundColor: selected_sources.includes(topic.short)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                cursor: "pointer",
-                }}>
-                <body data-topic={topic.long} style={{color: Styles.vars.colors.black}}>{topic.short}</body>
-            </div>
-            )}
-            </div>
-
-          </Label>
-        </Section>
-      )
-  }
+        </Label>
+      </Section>
+    )
+  } 
 
   render() {
     const { NEPIConnectenabled, onToggleNEPIConnectComms, lb_enabled } = this.props.ros
