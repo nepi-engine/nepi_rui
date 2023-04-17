@@ -1,3 +1,34 @@
+const createShortUniqueValues = list => {
+  var tokenizedList = []
+  var depthsToUnique = []
+  var uniqueList = []
+  for (var i = 0; i < list.length; ++i) {
+    tokenizedList.push(list[i].split("/").reverse())
+    depthsToUnique.push(1)
+    const newItemIndex = tokenizedList.length - 1 
+    for (var j = 0; j < tokenizedList.length - 1; ++j) {
+      var currentTestDepth = 0
+      while (tokenizedList[j][currentTestDepth] === tokenizedList[newItemIndex][currentTestDepth]) {
+        currentTestDepth += 1
+        if (currentTestDepth >= depthsToUnique[j]) {
+          depthsToUnique[j] += 1
+        }
+        if (currentTestDepth >= depthsToUnique[newItemIndex]) {
+          depthsToUnique[newItemIndex] += 1
+        }
+      }
+    }
+  }
+
+  // Now create the return list
+  for (i = 0; i < tokenizedList.length; ++i) {
+    uniqueList.push(tokenizedList[i].slice(0, depthsToUnique[i]).reverse().join("/"))
+  }
+
+  return uniqueList
+}
+
+/*
 // Function for creating short unique values from a list
 // of strings, used to reduce topic names for display
 const createShortUniqueValues = list => {
@@ -29,5 +60,6 @@ const createShortUniqueValues = list => {
   }
   return uniqueList
 }
+*/
 
 export default createShortUniqueValues
