@@ -10,16 +10,20 @@ const styles = Styles.Create({
     flex: 1,
     textAlign: "left"
   },
+  rightLabelTitle: {
+    flex: 1,
+    textAlign: "right"
+  },
   container: {
     flex: 1,
     textAlign: "right"
   }
 })
 
-const Label = ({ marginLeft, title, children }) => {
+const Label = ({ marginLeft, title, children, alignRight }) => {
   return (
     <div style={{ display: "flex", ...styles.root, marginLeft: marginLeft }}>
-      <label style={styles.labelTitle}>{title}</label>
+      <label style={alignRight? styles.rightLabelTitle : styles.labelTitle}>{title}</label>
       <div style={styles.container}>{children}</div>
     </div>
   )
