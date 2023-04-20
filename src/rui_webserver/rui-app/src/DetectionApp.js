@@ -45,13 +45,23 @@ class DetectionApp extends Component {
     items.push(<Option>{"None"}</Option>)
     const { imageTopicsDetection } = this.props.ros
     var uniqueNames = createShortUniqueValues(imageTopicsDetection)
+    const classifier_not_stopped = 
+      (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
     for (var i = 0; i < imageTopicsDetection.length; i++) {
-      if((this.props.ros.reportedClassifier !== null) && (imageTopicsDetection[i] === this.props.ros.reportedClassifier.selected_img_topic)){
+      if (classifier_not_stopped) {
+        if (imageTopicsDetection[i] === this.props.ros.reportedClassifier.selected_img_topic) {
+          items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+        }
+        else {
+          items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+        }
+      }
+      else if (imageTopicsDetection[i] === this.state.imageTopic) {
         items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
-      } else{
+      }
+      else {
         items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
       }
-
     }
     return items
   }
@@ -87,7 +97,11 @@ class DetectionApp extends Component {
     await this.setState({
       imageTopic: value,
       imageText: text === "None" ? null : text,
-      localizerOptionAvailable: hasDepthMap
+      localizerOptionAvailable: hasDepthMap,
+      
+      // Experimental -- try showing plain camera imagery until classifier is loaded
+      currentDisplayImgTopic: ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Running"))?
+        value : null
     })
   }
 
@@ -115,7 +129,9 @@ class DetectionApp extends Component {
       setTimeout(this.waitForClassifierRunning, 250)
     }
     else {
-      await this.setState({currentDisplayImgTopic: (localizerEnabled===false)? classifierImgTopic : targLocalizerImgTopic})
+      await this.setState({
+        currentDisplayImgTopic: (localizerEnabled===false)? classifierImgTopic : targLocalizerImgTopic,
+        imageText: this.state.imageText + ': ' + reportedClassifier.selected_classifier})
     }
   }
 
@@ -132,7 +148,7 @@ class DetectionApp extends Component {
     // If classifier is already running, update the image topic directly
     if (reportedClassifier.classifier_state === "Running")
     {
-      await this.setState({currentDisplayImgTopic: (e.target.checked===false)? classifierImgTopic : targLocalizerImgTopic})
+      await this.setState({currentDisplayImgTopic: (e.target.checked===false)? classifierImgTopic : targLocalizerImgTopic })
     }
   }
 
@@ -155,8 +171,13 @@ class DetectionApp extends Component {
       stopClassifier
     } = this.props.ros
 
+    // Revert back to showing the raw image
+    this.setState({
+      currentDisplayImgTopic: this.state.imageTopic,
+      imageText: this.state.imageText.split(':')[0]
+    })
+
     stopClassifier()
-    //this.setState({currentDisplayImgTopic: null})
   }
 
   render() {
@@ -218,7 +239,7 @@ class DetectionApp extends Component {
               unit={"%"}
             />
           </Section>
-          <Section title={"Status"}>
+          <Section title={"A/I Status"}>
             <Columns>
               <Column>
                 <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
