@@ -44,7 +44,7 @@ class ControlIDX extends Component {
   idxStatusListener(message) {
     this.setState({
       resolutionAdjustment: message.resolution_mode,
-      framerateAdjustment: message.frame_rate_mode,
+      framerateAdjustment: message.framerate_mode,
       contrastAdjustment: message.contrast,
       brightnessAdjustment: message.brightness,
       thresholdingAdjustment: message.thresholding,
