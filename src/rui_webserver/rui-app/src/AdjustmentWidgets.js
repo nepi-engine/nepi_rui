@@ -369,7 +369,7 @@ class RadioButtonAdjustment extends Component {
       <Column>
       <div align={"left"} textAlign={"left"}>
         <Label title={this.props.entries[i]}/>
-        <Toggle checked={this.props.adjustment === i} onClick={() => {sendUpdate(this.props, i, false)}}/>
+        <Toggle checked={this.props.adjustment === i} disabled={this.props.disabled} onClick={() => {sendUpdate(this.props, i, false)}}/>
       </div>
       </Column>      
     )
