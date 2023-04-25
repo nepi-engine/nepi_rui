@@ -36,17 +36,27 @@ const styles = Styles.Create({
     flex: 1,
     textAlign: "left"
   },
-  input: {
-    flex: 0.25,
+  min_input: {
+    flex: 0.2,
     textAlign: "right",
     width: "2em",
-    marginRight: Styles.vars.spacing.small
+    marginRight: Styles.vars.spacing.xs,
+    marginLeft: Styles.vars.spacing.small,
+    backgroundColor: Styles.vars.colors.white
+  },
+  max_input: {
+    flex: 0.2,
+    textAlign: "right",
+    width: "2em",
+    marginRight: Styles.vars.spacing.small,
+    marginLeft: Styles.vars.spacing.xs,
+    backgroundColor: Styles.vars.colors.white
   },
   range: {
+    flex: 1.5,
     marginTop: Styles.vars.spacing.xs,
     marginLeft: Styles.vars.spacing.small,
     marginRight: Styles.vars.spacing.small,
-    flex: 4.5,
     textAlign: "right"
   }
 })
@@ -162,26 +172,12 @@ class RangeAdjustment extends Component {
   }
 
   render() {
+    const string_for_min = this.state.input_min.toString() + (this.props.unit? this.props.unit : "")
+    const string_for_max = this.state.input_max.toString() + (this.props.unit? this.props.unit : "")
     return (
       <div style={{ display: "flex", ...styles.root }}>
         <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
           <label style={styles.label}>{`Range`}</label>
-        </Tooltip>
-        <Tooltip placement="top" overlay="min">
-          <Input
-            style={styles.input}
-            value={this.state.input_min}
-            onChange={this.onMinInputChange}
-            disabled={this.props.disabled}
-          />
-        </Tooltip>
-        <Tooltip placement="top" overlay="max">
-          <Input
-            style={styles.input}
-            value={this.state.input_max}
-            onChange={this.onMaxInputChange}
-            disabled={this.props.disabled}
-          />
         </Tooltip>
         <Range
           style={styles.range}
@@ -196,6 +192,22 @@ class RangeAdjustment extends Component {
           pushable={0.1}
           handle={handle}
         />
+        <Tooltip placement="top" overlay="min">
+          <Input
+            style={styles.min_input}
+            value={string_for_min}
+            onChange={this.onMinInputChange}
+            disabled={this.props.disabled}
+          />
+        </Tooltip>
+        <Tooltip placement="top" overlay="max">
+          <Input
+            style={styles.max_input}
+            value={string_for_max}
+            onChange={this.onMaxInputChange}
+            disabled={this.props.disabled}
+          />
+        </Tooltip>
       </div>
     )
   }
