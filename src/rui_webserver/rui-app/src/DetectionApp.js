@@ -248,6 +248,10 @@ class DetectionApp extends Component {
             <Columns>
               <Column>
                 <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
+                {(status_text === "Loading")?
+                  <progress value={reportedClassifier? reportedClassifier.loading_progress : 0.0} style={{width: '100%'}}/>
+                  : null
+                }
               </Column>
               <Column>
                 <ButtonMenu style={{marginTop: "0px"}}>
