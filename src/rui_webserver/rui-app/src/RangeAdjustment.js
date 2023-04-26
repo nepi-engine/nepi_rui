@@ -58,6 +58,14 @@ const styles = Styles.Create({
     marginLeft: Styles.vars.spacing.small,
     marginRight: Styles.vars.spacing.small,
     textAlign: "right"
+  },
+  disabled_range: {
+    flex: 1.5,
+    marginTop: Styles.vars.spacing.xs,
+    marginLeft: Styles.vars.spacing.small,
+    marginRight: Styles.vars.spacing.small,
+    textAlign: "right",
+    backgroundColor: Styles.vars.colors.nepi_blue    
   }
 })
 
@@ -180,11 +188,12 @@ class RangeAdjustment extends Component {
           <label style={styles.label}>{`Range`}</label>
         </Tooltip>
         <Range
-          style={styles.range}
+          style={this.props.disabled? styles.disabled_range : styles.range}
           value={[this.state.min, this.state.max]}
           onChange={this.onSliderChange}
           onAfterChange={this.onSliderAfterChange}
           disabled={this.props.disabled}
+          handleStyle={this.props.disabled? {backgroundColor: Styles.vars.colors.nepi_blue} : {}}
           count={1}
           min={0}
           max={100}

@@ -54,7 +54,15 @@ const styles = Styles.Create({
     marginTop: Styles.vars.spacing.xs,
     marginRight: Styles.vars.spacing.small,
     marginLeft: Styles.vars.spacing.small,
-    textAlign: "right"
+    textAlign: "right",
+  },
+  disabled_slider: {
+    flex: 1.5,
+    marginTop: Styles.vars.spacing.xs,
+    marginRight: Styles.vars.spacing.small,
+    marginLeft: Styles.vars.spacing.small,
+    textAlign: "right",
+    backgroundColor: Styles.vars.colors.nepi_blue    
   },
   invisible_slider_input: {
     flex: 1,
@@ -247,6 +255,22 @@ class SliderAdjustment extends Component {
       newInputVal = newInputVal.toString() + this.props.unit
     }
 
+    var sliderStyle = styles.slider 
+    var handleStyle = {} // Default
+    var trackStyle = {} // Default
+    var railStyle = {} // Default
+    
+    if (this.props.invisibleSlider) {
+      sliderStyle = styles.invisible_slider
+      handleStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
+      trackStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
+      railStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
+    }
+    else if (this.props.disabled) {
+      handleStyle = {backgroundColor: Styles.vars.colors.nepi_blue}
+      sliderStyle = styles.disabled_slider
+    }
+
     return (
       <div style={{ display: "flex", ...styles.root, ...marginStyle}}>
         <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
@@ -254,7 +278,7 @@ class SliderAdjustment extends Component {
         </Tooltip>
         <Slider
           ref={this.focusReference}
-          style={(this.props.invisibleSlider === true)? styles.invisible_slider : styles.slider}
+          style={sliderStyle}
           disabled={this.props.disabled}
           value={newSliderVal}
           onChange={this.onSliderValueChange}
@@ -263,12 +287,9 @@ class SliderAdjustment extends Component {
           marks={(this.props.stepMapping && this.props.markSteps)? this.marksFromStepMapping() : this.props.marks}
           step={this.props.stepMapping? 1 : this.props.step}
           handle={(this.props.invisibleSlider === true)? undefined : handle}
-          handleStyle={this.props.invisibleSlider? 
-            {backgroundColor: Styles.vars.colors.black, borderWidth: "0px"} : {}}
-          trackStyle= {this.props.invisibleSlider?
-            {backgroundColor: Styles.vars.colors.black, borderWidth: "0px"} : {}}
-          railStyle={this.props.invisibleSlider?
-            {backgroundColor: Styles.vars.colors.black, borderWidth: "0px"} : {}}
+          handleStyle={handleStyle}
+          trackStyle= {trackStyle}
+          railStyle={railStyle}
         />
         <Input
           style={(this.props.invisibleSlider === true)? styles.invisible_slider_input : styles.input}
