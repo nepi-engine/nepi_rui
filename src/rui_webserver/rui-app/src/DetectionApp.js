@@ -20,14 +20,17 @@ class DetectionApp extends Component {
   constructor(props) {
     super(props)
     var img = (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
-    var classifier_running = ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
+    const classifier_running = ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
       true : false
     this.state = {
       imageTopic: null,
       imageText: (classifier_running === true)?
-        img[img.length-2] + "/" + img[img.length-1] : null,
+        img[img.length-1] + ':' + this.props.ros.reportedClassifier.selected_classifier : 
+        img? img[img.length-1] : null,
       // Only set currentDisplayImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
-      currentDisplayImgTopic: (classifier_running === true)? this.props.ros.classifierImgTopic : null,
+      currentDisplayImgTopic: (classifier_running === true)? 
+        this.props.ros.classifierImgTopic : 
+        (this.props.ros.reportedClassifier? this.props.ros.reportedClassifier.selected_img_topic : null),
       selectedClassifier: null,
       detectionThreshold: (classifier_running === true)? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3,
       localizerOptionAvailable: false,
@@ -172,10 +175,12 @@ class DetectionApp extends Component {
     } = this.props.ros
 
     // Revert back to showing the raw image
-    this.setState({
-      currentDisplayImgTopic: this.state.imageTopic,
-      imageText: this.state.imageText.split(':')[0]
-    })
+    if (this.state.imageTopic && this.state.imageText) {
+      this.setState({
+        currentDisplayImgTopic: this.state.imageTopic,
+        imageText: this.state.imageText.split(':')[0]
+      })
+    }
 
     stopClassifier()
   }
