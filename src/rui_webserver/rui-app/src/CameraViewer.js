@@ -183,7 +183,7 @@ class CameraViewer extends Component {
           <div align={"left"} textAlign={"left"}>
             { this.state.hideQualitySelector ?
               null :
-              <Label title={"Compression"} />
+              <Label title={"Compression Level"} />
             }
           </div>
           </Column>
