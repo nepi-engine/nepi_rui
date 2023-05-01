@@ -119,7 +119,7 @@ class ControlIDX extends Component {
             title={"Resolution"}
             topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
             msgType={"std_msgs/UInt8"}
-            adjustment={this.state.resolutionAdjustment}
+            adjustment={(capabilities && capabilities.adjustable_resolution)? this.state.resolutionAdjustment : null}
             disabled={(capabilities && capabilities.adjustable_resolution && !this.state.disabled)? false : true}
             entries={["Low", "Medium", "High", "Ultra"]}
         />
@@ -127,7 +127,7 @@ class ControlIDX extends Component {
             title={"Framerate"}
             topic={this.props.idxSensorNamespace + '/idx/set_framerate_mode'}
             msgType={"std_msgs/UInt8"}
-            adjustment={this.state.framerateAdjustment}
+            adjustment={(capabilities && capabilities.adjustable_framerate)? this.state.framerateAdjustment : null}
             disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
             entries={["Low", "Medium", "High", "Ultra"]}
         />
