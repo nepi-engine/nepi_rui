@@ -1022,7 +1022,7 @@ class ROSConnectionStore {
       })
 
       if (this.connectedToROS) {
-        setTimeout(_pollOnce, 5000)
+        setTimeout(_pollOnce, 1000)
       }
     }
 
@@ -1037,7 +1037,7 @@ class ROSConnectionStore {
       })
 
       if (this.connectedToROS) {
-        setTimeout(_pollOnce, 5000)
+        setTimeout(_pollOnce, 1000)
       }
     }
 
