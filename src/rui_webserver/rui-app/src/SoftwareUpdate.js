@@ -6,6 +6,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
+import Styles from "./Styles"
 
 @inject("ros")
 @observer
@@ -19,11 +20,19 @@ class SoftwareUpdate extends Component {
     renderSysPartitionSettings() {
       const {
         systemDefs,
-        onSwitchActiveInactiveRootfs
+        onSwitchActiveInactiveRootfs,
+        systemStatus
       } = this.props.ros
 
       const active_device_str = systemDefs? systemDefs.active_rootfs_device + ": " + systemDefs.firmware_version : ""
       const inactive_device_str = systemDefs? systemDefs.inactive_rootfs_device + ": " + systemDefs.inactive_rootfs_fw_version : ""
+
+      const stale_active_inactive = systemStatus && (systemStatus.warnings.flags[3] === true)
+      var active_inactive_style = {width: '100%'}
+      if (stale_active_inactive === true) {
+        active_inactive_style["color"] = Styles.vars.colors.red
+        active_inactive_style["fontWeight"] = "bold"
+      }
 
       return (
         <Section title={"A/B Partition Settings"}>
@@ -31,10 +40,10 @@ class SoftwareUpdate extends Component {
             <Input disabled value={systemDefs? systemDefs.first_stage_rootfs_device : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Active"}>
-            <Input disabled value={active_device_str} style={{width: '100%'}}/>
+            <Input disabled value={active_device_str} style={active_inactive_style}/>
           </Label>
           <Label title={"Inactive"}>
-            <Input disabled value={inactive_device_str} style={{width: '100%'}}/>
+            <Input disabled value={inactive_device_str} style={active_inactive_style}/>
           </Label>
           <Label title={"Max Boot Fail Count"}>
             <Input disabled value={systemDefs? systemDefs.max_boot_fail_count : ""} style={{width: '100%'}}/>

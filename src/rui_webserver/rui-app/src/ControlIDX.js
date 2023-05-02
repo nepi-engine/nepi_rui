@@ -44,7 +44,7 @@ class ControlIDX extends Component {
   idxStatusListener(message) {
     this.setState({
       resolutionAdjustment: message.resolution_mode,
-      framerateAdjustment: message.frame_rate_mode,
+      framerateAdjustment: message.framerate_mode,
       contrastAdjustment: message.contrast,
       brightnessAdjustment: message.brightness,
       thresholdingAdjustment: message.thresholding,
@@ -115,26 +115,22 @@ class ControlIDX extends Component {
       <Section
         title={this.props.title ? this.props.title : "NO SENSOR SELECTED"}
       >
-        {(capabilities && capabilities.adjustable_resolution)?
         <RadioButtonAdjustment
             title={"Resolution"}
             topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
             msgType={"std_msgs/UInt8"}
-            adjustment={this.state.resolutionAdjustment}
+            adjustment={(capabilities && capabilities.adjustable_resolution)? this.state.resolutionAdjustment : null}
+            disabled={(capabilities && capabilities.adjustable_resolution && !this.state.disabled)? false : true}
             entries={["Low", "Medium", "High", "Ultra"]}
         />
-        : null}
-        {(capabilities && capabilities.adjustable_framerate)?
         <RadioButtonAdjustment
             title={"Framerate"}
             topic={this.props.idxSensorNamespace + '/idx/set_framerate_mode'}
             msgType={"std_msgs/UInt8"}
-            adjustment={this.state.framerateAdjustment}
+            adjustment={(capabilities && capabilities.adjustable_framerate)? this.state.framerateAdjustment : null}
+            disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
             entries={["Low", "Medium", "High", "Ultra"]}
         />
-        : null}
-
-        {(capabilities && capabilities.adjustable_contrast)?
         <SliderAdjustment
           title={"Contrast"}
           msgType={"std_msgs/Float32"}
@@ -143,13 +139,10 @@ class ControlIDX extends Component {
           scaled={0.01}
           min={0}
           max={100}
-          disabled={this.state.disabled}
+          disabled={(capabilities && capabilities.adjustable_contrast && !this.state.disabled)? false : true}
           tooltip={"Adjustable contrast"}
           unit={"%"}
         />
-        : null}
-
-        {(capabilities && capabilities.adjustable_brightness)?
         <SliderAdjustment
             title={"Brightness"}
             msgType={"std_msgs/Float32"}
@@ -158,13 +151,10 @@ class ControlIDX extends Component {
             scaled={0.01}
             min={0}
             max={100}
-            disabled={this.state.disabled}
+            disabled={(capabilities && capabilities.adjustable_brightness && !this.state.disabled)? false : true}
             tooltip={"Adjustable brightness"}
             unit={"%"}
         />
-        : null}
-
-        {(capabilities && capabilities.adjustable_thresholding)?
         <SliderAdjustment
             title={"Thresholding"}
             msgType={"std_msgs/Float32"}
@@ -173,23 +163,19 @@ class ControlIDX extends Component {
             scaled={0.01}
             min={0}
             max={100}
-            disabled={this.state.disabled}
+            disabled={(capabilities && capabilities.adjustable_thresholding && !this.state.disabled)? false : true}
             tooltip={"Adjustable thresholding"}
             unit={"%"}
         />
-        : null}
-
-        {(capabilities && capabilities.adjustable_range)?
         <RangeAdjustment
           title="Range"
-          adjustment={this.state.rangeAdjustment}
+          min={this.state.rangeMin}
+          max={this.state.rangeMax}
           topic={this.props.sensor_namespace}
-          disabled={this.state.disabled}
+          disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
           tooltip={"Adjustable range"}
+          unit={"%"}
         />
-        : null}
-
-        {(capabilities && capabilities.has_pointclouds)?
         <div>
           <Columns>
             <Column>
@@ -202,21 +188,27 @@ class ControlIDX extends Component {
             <div align={"left"} textAlign={"left"}>
               <Label title={"Earth"}>
               </Label>
-              <Toggle checked={this.state.frame3D === "map"} onClick={() => {this.set3DFrame(this.props.sensor_namespace, "map")}}/>
+              <Toggle 
+                checked={this.state.frame3D === "map"} 
+                disabled={(capabilities && capabilities.has_pointclouds && !this.state.disabled)? false : true}
+                onClick={() => {this.set3DFrame(this.props.sensor_namespace, "map")}}
+              />
             </div>
             </Column>
             <Column>
             <div align={"left"} textAlign={"left"}>
               <Label title={"Sensor"}>
               </Label>
-              <Toggle checked={this.state.frame3D === "idx_center_frame"} onClick={() => {this.set3DFrame(this.props.sensor_namespace, "idx_center_frame")}}/>
+              <Toggle 
+                checked={this.state.frame3D === "idx_center_frame"}
+                disabled={(capabilities && capabilities.has_pointclouds && !this.state.disabled)? false : true}
+                onClick={() => {this.set3DFrame(this.props.sensor_namespace, "idx_center_frame")}}
+              />
             </div>
             </Column>
             
           </Columns>
         </div>
-        : null}
-
       </Section>
     )
   }

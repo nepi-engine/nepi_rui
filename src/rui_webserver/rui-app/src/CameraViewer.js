@@ -183,7 +183,7 @@ class CameraViewer extends Component {
           <div align={"left"} textAlign={"left"}>
             { this.state.hideQualitySelector ?
               null :
-              <Label title={"Quality"} />
+              <Label title={"Compression Level"} />
             }
           </div>
           </Column>
@@ -194,8 +194,8 @@ class CameraViewer extends Component {
               <div>
                 <Label title={"Low"} />
                 <Toggle
-                  checked={streamingImageQuality <= COMPRESSION_LOW_QUALITY}
-                  onClick={() => {this.onChangeImageQuality(COMPRESSION_LOW_QUALITY)}}
+                  checked={streamingImageQuality >= COMPRESSION_HIGH_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_HIGH_QUALITY)}}
                 />
               </div>
             }
@@ -222,8 +222,8 @@ class CameraViewer extends Component {
               <div>
                 <Label title={"High"} />
                 <Toggle
-                  checked={streamingImageQuality >= COMPRESSION_HIGH_QUALITY}
-                  onClick={() => {this.onChangeImageQuality(COMPRESSION_HIGH_QUALITY)}}
+                  checked={streamingImageQuality <= COMPRESSION_LOW_QUALITY}
+                  onClick={() => {this.onChangeImageQuality(COMPRESSION_LOW_QUALITY)}}
                 />
               </div>
             }
