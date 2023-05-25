@@ -83,7 +83,7 @@ class Automation extends Component {
   
 
   render() {
-    const { scripts, running_scripts, systemStats, onToggleAutoStartEnabled} = this.props.ros;
+    const { scripts, running_scripts, systemStats} = this.props.ros;
     //const { scripts, running_scripts, systemStats} = this.props.ros;
     let filesForListBox = []
     let runningFilesForListBox = [];
