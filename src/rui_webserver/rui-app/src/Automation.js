@@ -26,8 +26,7 @@ class Automation extends Component {
 
     this.state = {
       automationSelectedScript: '',
-      runningSelectedScript: '',
-      checkboxChecked: false
+      runningSelectedScript: ''
     };
 
     this.handleAutomationScriptSelect = this.handleAutomationScriptSelect.bind(this)
@@ -40,23 +39,12 @@ class Automation extends Component {
   }
 
   handleAutomationScriptSelect = (item) => {
-    const isDifferentScript = item !== this.state.automationSelectedScript;
     this.setState({ 
         automationSelectedScript: item, 
-        runningSelectedScript: '', 
-        checkboxChecked: isDifferentScript ? false : this.state.checkboxChecked 
+        runningSelectedScript: ''
     });
-    this.props.ros.startPollingGetSystemStatsQueryService(item) // get script and system status
-  };
-
-
-  handleAutomationScriptSelect = (item) => {
-    if (this.state.automationSelectedScript !== item) {
-      this.setState({ checkboxChecked: false }); // clear the checkbox if the selected script changes
-    }
-    
-    this.setState({ automationSelectedScript: item, runningSelectedScript: '' });
-    this.props.ros.startPollingGetSystemStatsQueryService(item); // get script and system status
+    this.props.ros.callGetSystemStatsQueryService(item) // get script and system status
+    this.props.ros.callGetSystemStatsQueryService(item, false) // Fire off a one-shot request for faster feedback
   };
 
   handleStartScriptClick = () => {
@@ -64,6 +52,7 @@ class Automation extends Component {
     const scriptToLaunch = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
     if (scriptToLaunch) {
       this.props.ros.startLaunchScriptService(scriptToLaunch);
+      this.props.ros.callGetSystemStatsQueryService(scriptToLaunch, false) // Fire off a one-shot request for faster feedback
     }
   }
 
@@ -72,15 +61,15 @@ class Automation extends Component {
     const scriptToStop = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
     if (scriptToStop) {
       this.props.ros.stopLaunchScriptService(scriptToStop);
+      this.props.ros.callGetSystemStatsQueryService(scriptToStop, false) // Fire off a one-shot request for faster feedback
     }
   };
 
   handleCheckboxChange = (e) => {
-    this.setState({ checkboxChecked: e.target.checked });
-  
+    const script = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
     this.props.ros.onToggleAutoStartEnabled(this.state.automationSelectedScript, e.target.checked)
+    this.props.ros.callGetSystemStatsQueryService(script, false) // Fire off a one-shot request for faster feedback
   }
-  
 
   render() {
     const { scripts, running_scripts, systemStats} = this.props.ros;
@@ -222,7 +211,9 @@ class Automation extends Component {
               <ButtonMenu>
                 <Label title={"Auto Start"} marginTop={Styles.vars.spacing.medium}>
                 <Toggle
-                  checked={this.state.checkboxChecked}
+                  checked={systemStats && typeof systemStats.auto_start_enabled !== 'undefined'?
+                    systemStats.auto_start_enabled
+                    : false}
                   onChange={this.handleCheckboxChange}
                   //onChange={onToggleAutoStartEnabled}
                 />

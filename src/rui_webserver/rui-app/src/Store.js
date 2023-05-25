@@ -239,7 +239,6 @@ class ROSConnectionStore {
 
   @observable scripts = []
   @observable running_scripts = []
-  @observable scriptEnabled = false
   @observable launchScript = false
   @observable stopScript = false
   @observable scriptStatus = null
@@ -602,11 +601,10 @@ class ROSConnectionStore {
     // automation manager services
     this.startPollingGetScriptsService()  // populate listbox with files
     this.startPollingGetRunningScriptsService()  // populate listbox with active files
-    //this.startPollingSetScriptEnabledService() // set scripts enabled to be true or false
     //this.startPollingLaunchScriptService() // invoke script execution
     //this.startPollingStopScriptService() // stop script execution
     //this.startPollingGetScriptStatusQueryService() // get status of script
-    //this.startPollingGetSystemStatsQueryService() // get script and system status
+    //this.callGetSystemStatsQueryService() // get script and system status
 
     // sequential image mux services
     this.callMuxSequenceQuery(true) // Start it polling
@@ -1051,21 +1049,6 @@ class ROSConnectionStore {
     _pollOnce()
   }
 
-  async startPollingSetScriptEnabledService() {
-    const _pollOnce = async () => {
-      this.scriptEnabled = await this.callService({
-        name: "set_script_enabled",
-        messageType: "nepi_ros_interfaces/SetScriptEnabled"
-      })
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    _pollOnce()
-  }
-
   async startLaunchScriptService(item) {
     const _pollOnce = async () => {
       this.launchScript = await this.callService({
@@ -1104,7 +1087,7 @@ class ROSConnectionStore {
     _pollOnce()
   }
 
-  async startPollingGetSystemStatsQueryService(item) {
+  async callGetSystemStatsQueryService(item, poll = true) {
     const _pollOnce = async () => {
       this.systemStats = await this.callService({
         name: "get_system_stats",
@@ -1112,7 +1095,7 @@ class ROSConnectionStore {
         args: {script : this.scriptForPolledStats}
       })
 
-      if (this.connectedToROS) {
+      if (this.connectedToROS && poll) {
         setTimeout(_pollOnce, 1000)
       }
     }
@@ -1121,7 +1104,7 @@ class ROSConnectionStore {
     this.scriptForPolledStats = item
     
     // Only launch this once, then just change state to start polling a different script
-    if (firstCall === true) {
+    if (firstCall === true || !poll) {
       _pollOnce()
     }
     
@@ -1523,7 +1506,6 @@ class ROSConnectionStore {
 
   @action.bound
   onToggleAutoStartEnabled(autoStartScriptName, isEnabled) {
-    console.info(`onToggleAutoStartEnabled: called!!! ${autoStartScriptName}, ${isEnabled}`);
     this.publishMessage({
       name: "enable_script_autostart",
       messageType: "nepi_ros_interfaces/AutoStartEnabled",
