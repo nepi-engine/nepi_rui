@@ -1521,6 +1521,19 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  onToggleAutoStartEnabled(autoStartScriptName, isEnabled) {
+    console.info(`onToggleAutoStartEnabled: called!!! ${autoStartScriptName}, ${isEnabled}`);
+    this.publishMessage({
+      name: "enable_script_autostart",
+      messageType: "nepi_ros_interfaces/AutoStartEnabled",
+      data: { 
+        script: autoStartScriptName,
+        enabled: isEnabled
+       }
+    })
+  }
+
   // 3DX Sensor Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
