@@ -191,6 +191,7 @@ class ROSConnectionStore {
   @observable topicNames = null
   @observable topicTypes = null
   @observable imageTopicsDetection = []
+  @observable imageTopicsSequencer = []
   @observable imageTopics3DX = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
@@ -244,6 +245,8 @@ class ROSConnectionStore {
   @observable scriptStatus = null
   @observable systemStats = null
   @observable scriptForPolledStats = null
+
+  @observable imgMuxSequences = null
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -300,9 +303,10 @@ class ROSConnectionStore {
         var newSensorIDXs = this.updateIDXSensorList()
         var newResettables = this.updateResetTopics()
         var newDetectionImageTopics = this.updateDetectionImageTopics()
+        var newSequencerImageTopics = this.updateSequencerImageTopics()
         var new3DXImageTopics = this.update3DXImageTopics()
 
-        if (newPrefix || newSensor3DXs || newSensorIDXs || newResettables || newDetectionImageTopics || new3DXImageTopics) {
+        if (newPrefix || newSensor3DXs || newSensorIDXs || newResettables || newDetectionImageTopics || newSequencerImageTopics || new3DXImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -372,6 +376,18 @@ class ROSConnectionStore {
 
     if (!this.imageTopicsDetection.equals(newImageTopics)) {
       this.imageTopicsDetection = newImageTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updateSequencerImageTopics() {
+    // For now, just use the same logic as for the detection image topics. One day we may filter these differently, etc.
+    this.updateDetectionImageTopics()
+    if (!this.imageTopicsSequencer.equals(this.imageTopicsDetection)) {
+      this.imageTopicsSequencer = this.imageTopicsDetection
       return true
     } else {
       return false
@@ -555,7 +571,7 @@ class ROSConnectionStore {
   @action.bound
   onConnectedToROS() {
     this.connectedToROS = true
-    this.rosLog("Connected to rosbridge")
+    this.rosLog("Connected to NEPI device")
   }
 
   @action.bound
@@ -565,7 +581,6 @@ class ROSConnectionStore {
     })
 
     // listeners
-    this.setupImageRecognitionListener()
     this.setupImageSystemStatusListener()
     this.setupRUISettingsListener()
 
@@ -592,12 +607,15 @@ class ROSConnectionStore {
     //this.startPollingStopScriptService() // stop script execution
     //this.startPollingGetScriptStatusQueryService() // get status of script
     //this.startPollingGetSystemStatsQueryService() // get script and system status
+
+    // sequential image mux services
+    this.callMuxSequenceQuery(true) // Start it polling
   }
 
   @action.bound
   onErrorConnectingToROS() {
     this.connectedToROS = false
-    this.rosLog("Error connecting to rosbridge, retrying")
+    this.rosLog("Error connecting to NEPI device, retrying")
   }
 
   @action.bound
@@ -609,18 +627,7 @@ class ROSConnectionStore {
     this.deviceId = null
     this.deviceSerial = null
 
-    this.rosLog("Connection to rosbridge closed")
-  }
-
-  setupImageRecognitionListener() {
-    this.addListener({
-      name: "/fake_image_recognition",
-      messageType: "nepi_ros_interfaces/Annotation",
-      callback: message => {
-        this.imageRecognitions = [message]
-      },
-      noPrefix: true
-    })
+    this.rosLog("Connection to NEPI device closed")
   }
 
   setupImageSystemStatusListener() {
@@ -1118,6 +1125,22 @@ class ROSConnectionStore {
       _pollOnce()
     }
     
+  }
+
+  async callMuxSequenceQuery(poll = false) {
+    const _pollOnce = async () => {
+      this.imgMuxSequences = await this.callService({
+        name: "sequential_image_mux/mux_sequence_query",
+        messageType: "nepi_ros_interfaces/ImageMuxSequenceQuery",
+        msgKey: "img_mux_sequences"
+      })
+      
+      if (this.connectedToROS && poll) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
   }
   //=====
   
@@ -1749,6 +1772,25 @@ class ROSConnectionStore {
   }
 
   /////////////////////////////////////////////////////////////////////////
+
+  // Mux Sequencer
+  @action.bound
+  onConfigureMuxSequence(updated_sequence_dict) {
+    this.publishMessage({
+      name: "sequential_image_mux/configure_mux_sequence",
+      messageType: "nepi_ros_interfaces/ImageMuxSequence",
+      data: updated_sequence_dict
+    })
+  }
+
+  @action.bound
+  onDeleteMuxSequence(sequence_id) {
+    this.publishMessage({
+      name: "sequential_image_mux/delete_mux_sequence",
+      messageType: "std_msgs/String",
+      data: { data: sequence_id }
+    })
+  }
 }
 
 const stores = {

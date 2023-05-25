@@ -45,7 +45,7 @@ class Button extends Component {
     this.setState({
       actualStyle: {
         ...styles.buttonDown,
-        ...style,
+        ...style
       }
     })
   }
@@ -54,8 +54,8 @@ class Button extends Component {
     const { style } = this.props
     this.setState({
       actualStyle: {
-        ...style,
-        ...styles.button
+        ...styles.button,
+        ...style
       }
     })
   }

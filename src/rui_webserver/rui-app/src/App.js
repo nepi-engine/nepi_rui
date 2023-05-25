@@ -16,6 +16,7 @@ import Settings from "./Settings"
 import SoftwareUpdate from "./SoftwareUpdate"
 import Help from "./Help"
 import Automation from "./Automation"
+import ImageSequencer from "./ImageSequencer"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -39,6 +40,7 @@ class App extends Component {
               label: "Sensors",
               subItems: [
                 { path: "/imagery", label: "Imagery" },
+                { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/navPose", label: "NavPose" }
               ]
             },
@@ -47,7 +49,7 @@ class App extends Component {
               label: "Applications",
               subItems: [
                 { path: "/ai", label: "AI" },
-                { path: "/automation", label: "Automation"},
+                { path: "/automation", label: "Automation"}
               ]
             },
             { path: "/nepi_connect", label: "Connect" },
@@ -72,6 +74,7 @@ class App extends Component {
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
           <Route path="/automation" component={Automation} />
+          <Route path="/image_sequencer" component={ImageSequencer} />
           <Route path="/admin" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
