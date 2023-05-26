@@ -26,7 +26,9 @@ const NODE_DISPLAY_NAMES = {
   trigger_mgr: "Triggering",
   nepi_link_ros_bridge: "NEPI Connect",
   gpsd_ros_client: "GPSD Client",
-  illumination_mgr: "Illumination"
+  illumination_mgr: "Illumination",
+  automation_mgr: "Automation",
+  sequential_image_mux: "Sequencer"
 }
 
 const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
