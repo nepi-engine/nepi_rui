@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from "mobx-react"
 import { toJS } from 'mobx';
-
+import Toggle from "react-toggle"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
@@ -10,6 +10,8 @@ import Button, { ButtonMenu } from "./Button"
 import ListBox from './ListBox';
 import './ListBox.css';
 import './Automation.css';
+import Styles from "./Styles"
+
 
 // Utilities
 function bytesToKBString(bytes) {
@@ -28,29 +30,29 @@ class Automation extends Component {
     };
 
     this.handleAutomationScriptSelect = this.handleAutomationScriptSelect.bind(this)
-    this.handleRunningScriptSelect = this.handleRunningScriptSelect.bind(this)
+    //this.handleRunningScriptSelect = this.handleRunningScriptSelect.bind(this)
     this.handleStopScriptClick = this.handleStopScriptClick.bind(this)
     this.handleStartScriptClick = this.handleStartScriptClick.bind(this)
+    this.handleCheckboxChange = this.handleCheckboxChange.bind(this) 
 
     this.prevRunningScripts = null;
   }
 
   handleAutomationScriptSelect = (item) => {
-    //alert(`You have selected ${item}`);
-    this.setState({ automationSelectedScript: item, runningSelectedScript: '' });
-    this.props.ros.startPollingGetSystemStatsQueryService(item) // get script and system status
+    this.setState({ 
+        automationSelectedScript: item, 
+        runningSelectedScript: ''
+    });
+    this.props.ros.callGetSystemStatsQueryService(item) // get script and system status
+    this.props.ros.callGetSystemStatsQueryService(item, false) // Fire off a one-shot request for faster feedback
   };
-
-  handleRunningScriptSelect = (item) => {
-    this.setState({ runningSelectedScript: item, automationSelectedScript: '' })
-    this.props.ros.startPollingGetSystemStatsQueryService(item) // get script and system status
-  }
 
   handleStartScriptClick = () => {
     // Start the currently selected script
     const scriptToLaunch = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
     if (scriptToLaunch) {
       this.props.ros.startLaunchScriptService(scriptToLaunch);
+      this.props.ros.callGetSystemStatsQueryService(scriptToLaunch, false) // Fire off a one-shot request for faster feedback
     }
   }
 
@@ -59,12 +61,20 @@ class Automation extends Component {
     const scriptToStop = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
     if (scriptToStop) {
       this.props.ros.stopLaunchScriptService(scriptToStop);
+      this.props.ros.callGetSystemStatsQueryService(scriptToStop, false) // Fire off a one-shot request for faster feedback
     }
   };
-  
+
+  handleCheckboxChange = (e) => {
+    const script = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
+    this.props.ros.onToggleAutoStartEnabled(this.state.automationSelectedScript, e.target.checked)
+    this.props.ros.callGetSystemStatsQueryService(script, false) // Fire off a one-shot request for faster feedback
+  }
+
   render() {
     const { scripts, running_scripts, systemStats} = this.props.ros;
-    let filesForListBox = [];
+    //const { scripts, running_scripts, systemStats} = this.props.ros;
+    let filesForListBox = []
     let runningFilesForListBox = [];
 
     //console.log('Automation scripts:', scripts);
@@ -199,6 +209,15 @@ class Automation extends Component {
             </Label>
             {(selectedScript !== '')?
               <ButtonMenu>
+                <Label title={"Auto Start"} marginTop={Styles.vars.spacing.medium}>
+                <Toggle
+                  checked={systemStats && typeof systemStats.auto_start_enabled !== 'undefined'?
+                    systemStats.auto_start_enabled
+                    : false}
+                  onChange={this.handleCheckboxChange}
+                  //onChange={onToggleAutoStartEnabled}
+                />
+                </Label>
                 <Button disabled={selectedScript === ''} onClick={this.handleStartScriptClick}>{"Start"}</Button>
                 <Button disabled={selectedScript === ''} onClick={this.handleStopScriptClick}>{"Stop"}</Button>
               </ButtonMenu>

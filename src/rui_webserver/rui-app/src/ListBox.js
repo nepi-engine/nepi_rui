@@ -18,4 +18,20 @@ const ListBox = ({ items = [], selectedItem, onSelect, readOnly }) => {
   );
 };
 
+export const IndexedListBox = ({ items = [], selectedItemIndex, onSelect, readOnly }) => {
+  return (
+    <ul className="ListBox">
+      {items.map((item, index) => (
+        <li
+          key={item}
+          className={selectedItemIndex === index ? 'selected' : ''}
+          onClick={!readOnly ? (() => onSelect(item, index)) : undefined}
+        >
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export default ListBox;
