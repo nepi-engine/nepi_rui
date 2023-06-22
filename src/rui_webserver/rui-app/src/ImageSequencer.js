@@ -27,7 +27,8 @@ class ImageSequencer extends Component {
       addingNewSequence: false,
       newSequenceCount: 0,
       selectedSeqInputImageLabels: [],
-      selectedInputImageIndex: null
+      selectedInputImageIndex: null,
+      advancedImgStepConfigEnabled: false
     }
 
     this.onToggleEnabled = this.onToggleEnabled.bind(this)
@@ -39,9 +40,12 @@ class ImageSequencer extends Component {
     this.onApplyChangesButtonPressed = this.onApplyChangesButtonPressed.bind(this)
     this.onDeleteInputImgButtonPressed = this.onDeleteInputImgButtonPressed.bind(this)
     this.onAddInputImgSelection = this.onAddInputImgSelection.bind(this)
+    this.onToggleAdvancedImgStepConfigEnabled = this.onToggleAdvancedImgStepConfigEnabled.bind(this)
+    this.renderImageSettings = this.renderImageSettings.bind(this)
+    this.renderImageSettingsAdvanced = this.renderImageSettingsAdvanced.bind(this)
   }
 
-  // Lifecycle method called when compnent updates.
+  // Lifecycle method called when component updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const {imgMuxSequences} = this.props.ros
@@ -114,7 +118,16 @@ class ImageSequencer extends Component {
       }
 
       updatedSelectedSequenceObj['inputs'][selectedInputImageIndex][e.target.id] = e.target.value
+
+      // Ensure that when using the simple config scheme, we maintain a valid relationship between min and max duration
+      if ((e.target.id === "min_duration_s") && (this.state.advancedImgStepConfigEnabled === false) && 
+          (updatedSelectedSequenceObj['inputs'][selectedInputImageIndex]["max_duration_s"] <= e.target.value))
+      {
+        const good_max_val = parseFloat(e.target.value, 10) + 1.0
+        updatedSelectedSequenceObj['inputs'][selectedInputImageIndex]["max_duration_s"] = good_max_val.toString()
+      }
     }
+
     else if ((e.target.id === "output_topic") ||
              (e.target.id === "output_img_width_pixels") ||
              (e.target.id === "output_img_height_pixels")) {
@@ -370,8 +383,9 @@ class ImageSequencer extends Component {
     var modifiedSeqInputs = this.state.selectedSequenceObj['inputs']
     var newInput = {}
     newInput['topic'] = value
-    newInput['min_frame_count'] = 1
-    newInput['max_frame_count'] = 1000 
+    // Defaults are set for a simple fixed-duration scheme that is fully controlled by min_duration_s
+    newInput['min_frame_count'] = 0
+    newInput['max_frame_count'] = 1000000 
     newInput['min_duration_s'] = 1.0
     newInput['max_duration_s'] = 5.0
     modifiedSeqInputs.splice(nextIndex, 0, newInput)
@@ -391,11 +405,100 @@ class ImageSequencer extends Component {
       document.getElementById(ids[i]).style.fontWeight = "bold"
     }
   }
+
+  onToggleAdvancedImgStepConfigEnabled() {
+    const enabled = this.state.advancedImgStepConfigEnabled
+    this.setState({advancedImgStepConfigEnabled: !enabled})
+  }
+
+  renderImageSettings(selectedInputImageObj) {
+    return (
+      <Columns>
+        <Column equalWidth={false}>
+          <Label title={''}/>
+          <Label title={"Duration (s)"}/>
+          <Label title={''}/>
+        </Column>
+        <Column>
+          <Label title={'Fixed'}/>
+          <Input
+            id="min_duration_s"
+            value={selectedInputImageObj? selectedInputImageObj['min_duration_s'] : ''}
+            style={{width: "6em"}} 
+            onChange={this.onChangeTextField}
+            disabled={selectedInputImageObj? false : true}
+          />
+           <Input
+            id="min_frame_count"
+            value={selectedInputImageObj? selectedInputImageObj['min_frame_count'] : ''} 
+            style={{width: "6em", visibility: "hidden"}}
+          />
+        </Column>
+        <Column>
+          <Label title={''}/>
+          <Input 
+            id="max_duration_s"
+            style={{width: "6em", visibility: "hidden"}}
+          />
+          <Input 
+            id="max_frame_count"
+            style={{width: "6em", visibility: "hidden"}}
+          />
+        </Column>
+      </Columns>
+    )
+  }
+
+  renderImageSettingsAdvanced(selectedInputImageObj) {
+    return (
+      <Columns>
+        <Column equalWidth={false}>
+          <Label title={''} />
+          <Label title={"Duration (s)"}/>
+          <Label title={"Frames"}/>
+        </Column>
+        <Column>
+          <Label title={"Min"}/>
+          <Input
+            id="min_duration_s"
+            value={selectedInputImageObj? selectedInputImageObj['min_duration_s'] : ''}
+            style={{width: "6em"}} 
+            onChange={this.onChangeTextField}
+            disabled={selectedInputImageObj? false : true} 
+          />
+          <Input
+            id="min_frame_count"
+            value={selectedInputImageObj? selectedInputImageObj['min_frame_count'] : ''} 
+            style={{width: "6em"}} 
+            onChange={this.onChangeTextField}
+            disabled={selectedInputImageObj? false : true}
+          />
+        </Column>
+        <Column>
+          <Label title={"Max"}/>
+          <Input 
+            id="max_duration_s"
+            value={selectedInputImageObj? selectedInputImageObj['max_duration_s'] : ''} 
+            style={{width: "6em"}} 
+            onChange={this.onChangeTextField}
+            disabled={selectedInputImageObj? false : true}
+          />
+          <Input 
+            id="max_frame_count"
+            value={selectedInputImageObj? selectedInputImageObj['max_frame_count'] : ''} 
+            style={{width: "6em"}}
+            onChange={this.onChangeTextField}
+            disabled={selectedInputImageObj? false : true} 
+          />
+        </Column>
+      </Columns>
+    )
+  }
     
   render() {
     const {imgMuxSequences} = this.props.ros
     const {selectedSequenceObj, selectedSeqInputImageLabels, selectedInputImageIndex, 
-           selectedSequenceModified, addingNewSequence} = this.state
+           selectedSequenceModified, addingNewSequence, advancedImgStepConfigEnabled} = this.state
         
     let sequencesForListBox = [];
     if (imgMuxSequences !== null) {
@@ -419,14 +522,16 @@ class ImageSequencer extends Component {
       cameraViewerImageTopic = selectedSequenceObj['output_topic']
       cameraViewerTitle = selectedSeqId + "(output): " + cameraViewerImageTopic
     }
-    
+
+    const showAdvancedStepConfig = (advancedImgStepConfigEnabled === true)
+            
     return (
     <Columns>
       <Column>
         <CameraViewer
-              imageTopic={cameraViewerImageTopic}
-              title={cameraViewerTitle}
-              hideQualitySelector={false}
+          imageTopic={cameraViewerImageTopic}
+          title={cameraViewerTitle}
+          hideQualitySelector={false}
         />
       </Column>
       <Column>
@@ -526,46 +631,20 @@ class ImageSequencer extends Component {
               </ButtonMenu>
             </Section>
             {selectedSequenceObj !== null? 
-              <Section title={"Input Settings"}>
-                <Columns>
-                  <Column equalWidth={false}>
-                    <Label title={''} />
-                    <Label title={"Duration"}/>
-                    <Label title={"Frames"}/>
-                  </Column>
-                  <Column>
-                    <Label title={"Min"}/>
-                    <Input
-                      id="min_duration_s"
-                      value={selectedInputImageObj? selectedInputImageObj['min_duration_s'] : ''}
-                      style={{width: "6em"}} 
-                      onChange={this.onChangeTextField} 
-                    />
-                    <Input
-                      id="min_frame_count"
-                      value={selectedInputImageObj? selectedInputImageObj['min_frame_count'] : ''} 
-                      style={{width: "6em"}} 
-                      onChange={this.onChangeTextField}
-                    />
-                  </Column>
-                  <Column>
-                    <Label title={"Max"}/>
-                    <Input 
-                      id="max_duration_s"
-                      value={selectedInputImageObj? selectedInputImageObj['max_duration_s'] : ''} 
-                      style={{width: "6em"}} 
-                      onChange={this.onChangeTextField}
-                    />
-                    <Input 
-                      id="max_frame_count"
-                      value={selectedInputImageObj? selectedInputImageObj['max_frame_count'] : ''} 
-                      style={{width: "6em"}}
-                      onChange={this.onChangeTextField} 
-                    />
-                  </Column>
-                </Columns>
-              </Section>  
-            : null}
+              <Section title={showAdvancedStepConfig? "Image Settings (Advanced)" : "Image Settings"}>
+                {showAdvancedStepConfig === true?
+                  this.renderImageSettingsAdvanced(selectedInputImageObj)
+                : this.renderImageSettings(selectedInputImageObj)
+                }
+                <Label title={"Advanced Config."}>
+                  <Toggle
+                    checked={advancedImgStepConfigEnabled} 
+                    onClick={this.onToggleAdvancedImgStepConfigEnabled}              
+                  />
+                </Label>
+              </Section>
+            : null
+            }
           </Column>
         </Columns>
        </Column>
