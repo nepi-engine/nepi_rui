@@ -513,12 +513,13 @@ class ImageSequencer extends Component {
     const applyButtonTextColor = selectedSequenceModified? Styles.vars.colors.red : Styles.vars.colors.black
     
     var cameraViewerImageTopic = null
-    var cameraViewerTitle = "No sequence selected"
+    var cameraViewerTitle = "Sequence deselected/disabled"
     if (selectedInputImageObj !== null) {
       cameraViewerImageTopic = selectedInputImageObj['topic']
       cameraViewerTitle = selectedSeqId + "(input): " + cameraViewerImageTopic
     }
-    else if ((addingNewSequence === false) && (selectedSequenceObj !== null)) {
+    else if ((addingNewSequence === false) && (selectedSequenceObj !== null) && 
+             (selectedSequenceObj['enabled'] === true || selectedSequenceModified === true)) {
       cameraViewerImageTopic = selectedSequenceObj['output_topic']
       cameraViewerTitle = selectedSeqId + "(output): " + cameraViewerImageTopic
     }
