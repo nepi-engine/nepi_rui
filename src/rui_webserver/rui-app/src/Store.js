@@ -243,7 +243,6 @@ class ROSConnectionStore {
   @observable running_scripts = []
   @observable launchScript = false
   @observable stopScript = false
-  @observable scriptStatus = null
   @observable systemStats = null
   @observable scriptForPolledStats = null
 
@@ -605,7 +604,6 @@ class ROSConnectionStore {
     this.startPollingGetRunningScriptsService()  // populate listbox with active files
     //this.startPollingLaunchScriptService() // invoke script execution
     //this.startPollingStopScriptService() // stop script execution
-    //this.startPollingGetScriptStatusQueryService() // get status of script
     //this.callGetSystemStatsQueryService() // get script and system status
 
     // sequential image mux services
@@ -1071,21 +1069,6 @@ class ROSConnectionStore {
         args: {script : item}
       })
     }
-    _pollOnce()
-  }
-
-  async startPollingGetScriptStatusQueryService() {
-    const _pollOnce = async () => {
-      this.scriptStatus = await this.callService({
-        name: "get_script_status",
-        messageType: "nepi_ros_interfaces/GetScriptStatusQuery"
-      })
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
     _pollOnce()
   }
 
