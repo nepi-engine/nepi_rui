@@ -2,9 +2,11 @@ import { observable, action } from "mobx"
 import moment from "moment"
 import ROS from "roslib"
 import cannon from "cannon"
+import yaml from "js-yaml"
 
 const ROS_WS_URL = `ws://${window.location.hostname}:9090`
 const FLASK_URL = `http://${window.location.hostname}:5003`
+const LICENSE_SERVER_WS_URL = `ws://${window.location.hostname}:9092`
 
 const TRIGGER_MASKS = {
   OUTPUT_ENABLED: 0xffffffff,
@@ -247,6 +249,72 @@ class ROSConnectionStore {
   @observable scriptForPolledStats = null
 
   @observable imgMuxSequences = null
+
+  @observable license_server = null
+  @observable commercial_licensed = false
+  @observable license_info = null
+  @observable license_request_info = null
+  @observable license_request_mode = false
+
+  async checkLicense() {
+    var retry_delay_ms = 3000
+    if (!this.license_server) {
+      try {
+        this.license_server = new WebSocket(LICENSE_SERVER_WS_URL)
+
+        this.license_server.onmessage = (event) => {
+          var response_dict = yaml.load(event.data)         
+          
+          if ('licensed_components' in response_dict)
+          {
+            this.license_info = yaml.load(event.data)
+            if (this.license_info['licensed_components']['nepi_base']['commercial_license_type'] === 'Developer') {
+              this.commercial_licensed = false
+            }
+            else {
+              if (this.license_request_mode && !this.commercial_licensed) {
+                this.license_request_mode = false
+              }
+              this.commercial_licensed = true
+            }
+          }
+
+          else if ('license_request' in response_dict)
+          {
+            this.license_request_info = yaml.load(event.data)
+          }
+        }
+
+        retry_delay_ms = 250 // Fast to avoid a lot of latency while connecting
+      } catch (e) {
+        //console.error(e)
+        console.error("License check failed")
+        this.license_yaml = null
+        this.commercial_licensed = false
+        this.license_info = null
+        this.license_request_info = null
+        this.license_request_mode = false
+      }
+    }
+
+    else if (this.license_server.readyState === 1) { // READY
+      // Check for license updates
+      this.license_server.send("license_check") 
+      retry_delay_ms = 5000 // Slow down the updates now that we are connected
+    }
+
+    else if (this.license_server.readyState === 3) { // CLOSED
+      this.license_server = null
+      this.commercial_licensed = false
+      this.license_info = null
+      this.license_request_info = null
+      this.license_request_mode = false
+    }
+
+    setTimeout(async () => {
+      await this.checkLicense()
+    }, retry_delay_ms)
+  }
 
   async checkROSConnection() {
     if (!this.connectedToROS) {
@@ -1365,6 +1433,17 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked }
     })
+  }
+
+  @action.bound
+  onGenerateLicenseRequest() {
+    if (this.license_server && (this.license_server.readyState === 1)) { // Connected
+      this.license_server.send("license_request")
+      this.license_request_mode = true
+    }
+    else {
+      this.license_request_mode = false
+    }
   }
 
   @action.bound

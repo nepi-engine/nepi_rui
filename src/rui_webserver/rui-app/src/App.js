@@ -27,12 +27,15 @@ class App extends Component {
 
   componentDidMount() {
     this.props.ros.checkROSConnection()
+    this.props.ros.checkLicense()
   }
 
   render() {
+    const { commercial_licensed } = this.props.ros
     return (
       <Page>
         <Nav
+          commercial_licensed={commercial_licensed}
           pages={[
             { path: "/", label: "Dashboard" },
             {

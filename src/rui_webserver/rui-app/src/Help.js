@@ -34,6 +34,11 @@ const Help = () => {
             NEPI license (will open in a new tab)
           </Link>
         </div>
+        <div>
+          <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
+            Commercial license request instructions (will open in a new tab)
+          </Link>
+        </div>
       </div>
     )
   }
