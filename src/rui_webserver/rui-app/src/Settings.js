@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
+import {Link} from "react-router-dom"
 import Toggle from "react-toggle"
 import { displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
 import Input from "./Input"
@@ -13,6 +14,14 @@ import Styles from "./Styles"
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
 }
+
+const styles = Styles.Create({
+  link_style: {
+    color: Styles.vars.colors.blue,
+    fontSize: Styles.vars.fontSize.medium,
+    //lineHeight: Styles.vars.lineHeights.xl 
+  }
+})
 
 @inject("ros")
 @observer
@@ -50,6 +59,9 @@ class Settings extends Component {
     this.onDeviceIdKey = this.onDeviceIdKey.bind(this)
 
     this.renderDeviceSettings = this.renderDeviceSettings.bind(this)
+    this.renderLicense = this.renderLicense.bind(this)
+    this.renderLicenseRequestInfo = this.renderLicenseRequestInfo.bind(this)
+    this.renderLicenseInfo = this.renderLicenseInfo.bind(this)
     this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
     this.renderConfiguration = this.renderConfiguration.bind(this)
     this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
@@ -133,6 +145,123 @@ class Settings extends Component {
     )
   }
 
+  renderLicense() {
+    const {license_info} = this.props.ros
+
+    const license_info_valid = license_info && ("licensed_components" in license_info) && ("nepi_base" in license_info["licensed_components"]) &&
+      "commercial_license_type" in license_info["licensed_components"]["nepi_base"]
+
+    const license_issue_date = license_info_valid && "issued_date" in license_info["licensed_components"]["nepi_base"]?
+    license_info["licensed_components"]["nepi_base"]["issued_date"] : ""
+
+    const license_issue_version = license_info_valid && "issued_version" in license_info["licensed_components"]["nepi_base"]?
+      license_info["licensed_components"]["nepi_base"]["issued_version"] : ""
+
+    const license_expiration_date = license_info_valid && "expiration_date" in license_info["licensed_components"]["nepi_base"]?
+      license_info["licensed_components"]["nepi_base"]["expiration_date"] : null
+
+    const license_expiration_version = license_info_valid && "expiration_version" in license_info["licensed_components"]["nepi_base"]?
+      license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
+    
+    return (
+      <div>
+        <Label title={"Issue Date"}>
+          <Input value={license_issue_date} disabled={true}/>
+        </Label>
+        <Label title={"Issue Version"}>
+          <Input value={license_issue_version} disabled={true}/>
+        </Label>
+        {license_expiration_date?
+          <Label title={"Expiration Date"}>
+            <Input value={license_expiration_date} disabled={true}/>
+          </Label>
+          : null
+        }
+        {license_expiration_version?
+          <Label title={"Expiration Version"}>
+            <Input value={license_expiration_version} disabled={true}/>
+          </Label>
+          : null
+        }
+      </div>
+    )
+  }
+
+  renderLicenseRequestInfo() {
+    const { license_request_info } = this.props.ros
+
+    const license_request_info_valid = license_request_info && ('license_request' in license_request_info)
+    const license_hw_key = (license_request_info_valid && ('hardware_key' in license_request_info['license_request']))?
+      license_request_info['license_request']['hardware_key'] : 'Unknown'
+    const license_request_date = (license_request_info_valid && ('date' in license_request_info['license_request']))?
+      license_request_info['license_request']['date'] : 'Unknown'    
+    const license_request_version = (license_request_info_valid && ('version' in license_request_info['license_request']))?
+      license_request_info['license_request']['version'] : 'Unknown'    
+
+    return (
+      // TODO: A QR code or automatic API link would be nicer here.
+      <div>
+        <Label title={"H/W Key"}>
+          <Input value={license_hw_key} disabled={true}/>
+        </Label>
+        <Label title={"Date"}>
+          <Input value={license_request_date} disabled={true}/>
+        </Label>
+        <Label title={"Version"}>
+          <Input value={license_request_version} disabled={true}/>
+        </Label>
+      </div>
+    )
+  }
+
+  renderLicenseInfo() {
+    const {license_info, commercial_licensed, license_request_mode, onGenerateLicenseRequest} = this.props.ros
+
+    const license_info_valid = license_info && ("licensed_components" in license_info) && ("nepi_base" in license_info["licensed_components"]) &&
+                               "commercial_license_type" in license_info["licensed_components"]["nepi_base"] &&
+                               "status" in license_info["licensed_components"]["nepi_base"]
+    
+    var license_type = license_info_valid? license_info["licensed_components"]["nepi_base"]["commercial_license_type"] : "Unknown"
+    var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : "Unknown"
+    if (license_request_mode === true) {
+      license_type = "Request"
+      license_status = "Pending"
+    }
+
+    return (
+      <Section title={"NEPI License"}>
+        {!license_info_valid?
+          <Label title={"Server Disconnected"} labelStyle={{ color: Styles.vars.colors.red, fontWeight: "bold"}}/>
+          : null
+        }
+        <Label title={"Type"}>
+          <Input value={license_type} disabled={true}/>
+        </Label>
+        <Label title={"Status"} >
+          <Input value={license_status} disabled={true}/>
+        </Label>
+        {license_request_mode?
+          this.renderLicenseRequestInfo() : this.renderLicense() 
+        }
+
+        {(license_info_valid && !commercial_licensed)?
+          <ButtonMenu>
+            <Button onClick={onGenerateLicenseRequest}>{"License Request"}</Button>
+          </ButtonMenu>
+          : null
+        }
+        {(license_info_valid && !commercial_licensed)?
+          <div style={{textAlign: "center"}}>
+            <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
+              Open license request instructions
+            </Link>
+          </div>
+          : null
+        }
+      </Section>
+    )
+  }
+
   renderTriggerSettings() {
     const {
       //triggerMask,
@@ -154,6 +283,7 @@ class Settings extends Component {
         <ButtonMenu>
           <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
         </ButtonMenu>
+        {/*
         <Label title={"Hardware Trigger Input Enable"}>
           <Toggle
             checked={false}
@@ -166,6 +296,7 @@ class Settings extends Component {
             disabled={true}
           />
         </Label>
+        */}
       </Section>
     )
   }
@@ -327,6 +458,7 @@ class Settings extends Component {
             </Toggle>
           </Label>
           {this.renderDeviceSettings()}
+          {this.renderLicenseInfo()}
           {this.renderTriggerSettings()}
         </Column>
         <Column>

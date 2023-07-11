@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 
 import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
+import Label from "./Label"
 
 import logo from "./logos/logo.webp"
 import powered_by_nepi from "./logos/powered_by_nepi.webp"
@@ -147,7 +148,7 @@ NavItem.defaultProps = {
 
 class Nav extends Component {
   render() {
-    const { pages } = this.props
+    const { pages, commercial_licensed } = this.props
     return (
       <div style={styles.root}>
         <Columns>
@@ -179,6 +180,13 @@ class Nav extends Component {
             })}
           </Column>
         </Columns>
+        {!commercial_licensed?
+          <Label
+            labelStyle={{ color: Styles.vars.colors.red, fontWeight: "bold", fontSize: Styles.vars.fontSize.large}}
+            title={"DEVELOPER VERSION: NOT FOR COMMERCIAL USE"}
+          />
+          : null
+        }
       </div>
     )
   }
