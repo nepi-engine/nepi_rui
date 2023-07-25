@@ -22,6 +22,7 @@ class SensorIDX extends Component {
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onTopicIDXSelected = this.onTopicIDXSelected.bind(this)
+    this.clearTopicIDXSelection = this.clearTopicIDXSelection.bind(this)
     this.createTopicOptions = this.createTopicOptions.bind(this)
     this.createImageOptions = this.createImageOptions.bind(this)
 
@@ -77,6 +78,12 @@ class SensorIDX extends Component {
     for (i = 0; i < filteredTopics.length; i++) {
       items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
     }
+    // Check that our current selection hasn't disappeard as an available option
+    const { currentIDXNamespace } = this.state
+    if ((currentIDXNamespace != null) && (! filteredTopics.includes(currentIDXNamespace))) {
+      this.clearTopicIDXSelection()
+    }
+
     return items
   }
 
@@ -105,6 +112,15 @@ class SensorIDX extends Component {
     return items    
   }
 
+  clearTopicIDXSelection() {
+    this.setState({
+      currentIDXNamespace: null,
+      currentIDXNamespaceText: "No sensor selected",
+      imageTopic_0: null,
+      imageText_0: null        
+    })
+  }
+
   // Handler for IDX Sensor topic selection
   onTopicIDXSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
@@ -113,12 +129,7 @@ class SensorIDX extends Component {
 
     // Handle the "None" option -- always index 0
     if (idx === 0) {
-      this.setState({
-        currentIDXNamespace: null,
-        currentIDXNamespaceText: "No sensor selected",
-        imageTopic_0: null,
-        imageText_0: null        
-      })
+      this.clearTopicIDXSelection()
       return
     }
 
