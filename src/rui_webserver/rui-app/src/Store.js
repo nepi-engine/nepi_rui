@@ -518,21 +518,30 @@ class ROSConnectionStore {
     var idx_sensors_changed = false
     var sensors_detected = []
     for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicNames[i].includes("/idx/")) {
+      if (this.topicNames[i].endsWith("/idx/status")) {
         const idx_sensor_namespace = this.topicNames[i].split("/idx")[0]
-        sensors_detected.push(idx_sensor_namespace)
+        if (!(sensors_detected.includes(idx_sensor_namespace))) {
+          this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Testing
+          if (this.idxSensors[idx_sensor_namespace]) { // Testing
+            sensors_detected.push(idx_sensor_namespace)
+          }
+          idx_sensors_changed = true // Testing -- always declare changed
+        }
+        /*
         if (!(idx_sensor_namespace in this.idxSensors)) {
           //this.idxSensors[idx_sensor_namespace] = null // Initialize an empty object
           idx_sensors_changed = true
           this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Will update this.idxSensors upon successful call
         }
+        */
       }
     }
 
     // Now clean out any sensors that are no longer detected
-    for (const key in Object.keys(this.idxSensors)) {
-      if (!(key in sensors_detected)) {
-        delete this.idxSensors[key]
+    const previously_known = Object.keys(this.idxSensors)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(sensors_detected.includes(previously_known[i]))) {
+        delete this.idxSensors[previously_known[i]]
         idx_sensors_changed = true
       }
     }
