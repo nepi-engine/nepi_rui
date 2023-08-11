@@ -368,11 +368,12 @@ class ROSConnectionStore {
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
         var newSensor3DXs = this.updateSensor3DXTopics()
-        var newSensorIDXs = this.updateIDXSensorList()
         var newResettables = this.updateResetTopics()
         var newDetectionImageTopics = this.updateDetectionImageTopics()
         var newSequencerImageTopics = this.updateSequencerImageTopics()
         var new3DXImageTopics = this.update3DXImageTopics()
+
+        this.updateIDXSensorList()
 
         if (newPrefix || newSensor3DXs || newResettables || newDetectionImageTopics || newSequencerImageTopics || new3DXImageTopics) {
           this.initalizeListeners()
