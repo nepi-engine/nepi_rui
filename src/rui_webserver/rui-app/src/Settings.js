@@ -10,9 +10,20 @@ import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import BooleanIndicator from "./BooleanIndicator"
 
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
+
+function styleTextEdited(text_box_element) {
+  text_box_element.style.color = Styles.vars.colors.red
+  text_box_element.style.fontWeight = "bold"
+}
+
+function styleTextUnedited(text_box_element) {
+  text_box_element.style.color = Styles.vars.colors.black
+  text_box_element.style.fontWeight = "normal"
 }
 
 const styles = Styles.Create({
@@ -36,6 +47,13 @@ class Settings extends Component {
       configSubsys: "All",
       advancedConfigDisabled: true,
       updatedDeviceId: "",
+      selectedWifiNetwork: "",
+      wifiClientSSIDEdited: false,
+      wifiClientSSID: "",
+      wifiClientPassphrase: "",
+      wifiAPSSIDEdited: false,
+      wifiAPSSID: "",
+      wifiAPPassphrase: "",
       tx_bandwidth_limit: (this.props.ros.bandwidth_usage_query_response !== null)? this.props.ros.bandwidth_usage_query_response.tx_limit_mbps : -1,
       tx_bandwidth_user_editing: false
     }
@@ -54,6 +72,14 @@ class Settings extends Component {
     this.onConfigSubsysSelected = this.onConfigSubsysSelected.bind(this)
     this.onToggleAdvancedConfig = this.onToggleAdvancedConfig.bind(this)
     this.createConfigSubsysOptions = this.createConfigSubsysOptions.bind(this)
+    this.createWifiNetworkOptions = this.createWifiNetworkOptions.bind(this)
+    this.onWifiNetworkSelected = this.onWifiNetworkSelected.bind(this)
+    this.onUpdateClientSSIDText = this.onUpdateClientSSIDText.bind(this)
+    this.onUpdateClientPassphraseText = this.onUpdateClientPassphraseText.bind(this)
+    this.onKeyClientWifi = this.onKeyClientWifi.bind(this)
+    this.onUpdateAPSSIDText = this.onUpdateAPSSIDText.bind(this)
+    this.onUpdateAPPassphraseText = this.onUpdateAPPassphraseText.bind(this)
+    this.onKeyAPWifi = this.onKeyAPWifi.bind(this)
 
     this.onDeviceIdChange = this.onDeviceIdChange.bind(this)
     this.onDeviceIdKey = this.onDeviceIdKey.bind(this)
@@ -70,7 +96,7 @@ class Settings extends Component {
   onUpdateAutoRateText(e) {
     this.setState({autoRate: e.target.value});
     this.setState({autoRateUserEditing: true});
-    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+    styleTextEdited(document.getElementById(e.target.id))
   }
 
   onKeyAutoRateText(e) {
@@ -78,14 +104,74 @@ class Settings extends Component {
     if(e.key === 'Enter'){
       this.setState({autoRateUserEditing: false});
       onChangeTriggerRate(this.state.autoRate)
-      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+      styleTextUnedited(document.getElementById(e.target.id))
+    }
+  }
+
+  onUpdateClientSSIDText(e) {
+    this.setState({wifiClientSSID: e.target.value, wifiClientSSIDEdited: true});
+    var client_ssid_textbox = document.getElementById("wifi_client_ssid_textbox")
+    styleTextEdited(client_ssid_textbox)
+    
+    var client_passphrase_textbox = document.getElementById("wifi_client_passphrase_textbox")
+    styleTextEdited(client_passphrase_textbox)
+  }
+
+  onUpdateClientPassphraseText(e) {
+    this.setState({wifiClientPassphrase: e.target.value, wifiClientSSIDEdited: true});
+    var client_ssid_textbox = document.getElementById("wifi_client_ssid_textbox")
+    styleTextEdited(client_ssid_textbox)
+    var client_passphrase_textbox = document.getElementById("wifi_client_passphrase_textbox")
+    styleTextEdited(client_passphrase_textbox)
+  }
+
+  onKeyClientWifi(e) {
+    const {onUpdateWifiClientCredentials} = this.props.ros
+    if(e.key === 'Enter'){
+      this.setState({wifiClientSSIDEdited: false})
+      onUpdateWifiClientCredentials(this.state.wifiClientSSID, this.state.wifiClientPassphrase)
+      // Reset style
+      var client_ssid_textbox = document.getElementById("wifi_client_ssid_textbox")
+      styleTextUnedited(client_ssid_textbox)
+      var client_passphrase_textbox = document.getElementById("wifi_client_passphrase_textbox")
+      styleTextUnedited(client_passphrase_textbox)
+    }
+  }
+
+  onUpdateAPSSIDText(e) {
+    this.setState({wifiAPSSID: e.target.value, wifiAPSSIDEdited: true});
+    var ap_ssid_textbox = document.getElementById("wifi_ap_ssid_textbox")
+    styleTextEdited(ap_ssid_textbox)
+    var ap_passphrase_textbox = document.getElementById("wifi_ap_passphrase_textbox")
+    styleTextEdited(ap_passphrase_textbox)
+  }
+
+  onUpdateAPPassphraseText(e) {
+    this.setState({wifiAPPassphrase: e.target.value, wifiAPSSIDEdited: true});
+    var ap_ssid_textbox = document.getElementById("wifi_ap_ssid_textbox")
+    styleTextEdited(ap_ssid_textbox)
+    var ap_passphrase_textbox = document.getElementById("wifi_ap_passphrase_textbox")
+    styleTextEdited(ap_passphrase_textbox)
+  }
+
+  onKeyAPWifi(e) {
+    const {onUpdateWifiAPCredentials} = this.props.ros
+    if(e.key === 'Enter'){
+      this.setState({wifiAPSSIDEdited: false})
+      onUpdateWifiAPCredentials(this.state.wifiAPSSID, this.state.wifiAPPassphrase)
+      // Reset style
+      var ap_ssid_textbox = document.getElementById("wifi_ap_ssid_textbox")
+      styleTextUnedited(ap_ssid_textbox)
+      var ap_passphrase_textbox = document.getElementById("wifi_ap_passphrase_textbox")
+      styleTextUnedited(ap_passphrase_textbox)
     }
   }
 
   onUpdateTXRateLimitText(e) {
     this.setState({tx_bandwidth_limit: e.target.value});
     this.setState({tx_bandwidth_user_editing: true});
-    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+    var rate_limit_textbox = document.getElementById(e.target.id)
+    styleTextEdited(rate_limit_textbox)
   }
 
   onKeyTXRateLimitText(e) {
@@ -93,7 +179,8 @@ class Settings extends Component {
     if(e.key === 'Enter'){
       this.setState({tx_bandwidth_user_editing: false});
       onChangeTXRateLimit(this.state.tx_bandwidth_limit)
-      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+      var rate_limit_textbox = document.getElementById(e.target.id)
+      styleTextUnedited(rate_limit_textbox)
     }
   }
 
@@ -117,14 +204,16 @@ class Settings extends Component {
 
   async onDeviceIdChange(e) {
     this.setState({ updatedDeviceId: e.target.value })
-    document.getElementById("device_id_update_text").style.color = Styles.vars.colors.red
+    var device_id_textbox = document.getElementById(e.target.id)
+    styleTextEdited(device_id_textbox)
   }
 
   async onDeviceIdKey(e) {
     const {setDeviceID} = this.props.ros
     if(e.key === 'Enter'){
       setDeviceID({newDeviceID: this.state.updatedDeviceId})
-      document.getElementById("device_id_update_text").style.color = Styles.vars.colors.black
+      var device_id_textbox = document.getElementById(e.target.id)
+      styleTextUnedited(device_id_textbox)
     }
   }
 
@@ -368,13 +457,46 @@ class Settings extends Component {
     return subsys_options
   }
 
+  createWifiNetworkOptions(wifiNetworks) {
+    var network_options = []
+    network_options.push(<Option>{""}</Option>)
+    for (var i = 0; i < wifiNetworks.length; i++) {
+      network_options.push(<Option>{wifiNetworks[i]}</Option>)
+    }
+
+    return network_options
+  }
+
+  async onWifiNetworkSelected(e) {
+    var ssid_textbox = document.getElementById("wifi_client_ssid_textbox")
+    var passphrase_textbox = document.getElementById("wifi_client_passphrase_textbox")
+    if (e.target.value !== "") {
+      ssid_textbox.style.color = Styles.vars.colors.red
+      ssid_textbox.style.fontWeight = "bold"
+      passphrase_textbox.style.color = Styles.vars.colors.red
+      passphrase_textbox.style.fontWeight = "bold"
+    }
+    else {
+      ssid_textbox.style.color = Styles.vars.colors.black
+      ssid_textbox.style.fontWeight = "normal"
+      passphrase_textbox.style.color = Styles.vars.colors.black
+      passphrase_textbox.style.fontWeight = "normal"  
+    }
+
+    await this.setState({
+      selectedWifiNetwork: e.target.value,
+      wifiClientSSIDEdited: (e.target.value !== "")? true : false, 
+      wifiClientSSID: e.target.value, 
+      wifiClientPassphrase: ""
+    })
+  }
+
   renderNetworkInfo() {
-    const { ip_query_response, wifi_query_response, onToggleDHCPEnabled, 
-            onToggleWifiAPEnabled, bandwidth_usage_query_response } = this.props.ros
+    const { ip_query_response, onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
-    const has_wifi = wifi_query_response? wifi_query_response.has_wifi : false
+    
     return (
-      <Section title={"Network"}>
+      <Section title={"Ethernet"}>
         <Label title={"Device IP Addresses"}>
           <pre style={{ height: "88px", overflowY: "auto" }}>
             {(ip_query_response !== null)? ip_query_response.ip_addrs.join('\n') : null}
@@ -393,20 +515,6 @@ class Settings extends Component {
           <Button onClick={this.onAddButtonPressed}>{"Add"}</Button>
           <Button onClick={this.onRemoveButtonPressed}>{"Remove"}</Button>
         </ButtonMenu>
-        <div hidden={has_wifi === false}>
-          <Label title={"WiFi AP Enabled"} marginTop={Styles.vars.spacing.medium}>
-            <Toggle
-              checked={(wifi_query_response !== null)? wifi_query_response.wifi_ap_enabled : false}
-              onClick= {onToggleWifiAPEnabled}
-            />
-          </Label>
-          <Label title={"WiFi AP Name"} >
-            <Input disabled value={(wifi_query_response !== null)? wifi_query_response.wifi_ap_name : "n/a"}/>
-          </Label>
-          <Label title={"WiFi AP Password"} hidden={!has_wifi}>
-            <Input disabled value={(wifi_query_response !== null)? wifi_query_response.wifi_ap_password : "n/a"}/>
-          </Label>
-        </div>        
         <Label title={"TX Data Rate (Mbps)"}>
           <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.tx_rate_mbps, 2) : -1.0} />
         </Label>
@@ -422,6 +530,103 @@ class Settings extends Component {
             onKeyDown={this.onKeyTXRateLimitText}
           />
         </Label>
+      </Section>
+    )
+  }
+
+  renderWifiInfo() {
+    const { wifi_query_response, onToggleWifiAPEnabled, onToggleWifiClientEnabled, onRefreshWifiNetworks } = this.props.ros
+    const { wifiClientSSIDEdited, wifiClientSSID, wifiClientPassphrase,
+            wifiAPSSIDEdited, wifiAPSSID, wifiAPPassphrase } = this.state
+    const wifi_enabled = (wifi_query_response !== null)? wifi_query_response.wifi_client_enabled : false
+    const client_ssid = (wifi_query_response !== null)? wifi_query_response.wifi_client_ssid : ""
+    const client_passphrase = (wifi_query_response !== null)? wifi_query_response.wifi_client_passphrase : ""
+    const ap_ssid = (wifi_query_response !== null)? wifi_query_response.wifi_ap_ssid : ""
+    const ap_passphrase = (wifi_query_response !== null)? wifi_query_response.wifi_ap_passphrase : ""
+    const available_networks = (wifi_query_response !== null)? wifi_query_response.available_networks : []
+    
+    return (
+      <Section title={"WiFi"}>
+        <Columns>
+          <Column>
+            <Label title={"Client Enabled"} marginTop={Styles.vars.spacing.medium}>
+              <Toggle
+                checked={wifi_enabled}
+                onClick= {onToggleWifiClientEnabled}
+              />
+            </Label>
+          </Column>
+          <Column>
+            <Label title={"Connected"}>
+              <BooleanIndicator value={(wifi_query_response !== null)? wifi_query_response.wifi_client_connected : false} />
+            </Label>
+          </Column>
+        </Columns>
+        <div hidden={!wifi_enabled}>
+        <Columns>
+          <Column>
+            <Label title={"Network"} >
+              <Input 
+                id={"wifi_client_ssid_textbox"}
+                value={(wifiClientSSIDEdited === true)? wifiClientSSID : client_ssid}
+                onChange={this.onUpdateClientSSIDText} onKeyDown={this.onKeyClientWifi}
+              />
+            </Label>
+            <Label title={"Avail. Networks"} >
+              <Select
+                onChange={this.onWifiNetworkSelected}
+                value={this.state.selectedWifiNetwork}
+              >
+                {this.createWifiNetworkOptions(available_networks)}
+              </Select>
+            </Label>
+          </Column>
+          <Column>
+            <Label title={"Passphrase"} >
+              <Input 
+                id={"wifi_client_passphrase_textbox"}
+                value={(wifiClientSSIDEdited === true)? wifiClientPassphrase : client_passphrase}
+                onChange={this.onUpdateClientPassphraseText} onKeyDown={this.onKeyClientWifi}
+              />
+            </Label>
+            <ButtonMenu>
+              <Button onClick={onRefreshWifiNetworks}>{"Refresh"}</Button>
+            </ButtonMenu>
+          </Column>
+        </Columns>
+        </div>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+        <Columns>
+          <Column>
+            <Label title={"Access Point Enabled"} >
+              <Toggle
+                checked={(wifi_query_response !== null)? wifi_query_response.wifi_ap_enabled : false}
+                onClick= {onToggleWifiAPEnabled}
+              />
+            </Label>
+          </Column>
+          <Column/>
+        </Columns>
+        <Columns>
+          <Column>
+            <Label title={"Access Point"} >
+              <Input
+                id={"wifi_ap_ssid_textbox"} 
+                value={(wifiAPSSIDEdited === true)? wifiAPSSID : ap_ssid}
+                onChange={this.onUpdateAPSSIDText} onKeyDown={this.onKeyAPWifi}
+              />
+            </Label>
+          </Column>
+          <Column>
+            <Label title={"Passphrase"} >
+              <Input
+              id={"wifi_ap_passphrase_textbox"}                 
+                value={(wifiAPSSIDEdited === true)? wifiAPPassphrase : ap_passphrase}
+                onChange={this.onUpdateAPPassphraseText} onKeyDown={this.onKeyAPWifi}
+              />
+            </Label>
+          </Column>
+        </Columns>
       </Section>
     )
   }
@@ -449,6 +654,9 @@ class Settings extends Component {
   }
 
   render() {
+    const { wifi_query_response } = this.props.ros
+    const has_wifi = wifi_query_response? wifi_query_response.has_wifi : false
+
     return (
       <Columns>
         <Column>
@@ -459,11 +667,12 @@ class Settings extends Component {
           </Label>
           {this.renderDeviceSettings()}
           {this.renderLicenseInfo()}
-          {this.renderTriggerSettings()}
+          {/*this.renderTriggerSettings()*/}
+          {this.renderConfiguration()}
         </Column>
         <Column>
           {this.renderNetworkInfo()}
-          {this.renderConfiguration()}
+          {has_wifi? this.renderWifiInfo(): null}
         </Column>
       </Columns>
     )

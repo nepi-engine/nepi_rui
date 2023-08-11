@@ -1446,6 +1446,46 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  onToggleWifiClientEnabled(e) {
+    const checked = e.target.checked
+
+    this.publishMessage({
+      name: "enable_wifi_client",
+      messageType: "std_msgs/Bool",
+      data: { data: checked }
+    })
+  }
+
+  @action.bound
+  onUpdateWifiClientCredentials(new_ssid, new_passphrase) {
+
+    this.publishMessage({
+      name: "set_wifi_client_credentials",
+      messageType: "nepi_ros_interfaces/WifiCredentials",
+      data: { ssid: new_ssid, passphrase: new_passphrase }
+    })
+  }
+
+  @action.bound
+  onUpdateWifiAPCredentials(new_ssid, new_passphrase) {
+
+    this.publishMessage({
+      name: "set_wifi_access_point_credentials",
+      messageType: "nepi_ros_interfaces/WifiCredentials",
+      data: { ssid: new_ssid, passphrase: new_passphrase }
+    })
+  }  
+
+  @action.bound
+  onRefreshWifiNetworks() {
+    this.publishMessage({
+      name: "refresh_available_wifi_networks",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })    
+  }
+
+  @action.bound
   onGenerateLicenseRequest() {
     if (this.license_server && (this.license_server.readyState === 1)) { // Connected
       this.license_server.send("license_request")
