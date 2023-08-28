@@ -4,12 +4,54 @@ import { observer, inject } from "mobx-react"
 
 import Input from "./Input"
 import Section from "./Section"
+import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
+import Select, { Option } from "./Select"
+//import createShortUniqueValues from "./Utilities"
 
 function round(value, decimals = 0) {
-  return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+  return Number(value).toFixed(decimals)
+  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
+
+function navSatFixStatusAsString(status_id) {
+  if ((status_id === null)){
+    return "Unknown"
+  }
+  else if (status_id === -1) {
+    return "No Fix"
+  }
+  else if (status_id === 0) {
+    return "Valid"
+  }
+  else if (status_id === 1) {
+    return "Valid (w/ SBAS)"
+  }
+  else if (status_id === 2) {
+    return "Valid (w/ GBAS)"
+  }
+  return "Unknown"
+}
+
+function navSatFixServiceAsString(service_id) {
+  if ((service_id === null)){
+    return "Unknown"
+  }
+  else if (service_id === 1) {
+    return "GPS"
+  }
+  else if (service_id === 2) {
+    return "GLONASS"
+  }
+  else if (service_id === 4) {
+    return "COMPASS"
+  }
+  else if (service_id === 8) {
+    return "GALILEO"
+  }
+  return "Unknown"
 }
 
 @inject("ros")
@@ -19,33 +61,46 @@ class NavPose extends Component {
     super(props)
 
     this.state = {
-      fixedRoll: 0.0,
-      fixedPitch: 0.0,
-      fixedYaw: 0.0,
-      fixedLatitude: 0.0,
-      fixedLongitude: 0.0,
-      fixedAltitude: 0.0,
-      fixedHeading: 0.0,
-      manualNavPoseOffsetsDisabled: true,
-      xTranslation: null,
-      yTranslation: null,
-      zTranslation: null,
-      xRotation: null,
-      yRotation: null,
-      zRotation: null
+      initRollEdited: null,
+      initPitchEdited: null,
+      initYawEdited: null,
+      initLatitudeEdited: null,
+      initLongitudeEdited: null,
+      initAltitudeEdited: null,
+      initHeadingEdited: null,
+      xTranslationEdited: null,
+      yTranslationEdited: null,
+      zTranslationEdited: null,
+      xRotationEdited: null,
+      yRotationEdited: null,
+      zRotationEdited: null,
+      headingEdited: null,
+      ahrsOutFrameEdited: null,
     }
 
-    this.renderFixedNavPose = this.renderFixedNavPose.bind(this)
-    this.renderExternalNavPose = this.renderExternalNavPose.bind(this)
+    this.renderNavPoseSetup = this.renderNavPoseSetup.bind(this)
     this.renderCurrentNavPose = this.renderCurrentNavPose.bind(this)
-    this.renderPanTilt = this.renderPanTilt.bind(this)
+    this.renderNavPoseStatus = this.renderNavPoseStatus.bind(this)
+    this.setElementStyleModified = this.setElementStyleModified.bind(this)
+    this.clearElementStyleModified = this.clearElementStyleModified.bind(this)
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
-    this.onToggleFixedPositionData = this.onToggleFixedPositionData.bind(this)
-    this.onToggleFixedOrientationData = this.onToggleFixedOrientationData.bind(this)
-    this.onToggleFixedHeadingData = this.onToggleFixedHeadingData.bind(this)
-    this.onToggleNavPoseOffsets = this.onToggleNavPoseOffsets.bind(this)
+    this.createInputOptions = this.createInputOptions.bind(this)
+    this.onNavSatFixTopicSelected = this.onNavSatFixTopicSelected.bind(this)
+    this.onOrientationTopicSelected = this.onOrientationTopicSelected.bind(this)
+    this.onHeadingTopicSelected = this.onHeadingTopicSelected.bind(this)
   }
+
+  setElementStyleModified(e) {
+    e.style.color = Styles.vars.colors.red
+    e.style.fontWeight = "bold"
+  }
+
+  clearElementStyleModified(e) {
+    e.style.color = Styles.vars.colors.black
+    e.style.fontWeight = "normal"
+  }
+
   onUpdateText(e) {
     var stateObject = function() {
       const returnObj = {};
@@ -53,380 +108,409 @@ class NavPose extends Component {
       return returnObj;
     }.bind(e)();
     this.setState( stateObject );
-    if ((e.target.id === "FixedRoll") || (e.target.id === "FixedPitch") || (e.target.id === "FixedYaw"))
+    if ((e.target.id === "InitRoll") || (e.target.id === "InitPitch") || (e.target.id === "InitYaw"))
     {
-      var rollElement = document.getElementById("FixedRoll")
-      rollElement.style.color = Styles.vars.colors.red
-      this.setState({fixedRoll: rollElement.value})
+      var rollElement = document.getElementById("InitRoll")
+      this.setElementStyleModified(rollElement)
+      this.setState({initRollEdited: rollElement.value})
 
-      var pitchElement = document.getElementById("FixedPitch")
-      pitchElement.style.color = Styles.vars.colors.red
-      this.setState({fixedPitch: pitchElement.value})
+      var pitchElement = document.getElementById("InitPitch")
+      this.setElementStyleModified(pitchElement)
+      this.setState({initPitchEdited: pitchElement.value})
 
-      var yawElement = document.getElementById("FixedYaw")
-      yawElement.style.color = Styles.vars.colors.red
-      this.setState({fixedYaw: yawElement.value})
-
+      var yawElement = document.getElementById("InitYaw")
+      this.setElementStyleModified(yawElement)
+      this.setState({initYawEdited: yawElement.value})
     }
-    else if ((e.target.id === "FixedLatitude") || (e.target.id === "FixedLongitude") || (e.target.id === "FixedAltitude"))
+    else if ((e.target.id === "InitLatitude") || (e.target.id === "InitLongitude") || (e.target.id === "InitAltitude"))
     {
-      var latitudeElement = document.getElementById("FixedLatitude")
-      latitudeElement.style.color = Styles.vars.colors.red
-      this.setState({fixedLatitude: latitudeElement.value})
+      var latitudeElement = document.getElementById("InitLatitude")
+      this.setElementStyleModified(latitudeElement)
+      this.setState({initLatitudeEdited: latitudeElement.value})
 
-      var longitudeElement = document.getElementById("FixedLongitude")
-      longitudeElement.style.color = Styles.vars.colors.red
-      this.setState({fixedLongitude: longitudeElement.value})
+      var longitudeElement = document.getElementById("InitLongitude")
+      this.setElementStyleModified(longitudeElement)
+      this.setState({initLongitudeEdited: longitudeElement.value})
 
-      var altitudeElement = document.getElementById("FixedAltitude")
-      altitudeElement.style.color = Styles.vars.colors.red
-      this.setState({fixedAltitude: altitudeElement.value})
+      var altitudeElement = document.getElementById("InitAltitude")
+      this.setElementStyleModified(altitudeElement)
+      this.setState({initAltitudeEdited: altitudeElement.value})
     }
-    else if (e.target.id === "FixedHeading")
+    else if (e.target.id === "InitHeading")
     {
-      var headingElement = document.getElementById("FixedHeading")
-      headingElement.style.color = Styles.vars.colors.red
-      this.setState({fixedHeading: headingElement.value})
+      var headingElement = document.getElementById("InitHeading")
+      this.setElementStyleModified(headingElement)
+      this.setState({initHeadingEdited: headingElement.value})
     }
     else if ((e.target.id === "XTranslation") || (e.target.id === "YTranslation") || (e.target.id === "ZTranslation") ||
-             (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation"))
+             (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation") || (e.target.id === "Heading"))
     {
       var xTranslationElement = document.getElementById("XTranslation")
-      xTranslationElement.style.color = Styles.vars.colors.red
-      this.setState({xTranslation: xTranslationElement.value})
+      this.setElementStyleModified(xTranslationElement)
+      this.setState({xTranslationEdited: xTranslationElement.value})
 
       var yTranslationElement = document.getElementById("YTranslation")
-      yTranslationElement.style.color = Styles.vars.colors.red
-      this.setState({yTranslation: yTranslationElement.value})
+      this.setElementStyleModified(yTranslationElement)
+      this.setState({yTranslationEdited: yTranslationElement.value})
 
       var zTranslationElement = document.getElementById("ZTranslation")
-      zTranslationElement.style.color = Styles.vars.colors.red
-      this.setState({zTranslation: zTranslationElement.value})
+      this.setElementStyleModified(zTranslationElement)
+      this.setState({zTranslationEdited: zTranslationElement.value})
 
       var xRotationElement = document.getElementById("XRotation")
-      xRotationElement.style.color = Styles.vars.colors.red
-      this.setState({xRotation: xRotationElement.value})
+      this.setElementStyleModified(xRotationElement)
+      this.setState({xRotationEdited: xRotationElement.value})
 
       var yRotationElement = document.getElementById("YRotation")
-      yRotationElement.style.color = Styles.vars.colors.red
-      this.setState({yRotation: yRotationElement.value})
+      this.setElementStyleModified(yRotationElement)
+      this.setState({yRotationEdited: yRotationElement.value})
 
       var zRotationElement = document.getElementById("ZRotation")
-      zRotationElement.style.color = Styles.vars.colors.red
-      this.setState({zRotation: zRotationElement.value})
+      this.setElementStyleModified(zRotationElement)
+      this.setState({zRotationEdited: zRotationElement.value})
+
+      var headingOffsetElement = document.getElementById("Heading")
+      this.setElementStyleModified(headingOffsetElement)
+      this.setState({headingEdited: headingOffsetElement.value})
+    }
+
+    else if (e.target.id === "AHRSOutFrame")
+    {
+      var ahrsOutFrameElement = document.getElementById("AHRSOutFrame")
+      this.setElementStyleModified(ahrsOutFrameElement)
+      this.setState({ahrsOutFrameEdited: ahrsOutFrameElement.value})
     }
   }
 
   onKeyText(e) {
-    const {onSetFixedOrientation, onSetFixedGPS, onSetFixedHeading, onSetAHRSOffsets} = this.props.ros
+    const {onSetInitOrientation, onSetInitGPS, onSetInitHeading, onSetAHRSOffsets, onSetAHRSOutFrame} = this.props.ros
     if(e.key === 'Enter'){
-      if ((e.target.id === "FixedRoll") || (e.target.id === "FixedPitch") || (e.target.id === "FixedYaw"))
+      if ((e.target.id === "InitRoll") || (e.target.id === "InitPitch") || (e.target.id === "InitYaw"))
       {
-        var rollElement = document.getElementById("FixedRoll")
-        rollElement.style.color = Styles.vars.colors.black
+        var rollElement = document.getElementById("InitRoll")
+        this.clearElementStyleModified(rollElement)
+        this.setState({initRollEdited : null})
 
-        var pitchElement = document.getElementById("FixedPitch")
-        pitchElement.style.color = Styles.vars.colors.black
+        var pitchElement = document.getElementById("InitPitch")
+        this.clearElementStyleModified(pitchElement)
 
-        var yawElement = document.getElementById("FixedYaw")
-        yawElement.style.color = Styles.vars.colors.black
+        var yawElement = document.getElementById("InitYaw")
+        this.clearElementStyleModified(yawElement)
 
-        // TODO: Adjustable frame id for the fixed orientation?
-        onSetFixedOrientation(rollElement.value, pitchElement.value, yawElement.value, "manual_offset_frame")
+        onSetInitOrientation(rollElement.value, pitchElement.value, yawElement.value)
+        this.setState({initRollEdited:null, initPitchEdited:null, initYawEdited:null})
       }
-      else if ((e.target.id === "FixedLatitude") || (e.target.id === "FixedLongitude") || (e.target.id === "FixedAltitude"))
+      else if ((e.target.id === "InitLatitude") || (e.target.id === "InitLongitude") || (e.target.id === "InitAltitude"))
       {
-        var latitudeElement = document.getElementById("FixedLatitude")
-        latitudeElement.style.color = Styles.vars.colors.black
+        var latitudeElement = document.getElementById("InitLatitude")
+        this.clearElementStyleModified(latitudeElement)
 
-        var longitudeElement = document.getElementById("FixedLongitude")
-        longitudeElement.style.color = Styles.vars.colors.black
+        var longitudeElement = document.getElementById("InitLongitude")
+        this.clearElementStyleModified(longitudeElement)
 
-        var altitudeElement = document.getElementById("FixedAltitude")
-        altitudeElement.style.color = Styles.vars.colors.black
+        var altitudeElement = document.getElementById("InitAltitude")
+        this.clearElementStyleModified(altitudeElement)
 
-        // TODO: Adjustable frame id for the fixed receiver position?
-        onSetFixedGPS(latitudeElement.value, longitudeElement.value, altitudeElement.value, "manual_offset_frame")
+        onSetInitGPS(latitudeElement.value, longitudeElement.value, altitudeElement.value)
+        this.setState({initLatitudeEdited:null, initLongitudeEdited:null, initAltitudeEdited:null})
       }
 
-      else if (e.target.id === "FixedHeading")
+      else if (e.target.id === "InitHeading")
       {
-        var headingElement = document.getElementById("FixedHeading")
-        headingElement.style.color = Styles.vars.colors.black
-        onSetFixedHeading(headingElement.value)
+        var headingElement = document.getElementById("InitHeading")
+        this.clearElementStyleModified(headingElement)
+        onSetInitHeading(headingElement.value)
+        this.setState({initHeadingEdited:null})
       }
       else if ((e.target.id === "XTranslation") || (e.target.id === "YTranslation") || (e.target.id === "ZTranslation") ||
-               (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation"))
+               (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation") || (e.target.id === "Heading"))
       {
         var xTranslationElement = document.getElementById("XTranslation")
-        xTranslationElement.style.color = Styles.vars.colors.black
+        this.clearElementStyleModified(xTranslationElement)
 
         var yTranslationElement = document.getElementById("YTranslation")
-        yTranslationElement.style.color = Styles.vars.colors.black
+        this.clearElementStyleModified(yTranslationElement)
 
         var zTranslationElement = document.getElementById("ZTranslation")
-        zTranslationElement.style.color = Styles.vars.colors.black
+        this.clearElementStyleModified(zTranslationElement)
 
         var xRotationElement = document.getElementById("XRotation")
-        xRotationElement.style.color = Styles.vars.colors.black
+        this.clearElementStyleModified(xRotationElement)
 
         var yRotationElement = document.getElementById("YRotation")
-        yRotationElement.style.color = Styles.vars.colors.black
+        this.clearElementStyleModified(yRotationElement)
 
         var zRotationElement = document.getElementById("ZRotation")
-        zRotationElement.style.color = Styles.vars.colors.black
+        this.clearElementStyleModified(zRotationElement)
+
+        var headingOffsetElement = document.getElementById("Heading")
+        this.clearElementStyleModified(headingOffsetElement)
 
         onSetAHRSOffsets(xTranslationElement.value, yTranslationElement.value, zTranslationElement.value,
-                         xRotationElement.value, yRotationElement.value, zRotationElement.value)
+                         xRotationElement.value, yRotationElement.value, zRotationElement.value, headingOffsetElement.value)
+        this.setState({xTranslationEdited:null, yTranslationEdited:null, zTranslationEdited:null,
+                       xRotationEdited:null, yRotationEdited:null, zRotationEdited:null, headingEdited:null })
+      }
+      else if (e.target.id === "AHRSOutFrame")
+      {
+        var ahrsOutFrameElement = document.getElementById("AHRSOutFrame")
+        this.clearElementStyleModified(ahrsOutFrameElement)
+        onSetAHRSOutFrame(ahrsOutFrameElement.value)
+        this.setState({ahrsOutFrameEdited:null})
       }
     }
   }
 
-  async onToggleFixedPositionData() {
-    const {onEnableFixedGPS, navPoseGPSIsFixed} = this.props.ros
-    var enabled = !navPoseGPSIsFixed
-    onEnableFixedGPS(enabled)
-
-    if (false === enabled) {
-      // Update all the text
-      this.setState({fixedLatitude: 0.0, fixedLongitude: 0.0, fixedAltitude: 0.0})
+  createInputOptions(topics, selected) {
+    var input_options = []
+    //var unique_names = createShortUniqueValues(topics)
+    for (var i = 0; i < topics.length; i++) {
+      const topicName = topics[i]
+      
+      // Filter out the set_init_xyz ones -- these are not valid run-time inputs despite having the right topic type
+      if (topicName.includes("set_init")){
+        continue
+      }
+      //input_options.push(<Option value={topics[i]}>{unique_names[i]}</Option>)
+      
+      if (topicName === selected) {
+        input_options.push(<Option selected="selected" value={topicName}>{topicName}</Option>)
+      }
+      else {
+        input_options.push(<Option value={topicName}>{topicName}</Option>)
+      }
     }
+    return input_options
   }
 
-  async onToggleFixedOrientationData() {
-    const {onEnableFixedOrientation, navPoseOrientationIsFixed} = this.props.ros
-    var enabled = !navPoseOrientationIsFixed
-    onEnableFixedOrientation(enabled)
-
-    if (false === enabled) {
-      this.setState({fixedRoll: 0.0, fixedPitch: 0.0, fixedYaw: 0.0})
-    }
+  onNavSatFixTopicSelected(event) {
+    const { onSetGPSFixTopic } = this.props.ros
+    onSetGPSFixTopic(event.target.value)
   }
 
-  async onToggleFixedHeadingData() {
-    const {onEnableFixedHeading, navPoseHeadingIsFixed} = this.props.ros
-    var enabled = !navPoseHeadingIsFixed
-    onEnableFixedHeading(enabled)
-
-    if (false === enabled) {
-      this.setState({fixedHeading: 0.0})
-    }
+  onOrientationTopicSelected(event) {
+    const { onSetOrientationTopic } = this.props.ros
+    onSetOrientationTopic(event.target.value)    
   }
 
-  async onToggleNavPoseOffsets() {
-    var disabled = this.state.manualNavPoseOffsetsDisabled
-    this.setState({manualNavPoseOffsetsDisabled: !disabled})
+  onHeadingTopicSelected(event) {
+    const { onSetHeadingTopic } = this.props.ros
+    onSetHeadingTopic(event.target.value)
   }
 
-  renderFixedNavPose() {
+  renderNavPoseSetup() {
+    const { navTransformXTrans,
+            navTransformYTrans,
+            navTransformZTrans,
+            navTransformXRot,
+            navTransformYRot,
+            navTransformZRot,
+            navHeadingOffset,
+            navPoseOrientationFrame,
+            transformNavPoseOrientation,
+            onToggletransformNavPoseOrientation,
+            navSatFixTopics,
+            orientationTopics,
+            headingTopics,
+            selectedNavSatFixTopic,
+            selectedOrientationTopic,
+            selectedHeadingTopic
+    } = this.props.ros
     return (
-      <Section title={"Fixed NAV/POSE Data"}>
+      <Section title={"NAV/POSE Setup"}>
+        <label style={{fontWeight: 'bold'}}>
+          {"Initial State"}
+        </label>
         <Columns>
           <Column>
-            <Label title={"Fixed Location"}>
-              <Toggle
-                onClick={this.onToggleFixedPositionData}
-                checked={this.props.ros.navPoseGPSIsFixed}
-              />
-            </Label>
             <Label title={"Latitude"}>
               <Input
-                value={this.state.fixedLatitude !== null? this.state.fixedLatitude : "0"}
-                id="FixedLatitude"
-                data-topic="set_gps_fix"
+                value={this.state.initLatitudeEdited !== null? this.state.initLatitudeEdited : round(0, 6)}
+                id="InitLatitude"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={!(this.props.ros.navPoseGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
             <Label title={"Longitude"}>
               <Input
-                value={this.state.fixedLongitude !== null ? this.state.fixedLongitude : "0"}
-                id="FixedLongitude"
-                data-topic="set_gps_fix"
+                value={this.state.initLongitudeEdited !== null ? this.state.initLongitudeEdited : round(0, 6)}
+                id="InitLongitude"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={!(this.props.ros.navPoseGPSIsFixed)}
                 style={{ width: "80%" }}
               />
             </Label>
             <Label title={"Altitude (m)"}>
               <Input
-                value={this.state.fixedAltitude !== null ? this.state.fixedAltitude : "0"}
-                id="FixedAltitude"
-                data-topic="set_gps_fix"
+                value={this.state.initAltitudeEdited !== null ? this.state.initAltitudeEdited : round(0, 2)}
+                id="InitAltitude"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={!(this.props.ros.navPoseGPSIsFixed)}
                 style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Fixed Heading"}>
-              <Toggle
-                onClick={this.onToggleFixedHeadingData}
-                checked={this.props.ros.navPoseHeadingIsFixed}
               />
             </Label>
           </Column>
           <Column>
-            <Label title={"Fixed Orientation"}>
-              <Toggle
-                onClick={this.onToggleFixedOrientationData}
-                checked={this.props.ros.navPoseOrientationIsFixed}
-              />
-            </Label>
             <Label title={"Roll (deg)"}>
               <Input
-                value={this.state.fixedRoll !== null ? this.state.fixedRoll : "0"}
-                id="FixedRoll"
-                data-topic="nav_pose_mgr/set_attitude_override"
+                value={this.state.initRollEdited !== null ? this.state.initRollEdited : round(0, 2)}
+                id="InitRoll"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                style={{width: "60%"}}
-                disabled={!(this.props.ros.navPoseOrientationIsFixed)}
+                style={{width: "80%"}}
               />
             </Label>
             <Label title={"Pitch (deg)"}>
               <Input
-                value={this.state.fixedPitch !== null ? this.state.fixedPitch : "0"}
-                id="FixedPitch"
-                data-topic="nav_pose_mgr/set_attitude_override"
+                value={this.state.initPitchEdited !== null ? this.state.initPitchEdited : round(0, 2)}
+                id="InitPitch"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                style={{width: "60%"}}
-                disabled={!(this.props.ros.navPoseOrientationIsFixed)}
+                style={{width: "80%"}}
               />
             </Label>
             <Label title={"Yaw (deg)"}>
               <Input
-                value={this.state.fixedYaw !== null ? this.state.fixedYaw : "0"}
-                id="FixedYaw"
-                data-topic="nav_pose_mgr/set_attitude_override"
+                value={this.state.initYawEdited !== null ? this.state.initYawEdited : round(0, 2)}
+                id="InitYaw"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                style={{width: "60%"}}
-                disabled={!(this.props.ros.navPoseOrientationIsFixed)}
+                style={{width: "80%"}}
               />
             </Label>
             <Label title={"Heading (deg)"}>
               <Input
-                value={this.state.fixedHeading !== null ? this.state.fixedHeading : "0"}
-                id="FixedHeading"
-                data-topic="nav_pose_mgr/set_heading_override"
+                value={this.state.initHeadingEdited !== null ? this.state.initHeadingEdited : round(0, 2)}
+                id="InitHeading"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                style={{width: "60%"}}
-                disabled={!(this.props.ros.navPoseHeadingIsFixed)}
+                style={{width: "80%"}}
               />
             </Label>
           </Column>
         </Columns>
-      </Section>
-    )
-  }
-
-  renderExternalNavPose() {
-    const {
-      navSrcFrame,
-      navTargetFrame,
-      navTransformXTrans,
-      navTransformYTrans,
-      navTransformZTrans,
-      navTransformXRot,
-      navTransformYRot,
-      navTransformZRot } = this.props.ros
-    return (
-      <Section title={"External NAV/POSE Source"}>
-        <Label title={"Enable Manual Nav/Pose Offsets"}>
-          <Toggle
-            onClick={this.onToggleNavPoseOffsets}
-          />
-        </Label>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+        <label style={{fontWeight: 'bold'}}>
+          {"IMU/AHRS Offsets"}
+        </label>
         <Columns>
           <Column>
-            <Label title={"Translation (m)"}/>
-            <Label title={"X"}>
+            <Label title={"X (m)"}>
               <Input
-                value={(this.state.xTranslation !== null) && (this.state.xTranslation !== navTransformXTrans) ? this.state.xTranslation : navTransformXTrans}
+                value={(this.state.xTranslationEdited !== null)? this.state.xTranslationEdited : round(navTransformXTrans, 2)}
                 id="XTranslation"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.manualNavPoseOffsetsDisabled}
                 style={{ width: "80%" }}
               />
             </Label>
-            <Label title={"Y"}>
+            <Label title={"Y (m)"}>
               <Input
-                value={(this.state.yTranslation !== null) && (this.state.yTranslation !== navTransformYTrans) ? this.state.yTranslation : navTransformYTrans}
+                value={(this.state.yTranslationEdited !== null)? this.state.yTranslationEdited : round(navTransformYTrans, 2)}
                 id="YTranslation"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.manualNavPoseOffsetsDisabled}
                 style={{ width: "80%" }}
               />
             </Label>
-            <Label title={"Z"}>
+            <Label title={"Z (m)"}>
               <Input
-                value={(this.state.zTranslation !== null) && (this.state.zTranslation !== navTransformZTrans) ? this.state.zTranslation : navTransformZTrans}
+                value={(this.state.zTranslationEdited !== null)? this.state.zTranslationEdited : round(navTransformZTrans, 2)}
                 id="ZTranslation"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.manualNavPoseOffsetsDisabled}
                 style={{ width: "80%" }}
               />
             </Label>
           </Column>
           <Column>
-            <Label title={"Rotation (deg)"}/>
-            <Label title={"X"}>
+            <Label title={"Roll (deg)"}>
               <Input
-                value={(this.state.xRotation !== null) && (this.state.xRotation !== navTransformXRot) ? this.state.xRotation : navTransformXRot}
+                value={(this.state.xRotationEdited !== null)? this.state.xRotationEdited : round(navTransformXRot, 2)}
                 id="XRotation"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.manualNavPoseOffsetsDisabled}
                 style={{ width: "80%" }}
               />
             </Label>
-            <Label title={"Y"}>
+            <Label title={"Pitch (deg)"}>
               <Input
-                value={(this.state.yRotation !== null) && (this.state.yRotation !== navTransformYRot) ? this.state.yRotation : navTransformYRot}
+                value={(this.state.yRotationEdited !== null)? this.state.yRotationEdited : round(navTransformYRot, 2)}
                 id="YRotation"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.manualNavPoseOffsetsDisabled}
                 style={{ width: "80%" }}
               />
             </Label>
-            <Label title={"Z"}>
+            <Label title={"Yaw (deg)"}>
               <Input
-                value={(this.state.zRotation !== null) && (this.state.zRotation !== navTransformZRot) ? this.state.zRotation : navTransformZRot}
+                value={(this.state.zRotationEdited !== null)? this.state.zRotationEdited : round(navTransformZRot, 2)}
                 id="ZRotation"
                 onChange= {this.onUpdateText}
                 onKeyDown= {this.onKeyText}
-                disabled={this.state.manualNavPoseOffsetsDisabled}
+                style={{ width: "80%" }}
+              />
+            </Label>
+            <Label title={"Heading (deg)"}>
+              <Input
+                value={(this.state.headingEdited !== null)? this.state.headingEdited : round(navHeadingOffset, 2)}
+                id="Heading"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
                 style={{ width: "80%" }}
               />
             </Label>
           </Column>
         </Columns>
-        <Label title={"Transfer Frame IDs"}/>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+        <label style={{fontWeight: 'bold'}}>
+          {"Input Settings"}
+        </label>
+        <Label title={"Nav. Source"}>
+          <Select
+            onChange={this.onNavSatFixTopicSelected}
+            value={selectedNavSatFixTopic}
+          >
+            {this.createInputOptions(navSatFixTopics, selectedNavSatFixTopic)}
+          </Select>
+        </Label>
+        <Label title={"Orientation Source"}>
+          <Select
+            onChange={this.onOrientationTopicSelected}
+            value={selectedOrientationTopic}
+          >
+            {this.createInputOptions(orientationTopics, selectedOrientationTopic)}
+          </Select>
+        </Label>
+        <Label title={"Heading Source"}>
+          <Select
+            onChange={this.onHeadingTopicSelected}
+            value={selectedHeadingTopic}
+          >
+            {this.createInputOptions(headingTopics, selectedHeadingTopic)}
+          </Select>
+        </Label>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+        <label style={{fontWeight: 'bold'}}>
+          {"Output Settings"}
+        </label>
         <Columns>
           <Column>
-            <Label title={"Src."}>
+            <Label title={"Output Ref. Frame"}>
               <Input
-                disabled
-                value={navSrcFrame}
+                value={(this.state.ahrsOutFrameEdited !== null)? this.state.ahrsOutFrameEdited : navPoseOrientationFrame}
+                id="AHRSOutFrame"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{width: "80%"}}
+                disabled={!transformNavPoseOrientation}
               />
             </Label>
           </Column>
           <Column>
-            <Label title={"Targ."}>
-              <Input
-                disabled
-                value={navTargetFrame}
-              />
+            <Label title={"Transform Output"}>
+              <Toggle checked={transformNavPoseOrientation} onClick={onToggletransformNavPoseOrientation} />
             </Label>
           </Column>
         </Columns>
@@ -447,10 +531,12 @@ class NavPose extends Component {
       navPoseOrientationPitchRate,
       navPoseOrientationRollAngle,
       navPoseOrientationRollRate,
+      navPoseOrientationFrame,
+      onReinitNavPoseSolution
     } = this.props.ros
     return (
       <Section title={"Nav/Pose Output"}>
-      <Columns>
+        <Columns>
           <Column>
             <label style={{fontWeight: 'bold'}}>
               {"Location"}
@@ -483,12 +569,19 @@ class NavPose extends Component {
                 style={{ width: "80%" }}
               />
             </Label>
+            <Label title={"Heading (deg)"}>
+              <Input
+                disabled
+                style={{ width: "80%" }}
+                value={round(navPoseDirectionHeadingDeg, 2)}
+              />
+            </Label>
           </Column>
           <Column>
             <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
               <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>
               {"Orientation"}
-                </label>
+              </label>
             </div>
             <Label title={""}>
             <div style={{ display: "inline-block", width: "45%", float: "left" }}>
@@ -500,143 +593,109 @@ class NavPose extends Component {
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
-                value={round(navPoseOrientationYawAngle, 3)}
+                value={round(navPoseOrientationYawAngle, 2)}
               />
               <Input
                 disabled
                 style={{ width: "45%" }}
-                value={round(navPoseOrientationYawRate, 3)}
+                value={round(navPoseOrientationYawRate, 2)}
               />
             </Label>
             <Label title={"Pitch"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
-                value={round(navPoseOrientationPitchAngle, 3)}
+                value={round(navPoseOrientationPitchAngle, 2)}
               />
               <Input
                 disabled
                 style={{ width: "45%" }}
-                value={round(navPoseOrientationPitchRate, 3)}
+                value={round(navPoseOrientationPitchRate, 2)}
               />
             </Label>
             <Label title={"Yaw"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
-                value={round(navPoseOrientationRollAngle, 3)}
+                value={round(navPoseOrientationRollAngle, 2)}
               />
               <Input
                 disabled
                 style={{ width: "45%" }}
-                value={round(navPoseOrientationRollRate, 3)}
+                value={round(navPoseOrientationRollRate, 2)}
               />
             </Label>
-            <Label title={"Heading (deg)"}>
+            <Label title={"Ref. Frame"}>
               <Input
                 disabled
                 style={{ width: "80%" }}
-                value={round(navPoseDirectionHeadingDeg, 2)}
+                value={navPoseOrientationFrame}
               />
             </Label>
           </Column>
         </Columns>
+        <ButtonMenu>
+          <Button onClick={onReinitNavPoseSolution}>{"Reinitialize"}</Button>
+        </ButtonMenu>
       </Section>
     )
   }
 
-  renderPanTilt() {
+  renderNavPoseStatus() {
+    const {
+      navSatFixRate,
+      orientationRate,
+      headingRate,
+      navSatFixStatus,
+      navSatFixService
+    } = this.props.ros
+
     return (
-      <Section title={"Pan and Tilt (In Development)"}>
-        <Label title={"Enable Pan and Tilt Nav/Pose Solution"}>
-          <Toggle
-            disabled
-          />
-        </Label>
-        <Label title={"Orientation (Up/Down)"}>
-          <Toggle
-            disabled
-          />
-        </Label>
+      <Section title={"Nav/Pose Status"}>
         <Columns>
-          <Column>
-            <Label title={"Translation (m)"}/>
-            <Label title={"X"}>
-              <Input
-                id="PTXTranslation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Y"}>
-              <Input
-                id="PTYTranslation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Z"}>
-              <Input
-                id="PTZTranslation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-          </Column>
-          <Column>
-            <Label title={"Rotation (deg)"}/>
-            <Label title={"X"}>
-              <Input
-                id="PTXRotation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Y"}>
-              <Input
-                id="PTYRotation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Z"}>
-              <Input
-                id="PTZRotation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-          </Column>
-        </Columns>
-        <Label title={"Current Position"}/>
-        <Columns>
-          <Column>
-            <Label title={"Pan (deg)"}>
-              <Input
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
-          </Column>
-          <Column>
-            <Label title={"Tilt (deg)"}>
-              <Input
-                disabled
-                style={{ width: "80%" }}
-              />
-            </Label>
+            <Column>
+              <label style={{fontWeight: 'bold'}}>
+                    {"Nav/Sat."}
+              </label>            
+              <Label title={"Status"}>
+                <Input 
+                  disabled
+                  style={{ width: "80%" }}
+                  value={navSatFixStatusAsString(navSatFixStatus)}
+                />
+              </Label>
+              <Label title={"Service"}>
+                <Input 
+                  disabled
+                  style={{ width: "80%" }}
+                  value={navSatFixServiceAsString(navSatFixService)}
+                />
+              </Label>
+            </Column>
+            <Column>
+              <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
+                <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>
+                {"Update Rates (Hz)"}
+                </label>
+              </div>
+              <Label title={"Nav/Sat."}>
+                <Input
+                  disabled
+                  value={round(navSatFixRate, 1)}
+                />
+              </Label>            
+              <Label title={"Orientation"}>
+                <Input
+                  disabled
+                  value={round(orientationRate, 1)}
+                />
+              </Label>            
+              <Label title={"Heading"}>
+                <Input
+                  disabled
+                  value={round(headingRate, 1)}
+                />
+              </Label>            
           </Column>
         </Columns>
       </Section>
@@ -648,28 +707,14 @@ class NavPose extends Component {
       <Columns>
         <Column>
           {this.renderCurrentNavPose()}
-          {this.renderExternalNavPose()}
+          {this.renderNavPoseStatus()}
         </Column>
         <Column>
-          {this.renderFixedNavPose()}
-          {this.renderPanTilt()}
+          {this.renderNavPoseSetup()}
         </Column>
       </Columns>
     )
   }
 }
-
-/*
-<Columns>
-  <Column>
-    {this.renderCurrentNavPose()}
-    {this.renderExternalNavPose()}
-  </Column>
-  <Column>
-    {this.renderFixedNavPose()}
-    {this.renderPanTilt()}
-  </Column>
-</Columns>
-*/
 
 export default NavPose
