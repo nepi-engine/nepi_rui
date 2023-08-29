@@ -171,6 +171,7 @@ class ROSConnectionStore {
   @observable navSatFixService = null
 
   @observable navPoseStatus = null
+  @observable gpsClockSyncEnabled = false
   @observable selectedNavSatFixTopic = null
   @observable lastNavSatFix = null
   @observable navSatFixRate = null
@@ -1114,6 +1115,8 @@ class ROSConnectionStore {
 
       this.navHeadingOffset = this.navPoseStatus.heading_offset
 
+      this.gpsClockSyncEnabled = this.navPoseStatus.gps_clock_sync_enabled
+
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 2000)
       }
@@ -1949,6 +1952,18 @@ class ROSConnectionStore {
       messageType: "std_msgs/String",
       data: {
         data: topic
+      }
+    })
+  }
+
+  @action.bound
+  onToggleGPSClockSync() {
+    this.gpsClockSyncEnabled = !(this.gpsClockSyncEnabled)
+    this.publishMessage({
+      name: "nav_pose_mgr/enable_gps_clock_sync",
+      messageType: "std_msgs/Bool",
+      data: {
+        data: this.gpsClockSyncEnabled
       }
     })
   }

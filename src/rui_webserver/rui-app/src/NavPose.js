@@ -314,7 +314,9 @@ class NavPose extends Component {
             headingTopics,
             selectedNavSatFixTopic,
             selectedOrientationTopic,
-            selectedHeadingTopic
+            selectedHeadingTopic,
+            gpsClockSyncEnabled,
+            onToggleGPSClockSync
     } = this.props.ros
     return (
       <Section title={"NAV/POSE Setup"}>
@@ -467,6 +469,9 @@ class NavPose extends Component {
         <label style={{fontWeight: 'bold'}}>
           {"Input Settings"}
         </label>
+        <Label title={"Sync. System Clock to Nav."}>
+          <Toggle checked={gpsClockSyncEnabled} onClick={onToggleGPSClockSync} />
+        </Label>
         <Label title={"Nav. Source"}>
           <Select
             onChange={this.onNavSatFixTopicSelected}
