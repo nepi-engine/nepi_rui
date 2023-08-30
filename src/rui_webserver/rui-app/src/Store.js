@@ -229,6 +229,7 @@ class ROSConnectionStore {
   @observable NUID = "INVALID"
   @observable NEPIConnectStatus = null
   @observable alias = ""
+  @observable ssh_public_key = ""
   @observable bot_running = null
   @observable lb_last_connection_time = null
   @observable hb_last_connection_time = null
@@ -842,6 +843,7 @@ class ROSConnectionStore {
       })
       this.NUID = this.NEPIConnectStatus.nuid
       this.alias = this.NEPIConnectStatus.alias
+      this.ssh_public_key = this.NEPIConnectStatus.public_ssh_key
       this.bot_running = this.NEPIConnectStatus.bot_running
       this.NEPIConnectenabled = this.NEPIConnectStatus.enabled
       this.lb_last_connection_time = moment.unix(this.NEPIConnectStatus.lb_last_connection_time.secs)
