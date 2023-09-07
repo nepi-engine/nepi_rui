@@ -207,6 +207,7 @@ class ROSConnectionStore {
   @observable imageTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
+  @observable ptxUnits = []
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -390,6 +391,7 @@ class ROSConnectionStore {
         var newImageTopics = this.updateImageTopics()
                 
         this.updateIDXSensorList()
+        this.updatePTXUnits()
         this.updateNavPoseSourceTopics()
 
         if (newPrefix || newSensor3DXs || newResettables || newImageTopics) {
@@ -525,6 +527,33 @@ class ROSConnectionStore {
     return idx_sensors_changed
   }
 
+  @action.bound
+  updatePTXUnits() {
+    var ptx_units_changed = false
+    var ptx_units_detected = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicNames[i].endsWith("/ptx/status")) {
+        const ptx_unit_namespace = this.topicNames[i].split("/ptx")[0]
+        if (!(ptx_units_detected.includes(ptx_unit_namespace))) {
+          ptx_units_detected.push(ptx_unit_namespace)
+        }
+        if (!(this.ptxUnits.includes(ptx_unit_namespace))) {
+          this.ptxUnits.push(ptx_unit_namespace)
+        }
+        ptx_units_changed = true
+      }
+    }
+
+    // Now clean out any units that are no longer detected
+    for (i = 0; i < this.ptxUnits.length; ++i) {
+      if (!(ptx_units_detected.includes(this.ptxUnits[i]))) {
+        this.ptxUnits.splice(i, 1)
+        ptx_units_changed = true
+      }
+    }
+    return ptx_units_changed
+  }
+  
   @action.bound
   updateResetTopics() {
     var newResetTopics = []
@@ -778,6 +807,18 @@ class ROSConnectionStore {
       return this.addListener({
         name: idxSensorNamespace + "/idx/status",
         messageType: "nepi_ros_interfaces/IDXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  setupPTXStatusListener(ptxNamespace, callback) {
+    if (ptxNamespace) {
+      return this.addListener({
+        name: ptxNamespace + "/ptx/status",
+        messageType: "nepi_ros_interfaces/PanTiltStatus",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -1982,6 +2023,50 @@ class ROSConnectionStore {
       name: "sequential_image_mux/delete_mux_sequence",
       messageType: "std_msgs/String",
       data: { data: sequence_id }
+    })
+  }
+
+  // PTX
+  @action.bound
+  onPTXGoHome(ptxNamespace) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/go_home",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })    
+  }
+
+  @action.bound
+  onPTXStop(ptxNamespace) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/stop_moving",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    }) 
+  }
+
+  @action.bound
+  onSetPTXHomePos(ptxNamespace, yawHomePos, pitchHomePos) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/set_home_position",
+      messageType: "nepi_ros_interfaces/PanTiltPosition",
+      data: {"yaw_deg": yawHomePos, "pitch_deg": pitchHomePos},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onSetPTXSoftStopPos(ptxNamespace, yawMin, yawMax, pitchMin, pitchMax) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/set_soft_limits",
+      messageType: "nepi_ros_interfaces/PanTiltLimits",
+      data: {"min_yaw_softstop_deg": yawMin,
+             "max_yaw_softstop_deg": yawMax,
+             "min_pitch_softstop_deg": pitchMin,
+             "max_pitch_softstop_deg": pitchMax},
+      noPrefix: true
     })
   }
 }
