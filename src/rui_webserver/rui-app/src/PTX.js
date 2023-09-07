@@ -41,6 +41,11 @@ class PTX extends Component {
       yawHomePosDeg: null,
       pitchHomePosEdited: null,
       pitchHomePosDeg: null,
+
+      yawMaxHardstopDeg: null,
+      yawMaxHardstopEdited: null,
+      pitchMaxHardstopDeg: null,
+      pitchMaxHardstopEdited: null,
       
       yawMaxSoftstopDeg: null,
       yawMaxSoftstopEdited: null,
@@ -186,6 +191,10 @@ class PTX extends Component {
       pitchPositionDeg: message.pitch_now_deg,
       yawHomePosDeg: message.yaw_home_pos_deg,
       pitchHomePosDeg: message.pitch_home_pos_deg,
+      yawMaxHardstopDeg: message.yaw_max_hardstop_deg,
+      pitchMaxHardstopDeg: message.pitch_max_hardstop_deg,
+      yawMinHardstopDeg: message.yaw_min_hardstop_deg,
+      pitchMinHardstopDeg: message.pitch_min_hardstop_deg,
       yawMaxSoftstopDeg: message.yaw_max_softstop_deg,
       pitchMaxSoftstopDeg: message.pitch_max_softstop_deg,
       yawMinSoftstopDeg: message.yaw_min_softstop_deg,
@@ -271,6 +280,7 @@ class PTX extends Component {
   renderControlPanel() {
     const { ptxNamespace, ptSerialNum, ptHwVersion, ptSwVersion,
             yawPositionDeg, pitchPositionDeg, yawHomePosDeg, pitchHomePosDeg,
+            yawMaxHardstopDeg, pitchMaxHardstopDeg, yawMinHardstopDeg, pitchMinHardstopDeg,
             yawMaxSoftstopDeg, pitchMaxSoftstopDeg, yawMinSoftstopDeg, pitchMinSoftstopDeg,
             speedRatioAdjustment, yawHomePosEdited, pitchHomePosEdited,
             yawMinSoftstopEdited, pitchMinSoftstopEdited, yawMaxSoftstopEdited, pitchMaxSoftstopEdited,
@@ -298,18 +308,13 @@ class PTX extends Component {
           <Input disabled={true} value={ptSwVersion}/>
         </Label>
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-        <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
-          <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>
-          {"Settings"}
-          </label>
-        </div>
         <Label title={""}>
         <div style={{ display: "inline-block", width: "45%", float: "left" }}>
           {"Yaw"}
         </div>
         <div style={{ display: "inline-block", width: "45%" }}>{"Pitch"}</div>
         </Label>
-        <Label title={"Current"}>
+        <Label title={"Present Position"}>
           <Input
             disabled
             style={{ width: "45%", float: "left" }}
@@ -321,23 +326,31 @@ class PTX extends Component {
             value={round(pitchPositionDeg, 1)}
           />
         </Label>
-        <Label title={"Home"}>
+        <Label title={"Hard Position Min"}>
           <Input
-            id={"PTXYawHomePos"}
-            style={{ width: "45%", float: "left" }}
-            value={yawHomePos}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
+            disabled
+            style={{ width: "45%" }}
+            value={round(yawMinHardstopDeg, 1)}
           />
           <Input
-            id={"PTXPitchHomePos"}
-            style={{ width: "45%" }}
-            value={pitchHomePos}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
+            disabled
+            style={{ width: "45%", float: "left" }}
+            value={round(pitchMinHardstopDeg, 1)}
           />
         </Label>
-        <Label title={"Soft Stop Min"}>
+        <Label title={"Hard Position Max"}>
+          <Input
+            disabled
+            style={{ width: "45%" }}
+            value={round(yawMaxHardstopDeg, 1)}
+          />
+          <Input
+            disabled
+            style={{ width: "45%", float: "left" }}
+            value={round(pitchMaxHardstopDeg, 1)}
+          />
+        </Label>        
+        <Label title={"Operating Position Min"}>
           <Input
             id={"PTXYawSoftStopMin"}
             style={{ width: "45%", float: "left" }}
@@ -353,7 +366,7 @@ class PTX extends Component {
             onKeyDown= {this.onKeyText}
           />
         </Label>
-        <Label title={"Soft Stop Max"}>
+        <Label title={"Operating Position Max"}>
           <Input
             id={"PTXYawSoftStopMax"}
             style={{ width: "45%", float: "left" }}
@@ -365,6 +378,22 @@ class PTX extends Component {
             id={"PTXPitchSoftStopMax"}
             style={{ width: "45%" }}
             value={pitchSoftStopMax}
+            onChange= {this.onUpdateText}
+            onKeyDown= {this.onKeyText}
+          />
+        </Label>
+        <Label title={"Home Position"}>
+          <Input
+            id={"PTXYawHomePos"}
+            style={{ width: "45%", float: "left" }}
+            value={yawHomePos}
+            onChange= {this.onUpdateText}
+            onKeyDown= {this.onKeyText}
+          />
+          <Input
+            id={"PTXPitchHomePos"}
+            style={{ width: "45%" }}
+            value={pitchHomePos}
             onChange= {this.onUpdateText}
             onKeyDown= {this.onKeyText}
           />
