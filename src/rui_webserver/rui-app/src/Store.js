@@ -81,6 +81,7 @@ async function getFileJson(filename) {
     return json
   } catch (err) {
     console.error(err)
+    return null
   }
 }
 
@@ -203,9 +204,7 @@ class ROSConnectionStore {
   @observable topicQueryLock = false
   @observable topicNames = null
   @observable topicTypes = null
-  @observable imageTopicsDetection = []
-  @observable imageTopicsSequencer = []
-  @observable imageTopics3DX = []
+  @observable imageTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
   @observable resetTopics = []
@@ -214,8 +213,9 @@ class ROSConnectionStore {
   @observable headingTopics = []
 
   @observable imageFilterDetection = null
-  @observable imageFilter3DX = null
-
+  @observable imageFilterSequencer = null
+  @observable imageFilterPTX = null
+  
   @observable last3DXUpdate = new Date()
 
   @observable classifiers = []
@@ -334,13 +334,18 @@ class ROSConnectionStore {
       try {
         // get the image filters
         const imageFilterDetectionJson = await getFileJson("img_filter_detection.json")
-        if (imageFilterDetectionJson.filter) {
+        if (imageFilterDetectionJson && imageFilterDetectionJson.filter) {
           this.imageFilterDetection = new RegExp(imageFilterDetectionJson.filter)
         }
 
-        const imageFilter3DXJson = await getFileJson("img_filter_3dx.json")
-        if (imageFilter3DXJson.filter) {
-          this.imageFilter3DX = new RegExp(imageFilter3DXJson.filter)
+        const imageFilterSequencerJson = await getFileJson("img_filter_sequencer.json")
+        if (imageFilterSequencerJson && imageFilterSequencerJson.filter) {
+          this.imageFilterSequencer = new RegExp(imageFilterSequencerJson.filter)
+        }
+
+        const imageFilterPTXJson = await getFileJson("img_filter_ptx.json")
+        if (imageFilterPTXJson && imageFilterPTXJson.filter) {
+          this.imageFilterPTX = new RegExp(imageFilterPTXJson.filter)
         }
 
         // setup rosbridge connection
@@ -382,14 +387,12 @@ class ROSConnectionStore {
         var newPrefix = this.updatePrefix()
         var newSensor3DXs = this.updateSensor3DXTopics()
         var newResettables = this.updateResetTopics()
-        var newDetectionImageTopics = this.updateDetectionImageTopics()
-        var newSequencerImageTopics = this.updateSequencerImageTopics()
-        var new3DXImageTopics = this.update3DXImageTopics()
-        
+        var newImageTopics = this.updateImageTopics()
+                
         this.updateIDXSensorList()
         this.updateNavPoseSourceTopics()
 
-        if (newPrefix || newSensor3DXs || newResettables || newDetectionImageTopics || newSequencerImageTopics || new3DXImageTopics) {
+        if (newPrefix || newSensor3DXs || newResettables || newImageTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -441,61 +444,20 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  updateDetectionImageTopics() {
+  updateImageTopics() {
     // Function for updating image topics list
     var newImageTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
       if (this.topicTypes[i] === "sensor_msgs/Image") {
-        // if we don't have a filter, or if we do and this topic name includes
-        // the filter text (substring search) then push it onto the list
-        if (!this.imageFilterDetection || this.imageFilterDetection.test(this.topicNames[i])) {
-          newImageTopics.push(this.topicNames[i])
-        }
+        newImageTopics.push(this.topicNames[i])
       }
     }
 
     // sort the image topics for comparison to work
     newImageTopics.sort()
 
-    if (!this.imageTopicsDetection.equals(newImageTopics)) {
-      this.imageTopicsDetection = newImageTopics
-      return true
-    } else {
-      return false
-    }
-  }
-
-  @action.bound
-  updateSequencerImageTopics() {
-    // For now, just use the same logic as for the detection image topics. One day we may filter these differently, etc.
-    this.updateDetectionImageTopics()
-    if (!this.imageTopicsSequencer.equals(this.imageTopicsDetection)) {
-      this.imageTopicsSequencer = this.imageTopicsDetection
-      return true
-    } else {
-      return false
-    }
-  }
-
-  @action.bound
-  update3DXImageTopics() {
-    // Function for updating image topics list
-    var newImageTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "sensor_msgs/Image") {
-        // if we don't have a filter, or if we do and this topic name includes
-        // the filter text (substring search) then push it onto the list
-        if (!this.imageFilter3DX || this.imageFilter3DX.test(this.topicNames[i])) {
-          newImageTopics.push(this.topicNames[i])
-        }
-      }
-    }
-
-    // sort the image topics for comparison to work
-    newImageTopics.sort()
-
-    if (!this.imageTopics3DX.equals(newImageTopics)) {
-      this.imageTopics3DX = newImageTopics
+    if (!this.imageTopics.equals(newImageTopics)) {
+      this.imageTopics = newImageTopics
       return true
     } else {
       return false

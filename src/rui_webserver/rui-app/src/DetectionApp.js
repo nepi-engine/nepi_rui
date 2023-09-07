@@ -44,26 +44,31 @@ class DetectionApp extends Component {
   }
   // Function for creating image topic options.
   createImageTopicsOptions() {
+    const {imageFilterDetection} = this.props.ros
     var items = []
     items.push(<Option>{"None"}</Option>)
-    const { imageTopicsDetection } = this.props.ros
-    var uniqueNames = createShortUniqueValues(imageTopicsDetection)
+    const { imageTopics } = this.props.ros
+    var uniqueNames = createShortUniqueValues(imageTopics)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
-    for (var i = 0; i < imageTopicsDetection.length; i++) {
+    for (var i = 0; i < imageTopics.length; i++) {
+      // Run the filter
+      if (imageFilterDetection && !(imageFilterDetection.test(imageTopics[i]))) {
+        continue
+      }
       if (classifier_not_stopped) {
-        if (imageTopicsDetection[i] === this.props.ros.reportedClassifier.selected_img_topic) {
-          items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+        if (imageTopics[i] === this.props.ros.reportedClassifier.selected_img_topic) {
+          items.push(<Option selected="selected" value={imageTopics[i]}>{uniqueNames[i]}</Option>)
         }
         else {
-          items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+          items.push(<Option value={imageTopics[i]}>{uniqueNames[i]}</Option>)
         }
       }
-      else if (imageTopicsDetection[i] === this.state.imageTopic) {
-        items.push(<Option selected="selected" value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+      else if (imageTopics[i] === this.state.imageTopic) {
+        items.push(<Option selected="selected" value={imageTopics[i]}>{uniqueNames[i]}</Option>)
       }
       else {
-        items.push(<Option value={imageTopicsDetection[i]}>{uniqueNames[i]}</Option>)
+        items.push(<Option value={imageTopics[i]}>{uniqueNames[i]}</Option>)
       }
     }
     return items
