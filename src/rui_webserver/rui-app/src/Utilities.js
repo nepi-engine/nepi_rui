@@ -1,3 +1,5 @@
+import Styles from "./Styles"
+
 const createShortUniqueValues = list => {
   var tokenizedList = []
   var depthsToUnique = []
@@ -26,6 +28,16 @@ const createShortUniqueValues = list => {
   }
 
   return uniqueList
+}
+
+export function setElementStyleModified(e) {
+  e.style.color = Styles.vars.colors.red
+  e.style.fontWeight = "bold"
+}
+
+export function clearElementStyleModified(e) {
+  e.style.color = Styles.vars.colors.black
+  e.style.fontWeight = "normal"
 }
 
 /*

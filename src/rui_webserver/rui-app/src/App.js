@@ -17,6 +17,7 @@ import SoftwareUpdate from "./SoftwareUpdate"
 import Help from "./Help"
 import Automation from "./Automation"
 import ImageSequencer from "./ImageSequencer"
+import PTX from "./PTX"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -52,10 +53,17 @@ class App extends Component {
               label: "Applications",
               subItems: [
                 { path: "/ai", label: "AI" },
-                { path: "/automation", label: "Automation"}
+                { path: "/automation", label: "Automation"},
+                { path: "/nepi_connect", label: "Connect" }
               ]
             },
-            { path: "/nepi_connect", label: "Connect" },
+            {
+              path: "/controls",
+              label: "Controls",
+              subItems: [
+                { path: "/ptx", label: "Pan/Tilt" }
+              ]
+            },
             {
               path: "/system",
               label: "System",
@@ -81,6 +89,7 @@ class App extends Component {
           <Route path="/admin" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
+          <Route path="/ptx" component={PTX} />
           <Route path="/help" component={Help} />
         </Switch>
       </Page>

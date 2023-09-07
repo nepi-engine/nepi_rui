@@ -215,13 +215,17 @@ class ImageSequencer extends Component {
   createImageTopicsOptions() {
     var items = []
     items.push(<Option>{""}</Option>) // Blank at the top serves as the "Cancel" operation
-    const { imageTopicsSequencer } = this.props.ros
-    var imageTopicShortnames = createShortUniqueValues(imageTopicsSequencer)
+    const { imageTopics, imageFilterSequencer } = this.props.ros
+    var imageTopicShortnames = createShortUniqueValues(imageTopics)
+    for (var i = 0; i < imageTopics.length; i++) {
+      // Run the filter
+      if (imageFilterSequencer && !(imageFilterSequencer.test(imageTopics[i]))) {
+        continue
+      }
 
-    for (let i = 0; i < imageTopicShortnames.length; ++i) { // imageTopicShortnames includes a blank line at the top
       // Make sure to skip the selected sequence's output -- don't want a circular sequencer!
-      if (this.state.selectedSequenceObj && (this.state.selectedSequenceObj['output_topic'] !== imageTopicsSequencer[i])) {
-        items.push(<Option value={imageTopicsSequencer[i]}>{imageTopicShortnames[i]}</Option>)
+      if (this.state.selectedSequenceObj && (this.state.selectedSequenceObj['output_topic'] !== imageTopics[i])) {
+        items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
       }
     }
     return items

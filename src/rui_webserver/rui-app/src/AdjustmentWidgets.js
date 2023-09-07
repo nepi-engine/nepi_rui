@@ -64,6 +64,13 @@ const styles = Styles.Create({
     textAlign: "right",
     backgroundColor: Styles.vars.colors.nepi_blue    
   },
+  vertical_slider: {
+    flex: 0.2,
+    marginTop: Styles.vars.spacing.xs,
+    marginRight: Styles.vars.spacing.small,
+    marginLeft: Styles.vars.spacing.small,
+    textAlign: "right",    
+  },
   invisible_slider_input: {
     flex: 1,
     textAlign: "left",
@@ -144,7 +151,10 @@ class SliderAdjustment extends Component {
     invisibleSlider: PropTypes.Bool,
 
     // Provides a suffix for the text box
-    unit: PropTypes.string
+    unit: PropTypes.string,
+
+    // Reverse the direction of the slider, so that right/up decreases value
+    reverse: PropTypes.Bool
   }
   
   defaultProps = {
@@ -152,7 +162,8 @@ class SliderAdjustment extends Component {
     markSteps: false,
     invisibleSlider: false,
     scaled: 1,
-    unit: " "
+    unit: " ",
+    reverse: false
   }
 
   constructor(props) {
@@ -180,7 +191,7 @@ class SliderAdjustment extends Component {
       return this.props.onSliderChangeOverride(new_value)
     }
     
-    var value_to_publish = new_value * this.props.scaled
+    var value_to_publish = (this.props.reverse === true)? ((this.props.max - new_value) * this.props.scaled) : (new_value * this.props.scaled)
     if (this.props.stepMapping)
     {
       if (this.props.publishStepIndex)
@@ -249,6 +260,10 @@ class SliderAdjustment extends Component {
     var marginStyle = (noMargin? {marginTop: 0} : null )
     var newSliderVal = this.props.stepMapping? 
       this.props.adjustment : Math.round((this.props.adjustment/this.props.scaled) * roundingVal) / roundingVal
+    if (this.props.reverse === true) {
+      newSliderVal = this.props.max - newSliderVal
+    }
+
     var newInputVal = this.props.stepMapping?
       this.props.stepMapping[newSliderVal] : newSliderVal
     if (this.props.unit) {
@@ -266,6 +281,9 @@ class SliderAdjustment extends Component {
       trackStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
       railStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
     }
+    else if (this.props.vertical) {
+      sliderStyle = { ...styles.vertical_slider, height: this.props.verticalHeight }
+    }
     else if (this.props.disabled) {
       handleStyle = {backgroundColor: Styles.vars.colors.nepi_blue}
       sliderStyle = styles.disabled_slider
@@ -273,9 +291,12 @@ class SliderAdjustment extends Component {
 
     return (
       <div style={{ display: "flex", ...styles.root, ...marginStyle}}>
-        <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
-          <label style={styles.label}>{this.props.title}</label>
-        </Tooltip>
+        {(this.props.noLabel)?
+          null :
+          <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
+            <label style={styles.label}>{this.props.title}</label>
+          </Tooltip>
+        }
         <Slider
           ref={this.focusReference}
           style={sliderStyle}
@@ -290,12 +311,16 @@ class SliderAdjustment extends Component {
           handleStyle={handleStyle}
           trackStyle= {trackStyle}
           railStyle={railStyle}
+          vertical={this.props.vertical}
         />
-        <Input
-          style={(this.props.invisibleSlider === true)? styles.invisible_slider_input : styles.input}
-          disabled={true}
-          value={newInputVal}
-        />
+        {(this.props.noTextBox)?
+          null :
+          <Input
+            style={(this.props.invisibleSlider === true)? styles.invisible_slider_input : styles.input}
+            disabled={true}
+            value={newInputVal}
+          />
+        }
       </div>
     )
   }

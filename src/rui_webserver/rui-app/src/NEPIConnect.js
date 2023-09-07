@@ -31,6 +31,7 @@ class NEPIConnect extends Component {
       viewableOrder: false,
       autoRate: this.props.ros.auto_attempts_per_hour,
       dataSetsPerHour: this.props.ros.lb_data_sets_per_hour,
+      showPublicSSHKey: false
     }
     this.renderNEPIConnect = this.renderNEPIConnect.bind(this)
     this.renderLBInformation = this.renderLBInformation.bind(this)
@@ -89,7 +90,7 @@ class NEPIConnect extends Component {
   }
 
   renderNEPIConnect() {
-    const { NUID, alias, log_storage_enabled, onToggleLogStorage } = this.props.ros
+    const { NUID, alias, ssh_public_key, log_storage_enabled, onToggleLogStorage } = this.props.ros
     return(
       <Section title={"NEPI Connect"}>
         <Label title="NEPI UID">
@@ -102,6 +103,18 @@ class NEPIConnect extends Component {
             disabled value= {alias}
           />
         </Label>
+        <Label title={"Show Public SSH Key"}>
+          <Toggle
+            checked={this.state.showPublicSSHKey}
+            onClick={() => this.setState({showPublicSSHKey: !(this.state.showPublicSSHKey)})}
+          />
+        </Label>
+        <div hidden={!(this.state.showPublicSSHKey)}>
+          <Label title={"Public SSH Key"}/>
+          <pre style={{ height: "100px", overflowX: "auto", overflowY: "auto", overflowWrap: "anywhere", whiteSpace: "normal"}}>
+            {ssh_public_key}
+          </pre>
+        </div>
         <Label title="Save Comms Interface Logs">
           <Toggle
             checked={log_storage_enabled}
