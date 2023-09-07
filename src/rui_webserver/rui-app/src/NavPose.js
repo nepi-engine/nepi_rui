@@ -9,7 +9,7 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
 import Select, { Option } from "./Select"
-//import createShortUniqueValues from "./Utilities"
+import {setElementStyleModified, clearElementStyleModified} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -81,24 +81,12 @@ class NavPose extends Component {
     this.renderNavPoseSetup = this.renderNavPoseSetup.bind(this)
     this.renderCurrentNavPose = this.renderCurrentNavPose.bind(this)
     this.renderNavPoseStatus = this.renderNavPoseStatus.bind(this)
-    this.setElementStyleModified = this.setElementStyleModified.bind(this)
-    this.clearElementStyleModified = this.clearElementStyleModified.bind(this)
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
     this.createInputOptions = this.createInputOptions.bind(this)
     this.onNavSatFixTopicSelected = this.onNavSatFixTopicSelected.bind(this)
     this.onOrientationTopicSelected = this.onOrientationTopicSelected.bind(this)
     this.onHeadingTopicSelected = this.onHeadingTopicSelected.bind(this)
-  }
-
-  setElementStyleModified(e) {
-    e.style.color = Styles.vars.colors.red
-    e.style.fontWeight = "bold"
-  }
-
-  clearElementStyleModified(e) {
-    e.style.color = Styles.vars.colors.black
-    e.style.fontWeight = "normal"
   }
 
   onUpdateText(e) {
@@ -111,73 +99,73 @@ class NavPose extends Component {
     if ((e.target.id === "InitRoll") || (e.target.id === "InitPitch") || (e.target.id === "InitYaw"))
     {
       var rollElement = document.getElementById("InitRoll")
-      this.setElementStyleModified(rollElement)
+      setElementStyleModified(rollElement)
       this.setState({initRollEdited: rollElement.value})
 
       var pitchElement = document.getElementById("InitPitch")
-      this.setElementStyleModified(pitchElement)
+      setElementStyleModified(pitchElement)
       this.setState({initPitchEdited: pitchElement.value})
 
       var yawElement = document.getElementById("InitYaw")
-      this.setElementStyleModified(yawElement)
+      setElementStyleModified(yawElement)
       this.setState({initYawEdited: yawElement.value})
     }
     else if ((e.target.id === "InitLatitude") || (e.target.id === "InitLongitude") || (e.target.id === "InitAltitude"))
     {
       var latitudeElement = document.getElementById("InitLatitude")
-      this.setElementStyleModified(latitudeElement)
+      setElementStyleModified(latitudeElement)
       this.setState({initLatitudeEdited: latitudeElement.value})
 
       var longitudeElement = document.getElementById("InitLongitude")
-      this.setElementStyleModified(longitudeElement)
+      setElementStyleModified(longitudeElement)
       this.setState({initLongitudeEdited: longitudeElement.value})
 
       var altitudeElement = document.getElementById("InitAltitude")
-      this.setElementStyleModified(altitudeElement)
+      setElementStyleModified(altitudeElement)
       this.setState({initAltitudeEdited: altitudeElement.value})
     }
     else if (e.target.id === "InitHeading")
     {
       var headingElement = document.getElementById("InitHeading")
-      this.setElementStyleModified(headingElement)
+      setElementStyleModified(headingElement)
       this.setState({initHeadingEdited: headingElement.value})
     }
     else if ((e.target.id === "XTranslation") || (e.target.id === "YTranslation") || (e.target.id === "ZTranslation") ||
              (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation") || (e.target.id === "Heading"))
     {
       var xTranslationElement = document.getElementById("XTranslation")
-      this.setElementStyleModified(xTranslationElement)
+      setElementStyleModified(xTranslationElement)
       this.setState({xTranslationEdited: xTranslationElement.value})
 
       var yTranslationElement = document.getElementById("YTranslation")
-      this.setElementStyleModified(yTranslationElement)
+      setElementStyleModified(yTranslationElement)
       this.setState({yTranslationEdited: yTranslationElement.value})
 
       var zTranslationElement = document.getElementById("ZTranslation")
-      this.setElementStyleModified(zTranslationElement)
+      setElementStyleModified(zTranslationElement)
       this.setState({zTranslationEdited: zTranslationElement.value})
 
       var xRotationElement = document.getElementById("XRotation")
-      this.setElementStyleModified(xRotationElement)
+      setElementStyleModified(xRotationElement)
       this.setState({xRotationEdited: xRotationElement.value})
 
       var yRotationElement = document.getElementById("YRotation")
-      this.setElementStyleModified(yRotationElement)
+      setElementStyleModified(yRotationElement)
       this.setState({yRotationEdited: yRotationElement.value})
 
       var zRotationElement = document.getElementById("ZRotation")
-      this.setElementStyleModified(zRotationElement)
+      setElementStyleModified(zRotationElement)
       this.setState({zRotationEdited: zRotationElement.value})
 
       var headingOffsetElement = document.getElementById("Heading")
-      this.setElementStyleModified(headingOffsetElement)
+      setElementStyleModified(headingOffsetElement)
       this.setState({headingEdited: headingOffsetElement.value})
     }
 
     else if (e.target.id === "AHRSOutFrame")
     {
       var ahrsOutFrameElement = document.getElementById("AHRSOutFrame")
-      this.setElementStyleModified(ahrsOutFrameElement)
+      setElementStyleModified(ahrsOutFrameElement)
       this.setState({ahrsOutFrameEdited: ahrsOutFrameElement.value})
     }
   }
@@ -188,14 +176,14 @@ class NavPose extends Component {
       if ((e.target.id === "InitRoll") || (e.target.id === "InitPitch") || (e.target.id === "InitYaw"))
       {
         var rollElement = document.getElementById("InitRoll")
-        this.clearElementStyleModified(rollElement)
+        clearElementStyleModified(rollElement)
         this.setState({initRollEdited : null})
 
         var pitchElement = document.getElementById("InitPitch")
-        this.clearElementStyleModified(pitchElement)
+        clearElementStyleModified(pitchElement)
 
         var yawElement = document.getElementById("InitYaw")
-        this.clearElementStyleModified(yawElement)
+        clearElementStyleModified(yawElement)
 
         onSetInitOrientation(rollElement.value, pitchElement.value, yawElement.value)
         this.setState({initRollEdited:null, initPitchEdited:null, initYawEdited:null})
@@ -203,13 +191,13 @@ class NavPose extends Component {
       else if ((e.target.id === "InitLatitude") || (e.target.id === "InitLongitude") || (e.target.id === "InitAltitude"))
       {
         var latitudeElement = document.getElementById("InitLatitude")
-        this.clearElementStyleModified(latitudeElement)
+        clearElementStyleModified(latitudeElement)
 
         var longitudeElement = document.getElementById("InitLongitude")
-        this.clearElementStyleModified(longitudeElement)
+        clearElementStyleModified(longitudeElement)
 
         var altitudeElement = document.getElementById("InitAltitude")
-        this.clearElementStyleModified(altitudeElement)
+        clearElementStyleModified(altitudeElement)
 
         onSetInitGPS(latitudeElement.value, longitudeElement.value, altitudeElement.value)
         this.setState({initLatitudeEdited:null, initLongitudeEdited:null, initAltitudeEdited:null})
@@ -218,7 +206,7 @@ class NavPose extends Component {
       else if (e.target.id === "InitHeading")
       {
         var headingElement = document.getElementById("InitHeading")
-        this.clearElementStyleModified(headingElement)
+        clearElementStyleModified(headingElement)
         onSetInitHeading(headingElement.value)
         this.setState({initHeadingEdited:null})
       }
@@ -226,25 +214,25 @@ class NavPose extends Component {
                (e.target.id === "XRotation") || (e.target.id === "YRotation") || (e.target.id === "ZRotation") || (e.target.id === "Heading"))
       {
         var xTranslationElement = document.getElementById("XTranslation")
-        this.clearElementStyleModified(xTranslationElement)
+        clearElementStyleModified(xTranslationElement)
 
         var yTranslationElement = document.getElementById("YTranslation")
-        this.clearElementStyleModified(yTranslationElement)
+        clearElementStyleModified(yTranslationElement)
 
         var zTranslationElement = document.getElementById("ZTranslation")
-        this.clearElementStyleModified(zTranslationElement)
+        clearElementStyleModified(zTranslationElement)
 
         var xRotationElement = document.getElementById("XRotation")
-        this.clearElementStyleModified(xRotationElement)
+        clearElementStyleModified(xRotationElement)
 
         var yRotationElement = document.getElementById("YRotation")
-        this.clearElementStyleModified(yRotationElement)
+        clearElementStyleModified(yRotationElement)
 
         var zRotationElement = document.getElementById("ZRotation")
-        this.clearElementStyleModified(zRotationElement)
+        clearElementStyleModified(zRotationElement)
 
         var headingOffsetElement = document.getElementById("Heading")
-        this.clearElementStyleModified(headingOffsetElement)
+        clearElementStyleModified(headingOffsetElement)
 
         onSetAHRSOffsets(xTranslationElement.value, yTranslationElement.value, zTranslationElement.value,
                          xRotationElement.value, yRotationElement.value, zRotationElement.value, headingOffsetElement.value)
@@ -254,7 +242,7 @@ class NavPose extends Component {
       else if (e.target.id === "AHRSOutFrame")
       {
         var ahrsOutFrameElement = document.getElementById("AHRSOutFrame")
-        this.clearElementStyleModified(ahrsOutFrameElement)
+        clearElementStyleModified(ahrsOutFrameElement)
         onSetAHRSOutFrame(ahrsOutFrameElement.value)
         this.setState({ahrsOutFrameEdited:null})
       }
