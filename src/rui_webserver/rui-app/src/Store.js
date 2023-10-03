@@ -265,7 +265,7 @@ class ROSConnectionStore {
   @observable imgMuxSequences = null
 
   @observable license_server = null
-  @observable commercial_licensed = false
+  @observable commercial_licensed = true // Default to true to avoid initial DEVELOPER message
   @observable license_info = null
   @observable license_request_info = null
   @observable license_request_mode = false
@@ -303,8 +303,9 @@ class ROSConnectionStore {
       } catch (e) {
         //console.error(e)
         console.error("License check failed")
+        this.license_server = null
         this.license_yaml = null
-        this.commercial_licensed = false
+        this.commercial_licensed = false 
         this.license_info = null
         this.license_request_info = null
         this.license_request_mode = false
@@ -696,6 +697,7 @@ class ROSConnectionStore {
   onConnectedToROS() {
     this.connectedToROS = true
     this.rosLog("Connected to NEPI device")
+    this.checkLicense()
   }
 
   @action.bound
