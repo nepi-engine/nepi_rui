@@ -1686,6 +1686,15 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  onUserCfgRestore() {
+    this.publishMessage({
+      name: "full_user_restore",
+      messageType: "std_msgs/Empty",
+      data: {}
+    })
+  }
+
+  @action.bound
   saveSettingsFilePrefix({newFilePrefix}) {
     this.publishMessage({
       name: "save_data_prefix",

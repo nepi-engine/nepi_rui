@@ -632,22 +632,25 @@ class Settings extends Component {
   }
 
   renderConfiguration() {
-    const { resetTopics } = this.props.ros
-    const { advancedConfigDisabled } = this.state
+    const { resetTopics, onUserCfgRestore } = this.props.ros
+    const { advancedConfigDisabled, configSubsys } = this.state
+
+    const userRestoreHidden = (advancedConfigDisabled || (configSubsys !== "All"))
     return (
       <Section title={"Configuration"}>
         <Label title={"Subsystem"}>
           <Select
             onChange={this.onConfigSubsysSelected}
-            value={this.state.configSubsys}
+            value={configSubsys}
           >
             {this.createConfigSubsysOptions(resetTopics)}
           </Select>
         </Label>
           <ButtonMenu>
             <Button onClick={this.onSaveCfg}>{"Save"}</Button>
-            <Button onClick={this.onUserReset}>{"User Reset"}</Button>
+            <Button onClick={this.onUserReset}>{"Reset"}</Button>
             <Button hidden={advancedConfigDisabled} onClick={this.onFactoryReset}>{"Factory Reset"}</Button>
+            <Button hidden={userRestoreHidden} onClick={onUserCfgRestore}>{"User Restore"}</Button>
           </ButtonMenu>
       </Section>
     )
