@@ -9,7 +9,7 @@ import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
 import Select from "./Select"
 import Styles from "./Styles"
-import createShortUniqueValues from "./Utilities"
+import createShortUniqueValues, {setElementStyleModified, clearElementStyleModified} from "./Utilities"
 //var qr = require("qrcode")
 
 // const reorder = (list, startIndex, endIndex) => {
@@ -29,8 +29,8 @@ class NEPIConnect extends Component {
     this.state = {
       viewableTopics: false,
       viewableOrder: false,
-      autoRate: this.props.ros.auto_attempts_per_hour,
-      dataSetsPerHour: this.props.ros.lb_data_sets_per_hour,
+      autoRateEdited: null,
+      dataSetsPerHourEdited: null,
       showPublicSSHKey: false
     }
     this.renderNEPIConnect = this.renderNEPIConnect.bind(this)
@@ -63,20 +63,37 @@ class NEPIConnect extends Component {
   }
 
   onUpdateText(e) {
-    var stateObject = function() {
-      const returnObj = {};
-      returnObj[this.target.id] = this.target.value;
-      return returnObj;
-    }.bind(e)();
-    this.setState( stateObject );
-    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
+    if (e.target.id === "autoRate")
+    {
+      var autoRateElement = document.getElementById("autoRate")
+      setElementStyleModified(autoRateElement)
+      this.setState({autoRateEdited: autoRateElement.value})
+    }
+    else if (e.target.id === "dataSetsPerHour")
+    {
+      var dataSetsPerHourElement = document.getElementById("dataSetsPerHour")
+      setElementStyleModified(dataSetsPerHourElement)
+      this.setState({dataSetsPerHourEdited: dataSetsPerHourElement.value})
+    }
   }
 
   onKeyText(e) {
     const {onChangeNEPIConnect} = this.props.ros
     if(e.key === 'Enter'){
       onChangeNEPIConnect(e.target.dataset.topic, e.target.value)
-      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
+      // Clear red formatting and revert to using the feedback from device for value
+      if (e.target.id === "autoRate")
+      {
+        var autoRateElement = document.getElementById("autoRate")
+        clearElementStyleModified(autoRateElement)
+        this.setState({autoRateEdited : null})
+      }
+      else if (e.target.id === "dataSetsPerHour")
+      {
+        var dataSetsPerHourElement = document.getElementById("dataSetsPerHour")
+        clearElementStyleModified(dataSetsPerHourElement)
+        this.setState({dataSetsPerHourEdited : null})
+      }
     }
   }
 
@@ -115,7 +132,7 @@ class NEPIConnect extends Component {
             {ssh_public_key}
           </pre>
         </div>
-        <Label title="Save Comms Interface Logs">
+        <Label title="Save Connection Logs">
           <Toggle
             checked={log_storage_enabled}
             onClick= {onToggleLogStorage}
@@ -145,7 +162,7 @@ class NEPIConnect extends Component {
       last = "---"
     }
     return(
-      <Section title={"Low Bandwidth Comms Status"}>
+      <Section title={"Messaging Status"}>
         <Label title="Last Connection">
           <Input
             disabled value= {last}
@@ -173,7 +190,7 @@ class NEPIConnect extends Component {
       last = "---"
     }
     return(
-      <Section title={"High Bandwidth Comms Status"}>
+      <Section title={"File Transfer Status"}>
         <Label title="Last Connection">
           <Input
             disabled value= {last}
@@ -200,9 +217,14 @@ class NEPIConnect extends Component {
 
   renderConnectionSettings() {
     const { bot_running, lb_enabled, hb_enabled, hb_auto_data_offloading_enabled, onNEPIConnectConnectNow,
-            onToggleHB, onToggleAutoOffloading, onToggleLB, nepiHbLinkAutoDataOffloadingCheckboxVisible } = this.props.ros
+            auto_attempts_per_hour, onToggleHB, onToggleAutoOffloading, onToggleLB, 
+            nepiHbLinkAutoDataOffloadingCheckboxVisible} = this.props.ros
+    const { autoRateEdited } = this.state
+    
+    const displayedAutoRate = (autoRateEdited === null)? auto_attempts_per_hour : autoRateEdited
+    
     return(
-      <Section title={"Comms Link Settings"}>
+      <Section title={"Connection Settings"}>
         <Label title={"Connection in Progress"}>
           <BooleanIndicator value={bot_running} />
         </Label>
@@ -213,18 +235,18 @@ class NEPIConnect extends Component {
           <Input
             id="autoRate"
             data-topic="nepi_link_ros_bridge/set_auto_attempts_per_hour"
-            value= {this.state.autoRate}
+            value= {displayedAutoRate}
             onChange= {this.onUpdateText}
             onKeyDown= {this.onKeyText}
           />
         </Label>
-        <Label title="Enable Low Bandwidth Comms">
+        <Label title="Enable Messaging">
           <Toggle
             checked={lb_enabled}
             onClick={onToggleLB}>
           </Toggle>
         </Label>
-        <Label title="Enable High Bandwidth Comms">
+        <Label title="Enable File Transfer">
           <Toggle
             checked={hb_enabled}
             onClick={onToggleHB}>
@@ -243,8 +265,9 @@ class NEPIConnect extends Component {
   }
 
   renderLBSettings() {
-    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_kb, onNEPIConnectDataSetNow, onToggleTopic } = this.props.ros
-    const { viewableTopics, viewableOrder } = this.state
+    const { lb_selected_data_sources, lb_available_data_sources, lb_comms_types, lb_data_queue_size_kb, lb_data_sets_per_hour,
+            onNEPIConnectDataSetNow, onToggleTopic } = this.props.ros
+    const { viewableTopics, viewableOrder, dataSetsPerHourEdited } = this.state
     var sources = []
     //var selected_sources = []
     var i;
@@ -258,22 +281,24 @@ class NEPIConnect extends Component {
         }
       }
     }
+
+    const displayedDataSetsPerHour = (dataSetsPerHourEdited === null)? lb_data_sets_per_hour : dataSetsPerHourEdited
     
     return (
-      <Section title={"Low Bandwidth Data Config"}>
+      <Section title={"Messaging Config"}>
         <ButtonMenu>
-          <Button onClick={onNEPIConnectDataSetNow}>{"Capture Data Now"}</Button>
+          <Button onClick={onNEPIConnectDataSetNow}>{"Create Messages Now"}</Button>
         </ButtonMenu>
-        <Label title="Data Rate per Hour">
+        <Label title="Message Sets per Hour">
           <Input
-            value={this.state.dataSetsPerHour !== null ? this.state.dataSetsPerHour : "0"}
+            value={displayedDataSetsPerHour}
             id="dataSetsPerHour"
             data-topic="nepi_link_ros_bridge/lb/set_data_sets_per_hour"
             onChange= {this.onUpdateText}
             onKeyDown= {this.onKeyText}
           />
         </Label>
-        <Label title="Unprocessed Data (KB)">
+        <Label title="Queued Message Data (KB)">
           <Input
             value={lb_data_queue_size_kb !== null ? lb_data_queue_size_kb.toFixed(2) : "0.00"}
             onChange={this.LBQueueMaxSizeUp}
@@ -303,7 +328,7 @@ class NEPIConnect extends Component {
           ) : <div></div>}
           </div>
         </Label>
-        <Label title="Data Topics">
+        <Label title="Selected Message Topics">
           <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
             <Select style={{width: "10px"}}/>
           </div>
@@ -334,7 +359,7 @@ class NEPIConnect extends Component {
         <Columns>
           <Column equalWidth={false}/>
           <Column>
-            <Label title={"Enable NEPI CONNECT"} alignRight={true}>
+            <Label title={"Enable NEPI CONNECT Communications"} alignRight={true}>
               <Toggle
                 checked={NEPIConnectenabled}
                 onClick={onToggleNEPIConnectComms}>

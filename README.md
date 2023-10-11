@@ -12,7 +12,8 @@ Architecture:
 The preliminary steps in this section are typically only required once during new system bring-up.
 
 ### NEPI Pre-installed Dependencies
-The following setup steps are typically already complete in the NEPI Rootfs. They are preserved here in case the NEPI RUI must be built on a non-conformant system.
+**The following setup steps are typically already complete in the NEPI Rootfs. They are preserved here in case the NEPI RUI must be built on a non-conformant system.**
+
 1. [Install ROS Melodic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
 
         sudo apt-get install python python-wstool python-catkin-tools python-pip
@@ -30,7 +31,7 @@ The following setup steps are typically already complete in the NEPI Rootfs. The
         export NVM_DIR="$HOME/.nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-        nvm install 18 # Latest LTS version
+        nvm install 8.11.1 # RUI-required Node version as of this script creation
 
 ### Python Virtualenv Setup Steps (One-time)
 The following steps set up the python virtualenv for the RUI backend. This sequence typically only needs to be run once -- and always from the final install location for nepi_rui since virtualenv folders cannot be moved around the system.

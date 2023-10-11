@@ -28,15 +28,17 @@ class App extends Component {
 
   componentDidMount() {
     this.props.ros.checkROSConnection()
-    this.props.ros.checkLicense()
   }
 
   render() {
-    const { commercial_licensed } = this.props.ros
+    const { commercial_licensed, license_server } = this.props.ros
+    const developer_licensed = (license_server !== null) && 
+                               (license_server.readyState === 1) && 
+                               (commercial_licensed === false) 
     return (
       <Page>
         <Nav
-          commercial_licensed={commercial_licensed}
+          developer_licensed={developer_licensed}
           pages={[
             { path: "/", label: "Dashboard" },
             {
