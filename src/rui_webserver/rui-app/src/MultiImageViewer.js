@@ -5,6 +5,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
+import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 import createShortUniqueValues from "./Utilities"
 
@@ -19,6 +20,7 @@ class MultiImageViewer extends Component {
 
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
     this.onChangeInputImgSelection = this.onChangeInputImgSelection.bind(this)
+    this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
 
     this.state = {
       selectedImageTopics: [null,null,null,null],
@@ -64,6 +66,10 @@ class MultiImageViewer extends Component {
       selectedImageTopics: newSelectedImageTopics,
       selectedImageLabels: newSelectedImageLabels
     })
+  }
+
+  onTakeSnapshot() {
+    this.props.ros.onSnapshotEventTriggered()
   }
 
   render() {
@@ -130,6 +136,9 @@ class MultiImageViewer extends Component {
               {imageOptions}
             </Select>
           </Label>
+          <ButtonMenu>
+            <Button onClick={this.onTakeSnapshot}>{"Snapshot"}</Button>
+          </ButtonMenu>
         </Column>
       </Columns>
     )
