@@ -48,7 +48,6 @@ class App extends Component {
               subItems: [
                 { path: "/imagery", label: "Imagery" },
                 { path: "/sensor_idx", label: "IDX Sensor"},
-                { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/navPose", label: "NavPose" }
               ]
             },
@@ -58,6 +57,7 @@ class App extends Component {
               subItems: [
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
+                { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/nepi_connect", label: "Connect" }
               ]
             },
