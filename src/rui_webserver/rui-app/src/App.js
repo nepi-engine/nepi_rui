@@ -11,6 +11,7 @@ import NEPIConnect from "./NEPIConnect"
 import Dashboard from "./Dashboard"
 import DetectionApp from "./DetectionApp"
 import SensorIDX from "./SensorIDX"
+import MultiImageViewer from "./MultiImageViewer"
 import NavPose from "./NavPose"
 import Settings from "./Settings"
 import SoftwareUpdate from "./SoftwareUpdate"
@@ -46,6 +47,7 @@ class App extends Component {
               label: "Sensors",
               subItems: [
                 { path: "/imagery", label: "Imagery" },
+                { path: "/sensor_idx", label: "IDX Sensor"},
                 { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/navPose", label: "NavPose" }
               ]
@@ -83,7 +85,8 @@ class App extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-          <Route path="/imagery" component={SensorIDX} />
+          <Route path="/imagery" component={MultiImageViewer} />
+          <Route path="/sensor_idx" component={SensorIDX} />
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
           <Route path="/automation" component={Automation} />
