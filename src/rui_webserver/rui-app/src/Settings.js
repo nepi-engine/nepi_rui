@@ -585,6 +585,7 @@ class Settings extends Component {
             <Label title={"Passphrase"} >
               <Input 
                 id={"wifi_client_passphrase_textbox"}
+                type={"password"}
                 value={(wifiClientSSIDEdited === true)? wifiClientPassphrase : client_passphrase}
                 onChange={this.onUpdateClientPassphraseText} onKeyDown={this.onKeyClientWifi}
               />
@@ -674,6 +675,9 @@ class Settings extends Component {
           {this.renderConfiguration()}
         </Column>
         <Column>
+          <Label title={"Internet Connected"}>
+            <BooleanIndicator value={(wifi_query_response !== null)? wifi_query_response.internet_connected : false} />
+          </Label>
           {this.renderNetworkInfo()}
           {has_wifi? this.renderWifiInfo(): null}
         </Column>

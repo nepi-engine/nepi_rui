@@ -12,7 +12,7 @@ const styles = Styles.Create({
 })
 
 const Input = props => {
-  const { style, children, disabled, backgroundOverride } = props
+  const { style, children, disabled, backgroundOverride, type } = props
 
   const actualStyle = {
     ...styles.root,
@@ -21,8 +21,10 @@ const Input = props => {
     ...(backgroundOverride? {backgroundColor: backgroundOverride} : {})
   }
 
+  const actualType = type? type : "text"
+
   return (
-    <input {...props} style={actualStyle}>
+    <input {...props} style={actualStyle} type={actualType}>
       {children}
     </input>
   )
