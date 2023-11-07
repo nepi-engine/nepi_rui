@@ -839,7 +839,7 @@ class ROSConnectionStore {
     })
   }
 
-  async callNepiStatusService() {
+  async callNepiStatusService(oneshot = false) {
     const _pollOnce = async () => {
       this.NEPIConnectStatus = await this.callService({
         name: "nepi_link_status_query",
@@ -869,8 +869,8 @@ class ROSConnectionStore {
       this.hb_auto_data_offloading_enabled = this.NEPIConnectStatus.hb_auto_data_offloading_enabled
       this.log_storage_enabled = this.NEPIConnectStatus.log_storage_enabled
 
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 500)
+      if (this.connectedToROS && (oneshot === false)) {
+        setTimeout(_pollOnce, 3000)
       }
     }
     _pollOnce()
@@ -1282,6 +1282,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Empty",
       data: {}
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1291,6 +1293,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Empty",
       data: {}
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1321,6 +1325,8 @@ class ROSConnectionStore {
         data: { entries: sources }
       })
     }
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1331,6 +1337,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1341,6 +1349,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1351,6 +1361,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1361,6 +1373,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1371,6 +1385,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1391,6 +1407,8 @@ class ROSConnectionStore {
     else {
       this.lb_data_sets_per_hour = value
     }
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
