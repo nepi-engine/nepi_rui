@@ -1309,23 +1309,13 @@ class ROSConnectionStore {
   @action.bound
   onToggleTopic(e) {
     const topic = e.target.getAttribute("data-topic")
-    if(!this.lb_selected_data_sources.includes(topic)) {
-      this.publishMessage({
-        name: "nepi_link_ros_bridge/lb/select_data_sources",
-        messageType: "nepi_ros_interfaces/StringArray",
-        data: { entries: this.lb_selected_data_sources.concat(topic) }
-      })
-    } else {
-      var sources = this.lb_selected_data_sources.filter(function(value, index, arr) {
-        return value !== topic
-      });
-      this.publishMessage({
-        name: "nepi_link_ros_bridge/lb/select_data_sources",
-        messageType: "nepi_ros_interfaces/StringArray",
-        data: { entries: sources }
-      })
-    }
-
+    const enable_topic = !(this.lb_selected_data_sources.includes(topic))
+    this.publishMessage({
+      name: "nepi_link_ros_bridge/lb/select_data_source",
+      messageType: "nepi_ros_interfaces/StringEnable",
+      data: { entry: topic, enable: enable_topic }
+    }) 
+    
     this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
