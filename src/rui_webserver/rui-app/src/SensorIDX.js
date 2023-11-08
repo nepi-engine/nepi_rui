@@ -91,23 +91,21 @@ class SensorIDX extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
 
-    const capabilities = this.props.ros.idxSensors[idxSensorNamespace]
-    if (capabilities !== null) {
-      if (capabilities.has_color_2d_image === true) {
-        items.push(<Option value={idxSensorNamespace.concat('/idx/color_2d_image')}>{'Color 2D'}</Option>)
+    const image_topics = this.props.ros.imageTopics
+    var sensor_img_topics = []
+
+    for (var i = 0; i < image_topics.length; i++) {
+      const topic = image_topics[i]
+      if (topic.startsWith(idxSensorNamespace) === false) {
+        continue
       }
-      if (capabilities.has_bw_2d_image === true) {
-        items.push(<Option value={idxSensorNamespace.concat('/idx/bw_2d_image')}>{'B&W 2D'}</Option>)
-      }
-      if (capabilities.has_depth_map === true) {
-        items.push(<Option value={idxSensorNamespace.concat('/idx/depth_map')}>{'Depth Map'}</Option>)
-      }
-      if (capabilities.has_depth_image === true) {
-        items.push(<Option value={idxSensorNamespace.concat('/idx/depth_image')}>{'Depth Image'}</Option>)
-      }
-      if (capabilities.has_pointcloud_image === true) {
-        items.push(<Option value={idxSensorNamespace.concat('/idx/pointcloud_image')}>{'Pointcloud Img'}</Option>)
-      }
+
+      sensor_img_topics.push(topic)
+    }
+
+    const sensor_img_topics_short = createShortUniqueValues(sensor_img_topics)
+    for (i = 0; i < sensor_img_topics.length; i++) {
+      items.push(<Option value={sensor_img_topics[i]}>{sensor_img_topics_short[i]}</Option>)
     }
     return items    
   }

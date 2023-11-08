@@ -37,10 +37,12 @@ class DetectionApp extends Component {
       localizerEnabled: false}
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
-    this.waitForClassifierRunning = this.waitForClassifierRunning.bind(this)
+    this.checkForClassifierRunning = this.checkForClassifierRunning.bind(this)
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.onToggleRunLocalizer = this.onToggleRunLocalizer.bind(this)
+
+    this.checkForClassifierRunning()
   }
   // Function for creating image topic options.
   createImageTopicsOptions() {
@@ -99,7 +101,7 @@ class DetectionApp extends Component {
     // TODO: This calculation is pretty limited -- only works for IDX sensors at this point that directly report their
     // capabilities (including "has_depth_map"). Anything more robust will probably require some backend support, though.
     const { idxSensors } = this.props.ros
-    const sensorName = value.split('/idx/')[0]
+    const sensorName = (value !== null)? value.split('/idx/')[0] : "None"
     const hasDepthMap = (sensorName in idxSensors)? this.props.ros.idxSensors[sensorName].has_depth_map : false
 
     await this.setState({
@@ -121,7 +123,7 @@ class DetectionApp extends Component {
     })
   }
 
-  async waitForClassifierRunning() {
+  async checkForClassifierRunning() {
     const {
       reportedClassifier,
       classifierImgTopic,
@@ -133,14 +135,27 @@ class DetectionApp extends Component {
     // Delay the state transition until the classifier is actually running
     // in order to avoid invoking CameraViewer's updateImageSource method (via
     // componentDidUpdate()) until we can receive a real image with a valid size
-    if (reportedClassifier.classifier_state !== "Running") {
-      setTimeout(this.waitForClassifierRunning, 250)
+    if ((reportedClassifier === null) || (reportedClassifier.classifier_state !== "Running")) {
+      if (this.state.currentDisplayImgTopic !== this.state.imageTopic) {
+        await this.setState({
+          currentDisplayImgTopic: this.state.imageTopic,
+          imageText: (this.state.imageTopic !== null)? this.state.imageTopic.split('/').at(-1) : null
+        })
+      }
     }
     else {
-      await this.setState({
-        currentDisplayImgTopic: (localizerEnabled===false)? classifierImgTopic : targLocalizerImgTopic,
-        imageText: this.state.imageText + ': ' + reportedClassifier.selected_classifier})
+      const imgTopic = (localizerEnabled===false)? classifierImgTopic : targLocalizerImgTopic
+      const inputImgTopic = reportedClassifier.selected_img_topic.split('/').at(-1)
+      if (this.state.currentDisplayImgTopic !== imgTopic) {
+        await this.setState({
+          currentDisplayImgTopic: imgTopic,
+          imageText: inputImgTopic + ': ' + reportedClassifier.selected_classifier
+        })
+      }
     }
+
+    // Run this method periodically forever
+    setTimeout(this.checkForClassifierRunning, 250)
   }
 
   async onToggleRunLocalizer(e) {
@@ -169,23 +184,12 @@ class DetectionApp extends Component {
     } = this.state
 
     startClassifier(imageTopic, selectedClassifier, detectionThreshold)
-
-    this.waitForClassifierRunning()
-
   }
 
   onStopButtonPressed() {
     const {
       stopClassifier
     } = this.props.ros
-
-    // Revert back to showing the raw image
-    if (this.state.imageTopic && this.state.imageText) {
-      this.setState({
-        currentDisplayImgTopic: this.state.imageTopic,
-        imageText: this.state.imageText.split(':')[0]
-      })
-    }
 
     stopClassifier()
   }
@@ -220,12 +224,12 @@ class DetectionApp extends Component {
         <Column>
           <Section title={"Settings"}>
             <Label title={"Image Topic"}>
-              <Select id="ImgSelect" onChange={this.onImageTopicSelected}>
+              <Select id="ImgSelect" onChange={this.onImageTopicSelected} disabled={status_text !== "Stopped"}>
                 {this.createImageTopicsOptions()}
               </Select>
             </Label>
             <Label title={"Image Classifier"}>
-              <Select id="ClassifierSelect" onChange={this.onClassifierSelected}>
+              <Select id="ClassifierSelect" onChange={this.onClassifierSelected} disabled={status_text !== "Stopped"}>
                 {this.createImageClassifierOptions()}
               </Select>
             </Label>

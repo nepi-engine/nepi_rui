@@ -35,7 +35,7 @@ const styles = Styles.Create({
     marginRight: Styles.vars.spacing.small,
     left: 0,
     listStyleType: "none",
-    width: "100px",
+    width: "150px",
     textAlign: "left"
   }
 })

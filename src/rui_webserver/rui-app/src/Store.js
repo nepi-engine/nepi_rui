@@ -839,7 +839,7 @@ class ROSConnectionStore {
     })
   }
 
-  async callNepiStatusService() {
+  async callNepiStatusService(oneshot = false) {
     const _pollOnce = async () => {
       this.NEPIConnectStatus = await this.callService({
         name: "nepi_link_status_query",
@@ -869,8 +869,8 @@ class ROSConnectionStore {
       this.hb_auto_data_offloading_enabled = this.NEPIConnectStatus.hb_auto_data_offloading_enabled
       this.log_storage_enabled = this.NEPIConnectStatus.log_storage_enabled
 
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 500)
+      if (this.connectedToROS && (oneshot === false)) {
+        setTimeout(_pollOnce, 3000)
       }
     }
     _pollOnce()
@@ -1142,11 +1142,11 @@ class ROSConnectionStore {
 
       // if last_ntp_sync is 10y, no sync has happened
       this.clockNTP = false
-      const lastNTPSync = this.timeStatus.last_ntp_sync
-      lastNTPSync &&
-        lastNTPSync.length &&
-        lastNTPSync.forEach(sync => {
-          if (sync !== "10y") {
+      const currentlySyncd = this.timeStatus.currently_syncd
+      currentlySyncd &&
+      currentlySyncd.length &&
+      currentlySyncd.forEach(syncd => {
+          if (syncd !== false) {
             this.clockNTP = true
           }
         })
@@ -1282,6 +1282,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Empty",
       data: {}
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1291,6 +1293,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Empty",
       data: {}
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1305,22 +1309,14 @@ class ROSConnectionStore {
   @action.bound
   onToggleTopic(e) {
     const topic = e.target.getAttribute("data-topic")
-    if(!this.lb_selected_data_sources.includes(topic)) {
-      this.publishMessage({
-        name: "nepi_link_ros_bridge/lb/select_data_sources",
-        messageType: "nepi_ros_interfaces/StringArray",
-        data: { entries: this.lb_selected_data_sources.concat(topic) }
-      })
-    } else {
-      var sources = this.lb_selected_data_sources.filter(function(value, index, arr) {
-        return value !== topic
-      });
-      this.publishMessage({
-        name: "nepi_link_ros_bridge/lb/select_data_sources",
-        messageType: "nepi_ros_interfaces/StringArray",
-        data: { entries: sources }
-      })
-    }
+    const enable_topic = !(this.lb_selected_data_sources.includes(topic))
+    this.publishMessage({
+      name: "nepi_link_ros_bridge/lb/select_data_source",
+      messageType: "nepi_ros_interfaces/StringEnable",
+      data: { entry: topic, enable: enable_topic }
+    }) 
+    
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1331,6 +1327,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1341,6 +1339,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1351,6 +1351,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1361,6 +1363,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1371,6 +1375,8 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: { data: checked ? true : false }
     })
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound
@@ -1391,6 +1397,8 @@ class ROSConnectionStore {
     else {
       this.lb_data_sets_per_hour = value
     }
+
+    this.callNepiStatusService(true) // One-shot for rapid feedback
   }
 
   @action.bound

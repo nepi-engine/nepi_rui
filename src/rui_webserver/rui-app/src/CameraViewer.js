@@ -3,7 +3,6 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Button, { ButtonMenu } from "./Button"
 
 import Styles from "./Styles"
 
@@ -46,7 +45,6 @@ class CameraViewer extends Component {
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
-    this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
     this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
   }
 
@@ -148,17 +146,6 @@ class CameraViewer extends Component {
     this.updateImageSource()
   }
 
-  onTakeSnapshot() {
-    this.props.ros.onSnapshotEventTriggered()
-    //const { clockTime } = this.state
-    //const link = window.document.createElement("a")
-    //const dt = this.canvas.toDataURL("image/png")
-    //window.location.href = dt
-    //link.href = dt
-    //link.setAttribute("download", `frame-${clockTime.format()}.png`)
-    //link.click()
-  }
-
   onChangeImageQuality(quality) {
     this.props.ros.onChangeStreamingImageQuality(quality)
     this.setState({currentStreamingImageQuality: quality})
@@ -228,11 +215,6 @@ class CameraViewer extends Component {
               </div>
             }
           </div>
-          </Column>
-          <Column>
-            <ButtonMenu>
-              <Button onClick={this.onTakeSnapshot}>{"Snapshot"}</Button>
-            </ButtonMenu>
           </Column>
         </Columns>
       </Section>

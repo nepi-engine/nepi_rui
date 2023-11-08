@@ -135,6 +135,13 @@ class Automation extends Component {
                 style={{width: '100%'}}
               />
             </Label>
+            <Label title={"Log size"} >
+              <Input 
+                disabled 
+                value={systemStats && typeof systemStats.log_size_bytes !== 'undefined'? bytesToKBString(systemStats.log_size_bytes) : ''} 
+                style={{width: '100%'}}
+              />
+            </Label>
             <Label title={"CPU Usage"} >
               <Input 
                 disabled 
