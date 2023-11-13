@@ -1,7 +1,6 @@
 Flask==3.0.0
 Flask-Cors==3.0.4
 ipython==5.5.0
-Werkzeug==0.14.1
 PyYAML==3.13
 rospkg==1.1.7
 tornado==4.5.3
