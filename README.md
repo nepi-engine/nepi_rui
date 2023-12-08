@@ -53,8 +53,6 @@ where the final two steps should be rerun any time Node packages as specified in
 ## Deprecation Warnings
 1. The RUI relies on node.js 8.11.1, which has some noted vulnerabilities -- it should be updated to later node version.
 
-1. The RUI relies on Python 2.7, which is EOL. Everything should be ported to Python 3.
-
 ## Development
 
 When developing, always source the `devenv.sh` to ensure the correct versions of Python, node and define environment variables:

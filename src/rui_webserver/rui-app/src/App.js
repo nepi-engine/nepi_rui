@@ -46,8 +46,7 @@ class App extends Component {
               path: "/sensors",
               label: "Sensors",
               subItems: [
-                { path: "/imagery", label: "Imagery" },
-                { path: "/sensor_idx", label: "IDX Sensor"},
+                { path: "/sensor_idx", label: "Imaging"},
                 { path: "/navPose", label: "NavPose" }
               ]
             },
@@ -55,6 +54,7 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
+                { path: "/imagery", label: "Imagery" },
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
                 { path: "/image_sequencer", label: "Sequencer" },
@@ -75,10 +75,6 @@ class App extends Component {
                 { path: "/admin", label: "Admin" },
                 { path: "/software_update", label: "Software"}
               ]
-            },
-            { 
-              path: "/help", 
-              label: "Help",
             }
           ]}
         />
