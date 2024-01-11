@@ -1,8 +1,30 @@
+<!--
+NEPI Dual-Use License
+Project: nepi_rui
+
+This license applies to any user of NEPI Engine software
+
+Copyright (C) 2023 Numurus, LLC <https://www.numurus.com>
+see https://github.com/numurus-nepi/nepi_rui
+
+This software is dual-licensed under the terms of either a NEPI software developer license
+or a NEPI software commercial license.
+
+The terms of both the NEPI software developer and commercial licenses
+can be found at: www.numurus.com/licensing-nepi-engine
+
+Redistributions in source code must retain this top-level comment block.
+Plagiarizing this software to sidestep the license obligations is illegal.
+
+Contact Information:
+====================
+- https://www.numurus.com/licensing-nepi-engine
+- mailto:nepi@numurus.com
+
+-->
 # nepi_rui
 
-Description: Web server for the Resident User Interface of Numurus
-
-- Uses rosbridge to connect to ROS
+Web server for the NEPI Resident User Interface. Served by a NEPI device, runs in user's browser.
 
 Architecture:
 ![Alt text](/resources/architecture.png?raw=true "Architecture")
@@ -12,7 +34,7 @@ Architecture:
 The preliminary steps in this section are typically only required once during new system bring-up.
 
 ### NEPI Pre-installed Dependencies
-**The following setup steps are typically already complete in the NEPI Rootfs. They are preserved here in case the NEPI RUI must be built on a non-conformant system.**
+**The setup steps in this subsection are typically already completed as part of the NEPI Rootfs bring-up or pre-installation. They are preserved here in case the NEPI RUI must be built on a non-conformant system.**
 
 1. [Install ROS Melodic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and the following Python and build tools:
 
