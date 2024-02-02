@@ -72,6 +72,10 @@ class Button extends Component {
         ...style
       }
     })
+    if (this.props.buttonDownAction !== null)
+    {
+      (this.props.buttonDownAction)()
+    }
   }
 
   onButtonUp() {
@@ -82,6 +86,10 @@ class Button extends Component {
         ...style
       }
     })
+    if (this.props.buttonUpAction !== null)
+    {
+      (this.props.buttonUpAction)()
+    }
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
