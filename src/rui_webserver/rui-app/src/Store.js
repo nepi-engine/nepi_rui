@@ -231,7 +231,7 @@ class ROSConnectionStore {
   @observable imageTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
-  @observable ptxUnits = []
+  @observable ptxUnits = {}
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -531,13 +531,6 @@ class ROSConnectionStore {
           }
           idx_sensors_changed = true // Testing -- always declare changed
         }
-        /*
-        if (!(idx_sensor_namespace in this.idxSensors)) {
-          //this.idxSensors[idx_sensor_namespace] = null // Initialize an empty object
-          idx_sensors_changed = true
-          this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Will update this.idxSensors upon successful call
-        }
-        */
       }
     }
 
@@ -560,19 +553,21 @@ class ROSConnectionStore {
       if (this.topicNames[i].endsWith("/ptx/status")) {
         const ptx_unit_namespace = this.topicNames[i].split("/ptx")[0]
         if (!(ptx_units_detected.includes(ptx_unit_namespace))) {
-          ptx_units_detected.push(ptx_unit_namespace)
-        }
-        if (!(this.ptxUnits.includes(ptx_unit_namespace))) {
-          this.ptxUnits.push(ptx_unit_namespace)
+          this.callPTXCapabilitiesQueryService(ptx_unit_namespace)
+          if (this.ptxUnits[ptx_unit_namespace])
+          {
+            ptx_units_detected.push(ptx_unit_namespace)
+          }
         }
         ptx_units_changed = true
       }
     }
 
     // Now clean out any units that are no longer detected
-    for (i = 0; i < this.ptxUnits.length; ++i) {
-      if (!(ptx_units_detected.includes(this.ptxUnits[i]))) {
-        this.ptxUnits.splice(i, 1)
+    const previously_known = Object.keys(this.ptxUnits)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(ptx_units_detected.includes(previously_known[i]))) {
+        delete this.ptxUnits[previously_known[i]]
         ptx_units_changed = true
       }
     }
@@ -919,6 +914,15 @@ class ROSConnectionStore {
       messageType: "nepi_ros_interfaces/IDXCapabilitiesQuery",  
     })
     this.idxSensors[idxSensorNamespace] = capabilities
+  }
+
+  @action.bound
+  async callPTXCapabilitiesQueryService(ptxUnitNamespace) {
+    const capabilities = await this.callService({
+      name: ptxUnitNamespace + "/ptx/capabilities_query",
+      messageType: "nepi_ros_interfaces/PTXCapabilitiesQuery",
+    })
+    this.ptxUnits[ptxUnitNamespace] = capabilities
   }
 
   @action.bound
@@ -2081,6 +2085,36 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  onPTXSetHomeHere(ptxNamespace) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/set_home_position_here",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })    
+  }  
+
+  @action.bound
+  onPTXGotoWaypoint(ptxNamespace, waypoint_index) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/goto_waypoint",
+      messageType: "std_msgs/UInt8",
+      data: { data: waypoint_index },
+      noPrefix: true
+    })    
+  }
+
+  @action.bound
+  onPTXSetWaypointHere(ptxNamespace, waypoint_index) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/set_waypoint_here",
+      messageType: "std_msgs/UInt8",
+      data: { data: waypoint_index },
+      noPrefix: true
+    })    
+  }
+
+  @action.bound
   onPTXStop(ptxNamespace) {
     this.publishMessage({
       name: ptxNamespace + "/ptx/stop_moving",
@@ -2109,6 +2143,28 @@ class ROSConnectionStore {
              "max_yaw_softstop_deg": yawMax,
              "min_pitch_softstop_deg": pitchMin,
              "max_pitch_softstop_deg": pitchMax},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onPTXJogYaw(ptxNamespace, direction) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/jog_timed_yaw",
+      messageType: "nepi_ros_interfaces/SingleAxisTimedMove",
+      data: {"direction": direction,
+             "duration_s": -1},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onPTXJogPitch(ptxNamespace, direction) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/jog_timed_pitch",
+      messageType: "nepi_ros_interfaces/SingleAxisTimedMove",
+      data: {"direction": direction,
+             "duration_s": -1},
       noPrefix: true
     })
   }
