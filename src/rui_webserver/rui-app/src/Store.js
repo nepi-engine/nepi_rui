@@ -2168,6 +2168,26 @@ class ROSConnectionStore {
       noPrefix: true
     })
   }
+
+  @action.bound
+  onSetReverseYawControl(ptxNamespace, reverse) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/reverse_yaw_control",
+      messageType: "std_msgs/Bool",
+      data: {"data" : reverse},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onSetReversePitchControl(ptxNamespace, reverse) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/reverse_pitch_control",
+      messageType: "std_msgs/Bool",
+      data: {"data" : reverse},
+      noPrefix: true
+    })
+  }
 }
 
 const stores = {
