@@ -288,6 +288,9 @@ class ROSConnectionStore {
 
   @observable imgMuxSequences = null
 
+  @observable onvifDeviceStatuses = null
+  @observable onvifDeviceConfigs = null
+
   @observable license_server = null
   @observable commercial_licensed = true // Default to true to avoid initial DEVELOPER message
   @observable license_info = null
@@ -743,7 +746,7 @@ class ROSConnectionStore {
     this.startPollingNavPoseStatusService()
     this.startPollingTimeStatusService()
     this.startPollingImgClassifierStatusQueryService()
-
+    
     // automation manager services
     this.startPollingGetScriptsService()  // populate listbox with files
     this.startPollingGetRunningScriptsService()  // populate listbox with active files
@@ -753,6 +756,9 @@ class ROSConnectionStore {
 
     // sequential image mux services
     this.callMuxSequenceQuery(true) // Start it polling
+
+    // onvif mgr services
+    this.callOnvifDeviceListQueryService(true) // Start it polling
   }
 
   @action.bound
@@ -1296,6 +1302,24 @@ class ROSConnectionStore {
       
       if (this.connectedToROS && poll) {
         setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async callOnvifDeviceListQueryService(poll = true) {
+    const _pollOnce = async () => {
+      const resp = await this.callService({
+        name: "onvif_mgr/device_list_query",
+        messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
+      })
+
+      this.onvifDeviceStatuses = resp['device_statuses']
+      this.onvifDeviceConfigs = resp['device_cfgs']
+    
+      if (this.connectedToROS && poll) {
+        setTimeout(_pollOnce, 5000)
       }
     }
 
@@ -2186,6 +2210,24 @@ class ROSConnectionStore {
       messageType: "std_msgs/Bool",
       data: {"data" : reverse},
       noPrefix: true
+    })
+  }
+
+  @action.bound
+  async onOnvifDeviceCfgUpdate(updatedDeviceCfg) {
+    await this.callService({
+      name: "onvif_mgr/set_device_cfg",
+      messageType: "nepi_ros_interfaces/OnvifDeviceCfgUpdate",
+      args: {cfg : updatedDeviceCfg}
+    })
+  }
+
+  @action.bound
+  async onOnvifDeviceCfgDelete(uuid) {
+    await this.callService({
+      name: "onvif_mgr/delete_device_cfg",
+      messageType: "nepi_ros_interfaces/OnvifDeviceCfgDelete",
+      args: {device_uuid : uuid}
     })
   }
 }
