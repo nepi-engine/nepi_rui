@@ -43,6 +43,7 @@ import Help from "./Help"
 import Automation from "./Automation"
 import ImageSequencer from "./ImageSequencer"
 import PTX from "./PTX"
+import OnvifManager from "./OnvifManager"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -81,6 +82,7 @@ class App extends Component {
                 { path: "/imagery", label: "Imagery" },
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
+                { path: "/onvif_mgr", label: "ONVIF"},
                 { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/nepi_connect", label: "Connect" }
               ]
@@ -110,6 +112,7 @@ class App extends Component {
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
           <Route path="/automation" component={Automation} />
+          <Route path="/onvif_mgr" component={OnvifManager} />
           <Route path="/image_sequencer" component={ImageSequencer} />
           <Route path="/admin" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />

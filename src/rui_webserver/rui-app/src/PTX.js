@@ -88,6 +88,8 @@ class PTX extends Component {
       reverseYawControl: false,
       reversePitchControl: false,
 
+      selectedWaypoint: 0,
+
       listener: null,
       disabled: true
     }
@@ -100,8 +102,8 @@ class PTX extends Component {
     this.ptxStatusListener = this.ptxStatusListener.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
     this.createPTXOptions = this.createPTXOptions.bind(this)
-    this.toggleReverseYawControl = this.toggleReverseYawControl.bind(this)
-    this.toggleReversePitchControl = this.toggleReversePitchControl.bind(this)
+    this.createWaypointOptions = this.createWaypointOptions.bind(this)
+    this.onWaypointSelected = this.onWaypointSelected.bind(this)
   }
 
   onUpdateText(e) {
@@ -204,12 +206,20 @@ class PTX extends Component {
   
   // Callback for handling ROS Status3DX messages
   ptxStatusListener(message) {
+    const yaw_ratio_direction_corrected = (message.reverse_yaw_control === false)?
+      (message.yaw_goal_deg - message.yaw_min_softstop_deg) / (message.yaw_max_softstop_deg - message.yaw_min_softstop_deg) :
+      1.0 - ((message.yaw_goal_deg - message.yaw_min_softstop_deg) / (message.yaw_max_softstop_deg - message.yaw_min_softstop_deg))
+
+    const pitch_ratio_direction_corrected = (message.reverse_pitch_control === false)?
+      (message.pitch_goal_deg - message.pitch_min_softstop_deg) / (message.pitch_max_softstop_deg - message.pitch_min_softstop_deg) :
+      1.0 - ((message.pitch_goal_deg - message.pitch_min_softstop_deg) / (message.pitch_max_softstop_deg - message.pitch_min_softstop_deg))
+
     this.setState({
       ptSerialNum: message.serial_num,
       ptHwVersion: message.hw_version,
       ptSwVersion: message.sw_version,
-      yawRatioAdjustment: (message.yaw_goal_deg - message.yaw_min_softstop_deg) / (message.yaw_max_softstop_deg - message.yaw_min_softstop_deg),
-      pitchRatioAdjustment: (message.pitch_goal_deg - message.pitch_min_softstop_deg) / (message.pitch_max_softstop_deg - message.pitch_min_softstop_deg),
+      yawRatioAdjustment: yaw_ratio_direction_corrected,
+      pitchRatioAdjustment: pitch_ratio_direction_corrected,
       speedRatioAdjustment: (message.speed_ratio),
       yawPositionDeg: message.yaw_now_deg,
       pitchPositionDeg: message.pitch_now_deg,
@@ -222,7 +232,9 @@ class PTX extends Component {
       yawMaxSoftstopDeg: message.yaw_max_softstop_deg,
       pitchMaxSoftstopDeg: message.pitch_max_softstop_deg,
       yawMinSoftstopDeg: message.yaw_min_softstop_deg,
-      pitchMinSoftstopDeg: message.pitch_min_softstop_deg
+      pitchMinSoftstopDeg: message.pitch_min_softstop_deg,
+      reverseYawControl: message.reverse_yaw_control,
+      reversePitchControl: message.reverse_pitch_control,
     })
   }
 
@@ -261,7 +273,8 @@ class PTX extends Component {
   }
 
   // Function for creating topic options for Select input
-  createPTXOptions(topics, filter) {
+  createPTXOptions(caps_dictionaries, filter) {
+    const topics = Object.keys(caps_dictionaries)
     var filteredTopics = topics
     var i
     if (filter) {
@@ -289,16 +302,18 @@ class PTX extends Component {
     return items
   }
 
-  toggleReverseYawControl()
-  {
-    const current = this.state.reverseYawControl
-    this.setState({reverseYawControl: !current})
+  createWaypointOptions(waypoint_count) {
+    var items = []
+    for (var i = 0; i < waypoint_count; ++i) {
+      items.push(<Option value={i}>{i.toString()}</Option>)
+    }
+    return items
   }
 
-  toggleReversePitchControl()
+  onWaypointSelected(event)
   {
-    const current = this.state.reversePitchControl
-    this.setState({reversePitchControl: !current})
+    const idx = event.nativeEvent.target.selectedIndex
+    this.setState({selectedWaypoint: idx})
   }
 
   renderControlPanel() {
@@ -308,9 +323,16 @@ class PTX extends Component {
             yawMaxSoftstopDeg, pitchMaxSoftstopDeg, yawMinSoftstopDeg, pitchMinSoftstopDeg,
             speedRatioAdjustment, yawHomePosEdited, pitchHomePosEdited,
             yawMinSoftstopEdited, pitchMinSoftstopEdited, yawMaxSoftstopEdited, pitchMaxSoftstopEdited,
-            reverseYawControl, reversePitchControl } = this.state
-    const { onPTXGoHome, onPTXStop } = this.props.ros
+            reverseYawControl, reversePitchControl, selectedWaypoint } = this.state
+    const { ptxUnits, onPTXGoHome, onPTXSetHomeHere, onPTXGotoWaypoint, onPTXSetWaypointHere,
+            onSetReverseYawControl, onSetReversePitchControl } = this.props.ros
     const ptx_id = ptxNamespace? ptxNamespace.split('/').slice(-1) : "No Pan/Tilt Selected"
+
+    const ptx_caps = ptxUnits[ptxNamespace]
+    const has_abs_positioning = ptx_caps && (ptx_caps['absolute_positioning'] === true)
+    const has_speed_control = ptx_caps && (ptx_caps['adjustable_speed'] === true)
+    const has_homing = ptx_caps && (ptx_caps['homing'] === true)
+    const has_waypoints = ptx_caps && (ptx_caps['waypoints'] === true)
     
     const yawHomePos = (yawHomePosEdited === null)? round(yawHomePosDeg, 1) : yawHomePosEdited
     const pitchHomePos = (pitchHomePosEdited === null)? round(pitchHomePosDeg, 1) : pitchHomePosEdited
@@ -376,6 +398,7 @@ class PTX extends Component {
         </Label>        
         <Label title={"Operating Position Min"}>
           <Input
+            disabled={!has_abs_positioning}
             id={"PTXYawSoftStopMin"}
             style={{ width: "45%", float: "left" }}
             value={yawSoftStopMin}
@@ -383,6 +406,7 @@ class PTX extends Component {
             onKeyDown= {this.onKeyText}
           />
           <Input
+            disabled={!has_abs_positioning}
             id={"PTXPitchSoftStopMin"}
             style={{ width: "45%" }}
             value={pitchSoftStopMin}
@@ -392,6 +416,7 @@ class PTX extends Component {
         </Label>
         <Label title={"Operating Position Max"}>
           <Input
+            disabled={!has_abs_positioning}
             id={"PTXYawSoftStopMax"}
             style={{ width: "45%", float: "left" }}
             value={yawSoftStopMax}
@@ -399,6 +424,7 @@ class PTX extends Component {
             onKeyDown= {this.onKeyText}
           />
           <Input
+            disabled={!has_abs_positioning}
             id={"PTXPitchSoftStopMax"}
             style={{ width: "45%" }}
             value={pitchSoftStopMax}
@@ -408,6 +434,7 @@ class PTX extends Component {
         </Label>
         <Label title={"Home Position"}>
           <Input
+            disabled={!has_homing}
             id={"PTXYawHomePos"}
             style={{ width: "45%", float: "left" }}
             value={yawHomePos}
@@ -415,6 +442,7 @@ class PTX extends Component {
             onKeyDown= {this.onKeyText}
           />
           <Input
+            disabled={!has_homing}
             id={"PTXPitchHomePos"}
             style={{ width: "45%" }}
             value={pitchHomePos}
@@ -422,15 +450,32 @@ class PTX extends Component {
             onKeyDown= {this.onKeyText}
           />
         </Label>
+        <ButtonMenu>
+          <Button disabled={!has_homing} onClick={() => onPTXGoHome(ptxNamespace)}>{"Go Home"}</Button>
+          <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(ptxNamespace)}>{"Set Home Here"}</Button>
+        </ButtonMenu>
+        <Label title={"Waypoint Selection"}>
+          <Select
+            disabled={!has_waypoints}
+            onChange={this.onWaypointSelected}
+            value={selectedWaypoint}>
+            {this.createWaypointOptions(has_waypoints? 256 : 0)}
+          </Select>
+        </Label>
+        <ButtonMenu>
+          <Button disabled={!has_waypoints} onClick={() => onPTXGotoWaypoint(ptxNamespace, selectedWaypoint)}>{"Goto Waypoint"}</Button>
+          <Button disabled={!has_waypoints} onClick={() => onPTXSetWaypointHere(ptxNamespace, selectedWaypoint)}>{"Set Waypoint"}</Button>
+        </ButtonMenu>
         <Label title={"Reverse Control"}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-            <Toggle style={{justifyContent: "flex-left"}} checked={reverseYawControl} onClick={this.toggleReverseYawControl} />
+            <Toggle style={{justifyContent: "flex-left"}} checked={reverseYawControl} onClick={() => onSetReverseYawControl(ptxNamespace, !reverseYawControl)} />
           </div>
           <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-            <Toggle style={{justifyContent: "flex-right"}} checked={reversePitchControl} onClick={this.toggleReversePitchControl} />
+            <Toggle style={{justifyContent: "flex-right"}} checked={reversePitchControl} onClick={() => onSetReversePitchControl(ptxNamespace, !reversePitchControl)} />
           </div>
         </Label>
         <SliderAdjustment
+          disabled={!has_speed_control}
           title={"Speed"}
           msgType={"std_msgs/Float32"}
           adjustment={speedRatioAdjustment}
@@ -441,20 +486,19 @@ class PTX extends Component {
           tooltip={"Speed as a percentage (0%=min, 100%=max)"}
           unit={"%"}
         />
-        <ButtonMenu>
-          <Button onClick={() => onPTXGoHome(ptxNamespace)}>{"Home"}</Button>
-          <Button onClick={() => onPTXStop(ptxNamespace)}>{"Stop"}</Button>
-        </ButtonMenu>
       </Section>
     )
   }
 
   render() {
-    const { ptxUnits } = this.props.ros
-    const { ptxNamespace, yawRatioAdjustment, pitchRatioAdjustment, reverseYawControl, reversePitchControl } = this.state
+    const { ptxUnits, onPTXJogYaw, onPTXJogPitch, onPTXStop } = this.props.ros
+    const { ptxNamespace, yawRatioAdjustment, pitchRatioAdjustment} = this.state
 
     const ptxImageViewerElement = document.getElementById("ptxImageViewer")
     const pitchSliderHeight = (ptxImageViewerElement)? ptxImageViewerElement.offsetHeight : "100px"
+
+    const ptx_caps = ptxUnits[ptxNamespace]
+    const has_abs_positioning = ptx_caps && (ptx_caps['absolute_positioning'] === true)
 
     return (
       <React.Fragment>
@@ -469,6 +513,7 @@ class PTX extends Component {
                   />
                 </div>
                 <SliderAdjustment
+                  disabled={!has_abs_positioning}
                   title={"Yaw"}
                   msgType={"std_msgs/Float32"}
                   adjustment={yawRatioAdjustment}
@@ -480,11 +525,34 @@ class PTX extends Component {
                   unit={"%"}
                   noTextBox={true}
                   noLabel={true}
-                  reverse={reverseYawControl}
                 />
+                <ButtonMenu>
+                  <Button 
+                    buttonDownAction={() => onPTXJogYaw(ptxNamespace, 1)}
+                    buttonUpAction={() => onPTXStop(ptxNamespace)}>
+                    {'\u25C0'}
+                    </Button>
+                  <Button 
+                    buttonDownAction={() => onPTXJogYaw(ptxNamespace, -1)}
+                    buttonUpAction={() => onPTXStop(ptxNamespace)}>
+                    {'\u25B6'}
+                  </Button>
+                  <Button 
+                    buttonDownAction={() => onPTXJogPitch(ptxNamespace, 1)}
+                    buttonUpAction={() => onPTXStop(ptxNamespace)}>
+                    {'\u25B2'}
+                  </Button>
+                  <Button 
+                    buttonDownAction={() => onPTXJogPitch(ptxNamespace, -1)}
+                    buttonUpAction={() => onPTXStop(ptxNamespace)}>
+                    {'\u25BC'}
+                  </Button>
+                  <Button onClick={() => onPTXStop(ptxNamespace)}>{"STOP"}</Button>
+                </ButtonMenu>
           </Column>
           <Column style={{flex: 0.05}}>
             <SliderAdjustment
+              disabled={!has_abs_positioning}
               title={"Pitch"}
               msgType={"std_msgs/Float32"}
               adjustment={pitchRatioAdjustment}
@@ -498,7 +566,6 @@ class PTX extends Component {
               verticalHeight={pitchSliderHeight}
               noTextBox={true}
               noLabel={true}
-              reverse={reversePitchControl}
             />
           </Column>
           <Column>

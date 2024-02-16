@@ -231,7 +231,7 @@ class ROSConnectionStore {
   @observable imageTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
-  @observable ptxUnits = []
+  @observable ptxUnits = {}
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -287,6 +287,9 @@ class ROSConnectionStore {
   @observable scriptForPolledStats = null
 
   @observable imgMuxSequences = null
+
+  @observable onvifDeviceStatuses = null
+  @observable onvifDeviceConfigs = null
 
   @observable license_server = null
   @observable commercial_licensed = true // Default to true to avoid initial DEVELOPER message
@@ -531,13 +534,6 @@ class ROSConnectionStore {
           }
           idx_sensors_changed = true // Testing -- always declare changed
         }
-        /*
-        if (!(idx_sensor_namespace in this.idxSensors)) {
-          //this.idxSensors[idx_sensor_namespace] = null // Initialize an empty object
-          idx_sensors_changed = true
-          this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Will update this.idxSensors upon successful call
-        }
-        */
       }
     }
 
@@ -560,19 +556,21 @@ class ROSConnectionStore {
       if (this.topicNames[i].endsWith("/ptx/status")) {
         const ptx_unit_namespace = this.topicNames[i].split("/ptx")[0]
         if (!(ptx_units_detected.includes(ptx_unit_namespace))) {
-          ptx_units_detected.push(ptx_unit_namespace)
-        }
-        if (!(this.ptxUnits.includes(ptx_unit_namespace))) {
-          this.ptxUnits.push(ptx_unit_namespace)
+          this.callPTXCapabilitiesQueryService(ptx_unit_namespace)
+          if (this.ptxUnits[ptx_unit_namespace])
+          {
+            ptx_units_detected.push(ptx_unit_namespace)
+          }
         }
         ptx_units_changed = true
       }
     }
 
     // Now clean out any units that are no longer detected
-    for (i = 0; i < this.ptxUnits.length; ++i) {
-      if (!(ptx_units_detected.includes(this.ptxUnits[i]))) {
-        this.ptxUnits.splice(i, 1)
+    const previously_known = Object.keys(this.ptxUnits)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(ptx_units_detected.includes(previously_known[i]))) {
+        delete this.ptxUnits[previously_known[i]]
         ptx_units_changed = true
       }
     }
@@ -748,7 +746,7 @@ class ROSConnectionStore {
     this.startPollingNavPoseStatusService()
     this.startPollingTimeStatusService()
     this.startPollingImgClassifierStatusQueryService()
-
+    
     // automation manager services
     this.startPollingGetScriptsService()  // populate listbox with files
     this.startPollingGetRunningScriptsService()  // populate listbox with active files
@@ -758,6 +756,9 @@ class ROSConnectionStore {
 
     // sequential image mux services
     this.callMuxSequenceQuery(true) // Start it polling
+
+    // onvif mgr services
+    this.callOnvifDeviceListQueryService(true) // Start it polling
   }
 
   @action.bound
@@ -919,6 +920,15 @@ class ROSConnectionStore {
       messageType: "nepi_ros_interfaces/IDXCapabilitiesQuery",  
     })
     this.idxSensors[idxSensorNamespace] = capabilities
+  }
+
+  @action.bound
+  async callPTXCapabilitiesQueryService(ptxUnitNamespace) {
+    const capabilities = await this.callService({
+      name: ptxUnitNamespace + "/ptx/capabilities_query",
+      messageType: "nepi_ros_interfaces/PTXCapabilitiesQuery",
+    })
+    this.ptxUnits[ptxUnitNamespace] = capabilities
   }
 
   @action.bound
@@ -1292,6 +1302,24 @@ class ROSConnectionStore {
       
       if (this.connectedToROS && poll) {
         setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async callOnvifDeviceListQueryService(poll = true) {
+    const _pollOnce = async () => {
+      const resp = await this.callService({
+        name: "onvif_mgr/device_list_query",
+        messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
+      })
+
+      this.onvifDeviceStatuses = resp['device_statuses']
+      this.onvifDeviceConfigs = resp['device_cfgs']
+    
+      if (this.connectedToROS && poll) {
+        setTimeout(_pollOnce, 5000)
       }
     }
 
@@ -2081,6 +2109,36 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  onPTXSetHomeHere(ptxNamespace) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/set_home_position_here",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })    
+  }  
+
+  @action.bound
+  onPTXGotoWaypoint(ptxNamespace, waypoint_index) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/goto_waypoint",
+      messageType: "std_msgs/UInt8",
+      data: { data: waypoint_index },
+      noPrefix: true
+    })    
+  }
+
+  @action.bound
+  onPTXSetWaypointHere(ptxNamespace, waypoint_index) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/set_waypoint_here",
+      messageType: "std_msgs/UInt8",
+      data: { data: waypoint_index },
+      noPrefix: true
+    })    
+  }
+
+  @action.bound
   onPTXStop(ptxNamespace) {
     this.publishMessage({
       name: ptxNamespace + "/ptx/stop_moving",
@@ -2110,6 +2168,66 @@ class ROSConnectionStore {
              "min_pitch_softstop_deg": pitchMin,
              "max_pitch_softstop_deg": pitchMax},
       noPrefix: true
+    })
+  }
+
+  @action.bound
+  onPTXJogYaw(ptxNamespace, direction) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/jog_timed_yaw",
+      messageType: "nepi_ros_interfaces/SingleAxisTimedMove",
+      data: {"direction": direction,
+             "duration_s": -1},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onPTXJogPitch(ptxNamespace, direction) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/jog_timed_pitch",
+      messageType: "nepi_ros_interfaces/SingleAxisTimedMove",
+      data: {"direction": direction,
+             "duration_s": -1},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onSetReverseYawControl(ptxNamespace, reverse) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/reverse_yaw_control",
+      messageType: "std_msgs/Bool",
+      data: {"data" : reverse},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onSetReversePitchControl(ptxNamespace, reverse) {
+    this.publishMessage({
+      name: ptxNamespace + "/ptx/reverse_pitch_control",
+      messageType: "std_msgs/Bool",
+      data: {"data" : reverse},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  async onOnvifDeviceCfgUpdate(updatedDeviceCfg) {
+    await this.callService({
+      name: "onvif_mgr/set_device_cfg",
+      messageType: "nepi_ros_interfaces/OnvifDeviceCfgUpdate",
+      args: {cfg : updatedDeviceCfg}
+    })
+  }
+
+  @action.bound
+  async onOnvifDeviceCfgDelete(uuid) {
+    await this.callService({
+      name: "onvif_mgr/delete_device_cfg",
+      messageType: "nepi_ros_interfaces/OnvifDeviceCfgDelete",
+      args: {device_uuid : uuid}
     })
   }
 }
