@@ -44,6 +44,8 @@ import Automation from "./Automation"
 import ImageSequencer from "./ImageSequencer"
 import PTX from "./PTX"
 import OnvifManager from "./OnvifManager"
+import LSX from "./LSX"
+
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -91,7 +93,8 @@ class App extends Component {
               path: "/controls",
               label: "Controls",
               subItems: [
-                { path: "/ptx", label: "Pan/Tilt" }
+			    { path: "/lsx", label: "Lights" },
+                { path: "/ptx", label: "Pan&Tilts" }
               ]
             },
             {
@@ -119,6 +122,7 @@ class App extends Component {
           <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/ptx" component={PTX} />
           <Route path="/help" component={Help} />
+          <Route path="/lsx" component={LSX} />
         </Switch>
       </Page>
     )

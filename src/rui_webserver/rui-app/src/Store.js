@@ -232,6 +232,7 @@ class ROSConnectionStore {
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
   @observable ptxUnits = {}
+  @observable lsxUnits = {}
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -420,6 +421,7 @@ class ROSConnectionStore {
                 
         this.updateIDXSensorList()
         this.updatePTXUnits()
+		this.updateLSXUnits()
         this.updateNavPoseSourceTopics()
 
         if (newPrefix || newSensor3DXs || newResettables || newImageTopics) {
@@ -576,6 +578,35 @@ class ROSConnectionStore {
     }
     return ptx_units_changed
   }
+  
+  @action.bound
+  updateLSXUnits() {
+    var lsx_units_changed = false
+    var lsx_units_detected = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicNames[i].endsWith("/lsx/status")) {
+        const lsx_unit_namespace = this.topicNames[i].split("/lsx")[0]
+        if (!(lsx_units_detected.includes(lsx_unit_namespace))) {
+          this.callLSXCapabilitiesQueryService(lsx_unit_namespace)
+          if (this.lsxUnits[lsx_unit_namespace])
+          {
+            lsx_units_detected.push(lsx_unit_namespace)
+          }
+        }
+        lsx_units_changed = true
+      }
+    }
+
+    // Now clean out any units that are no longer detected
+    const previously_known = Object.keys(this.lsxUnits)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(lsx_units_detected.includes(previously_known[i]))) {
+        delete this.lsxUnits[previously_known[i]]
+        lsx_units_changed = true
+      }
+    }
+    return lsx_units_changed
+  }  
   
   @action.bound
   updateResetTopics() {
@@ -852,6 +883,18 @@ class ROSConnectionStore {
       })
     }
   }
+  
+  setupLSXStatusListener(lsxNamespace, callback) {
+    if (lsxNamespace) {
+      return this.addListener({
+        name: lsxNamespace + "/lsx/status",
+        messageType: "nepi_ros_interfaces/LSXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
 
   setupRUISettingsListener() {
     this.addListener({
@@ -929,6 +972,15 @@ class ROSConnectionStore {
       messageType: "nepi_ros_interfaces/PTXCapabilitiesQuery",
     })
     this.ptxUnits[ptxUnitNamespace] = capabilities
+  }
+
+  @action.bound
+  async callLSXCapabilitiesQueryService(lsxUnitNamespace) {
+    const capabilities = await this.callService({
+      name: lsxUnitNamespace + "/lsx/capabilities_query",
+      messageType: "nepi_ros_interfaces/LSXCapabilitiesQuery",
+    })
+    this.lsxUnits[lsxUnitNamespace] = capabilities
   }
 
   @action.bound
@@ -2209,6 +2261,26 @@ class ROSConnectionStore {
       name: ptxNamespace + "/ptx/reverse_pitch_control",
       messageType: "std_msgs/Bool",
       data: {"data" : reverse},
+      noPrefix: true
+    })
+  }
+  
+  @action.bound
+  onLSXSetStandby(lsxNamespace, enable) {
+    this.publishMessage({
+      name: lsxNamespace + "/lsx/set_standby",
+      messageType: "std_msgs/Bool",
+      data: {"data" : enable},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onLSXSetStrobeEnable(lsxNamespace, enable) {
+    this.publishMessage({
+      name: lsxNamespace + "/lsx/set_strobe_enable",
+      messageType: "std_msgs/Bool",
+      data: {"data" : enable},
       noPrefix: true
     })
   }
