@@ -24,7 +24,6 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-import Toggle from "react-toggle"
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -33,9 +32,7 @@ import CameraViewer from "./CameraViewer"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
-import Styles from "./Styles"
-import Button, { ButtonMenu } from "./Button"
-import createShortUniqueValues, {setElementStyleModified, clearElementStyleModified} from "./Utilities"
+import createShortUniqueValues from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -189,16 +186,16 @@ class LSX extends Component {
   
   renderControlPanel() {
     const { lsxNamespace, lsxSerialNum, lsxHwVersion, lsxSwVersion,
-            lsxStandby,lsxIntensity,lsxStrobeEnable, lsxTempC } = this.state
-    const { lsxUnits, onLSXSetStandby, onLSXSetStrobeEnable } = this.props.ros
+            lsxIntensity, lsxTempC } = this.state
+    const { lsxUnits } = this.props.ros
     const lsx_id = lsxNamespace? lsxNamespace.split('/').slice(-1) : "No Light Selected"
 
     const lsx_caps = lsxUnits[lsxNamespace]
-    const has_standby_mode = lsx_caps && (lsx_caps['has_standby_mode'] === true)
+    //const has_standby_mode = lsx_caps && (lsx_caps['has_standby_mode'] === true)
     const has_intensity_control = lsx_caps && (lsx_caps['has_intensity_control'] === true)
-    const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
-    const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)
-    const reports_power = lsx_caps && (lsx_caps['reports_power'] === true)
+    //const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
+    //const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)
+    //const reports_power = lsx_caps && (lsx_caps['reports_power'] === true)
 
     
     return (
@@ -243,9 +240,9 @@ class LSX extends Component {
     const { lsxUnits } = this.props.ros
     const { lsxNamespace } = this.state
 
-    const lsxImageViewerElement = document.getElementById("lsxImageViewer")
+    //const lsxImageViewerElement = document.getElementById("lsxImageViewer")
 
-    const lsx_caps = lsxUnits[lsxNamespace]
+    //const lsx_caps = lsxUnits[lsxNamespace]
     return (
       <React.Fragment>
         <Columns>
