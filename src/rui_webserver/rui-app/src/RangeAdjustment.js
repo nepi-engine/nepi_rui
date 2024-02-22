@@ -200,7 +200,7 @@ class RangeAdjustment extends Component {
 
   // Function for publishing values through rosbridge
   sendUpdate(min, max, throttle = false) {
-    this.props.ros.publishRange3DX(this.props.topic, min, max, throttle)
+    this.props.ros.publishRangeWindow(this.props.topic, min, max, throttle)
   }
 
   render() {

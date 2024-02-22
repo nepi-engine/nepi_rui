@@ -195,7 +195,7 @@ class ControlIDX extends Component {
           title="Range"
           min={this.state.rangeMin}
           max={this.state.rangeMax}
-          topic={this.props.sensor_namespace}
+          topic={this.props.idxSensorNamespace + "/idx/set_range_window"}
           disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
           tooltip={"Adjustable range"}
           unit={"%"}
