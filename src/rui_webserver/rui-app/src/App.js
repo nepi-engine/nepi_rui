@@ -81,7 +81,7 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/imagery", label: "Imagery" },
+                { path: "/imagery", label: "Image Viewer" },
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
                 { path: "/onvif_mgr", label: "ONVIF"},
