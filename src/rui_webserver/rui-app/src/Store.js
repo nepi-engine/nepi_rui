@@ -958,6 +958,10 @@ class ROSConnectionStore {
 
   @action.bound
   async callIDXCapabilitiesQueryService(idxSensorNamespace) {
+    // Clear it from the list before the call and then restore if the service call actually produces a response
+    if (idxSensorNamespace in this.idxSensors) {
+      this.idxSensors[idxSensorNamespace] = null
+    }
     const capabilities = await this.callService({
       name: idxSensorNamespace + "/idx/capabilities_query",
       messageType: "nepi_ros_interfaces/IDXCapabilitiesQuery",  
@@ -967,6 +971,10 @@ class ROSConnectionStore {
 
   @action.bound
   async callPTXCapabilitiesQueryService(ptxUnitNamespace) {
+    // Clear it from the list before the call and then restore if the service call actually produces a response
+    if (ptxUnitNamespace in this.ptxUnits) {
+      this.ptxUnits[ptxUnitNamespace] = null
+    }
     const capabilities = await this.callService({
       name: ptxUnitNamespace + "/ptx/capabilities_query",
       messageType: "nepi_ros_interfaces/PTXCapabilitiesQuery",
@@ -976,6 +984,10 @@ class ROSConnectionStore {
 
   @action.bound
   async callLSXCapabilitiesQueryService(lsxUnitNamespace) {
+    // Clear it from the list before the call and then restore if the service call actually produces a response
+    if (lsxUnitNamespace in this.lsxUnits) {
+      this.lsxUnits[lsxUnitNamespace] = null
+    }
     const capabilities = await this.callService({
       name: lsxUnitNamespace + "/lsx/capabilities_query",
       messageType: "nepi_ros_interfaces/LSXCapabilitiesQuery",
