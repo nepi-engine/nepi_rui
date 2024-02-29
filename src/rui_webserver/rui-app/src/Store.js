@@ -1900,43 +1900,23 @@ class ROSConnectionStore {
     }
   }
 
-  publishRange3DX(topic, min, max, throttle = true) {
+  publishRangeWindow(topic, min, max, throttle = true) {
     if (throttle && this.isThrottled()) {
       return
     }
 
     if (topic) {
       this.publishMessage({
-        name: topic + "/set_range",
-        messageType: "nepi_ros_interfaces/Range3DX",
+        name: topic,
+        messageType: "nepi_ros_interfaces/RangeWindow",
         noPrefix: true,
         data: {
-          min_range: min,
-          max_range: max
+          start_range: min,
+          stop_range: max
         }
       })
     } else {
-      console.warn("publishRange3DX: sensor3DXTopicBase not set")
-    }
-  }
-
-  publishAngle3DX(topic, offset, total, throttle = true) {
-    if (throttle && this.isThrottled()) {
-      return
-    }
-
-    if (topic) {
-      this.publishMessage({
-        name: topic + "/set_angle",
-        messageType: "nepi_ros_interfaces/Angle3DX",
-        noPrefix: true,
-        data: {
-          angle_offset: offset,
-          total_angle: total
-        }
-      })
-    } else {
-      console.warn("publishAngle3DX: sensor3DXTopicBase not set")
+      console.warn("publishRangeWindow: topic not set")
     }
   }
 

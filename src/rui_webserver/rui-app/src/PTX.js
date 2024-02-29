@@ -269,6 +269,7 @@ class PTX extends Component {
   componentWillUnmount() {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
+      this.setState({listener : null})
     }
   }
 
@@ -292,11 +293,6 @@ class PTX extends Component {
     var unique_names = createShortUniqueValues(filteredTopics)
     for (i = 0; i < filteredTopics.length; i++) {
       items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
-    }
-    // Check that our current selection hasn't disappeard as an available option
-    const { currentIDXNamespace } = this.state
-    if ((currentIDXNamespace != null) && (! filteredTopics.includes(currentIDXNamespace))) {
-      this.clearTopicIDXSelection()
     }
 
     return items
