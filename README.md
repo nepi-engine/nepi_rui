@@ -66,6 +66,8 @@ When developing, always source the `devenv.sh` to ensure the correct versions of
         cd /opt/nepi/nepi_rui
         source devenv.sh
 
+>Note: If using the unified _nepi_engine_build_complete.sh_ build script in parent repository _nepi_engine_ws_, the devenv.sh file is properly sourced prior to the build, so you do not need to do that step manually.
+
 ### Frontend
 
 To build the frontend run this command in `src/rui_webserver/rui-app/`:
@@ -73,6 +75,8 @@ To build the frontend run this command in `src/rui_webserver/rui-app/`:
         npm run build
 
 Building the frontend is necessary after initial checkout (as the frontend build is not stored in the repo), but after that only necessary when making changes to frontend code.
+
+>Note: If using the unified _nepi_engine_build_complete.sh_ 
 
 ### Backend
 
