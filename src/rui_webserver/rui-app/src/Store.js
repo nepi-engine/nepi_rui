@@ -313,8 +313,12 @@ class ROSConnectionStore {
 
         retry_delay_ms = 250 // Fast to avoid a lot of latency while connecting
       } catch (e) {
+        // Note: Failure to contact the server does not result in this exception, instead
+        // an event is dispatched, so we don't get into this block just because the
+        // server isn't present: 
+        // https://stackoverflow.com/questions/31002592/javascript-doesnt-catch-error-in-websocket-instantiation
         //console.error(e)
-        console.error("License check failed")
+        console.error("License server not running")
         this.license_server = null
         this.license_yaml = null
         this.commercial_licensed = false 

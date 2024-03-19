@@ -318,8 +318,8 @@ class Settings extends Component {
                                "commercial_license_type" in license_info["licensed_components"]["nepi_base"] &&
                                "status" in license_info["licensed_components"]["nepi_base"]
     
-    var license_type = license_info_valid? license_info["licensed_components"]["nepi_base"]["commercial_license_type"] : "Unknown"
-    var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : "Unknown"
+    var license_type = license_info_valid? license_info["licensed_components"]["nepi_base"]["commercial_license_type"] : "BSD-3-Clause"
+    var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : ""
     if (license_request_mode === true) {
       license_type = "Request"
       license_status = "Pending"
@@ -327,33 +327,39 @@ class Settings extends Component {
 
     return (
       <Section title={"NEPI License"}>
-        {!license_info_valid?
-          <Label title={"Server Disconnected"} labelStyle={{ color: Styles.vars.colors.red, fontWeight: "bold"}}/>
-          : null
-        }
         <Label title={"Type"}>
           <Input value={license_type} disabled={true}/>
         </Label>
-        <Label title={"Status"} >
-          <Input value={license_status} disabled={true}/>
-        </Label>
-        {license_request_mode?
-          this.renderLicenseRequestInfo() : this.renderLicense() 
+        
+        {license_info_valid?
+          <Label title={"Status"} >
+            <Input value={license_status} disabled={true}/>
+          </Label>
+          : null
         }
 
+        {license_info_valid && license_request_mode?
+          this.renderLicenseRequestInfo() : null
+        }
+
+        {license_info_valid && !license_request_mode?
+          this.renderLicense() : null
+        }
+                         
         {(license_info_valid && !commercial_licensed)?
           <ButtonMenu>
             <Button onClick={onGenerateLicenseRequest}>{"License Request"}</Button>
           </ButtonMenu>
           : null
         }
+                  
         {(license_info_valid && !commercial_licensed)?
-          <div style={{textAlign: "center"}}>
-            <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
-              Open license request instructions
-            </Link>
-          </div>
-          : null
+            <div style={{textAlign: "center"}}>
+              <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
+                Open license request instructions
+              </Link>
+            </div>
+            : null
         }
       </Section>
     )
