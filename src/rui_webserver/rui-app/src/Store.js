@@ -294,7 +294,7 @@ class ROSConnectionStore {
           if ('licensed_components' in response_dict)
           {
             this.license_info = yaml.load(event.data)
-            if (this.license_info['licensed_components']['nepi_base']['commercial_license_type'] === 'Developer') {
+            if (this.license_info['licensed_components']['nepi_base']['commercial_license_type'] === 'Unlicensed') {
               this.commercial_licensed = false
             }
             else {
