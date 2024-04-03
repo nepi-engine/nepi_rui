@@ -16,6 +16,7 @@ import Input from "./Input"
 import Button, { ButtonMenu } from "./Button"
 import ListBox from './ListBox';
 import './ListBox.css';
+import Select, { Option } from "./Select"
 import BooleanIndicator from "./BooleanIndicator"
 import Styles from "./Styles"
 
@@ -36,7 +37,9 @@ class OnvifManager extends Component {
       selectedDeviceConfigPassword: '',
       selectedDeviceConfigBasename: '',
       selectedDeviceConfigIDXEnabled: false,
-      selectedDeviceConfigPTXEnabled: false
+      selectedDeviceConfigPTXEnabled: false,
+      selectedDeviceConfigIDXDriver: '',
+      selectedDeviceConfigPTXDriver: ''
     };
 
     this.handleUUIDSelection = this.handleUUIDSelection.bind(this)
@@ -44,10 +47,14 @@ class OnvifManager extends Component {
     this.handleUpdateConfigClick = this.handleUpdateConfigClick.bind(this)
     this.handleDeleteConfigClick = this.handleDeleteConfigClick.bind(this)
     this.onChangeTextField = this.onChangeTextField.bind(this)
+    this.onIDXDriverSelected = this.onIDXDriverSelected.bind(this)
+    this.onPTXDriverSelected = this.onPTXDriverSelected.bind(this)
+    this.createIDXDriverOptions = this.createIDXDriverOptions.bind(this)
+    this.createPTXDriverOptions = this.createPTXDriverOptions.bind(this)
   }
 
   handleUUIDSelection(item) {
-    const { onvifDeviceConfigs } = this.props.ros;
+    const { onvifDeviceConfigs, onvifIDXDeviceDrivers, onvifPTXDeviceDrivers } = this.props.ros;
     let selectedConfig = null
     for (let i = 0; i < onvifDeviceConfigs.length; i++) {
       const config = onvifDeviceConfigs[i]
@@ -58,6 +65,9 @@ class OnvifManager extends Component {
       }
     }
 
+    const defaultIDXDeviceDriver = (onvifIDXDeviceDrivers.length > 0)? onvifIDXDeviceDrivers[0] : ''
+    const defaultPTXDeviceDriver = (onvifPTXDeviceDrivers.length > 0)? onvifPTXDeviceDrivers[0] : ''
+
     this.setState({ 
       selectedDeviceUUID: item,
 
@@ -67,11 +77,15 @@ class OnvifManager extends Component {
       selectedDeviceConfigPassword: selectedConfig? selectedConfig.password : '',
       selectedDeviceConfigBasename: selectedConfig? selectedConfig.node_base_name : '',
       selectedDeviceConfigIDXEnabled: selectedConfig? selectedConfig.idx_enabled : false,
-      selectedDeviceConfigPTXEnabled: selectedConfig? selectedConfig.ptx_enabled : false
+      selectedDeviceConfigPTXEnabled: selectedConfig? selectedConfig.ptx_enabled : false,
+      selectedDeviceConfigIDXDriver: selectedConfig? selectedConfig.idx_driver : defaultIDXDeviceDriver,
+      selectedDeviceConfigPTXDriver: selectedConfig? selectedConfig.ptx_driver : defaultPTXDeviceDriver,
     });
   };
 
   handleNewConfigClick() {
+    const { onvifIDXDeviceDrivers, onvifPTXDeviceDrivers } = this.props.ros;
+
     this.setState({
       selectedDeviceUUID: null,
       selectedDeviceConfigModified: true,
@@ -80,7 +94,9 @@ class OnvifManager extends Component {
       selectedDeviceConfigPassword: 'admin',
       selectedDeviceConfigBasename: 'new_onvif_device',
       selectedDeviceIDXEnabled: false,
-      selectedDevicePTXEnabled: false
+      selectedDevicePTXEnabled: false,
+      selectedDeviceConfigIDXDriver: onvifIDXDeviceDrivers[0],
+      selectedDeviceConfigPTXDriver: onvifPTXDeviceDrivers[0]
     })
   }
 
@@ -92,7 +108,9 @@ class OnvifManager extends Component {
       password : this.state.selectedDeviceConfigPassword,
       node_base_name : this.state.selectedDeviceConfigBasename,
       idx_enabled : this.state.selectedDeviceConfigIDXEnabled,
-      ptx_enabled : this.state.selectedDeviceConfigPTXEnabled
+      ptx_enabled : this.state.selectedDeviceConfigPTXEnabled,
+      idx_driver : this.state.selectedDeviceConfigIDXDriver,
+      ptx_driver : this.state.selectedDeviceConfigPTXDriver
     }
     this.props.ros.onOnvifDeviceCfgUpdate(updated_config)
     this.setState({selectedDeviceConfigModified: false})
@@ -110,7 +128,9 @@ class OnvifManager extends Component {
       selectedDeviceConfigPassword: '',
       selectedDeviceConfigBasename: '',
       selectedDeviceConfigIDXEnabled: false,
-      selectedDeviceConfigPTXEnabled: false
+      selectedDeviceConfigPTXEnabled: false,
+      selectedDeviceConfigIDXDriver: '',
+      selectedDeviceConfigPTXDriver: ''
     })
 
     await callOnvifDeviceListQueryService(false) // Call a one-shot for more responsive experience
@@ -132,6 +152,42 @@ class OnvifManager extends Component {
     
     // And in all cases, set the config-modified flag
     this.setState({selectedDeviceConfigModified : true})
+  }
+
+  onIDXDriverSelected(event) {
+    if (event.target.value !== this.state.selectedDeviceConfigIDXDriver) {
+      this.setState({ 
+        selectedDeviceConfigIDXDriver:event.target.value,
+        selectedDeviceConfigModified : true
+      })
+    }
+  }
+
+  onPTXDriverSelected(event) {
+    if (event.target.value !== this.state.selectedDeviceConfigPTXDriver) {
+      this.setState({ 
+        selectedDeviceConfigPTXDriver:event.target.value,
+        selectedDeviceConfigModified : true
+      })
+    }
+  }
+
+  createIDXDriverOptions() {
+    const { onvifIDXDeviceDrivers } = this.props.ros;
+    var items = []
+    for (var i = 0; i < onvifIDXDeviceDrivers.length; i++) {
+      items.push(<Option value={onvifIDXDeviceDrivers[i]}>{onvifIDXDeviceDrivers[i]}</Option>)
+    }
+    return items
+  }
+
+  createPTXDriverOptions() {
+    const { onvifPTXDeviceDrivers } = this.props.ros;
+    var items = []
+    for (var i = 0; i < onvifPTXDeviceDrivers.length; i++) {
+      items.push(<Option value={onvifPTXDeviceDrivers[i]}>{onvifPTXDeviceDrivers[i]}</Option>)
+    }
+    return items
   }
 
   render() {
@@ -310,8 +366,6 @@ class OnvifManager extends Component {
                             }
                   />
                 </Label>
-              </Column>
-              <Column>
                 <Label title={"PTX Enabled"}>
                   <Toggle
                     id={'onvif_ptx_enabled_toggle'} 
@@ -321,6 +375,24 @@ class OnvifManager extends Component {
                             } 
                   />
                 </Label>
+              </Column>
+              <Column>
+                <Label title={"IDX Driver"}>
+                  <Select
+                    onChange={this.onIDXDriverSelected}
+                    value={this.state.selectedDeviceConfigIDXDriver}
+                  >
+                    {this.createIDXDriverOptions()}
+                  </Select>
+                </Label>
+                <Label title={"PTX Driver"}>
+                  <Select
+                    onChange={this.onPTXDriverSelected}
+                    value={this.state.selectedDeviceConfigPTXDriver}
+                  >
+                    {this.createPTXDriverOptions()}
+                  </Select>
+                </Label>                
               </Column>
             </Columns>
             <ButtonMenu>
