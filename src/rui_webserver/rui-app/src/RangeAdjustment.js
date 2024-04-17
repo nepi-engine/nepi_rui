@@ -82,12 +82,18 @@ class RangeAdjustment extends Component {
   constructor(props) {
     super(props)
 
-    var { min, max } = this.props
+    var { min, max, min_limit_m, max_limit_m } = this.props
     if (min > max) {
       // initalized invalid
       max = 1
       min = 0
     }
+
+    const limit_range_m = max_limit_m - min_limit_m
+    const min_m = (min * (limit_range_m)) + min_limit_m
+    const min_m_str = parseFloat(min_m.toString()).toFixed(1) + (this.props.unit? this.props.unit : "")
+    const max_m = (max * (limit_range_m)) + min_limit_m
+    const max_m_str = parseFloat(max_m.toString()).toFixed(1) + (this.props.unit? this.props.unit : "")
 
     this.state = {
       // min and max values used by slider
@@ -96,31 +102,44 @@ class RangeAdjustment extends Component {
       // scaled min and max for use in ROS messages
       scaled_min: min,
       scaled_max: max,
-      // input min and max for input UI element
-      input_min: Math.round(min * 100),
-      input_max: Math.round(max * 100)
+      // input min and max for input UI element (report range in meters)
+      input_min: min_m_str,
+      input_max: max_m_str
     }
 
     this.onSliderChange = this.onSliderChange.bind(this)
     this.onSliderAfterChange = this.onSliderAfterChange.bind(this)
-    this.onMinInputChange = this.onMinInputChange.bind(this)
-    this.onMaxInputChange = this.onMaxInputChange.bind(this)
     this.update = this.update.bind(this)
+    this.updateTextBoxVals = this.updateTextBoxVals.bind(this)
     this.sendUpdate = this.sendUpdate.bind(this)
   }
 
   // Function for updating state when values change
   update(min, max) {
     if (min >= 0 && min <= 100 && max >= 0 && max <= 100) {
+
       this.setState({
         min: min,
         max: max,
         scaled_min: min / 100.0,
         scaled_max: max / 100.0,
-        input_min: Math.round(min),
-        input_max: Math.round(max)
       })
+      this.updateTextBoxVals(min/100.0, max/100.0) // sets input_min and input_max
     }
+  }
+
+  updateTextBoxVals(min_ratio, max_ratio) {
+    const {max_limit_m, min_limit_m} = this.props
+    const limit_range_m = max_limit_m - min_limit_m
+    const min_m = (min_ratio * (limit_range_m)) + min_limit_m
+    const min_m_str = parseFloat(min_m.toString()).toFixed(1) + (this.props.unit? this.props.unit : "")
+    const max_m = (max_ratio * (limit_range_m)) + min_limit_m
+    const max_m_str = parseFloat(max_m.toString()).toFixed(1) + (this.props.unit? this.props.unit : "")
+
+    this.setState({
+      input_min: min_m_str,
+      input_max: max_m_str
+    })
   }
 
   // Lifecycle function called right after component updates.
@@ -141,9 +160,8 @@ class RangeAdjustment extends Component {
         max: max * 100.0,
         scaled_min: min,
         scaled_max: max,
-        input_min: Math.round(min * 100.0),
-        input_max: Math.round(max * 100.0)
       })
+      this.updateTextBoxVals(min, max)
     }
 
     // this zeros out values if we go from enabled to disabled
@@ -167,16 +185,6 @@ class RangeAdjustment extends Component {
     this.sendUpdate(values[0] / 100.0, values[1] / 100.0, true)
   }
 
-  // Handlers for value changes through input text boxes
-  onMinInputChange(event) {
-    this.update(event.target.value, this.state.max)
-    this.sendUpdate(event.target.value / 100.0, this.state.max / 100.0)
-  }
-  onMaxInputChange(event) {
-    this.update(this.state.min, event.target.value)
-    this.sendUpdate(this.state.min / 100.0, event.target.value / 100.0)
-  }
-
   // Handler for when slider is released (mouse up)
   onSliderAfterChange(values) {
     this.sendUpdate(values[0] / 100.0, values[1] / 100.0)
@@ -188,8 +196,6 @@ class RangeAdjustment extends Component {
   }
 
   render() {
-    const string_for_min = this.state.input_min.toString() + (this.props.unit? this.props.unit : "")
-    const string_for_max = this.state.input_max.toString() + (this.props.unit? this.props.unit : "")
     return (
       <div style={{ display: "flex", ...styles.root }}>
         <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
@@ -212,17 +218,15 @@ class RangeAdjustment extends Component {
         <Tooltip placement="top" overlay="min">
           <Input
             style={styles.min_input}
-            value={string_for_min}
-            onChange={this.onMinInputChange}
-            disabled={this.props.disabled}
+            value={this.state.input_min}
+            disabled={true}
           />
         </Tooltip>
         <Tooltip placement="top" overlay="max">
           <Input
             style={styles.max_input}
-            value={string_for_max}
-            onChange={this.onMaxInputChange}
-            disabled={this.props.disabled}
+            value={this.state.input_max}
+            disabled={true}
           />
         </Tooltip>
       </div>

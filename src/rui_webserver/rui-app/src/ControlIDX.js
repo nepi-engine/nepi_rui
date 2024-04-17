@@ -34,6 +34,8 @@ class ControlIDX extends Component {
       thresholdingAdjustment: null,
       rangeMax: null,
       rangeMin: null,
+      rangeLimitMinM: null,
+      rangeLimitMaxM: null,
       listener: null,
       frame3D: null,
 
@@ -58,6 +60,8 @@ class ControlIDX extends Component {
       thresholdingAdjustment: message.thresholding,
       rangeMax: message.range_window.stop_range,
       rangeMin: message.range_window.start_range,
+      rangeLimitMinM: message.min_range_m,
+      rangeLimitMaxM: message.max_range_m,
       frame3D: message.frame_3d
     })
   }
@@ -179,10 +183,12 @@ class ControlIDX extends Component {
           title="Range"
           min={this.state.rangeMin}
           max={this.state.rangeMax}
+          min_limit_m={this.state.rangeLimitMinM}
+          max_limit_m={this.state.rangeLimitMaxM}
           topic={this.props.idxSensorNamespace + "/idx/set_range_window"}
           disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
           tooltip={"Adjustable range"}
-          unit={"%"}
+          unit={"m"}
         />
         <div>
           <Columns>
