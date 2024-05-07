@@ -127,21 +127,18 @@ class ControlIDX extends Component {
       <Section
         title={this.props.title ? this.props.title : "NO SENSOR SELECTED"}
       >
-        <RadioButtonAdjustment
-            title={"Resolution"}
-            topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
-            msgType={"std_msgs/UInt8"}
-            adjustment={(capabilities && capabilities.adjustable_resolution)? this.state.resolutionAdjustment : null}
-            disabled={(capabilities && capabilities.adjustable_resolution && !this.state.disabled)? false : true}
-            entries={["Low", "Medium", "High", "Ultra"]}
-        />
-        <RadioButtonAdjustment
-            title={"Framerate"}
-            topic={this.props.idxSensorNamespace + '/idx/set_framerate_mode'}
-            msgType={"std_msgs/UInt8"}
-            adjustment={(capabilities && capabilities.adjustable_framerate)? this.state.framerateAdjustment : null}
-            disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
-            entries={["Low", "Medium", "High", "Ultra"]}
+
+        <SliderAdjustment
+            title={"Brightness"}
+            msgType={"std_msgs/Float32"}
+            adjustment={this.state.brightnessAdjustment}
+            topic={this.props.idxSensorNamespace + "/idx/set_brightness"}
+            scaled={0.01}
+            min={0}
+            max={100}
+            disabled={(capabilities && capabilities.adjustable_brightness && !this.state.disabled)? false : true}
+            tooltip={"Adjustable brightness"}
+            unit={"%"}
         />
         <SliderAdjustment
           title={"Contrast"}
@@ -154,18 +151,6 @@ class ControlIDX extends Component {
           disabled={(capabilities && capabilities.adjustable_contrast && !this.state.disabled)? false : true}
           tooltip={"Adjustable contrast"}
           unit={"%"}
-        />
-        <SliderAdjustment
-            title={"Brightness"}
-            msgType={"std_msgs/Float32"}
-            adjustment={this.state.brightnessAdjustment}
-            topic={this.props.idxSensorNamespace + "/idx/set_brightness"}
-            scaled={0.01}
-            min={0}
-            max={100}
-            disabled={(capabilities && capabilities.adjustable_brightness && !this.state.disabled)? false : true}
-            tooltip={"Adjustable brightness"}
-            unit={"%"}
         />
         <SliderAdjustment
             title={"Thresholding"}
@@ -189,6 +174,22 @@ class ControlIDX extends Component {
           disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
           tooltip={"Adjustable range"}
           unit={"m"}
+        />
+        <RadioButtonAdjustment
+            title={"Resolution"}
+            topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
+            msgType={"std_msgs/UInt8"}
+            adjustment={(capabilities && capabilities.adjustable_resolution)? this.state.resolutionAdjustment : null}
+            disabled={(capabilities && capabilities.adjustable_resolution && !this.state.disabled)? false : true}
+            entries={["Low", "Medium", "High", "Ultra"]}
+        />
+        <RadioButtonAdjustment
+            title={"Framerate"}
+            topic={this.props.idxSensorNamespace + '/idx/set_framerate_mode'}
+            msgType={"std_msgs/UInt8"}
+            adjustment={(capabilities && capabilities.adjustable_framerate)? this.state.framerateAdjustment : null}
+            disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
+            entries={["Low", "Medium", "High", "Ultra"]}
         />
         <div>
           <Columns>
