@@ -863,6 +863,39 @@ class ROSConnectionStore {
     }
   }
 
+
+  @action.bound
+  IdxSettingsResetTriggered(idxSensorNamespace) {
+    this.publishMessage({
+      name: idxSensorNamespace + "/idx/reset_controls",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  setIdxControls(idxSensorNamespace,idxControls) {
+     this.publishMessage({
+      name: idxSensorNamespace + "/idx/set_idx_controls_enable",
+      messageType: "std_msgs/Bool",
+      data: {'data':idxControls},
+      noPrefix: true
+    })     
+  }
+
+  @action.bound
+  setIdxAutoAdjust(idxSensorNamespace,autoAdjust) {
+     this.publishMessage({
+      name: idxSensorNamespace + "/idx/set_auto_adjust",
+      messageType: "std_msgs/Bool",
+      data: {'data':autoAdjust},
+      noPrefix: true
+    })     
+  }
+  
+  
+
   setupPTXStatusListener(ptxNamespace, callback) {
     if (ptxNamespace) {
       return this.addListener({
