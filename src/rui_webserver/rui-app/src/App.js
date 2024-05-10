@@ -15,20 +15,20 @@ import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
 //import PageLock from "./PageLock"
 
-import NEPIConnect from "./NEPIConnect"
-import Dashboard from "./Dashboard"
-import DetectionApp from "./DetectionApp"
-import SensorIDX from "./SensorIDX"
-import MultiImageViewer from "./MultiImageViewer"
-import NavPose from "./NavPose"
-import Settings from "./Settings"
-import SoftwareUpdate from "./SoftwareUpdate"
+import NEPIConnect from "./NepiAppConnect"
+import Dashboard from "./NepiDashboard"
+import DetectionApp from "./NepiAppAIDetector"
+import SensorIDX from "./NepiSensorsImaging"
+import MultiImageViewer from "./NepiAppImageViewer"
+import NavPose from "./NepiSensorsNavPose"
+import Settings from "./NepiSystemAdmin"
+import SoftwareUpdate from "./NepiSystemSoftware"
 import Help from "./Help"
-import Automation from "./Automation"
-import ImageSequencer from "./ImageSequencer"
-import PTX from "./PTX"
-import OnvifManager from "./OnvifManager"
-import LSX from "./LSX"
+import Automation from "./NepiAppAutomation"
+import ImageSequencer from "./NepiAppImageSequencer"
+import PTX from "./NepiControlsPanTilt"
+import OnvifManager from "./NepiSystemOnvif"
+import LSX from "./NepiControlsLights"
 
 
 //const IS_LOCAL = window.location.hostname === "localhost"
@@ -68,7 +68,6 @@ class App extends Component {
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
-                { path: "/onvif_mgr", label: "ONVIF"},
                 { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/nepi_connect", label: "Connect" }
               ]
@@ -86,6 +85,7 @@ class App extends Component {
               label: "System",
               subItems: [
                 { path: "/admin", label: "Admin" },
+                { path: "/onvif_mgr", label: "ONVIF"},
                 { path: "/software_update", label: "Software"}
               ]
             }

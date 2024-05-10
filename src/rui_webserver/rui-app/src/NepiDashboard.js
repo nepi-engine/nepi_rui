@@ -27,7 +27,7 @@ function roundWithSuffix(value, decimals, suffix) {
 
 @inject("ros")
 @observer
-class Dashboard extends Component {
+class NepiDashboard extends Component {
   constructor(props) {
     super(props)
 
@@ -268,4 +268,4 @@ class Dashboard extends Component {
   }
 }
 
-export default Dashboard
+export default NepiDashboard

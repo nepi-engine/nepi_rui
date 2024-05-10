@@ -30,7 +30,7 @@ function round(value, decimals = 0) {
 @observer
 
 // Component that contains the PTX controls
-class PTX extends Component {
+class NepiControlsPanTilt extends Component {
   constructor(props) {
     super(props)
 
@@ -577,4 +577,4 @@ class PTX extends Component {
   }
 }
 
-export default PTX
+export default NepiControlsPanTilt

@@ -30,7 +30,7 @@ import createShortUniqueValues, {setElementStyleModified, clearElementStyleModif
 
 @inject("ros")
 @observer
-class NEPIConnect extends Component {
+class NepiAppConnect extends Component {
   constructor(props) {
     super(props)
 
@@ -402,4 +402,4 @@ class NEPIConnect extends Component {
   }
   */
 }
-export default NEPIConnect
+export default NepiAppConnect

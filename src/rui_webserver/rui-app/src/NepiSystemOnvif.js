@@ -23,7 +23,7 @@ import Styles from "./Styles"
 
 @inject("ros")
 @observer
-class OnvifManager extends Component {
+class NepiSystemOnvif extends Component {
   constructor(props) {
     super(props);
 
@@ -425,4 +425,4 @@ class OnvifManager extends Component {
   }
 };
 
-export default OnvifManager;
+export default NepiSystemOnvif

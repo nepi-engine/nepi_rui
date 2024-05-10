@@ -18,7 +18,7 @@ import Styles from "./Styles"
 
 @inject("ros")
 @observer
-class SoftwareUpdate extends Component {
+class NepiSystemSoftware extends Component {
     constructor(props) {
         super(props)
     
@@ -156,4 +156,4 @@ class SoftwareUpdate extends Component {
     }
 }
 
-export default SoftwareUpdate
+export default NepiSystemSoftware

@@ -9,7 +9,7 @@
 import React from "react"
 import { TypographyStyle, GoogleFont } from "react-typography"
 import Typography from "typography"
-import theme from "./nepi-rui-typography-theme"
+import theme from "./Theme"
 
 import Styles from "./Styles"
 
@@ -28,7 +28,7 @@ const typography = new Typography({
 
 const styles = Styles.Create({
   container: {
-    backgroundColor: Styles.vars.colors.nepi_blue,
+    backgroundColor: Styles.vars.colors.dark_blue,
     maxWidth: Styles.vars.pageWidth,
     margin: "0 auto",
     padding: Styles.vars.spacing.large

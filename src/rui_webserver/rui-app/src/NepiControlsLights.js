@@ -27,7 +27,7 @@ function round(value, decimals = 0) {
 @observer
 
 // Component that contains the LSX controls
-class LSX extends Component {
+class NepiControlsLights extends Component {
   constructor(props) {
     super(props)
 
@@ -270,4 +270,4 @@ class LSX extends Component {
   }
 }
 
-export default LSX
+export default NepiControlsLights

@@ -25,7 +25,7 @@ import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
 @observer
-class ImageSequencer extends Component {
+class NepiAppImageSequencer extends Component {
   constructor(props) {
     super(props)
     
@@ -666,4 +666,4 @@ class ImageSequencer extends Component {
   }
 }
 
-export default ImageSequencer;
+export default NepiAppImageSequencer

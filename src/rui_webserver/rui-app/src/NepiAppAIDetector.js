@@ -24,7 +24,7 @@ import CameraViewer from "./CameraViewer"
 
 @inject("ros")
 @observer
-class DetectionApp extends Component {
+class NepiAppAIDetector extends Component {
   constructor(props) {
     super(props)
     var img = (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
@@ -284,4 +284,4 @@ class DetectionApp extends Component {
   }
 }
 
-export default DetectionApp
+export default NepiAppAIDetector

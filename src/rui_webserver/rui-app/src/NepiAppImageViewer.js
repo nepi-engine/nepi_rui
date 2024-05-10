@@ -21,7 +21,7 @@ import createShortUniqueValues from "./Utilities"
 @observer
 
 // MultiImageViewer Application page
-class MultiImageViewer extends Component {
+class NepiAppImageViewer extends Component {
 
   constructor(props) {
     super(props)
@@ -153,4 +153,4 @@ class MultiImageViewer extends Component {
   }
 }
 
-export default MultiImageViewer
+export default NepiAppImageViewer

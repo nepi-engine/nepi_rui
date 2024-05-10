@@ -8,7 +8,6 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-//import Toggle from "react-toggle"
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -16,15 +15,14 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 
 import CameraViewer from "./CameraViewer"
-//import Control3DX from "./Control3DX"
-import ControlIDX from "./ControlIDX"
+import ControlIDX from "./NepiSensorsImagingControls"
 import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
 @observer
 
 // SensorIDX Application page
-class SensorIDX extends Component {
+class NepiSensorsImaging extends Component {
   constructor(props) {
     super(props)
 
@@ -186,8 +184,8 @@ class SensorIDX extends Component {
             />
           </Column>
           <Column>
-            <Section title={"IDX Sensor"}>
-              <Label title={"IDX Sensor Selection"}>
+            <Section title={"Selection"}>
+              <Label title={"Sensor"}>
                 <Select
                   onChange={this.onTopicIDXSelected}
                   value={this.state.currentIDXNamespace}
@@ -195,7 +193,7 @@ class SensorIDX extends Component {
                   {this.createTopicOptions(Object.keys(idxSensors))}
                 </Select>
               </Label>
-              <Label title={"Selected Image"}>
+              <Label title={"Image"}>
                 <Select
                   id="topicSelect_0"
                   onChange={this.onImageTopicSelected}
@@ -223,4 +221,4 @@ class SensorIDX extends Component {
   }
 }
 
-export default SensorIDX
+export default NepiSensorsImaging
