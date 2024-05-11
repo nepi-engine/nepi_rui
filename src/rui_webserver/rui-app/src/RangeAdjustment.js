@@ -73,7 +73,7 @@ const styles = Styles.Create({
     marginLeft: Styles.vars.spacing.small,
     marginRight: Styles.vars.spacing.small,
     textAlign: "right",
-    backgroundColor: Styles.vars.colors.nepi_blue    
+    backgroundColor: Styles.vars.colors.default_dark    
   }
 })
 
@@ -207,7 +207,7 @@ class RangeAdjustment extends Component {
           onChange={this.onSliderChange}
           onAfterChange={this.onSliderAfterChange}
           disabled={this.props.disabled}
-          handleStyle={this.props.disabled? {backgroundColor: Styles.vars.colors.nepi_blue} : {}}
+          handleStyle={this.props.disabled? {backgroundColor: Styles.vars.colors.default_dark} : {}}
           count={1}
           min={0}
           max={100}

@@ -28,7 +28,7 @@ const typography = new Typography({
 
 const styles = Styles.Create({
   container: {
-    backgroundColor: Styles.vars.colors.dark_blue,
+    backgroundColor: Styles.vars.colors.default_dark,
     maxWidth: Styles.vars.pageWidth,
     margin: "0 auto",
     padding: Styles.vars.spacing.large

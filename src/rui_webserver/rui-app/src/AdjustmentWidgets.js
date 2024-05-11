@@ -70,7 +70,7 @@ const styles = Styles.Create({
     marginRight: Styles.vars.spacing.small,
     marginLeft: Styles.vars.spacing.small,
     textAlign: "right",
-    backgroundColor: Styles.vars.colors.nepi_blue    
+    backgroundColor: Styles.vars.colors.default_dark    
   },
   vertical_slider: {
     flex: 0.2,
@@ -285,15 +285,15 @@ class SliderAdjustment extends Component {
     
     if (this.props.invisibleSlider) {
       sliderStyle = styles.invisible_slider
-      handleStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
-      trackStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
-      railStyle = {backgroundColor: Styles.vars.colors.nepi_blue, borderWidth: "0px"}
+      handleStyle = {backgroundColor: Styles.vars.colors.default_dark, borderWidth: "0px"}
+      trackStyle = {backgroundColor: Styles.vars.colors.default_dark, borderWidth: "0px"}
+      railStyle = {backgroundColor: Styles.vars.colors.default_dark, borderWidth: "0px"}
     }
     else if (this.props.vertical) {
       sliderStyle = { ...styles.vertical_slider, height: this.props.verticalHeight }
     }
     else if (this.props.disabled) {
-      handleStyle = {backgroundColor: Styles.vars.colors.nepi_blue}
+      handleStyle = {backgroundColor: Styles.vars.colors.default_dark}
       sliderStyle = styles.disabled_slider
     }
 
