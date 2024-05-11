@@ -127,9 +127,7 @@ class ControlIDX extends Component {
     const capabilities = idxSensors[this.props.idxSensorNamespace]
 
     return (
-      <Section
-        title={"IDX Controls"}
-      >
+      <Section title={"IDX Controls"}>
         <Label title={"Enable IDX Controls"}>
           <Toggle
             checked={this.state.idxControls}
