@@ -17,7 +17,9 @@ export const Create = function(rules) {
 }
 
 export const colors = {
-  nepi_blue: "#002C45",
+  default_dark: "#00070d",
+  default_light: "#ffffff",
+  default_highlight: "#b1d0ee",
   black: "#1c1d20",
   white: "#ffffff",
   orange: "#ffd000",

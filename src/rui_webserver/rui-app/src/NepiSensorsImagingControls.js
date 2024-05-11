@@ -51,7 +51,7 @@ class ControlIDX extends Component {
     this.updateListener()
   }
 
-  // Callback for handling ROS Status3DX messages
+  // Callback for handling ROS StatusIDX messages
   idxStatusListener(message) {
     this.setState({
       idxControls: message.idx_controls,
@@ -67,7 +67,7 @@ class ControlIDX extends Component {
     })
   }
 
-  // Function for configuring and subscribing to Status3DX
+  // Function for configuring and subscribing to StatusIDX
   updateListener() {
     const { idxSensorNamespace, title } = this.props
     if (this.state.listener) {
@@ -95,7 +95,7 @@ class ControlIDX extends Component {
   }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status3DX message
+  // Used to unsubscribe to StatusIDX message
   componentWillUnmount() {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
@@ -123,16 +123,13 @@ class ControlIDX extends Component {
  
 
   render() {
-    const { idxSensors, IdxSettingsResetTriggered, setIdxControls, setIdxAutoAdjust } = this.props.ros
+    const { idxSensors, setIdxControls, setIdxAutoAdjust } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
 
     return (
       <Section
         title={"IDX Controls"}
       >
-        <ButtonMenu>
-           <Button onClick={() => IdxSettingsResetTriggered(this.props.idxSensorNamespace)}>{"Reset Settings"}</Button>
-        </ButtonMenu>
         <Label title={"Enable IDX Controls"}>
           <Toggle
             checked={this.state.idxControls}

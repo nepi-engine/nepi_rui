@@ -13,8 +13,9 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
-
+import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
+
 import ControlIDX from "./NepiSensorsImagingControls"
 import createShortUniqueValues from "./Utilities"
 
@@ -170,8 +171,9 @@ class NepiSensorsImaging extends Component {
   }
 
   render() {
-    const { idxSensors, /*sensor3DXTopics*, imageTopics3DX, deviceInWater, onToggleDeviceInWater */ } = this.props.ros
+    const { idxSensors, IdxSettingsResetTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
+    const SensorSelected = (this.state.currentIDXNamespace == null)
 
     return (
       <React.Fragment>
@@ -204,6 +206,11 @@ class NepiSensorsImaging extends Component {
                     : NoneOption}
                 </Select>
               </Label>
+              <div hidden={SensorSelected}>
+                <ButtonMenu>
+                   <Button onClick={() => IdxSettingsResetTriggered(this.state.currentIDXNamespace)}>{"Reset Settings"}</Button>
+                </ButtonMenu>
+              </div>
               {/*
               <Label title={"In Water"}>
                 <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
