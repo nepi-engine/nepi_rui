@@ -39,7 +39,6 @@ class ControlIDX extends Component {
       rangeMin: null,
       listener: null,
       frame3D: null,
-      show_sensor_settings: false,
 
       disabled: false,
     }
@@ -121,14 +120,14 @@ class ControlIDX extends Component {
     )
   }
 
- //<div hidden={!this.state.idxControls}>
+ 
 
   renderIDXControls() {
     const { idxSensors, setIdxControls, setIdxAutoAdjust } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
 
     return (
-      <Section title={"Controls"}>
+      <Section title={"IDX Controls"}>
         <Label title={"Enable Controls"}>
           <Toggle
             checked={this.state.idxControls}
@@ -244,44 +243,136 @@ class ControlIDX extends Component {
 
 
   renderSensorSettings() {
-    const { idxSensors} = this.props.ros
+    const { idxSensors, setIdxControls, setIdxAutoAdjust } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
 
     return (
       <Section title={"Sensor Settings"}>
         <Label title={"Show Sensor Settings"}>
           <Toggle
-            checked={this.state.show_sensor_settings}
-            onClick={() => {this.state.show_sensor_settings=!this.state.show_sensor_settings}}
+            checked={this.state.idxControls}
+            onClick={() => setIdxControls(this.props.idxSensorNamespace,!this.state.idxControls)}
           />
         </Label>
-        <div hidden={!this.state.show_sensor_settings}>
-          <SliderAdjustment
-              title={"Brightness"}
+        <div hidden={!this.state.idxControls}>
+          <Label title={"Auto Adjust"}>
+            <Toggle
+              checked={this.state.autoAdjust}
+              onClick={() => setIdxAutoAdjust(this.props.idxSensorNamespace,!this.state.autoAdjust)}
+            /> 
+          </Label>
+          <div hidden={this.state.autoAdjust}>
+            <SliderAdjustment
+                title={"Brightness"}
+                msgType={"std_msgs/Float32"}
+                adjustment={this.state.brightnessAdjustment}
+                topic={this.props.idxSensorNamespace + "/idx/set_brightness"}
+                scaled={0.01}
+                min={0}
+                max={100}
+                disabled={(capabilities && capabilities.adjustable_brightness && !this.state.disabled)? false : true}
+                tooltip={"Adjustable brightness"}
+                unit={"%"}
+            />
+            <SliderAdjustment
+              title={"Contrast"}
               msgType={"std_msgs/Float32"}
-              adjustment={this.state.brightnessAdjustment}
-              topic={this.props.idxSensorNamespace + "/idx/set_brightness"}
+              adjustment={this.state.contrastAdjustment}
+              topic={this.props.idxSensorNamespace + "/idx/set_contrast"}
               scaled={0.01}
               min={0}
               max={100}
-              disabled={(capabilities && capabilities.adjustable_brightness && !this.state.disabled)? false : true}
-              tooltip={"Adjustable brightness"}
+              disabled={(capabilities && capabilities.adjustable_contrast && !this.state.disabled)? false : true}
+              tooltip={"Adjustable contrast"}
               unit={"%"}
+            />
+            <SliderAdjustment
+                title={"Thresholding"}
+                msgType={"std_msgs/Float32"}
+                adjustment={this.state.thresholdingAdjustment}
+                topic={this.props.idxSensorNamespace + "/idx/set_thresholding"}
+                scaled={0.01}
+                min={0}
+                max={100}
+                disabled={(capabilities && capabilities.adjustable_thresholding && !this.state.disabled)? false : true}
+                tooltip={"Adjustable thresholding"}
+                unit={"%"}
+            />
+          </div>
+          <RadioButtonAdjustment
+              title={"Resolution"}
+              topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
+              msgType={"std_msgs/UInt8"}
+              adjustment={(capabilities && capabilities.adjustable_resolution)? this.state.resolutionAdjustment : null}
+              disabled={(capabilities && capabilities.adjustable_resolution && !this.state.disabled)? false : true}
+              entries={["Low", "Medium", "High", "Ultra"]}
           />
+          <RadioButtonAdjustment
+              title={"Framerate"}
+              topic={this.props.idxSensorNamespace + '/idx/set_framerate_mode'}
+              msgType={"std_msgs/UInt8"}
+              adjustment={(capabilities && capabilities.adjustable_framerate)? this.state.framerateAdjustment : null}
+              disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
+              entries={["Low", "Medium", "High", "Ultra"]}
+          />
+          <RangeAdjustment
+            title="Range"
+            min={this.state.rangeMin}
+            max={this.state.rangeMax}
+            topic={this.props.idxSensorNamespace + "/idx/set_range_window"}
+            disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
+            tooltip={"Adjustable range"}
+            unit={"%"}
+          />
+          <div>
+            <Columns>
+              <Column>
+              <div align={"left"} textAlign={"left"}>
+                <Label title={"Pointclouds"}>
+                </Label>
+              </div>
+              </Column>
+              <Column>
+              <div align={"left"} textAlign={"left"}>
+                <Label title={"Earth"}>
+                </Label>
+                <Toggle 
+                  checked={this.state.frame3D === "map"} 
+                  disabled={(capabilities && capabilities.has_pointclouds && !this.state.disabled)? false : true}
+                  onClick={() => {this.set3DFrame(this.props.sensor_namespace, "map")}}
+                />
+              </div>
+              </Column>
+              <Column>
+              <div align={"left"} textAlign={"left"}>
+                <Label title={"Sensor"}>
+                </Label>
+                <Toggle 
+                  checked={this.state.frame3D === "idx_center_frame"}
+                  disabled={(capabilities && capabilities.has_pointclouds && !this.state.disabled)? false : true}
+                  onClick={() => {this.set3DFrame(this.props.sensor_namespace, "idx_center_frame")}}
+                />
+              </div>
+              </Column>
+            </Columns>
+          </div>
         </div>
       </Section>
     )
   }
 
 
-//          {this.renderSensorSettings()}
+
 
   render() {
     return (
       <Columns>
         <Column>
           {this.renderIDXControls()}
-         </Column>
+        </Column>
+        <Column>
+          {this.renderSensorSettings()}
+        </Column>
       </Columns>
     )
   }
