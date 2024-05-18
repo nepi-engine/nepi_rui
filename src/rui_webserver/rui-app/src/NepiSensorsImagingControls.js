@@ -22,13 +22,13 @@ import { Column, Columns } from "./Columns"
 @observer
 
 // Component that contains the IDX Sensor controls
-class ControlIDX extends Component {
+class NepiSensorsImagingControls extends Component {
   constructor(props) {
     super(props)
 
     // these states track the values through IDX Status messages
     this.state = {
-      idxControls: null,
+      controlsEnable: null,
       autoAdjust: null,
       resolutionAdjustment: null,
       framerateAdjustment: null,
@@ -39,7 +39,6 @@ class ControlIDX extends Component {
       rangeMin: null,
       listener: null,
       frame3D: null,
-      show_sensor_settings: false,
 
       disabled: false,
     }
@@ -55,8 +54,8 @@ class ControlIDX extends Component {
   // Callback for handling ROS StatusIDX messages
   idxStatusListener(message) {
     this.setState({
-      idxControls: message.idx_controls,
-      autoAdjust: message.auto,
+      controlsEnable: message.controls_enable,
+      autoAdjust: message.auto_adjust,
       resolutionAdjustment: message.resolution_mode,
       framerateAdjustment: message.framerate_mode,
       contrastAdjustment: message.contrast,
@@ -121,21 +120,22 @@ class ControlIDX extends Component {
     )
   }
 
- //<div hidden={!this.state.idxControls}>
-
-  renderIDXControls() {
-    const { idxSensors, setIdxControls, setIdxAutoAdjust } = this.props.ros
+  render() {
+    const { idxSensors, setIdxControlsEnable, setIdxAutoAdjust } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
-
+    const has_range_adjust = (capabilities && capabilities.adjustable_range && !this.state.disabled)
+    const has_pointcloud = (capabilities && capabilities.has_pointcloud && !this.state.disabled)
+    const idxSensorNamespace = this.props.idxSensorNamespace
+    const state = this.state
     return (
       <Section title={"Controls"}>
         <Label title={"Enable Controls"}>
           <Toggle
-            checked={this.state.idxControls}
-            onClick={() => setIdxControls(this.props.idxSensorNamespace,!this.state.idxControls)}
+            checked={state.controlsEnable}
+            onClick={() => setIdxControlsEnable(idxSensorNamespace,!state.controlsEnable)}
           />
         </Label>
-        <div hidden={!this.state.idxControls}>
+        <div hidden={!this.state.controlsEnable}>
           <Label title={"Auto Adjust"}>
             <Toggle
               checked={this.state.autoAdjust}
@@ -196,16 +196,18 @@ class ControlIDX extends Component {
               disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
               entries={["Low", "Medium", "High", "Ultra"]}
           />
-          <RangeAdjustment
-            title="Range"
-            min={this.state.rangeMin}
-            max={this.state.rangeMax}
-            topic={this.props.idxSensorNamespace + "/idx/set_range_window"}
-            disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
-            tooltip={"Adjustable range"}
-            unit={"%"}
-          />
-          <div>
+          <div hidden={!has_range_adjust}>
+            <RangeAdjustment
+              title="Range"
+              min={this.state.rangeMin}
+              max={this.state.rangeMax}
+              topic={this.props.idxSensorNamespace + "/idx/set_range_window"}
+              disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
+              tooltip={"Adjustable range"}
+              unit={"%"}
+            />
+          </div>
+          <div hidden={!has_pointcloud}>
             <Columns>
               <Column>
               <div align={"left"} textAlign={"left"}>
@@ -237,53 +239,10 @@ class ControlIDX extends Component {
               </Column>
             </Columns>
           </div>
-        </div>
+         </div>
       </Section>
     )
   }
 
-
-  renderSensorSettings() {
-    const { idxSensors} = this.props.ros
-    const capabilities = idxSensors[this.props.idxSensorNamespace]
-
-    return (
-      <Section title={"Sensor Settings"}>
-        <Label title={"Show Sensor Settings"}>
-          <Toggle
-            checked={this.state.show_sensor_settings}
-            onClick={() => {this.state.show_sensor_settings=!this.state.show_sensor_settings}}
-          />
-        </Label>
-        <div hidden={!this.state.show_sensor_settings}>
-          <SliderAdjustment
-              title={"Brightness"}
-              msgType={"std_msgs/Float32"}
-              adjustment={this.state.brightnessAdjustment}
-              topic={this.props.idxSensorNamespace + "/idx/set_brightness"}
-              scaled={0.01}
-              min={0}
-              max={100}
-              disabled={(capabilities && capabilities.adjustable_brightness && !this.state.disabled)? false : true}
-              tooltip={"Adjustable brightness"}
-              unit={"%"}
-          />
-        </div>
-      </Section>
-    )
-  }
-
-
-//          {this.renderSensorSettings()}
-
-  render() {
-    return (
-      <Columns>
-        <Column>
-          {this.renderIDXControls()}
-         </Column>
-      </Columns>
-    )
-  }
 }
-export default ControlIDX
+export default NepiSensorsImagingControls

@@ -865,9 +865,9 @@ class ROSConnectionStore {
 
 
   @action.bound
-  IdxSettingsResetTriggered(idxSensorNamespace) {
+  resetIdxTriggered(idxSensorNamespace) {
     this.publishMessage({
-      name: idxSensorNamespace + "/idx/reset_controls",
+      name: idxSensorNamespace + "/idx/reset_sensor",
       messageType: "std_msgs/Empty",
       data: {},
       noPrefix: true
@@ -875,9 +875,9 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  setIdxControls(idxSensorNamespace,idxControls) {
+  setIdxControlsEnable(idxSensorNamespace,idxControls) {
      this.publishMessage({
-      name: idxSensorNamespace + "/idx/set_idx_controls_enable",
+      name: idxSensorNamespace + "/idx/set_controls_enable",
       messageType: "std_msgs/Bool",
       data: {'data':idxControls},
       noPrefix: true

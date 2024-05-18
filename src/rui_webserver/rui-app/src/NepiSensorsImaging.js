@@ -16,7 +16,8 @@ import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 
-import ControlIDX from "./NepiSensorsImagingControls"
+import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
+//import NepiSensorsImagingSettings from "./NepiSensorsImagingSettings"
 import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
@@ -170,21 +171,14 @@ class NepiSensorsImaging extends Component {
     })
   }
 
-  render() {
-    const { idxSensors, IdxSettingsResetTriggered  } = this.props.ros
+  renderSensorSelection() {
+    const { idxSensors, resetIdxTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
     const SensorSelected = (this.state.currentIDXNamespace == null)
 
     return (
       <React.Fragment>
         <Columns>
-          <Column equalWidth={false}>
-            <CameraViewer
-              imageTopic={this.state.imageTopic_0}
-              title={this.state.imageText_0}
-              hideQualitySelector={false}
-            />
-          </Column>
           <Column>
             <Section title={"Selection"}>
               <Label title={"Sensor"}>
@@ -208,7 +202,7 @@ class NepiSensorsImaging extends Component {
               </Label>
               <div hidden={SensorSelected}>
                 <ButtonMenu>
-                   <Button onClick={() => IdxSettingsResetTriggered(this.state.currentIDXNamespace)}>{"Reset Settings"}</Button>
+                   <Button onClick={() => resetIdxTriggered(this.state.currentIDXNamespace)}>{"Reset Sensor"}</Button>
                 </ButtonMenu>
               </div>
               {/*
@@ -217,13 +211,53 @@ class NepiSensorsImaging extends Component {
               </Label>
                   */}
             </Section>
-            <ControlIDX
-              idxSensorNamespace={this.state.currentIDXNamespace}
-              title={this.state.currentIDXNamespaceText}
+          </Column>
+        </Columns>
+      </React.Fragment>
+    )
+  }
+
+  renderImageViewer() {
+    const { idxSensors, IdxSettingsResetTriggered  } = this.props.ros
+    const NoneOption = <Option>None</Option>
+    const SensorSelected = (this.state.currentIDXNamespace == null)
+
+    return (
+      <React.Fragment>
+        <Columns>
+          <Column equalWidth={false}>
+            <CameraViewer
+              imageTopic={this.state.imageTopic_0}
+              title={this.state.imageText_0}
+              hideQualitySelector={false}
             />
           </Column>
         </Columns>
       </React.Fragment>
+    )
+  }
+
+
+  render() {
+    return (
+      <Columns>
+        <Column>
+          {this.renderImageViewer()}
+        </Column>
+        <Column>
+          {this.renderSensorSelection()}
+          <NepiSensorsImagingControls
+              idxSensorNamespace={this.state.currentIDXNamespace}
+              title={this.state.currentIDXNamespaceText}
+            />
+          {/*
+          <SensorSettings
+              idxSensorNamespace={this.state.currentIDXNamespace}
+              title={this.state.currentIDXNamespaceText}
+            />
+          */}
+         </Column>
+      </Columns>
     )
   }
 }
