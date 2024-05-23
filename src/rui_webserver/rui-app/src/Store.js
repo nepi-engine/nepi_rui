@@ -865,9 +865,29 @@ class ROSConnectionStore {
 
 
   @action.bound
-  resetIdxTriggered(idxSensorNamespace) {
+  resetIdxFactoryTriggered(idxSensorNamespace) {
     this.publishMessage({
-      name: idxSensorNamespace + "/idx/reset_sensor",
+      name: idxSensorNamespace + "/idx/reset_factory",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  resetIdxControlsTriggered(idxSensorNamespace) {
+    this.publishMessage({
+      name: idxSensorNamespace + "/idx/reset_controls",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  resetIdxSettingsTriggered(idxSensorNamespace) {
+    this.publishMessage({
+      name: idxSensorNamespace + "/idx/reset_settings",
       messageType: "std_msgs/Empty",
       data: {},
       noPrefix: true
@@ -894,7 +914,15 @@ class ROSConnectionStore {
     })     
   }
   
-  
+  @action.bound
+  setIdxFrame3D(idxSensorNamespace, value) {
+      this.publishMessage({
+        name: idxSensorNamespace + "/idx/set_frame_3d",
+        messageType: "std_msgs/String",
+        data: {'data':value},
+        noPrefix: true
+      })     
+    }
 
   setupPTXStatusListener(ptxNamespace, callback) {
     if (ptxNamespace) {
@@ -1961,20 +1989,7 @@ class ROSConnectionStore {
     }
   }
 
-  publishSetPointcloudTargetFrame(topic, value) {
-    if (topic) {
-      this.publishMessage({
-        name: topic + "/set_pointcloud_target_frame",
-        messageType: "std_msgs/String",
-        noPrefix: true,
-        data: {
-          data: value
-        }
-      })
-    } else {
-      console.warn("publishSetPointcloudTargetFrame: sensor3DXTopicBase not set")
-    }
-  }
+
 
   publishStitchedCloudEnabled(topic, enabled) {
     if (topic) {

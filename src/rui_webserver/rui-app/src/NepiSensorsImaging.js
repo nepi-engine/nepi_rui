@@ -45,11 +45,11 @@ class NepiSensorsImaging extends Component {
       if (capabilities !== null) {
         if (capabilities.has_color_2d_image) {
           defaultImageTopic = sensorNamespace.concat("/idx/color_2d_image")
-          defaultImageText = 'Color 2D'
+          defaultImageText = 'color_2d_image'
         }
         else if (capabilities.has_bw_2d_image) {
           defaultImageTopic = sensorNamespace.concat("/idx/bw_2d_image")
-          defaultImageText = 'B&W 2D'
+          defaultImageText = 'bw_2d_image'
         }
         // TODO: Other image types as a default?
       }
@@ -104,10 +104,9 @@ class NepiSensorsImaging extends Component {
 
     for (var i = 0; i < image_topics.length; i++) {
       const topic = image_topics[i]
-      if (topic.startsWith(idxSensorNamespace) === false) {
+      if (topic.startsWith(idxSensorNamespace) === false || image_topics[i].includes("idx") === false ) {
         continue
       }
-
       sensor_img_topics.push(topic)
     }
 
@@ -144,11 +143,11 @@ class NepiSensorsImaging extends Component {
     const capabilities = this.props.ros.idxSensors[value]
     if (capabilities.has_color_2d_image) {
       autoSelectedImgTopic = value.concat("/idx/color_2d_image")
-      autoSelectedImgTopicText = 'Color 2D'
+      autoSelectedImgTopicText = 'color_2d_image'
     }
     else if (capabilities.has_bw_2d_image) {
       autoSelectedImgTopic = value.concat("/idx/bw_2d_image")
-      autoSelectedImgTopicText = 'B&W 2D'      
+      autoSelectedImgTopicText = 'bw_2d_image'      
     }
 
     this.setState({
@@ -172,9 +171,9 @@ class NepiSensorsImaging extends Component {
   }
 
   renderSensorSelection() {
-    const { idxSensors, resetIdxTriggered  } = this.props.ros
+    const { idxSensors, resetIdxFactoryTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const SensorSelected = (this.state.currentIDXNamespace == null)
+    const SensorSelected = (this.state.currentIDXNamespace != null)
 
     return (
       <React.Fragment>
@@ -200,9 +199,9 @@ class NepiSensorsImaging extends Component {
                     : NoneOption}
                 </Select>
               </Label>
-              <div hidden={SensorSelected}>
+              <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
                 <ButtonMenu>
-                   <Button onClick={() => resetIdxTriggered(this.state.currentIDXNamespace)}>{"Reset Sensor"}</Button>
+                  <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
                 </ButtonMenu>
               </div>
               {/*
@@ -220,7 +219,7 @@ class NepiSensorsImaging extends Component {
   renderImageViewer() {
     const { idxSensors, IdxSettingsResetTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const SensorSelected = (this.state.currentIDXNamespace == null)
+    const SensorSelected = (this.state.currentIDXNamespace != null)
 
     return (
       <React.Fragment>
@@ -239,6 +238,10 @@ class NepiSensorsImaging extends Component {
 
 
   render() {
+    const SensorSelected = (this.state.currentIDXNamespace != null)
+    const NoneOption = <Option>None</Option>
+    const ImageName = this.state.imageText_0
+    
     return (
       <Columns>
         <Column>
@@ -246,16 +249,19 @@ class NepiSensorsImaging extends Component {
         </Column>
         <Column>
           {this.renderSensorSelection()}
+          <div hidden={!SensorSelected}>
           <NepiSensorsImagingControls
               idxSensorNamespace={this.state.currentIDXNamespace}
+              idxImageName = {ImageName}
               title={this.state.currentIDXNamespaceText}
             />
           {/*
-          <SensorSettings
+            <SensorSettings
               idxSensorNamespace={this.state.currentIDXNamespace}
               title={this.state.currentIDXNamespaceText}
             />
           */}
+          </div>
          </Column>
       </Columns>
     )
