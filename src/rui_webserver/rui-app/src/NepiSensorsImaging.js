@@ -17,7 +17,7 @@ import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
-//import NepiSensorsImagingSettings from "./NepiSensorsImagingSettings"
+import NepiSensorsImagingSettings from "./NepiSensorsImagingSettings"
 import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
@@ -36,35 +36,16 @@ class NepiSensorsImaging extends Component {
 
     const idxSensorNamespaces = Object.keys(props.ros.idxSensors)
     const idxSensorCount = idxSensorNamespaces.length
-    var defaultImageTopic = null
-    var defaultImageText = null
 
-    if (idxSensorCount === 1) {
-      const sensorNamespace = idxSensorNamespaces[0]
-      const capabilities = props.ros.idxSensors[sensorNamespace]
-      if (capabilities !== null) {
-        if (capabilities.has_color_2d_image) {
-          defaultImageTopic = sensorNamespace.concat("/idx/color_2d_image")
-          defaultImageText = 'color_2d_image'
-        }
-        else if (capabilities.has_bw_2d_image) {
-          defaultImageTopic = sensorNamespace.concat("/idx/bw_2d_image")
-          defaultImageText = 'bw_2d_image'
-        }
-        // TODO: Other image types as a default?
-      }
-    }
 
     
     this.state = {
       // IDX Sensor topic to subscribe to and update
-      currentIDXNamespace: (idxSensorCount === 1)? idxSensorNamespaces[0] : null,
-      currentIDXNamespaceText: (idxSensorCount === 1)? createShortUniqueValues([idxSensorNamespaces[0]]) : "No sensor selected",
-      
-      imageTopic_0: defaultImageTopic,
-      imageText_0: defaultImageText
+      currentIDXNamespace: null,
+      currentIDXNamespaceText: "No sensor selected"
     }
   }
+
 
   // Function for creating topic options for Select input
   createTopicOptions(topics, filter) {
@@ -171,7 +152,7 @@ class NepiSensorsImaging extends Component {
   }
 
   renderSensorSelection() {
-    const { idxSensors, resetIdxFactoryTriggered  } = this.props.ros
+    const { idxSensors, resetIdxFactoryTriggered, saveIdxConfigTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
     const SensorSelected = (this.state.currentIDXNamespace != null)
 
@@ -199,11 +180,22 @@ class NepiSensorsImaging extends Component {
                     : NoneOption}
                 </Select>
               </Label>
-              <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
-                <ButtonMenu>
-                  <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
-                </ButtonMenu>
-              </div>
+              <Columns>
+              <Column>
+                  <div align={"center"} textAlign={"center"} hidden={!SensorSelected}>
+                    <ButtonMenu>
+                      <Button onClick={() => saveIdxConfigTriggered(this.state.currentIDXNamespace)}>{"Save Config"}</Button>
+                    </ButtonMenu>
+                  </div>
+                </Column>
+                <Column>
+                  <div align={"center"} textAlign={"center"} hidden={!SensorSelected}>  
+                    <ButtonMenu>
+                      <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
+                    </ButtonMenu>
+                  </div>
+                </Column>
+              </Columns>
               {/*
               <Label title={"In Water"}>
                 <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
@@ -255,12 +247,10 @@ class NepiSensorsImaging extends Component {
               idxImageName = {ImageName}
               title={this.state.currentIDXNamespaceText}
             />
-          {/*
-            <SensorSettings
+            <NepiSensorsImagingSettings
               idxSensorNamespace={this.state.currentIDXNamespace}
               title={this.state.currentIDXNamespaceText}
             />
-          */}
           </div>
          </Column>
       </Columns>

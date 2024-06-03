@@ -801,6 +801,7 @@ class ROSConnectionStore {
     this.rosLog("Connection to NEPI device closed")
   }
 
+
   setupImageSystemStatusListener() {
     this.addListener({
       name: "system_status",
@@ -865,6 +866,16 @@ class ROSConnectionStore {
 
 
   @action.bound
+  saveIdxConfigTriggered(idxSensorNamespace) {
+    this.publishMessage({
+      name: idxSensorNamespace + "/save_config",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
   resetIdxFactoryTriggered(idxSensorNamespace) {
     this.publishMessage({
       name: idxSensorNamespace + "/idx/reset_factory",
@@ -890,6 +901,17 @@ class ROSConnectionStore {
       name: idxSensorNamespace + "/idx/reset_settings",
       messageType: "std_msgs/Empty",
       data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  updateIdxSetting(idxSensorNamespace,name_str,type_str,value_str) {
+    const updateSettingMsg = "['" + type_str + "','" + name_str + "','" + value_str + "']"
+    this.publishMessage({
+      name: idxSensorNamespace + "/idx/update_settings",
+      messageType: "std_msgs/String",
+      data: {'data':updateSettingMsg},
       noPrefix: true
     })
   }

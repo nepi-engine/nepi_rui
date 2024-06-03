@@ -15,10 +15,12 @@ import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
 //import PageLock from "./PageLock"
 
-import NEPIConnect from "./NepiAppConnect"
+
 import Dashboard from "./NepiDashboard"
-import DetectionApp from "./NepiAppAIDetector"
 import SensorIDX from "./NepiSensorsImaging"
+/*
+import NEPIConnect from "./NepiAppConnect"
+import DetectionApp from "./NepiAppAIDetector"
 import MultiImageViewer from "./NepiAppImageViewer"
 import NavPose from "./NepiSensorsNavPose"
 import Settings from "./NepiSystemAdmin"
@@ -29,7 +31,7 @@ import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"
 import OnvifManager from "./NepiSystemOnvif"
 import LSX from "./NepiControlsLights"
-
+*/
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -42,6 +44,39 @@ class App extends Component {
     this.props.ros.checkROSConnection()
   }
 
+  render() {
+    const { commercial_licensed, license_server } = this.props.ros
+    const unlicensed = (license_server !== null) && 
+                               (license_server.readyState === 1) && 
+                               (commercial_licensed === false) 
+    return (
+      <Page>
+        <Nav
+          unlicensed={unlicensed}
+          pages={[
+            { path: "/", label: "Dashboard" },
+            {
+              path: "/sensors",
+              label: "Sensors",
+              subItems: [
+                { path: "/sensor_idx", label: "Imaging"}
+              ]
+            }
+          ]}
+        />
+        <HorizontalDivider />
+        <Switch>
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/sensor_idx" component={SensorIDX} />
+        </Switch>
+      </Page>
+    )
+  }
+}
+
+
+
+  /*
   render() {
     const { commercial_licensed, license_server } = this.props.ros
     const unlicensed = (license_server !== null) && 
@@ -112,5 +147,7 @@ class App extends Component {
     )
   }
 }
+
+*/
 
 export default App
