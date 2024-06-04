@@ -7,7 +7,7 @@
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
 import React, { Component } from "react"
-import { Route, Switch, withRouter } from "react-router-dom"
+import { Link, Route, Switch, withRouter } from "react-router-dom"
 import { observer, inject } from "mobx-react"
 
 import Page from "./Page"
@@ -18,7 +18,6 @@ import HorizontalDivider from "./HorizontalDivider"
 
 import Dashboard from "./NepiDashboard"
 import SensorIDX from "./NepiSensorsImaging"
-/*
 import NEPIConnect from "./NepiAppConnect"
 import DetectionApp from "./NepiAppAIDetector"
 import MultiImageViewer from "./NepiAppImageViewer"
@@ -31,7 +30,6 @@ import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"
 import OnvifManager from "./NepiSystemOnvif"
 import LSX from "./NepiControlsLights"
-*/
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -44,39 +42,6 @@ class App extends Component {
     this.props.ros.checkROSConnection()
   }
 
-  render() {
-    const { commercial_licensed, license_server } = this.props.ros
-    const unlicensed = (license_server !== null) && 
-                               (license_server.readyState === 1) && 
-                               (commercial_licensed === false) 
-    return (
-      <Page>
-        <Nav
-          unlicensed={unlicensed}
-          pages={[
-            { path: "/", label: "Dashboard" },
-            {
-              path: "/sensors",
-              label: "Sensors",
-              subItems: [
-                { path: "/sensor_idx", label: "Imaging"}
-              ]
-            }
-          ]}
-        />
-        <HorizontalDivider />
-        <Switch>
-          <Route exact path="/" component={Dashboard} />
-          <Route path="/sensor_idx" component={SensorIDX} />
-        </Switch>
-      </Page>
-    )
-  }
-}
-
-
-
-  /*
   render() {
     const { commercial_licensed, license_server } = this.props.ros
     const unlicensed = (license_server !== null) && 
@@ -123,6 +88,15 @@ class App extends Component {
                 { path: "/onvif_mgr", label: "ONVIF"},
                 { path: "/software_update", label: "Software"}
               ]
+            },
+            {
+              path: "/help",
+              label: "Help",
+              subItems: [
+                { path: "/docs", label: "Docs" },
+                { path: "/tuts", label: "Tutorials" },
+                { path: "/vids", label: "Videos" },
+              ]
             }
           ]}
         />
@@ -140,14 +114,23 @@ class App extends Component {
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/ptx" component={PTX} />
-          <Route path="/help" component={Help} />
+          <Route path='/docs' component={() => {
+             window.location.href = 'https://nepi.com/documentation/';
+             return null;
+            }}/>
+          <Route path='/tuts' component={() => {
+             window.location.href = 'https://nepi.com/tutorials/';
+             return null;
+            }}/>
+          <Route path='/vids' component={() => {
+             window.location.href = 'https://nepi.com/videos/';
+             return null;
+            }}/>
           <Route path="/lsx" component={LSX} />
         </Switch>
       </Page>
     )
   }
 }
-
-*/
 
 export default App
