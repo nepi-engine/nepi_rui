@@ -43,6 +43,7 @@ class NepiSensorsImagingControls extends Component {
       listener: null,
       zoomAdjustment: null,
       rotateAdjustment: null,
+      tiltAdjustment: null,
       frame3D: null,
 
       disabled: false,
@@ -71,6 +72,7 @@ class NepiSensorsImagingControls extends Component {
       rangeLimitMaxM: message.max_range_m,
       zoomAdjustment: message.zoom,
       rotateAdjustment: message.rotate,
+      tiltAdjustment: message.tilt,
       frame3D: message.frame_3d
     })
   }
@@ -237,7 +239,7 @@ class NepiSensorsImagingControls extends Component {
 
 
           <div hidden={!has_pointcloud || imageName != 'pointcloud_image'}>
-            <div hidden={!has_zoom}>
+
               <SliderAdjustment
                     title={"Zoom Pointcloud Image"}
                     msgType={"std_msgs/Float32"}
@@ -246,12 +248,12 @@ class NepiSensorsImagingControls extends Component {
                     scaled={0.01}
                     min={0}
                     max={100}
-                    disabled={(capabilities && capabilities.zoom && !this.state.disabled)? false : true}
+                    disabled={(imageName != 'pointcloud_image' && !this.state.disabled)? false : true}
                     tooltip={"Zoom controls for pointcloud image rendering"}
                     unit={"%"}
                 />
-            </div>
-            <div hidden={!has_rotate}>
+
+
               <SliderAdjustment
                     title={"Rotate Pointcloud Image"}
                     msgType={"std_msgs/Float32"}
@@ -260,11 +262,24 @@ class NepiSensorsImagingControls extends Component {
                     scaled={0.01}
                     min={0}
                     max={100}
-                    disabled={(capabilities && capabilities.rotate && !this.state.disabled)? false : true}
+                    disabled={(imageName != 'pointcloud_image' && !this.state.disabled)? false : true}
                     tooltip={"Rotate controls for pointcloud image rendering"}
                     unit={"%"}
                 />
-            </div>
+
+                <SliderAdjustment
+                    title={"Tilt Pointcloud Image"}
+                    msgType={"std_msgs/Float32"}
+                    adjustment={this.state.tiltAdjustment}
+                    topic={this.props.idxSensorNamespace + "/idx/set_tilt"}
+                    scaled={0.01}
+                    min={0}
+                    max={100}
+                    disabled={(imageName != 'pointcloud_image' && !this.state.disabled)? false : true}
+                    tooltip={"Tilt controls for pointcloud image rendering"}
+                    unit={"%"}
+                />
+
             <Columns>
               <Column>
               <div align={"left"} textAlign={"left"}>
