@@ -85,7 +85,7 @@ class NepiSensorsImaging extends Component {
 
     for (var i = 0; i < image_topics.length; i++) {
       const topic = image_topics[i]
-      if (topic.startsWith(idxSensorNamespace) === false || image_topics[i].includes("idx") === false ) {
+      if (topic.startsWith(idxSensorNamespace) === false || image_topics[i].includes("idx") === false || image_topics[i].includes("depth_map")) {
         continue
       }
       sensor_img_topics.push(topic)
