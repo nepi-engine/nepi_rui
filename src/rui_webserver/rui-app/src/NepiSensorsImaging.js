@@ -182,14 +182,14 @@ class NepiSensorsImaging extends Component {
               </Label>
               <Columns>
               <Column>
-                  <div align={"center"} textAlign={"center"} hidden={!SensorSelected}>
+                  <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
                     <ButtonMenu>
                       <Button onClick={() => saveIdxConfigTriggered(this.state.currentIDXNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
                   </div>
                 </Column>
                 <Column>
-                  <div align={"center"} textAlign={"center"} hidden={!SensorSelected}>  
+                  <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>  
                     <ButtonMenu>
                       <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
                     </ButtonMenu>

@@ -32,7 +32,7 @@ class NepiSensorsImagingSettings extends Component {
     // these states track the values through IDX Status messages
     this.state = {
       show_sensor_settings: false,
-      capSettingsTypes: ['Discrete','String','Bool','Int','Float'],
+      capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
       capSettingsTypesList: [],
       settings: null,
@@ -330,7 +330,7 @@ class NepiSensorsImagingSettings extends Component {
             </Label>
             </div>
 
-            <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingType !== "Discrete" }>
+            <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingType !== "Menu" && this.state.selectedSettingType !== "Discrete" }>
             <Label title={this.state.selectedSettingName}>
               <Select
                 id="descreteSetting"
