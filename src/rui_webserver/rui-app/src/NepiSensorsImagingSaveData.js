@@ -12,14 +12,18 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
+import BooleanIndicator from "./BooleanIndicator"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Select, { Option } from "./Select"
 import Input from "./Input"
+
+
+function roundWithSuffix(value, decimals, suffix) {
+  return value && (value.toFixed(decimals) + " " + suffix)
+}
 
 @inject("ros")
 @observer
@@ -31,58 +35,91 @@ class NepiSensorsImagingSaveData extends Component {
 
     // these states track the values through IDX Status messages
     this.state = {
-      saveDataConfigsMsg: [],
+      show_save_data: true,
+      reset_save_data: false,
+      saveRatesMsg: "",
       saveDataPrefix: "",
-      saveDataNavEnabled: false,
       saveDataEnabled: false,
-      show_save_data: false,
-      saveDataRateHz: 0,
-      saveDataConfigsNamesList: [],
-      saveDataConfigsRatesList: [],
-      saveDataUpdatesList: [],
+      saveDataNavEnabled: false,
+      saveDataRate: "1.0",
+      saveNamesList: [],
+      saveRatesList: [],
+      selectedDataProducts: [],
+
+      saveListener: null,
+
       disabled: false,
     }
 
-    this.updateListener = this.updateListener.bind(this)
-    this.idxStatusListener = this.idxStatusListener.bind(this)
-    this.sendUpdate = this.sendUpdate.bind(this)
-    this.updateSaveDataConfigsLists = this.updateSaveDataConfigsLists.bind(this)
-    this.onChangeBoolSaveNavDataValue = this.onChangeBoolSaveNavDataValue.bind(this)
+
+    this.updateIdxSaveListener = this.updateIdxSaveListener.bind(this)
+    this.idxSaveStatusListener = this.idxSaveStatusListener.bind(this)
+
+    this.updateSaveLists = this.updateSaveLists.bind(this)
+    this.getSaveNamesList = this.getSaveNamesList.bind(this)
+    this.getSaveRatesList = this.getSaveRatesList.bind(this)
+    this.getSaveConfigString = this.getSaveConfigString.bind(this)
+    this.getSaveRateValue = this.getSaveRateValue.bind(this)
+    this.getSaveRateData = this.getSaveRateData.bind(this)
+
+    this.onChangeBoolSaveDataNavValue = this.onChangeBoolSaveDataNavValue.bind(this)
+    this.getSaveDataValue = this.getSaveDataValue.bind(this)
     this.onChangeBoolSaveDataValue = this.onChangeBoolSaveDataValue.bind(this)
+    this.getSaveDataNavValue = this.getSaveDataNavValue.bind(this)
     this.onUpdateInputSaveDataRateValue = this.onUpdateInputSaveDataRateValue.bind(this)
     this.onKeySaveInputSaveDataRateValue = this.onKeySaveInputSaveDataRateValue.bind(this)
-    this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
-    this.getSaveDataList = this.getSaveDataList.bind(this)
-    this.getSaveDataRateValue = this.getSaveDataRateValue.bind(this)
-    this.getSaveDataString = this.getSaveDataString.bind(this)
-    this.updateSelectedSaveDataInfo = this.updateSelectedSaveDataInfo.bind(this)
+    this.onUpdateInputSaveDataPrefixValue = this.onUpdateInputSaveDataPrefixValue.bind(this)
+    this.onKeySaveInputSaveDataPrefixValue = this.onKeySaveInputSaveDataPrefixValue.bind(this)
+    this.onToggleDataProductSelection = this.onToggleDataProductSelection.bind(this)
 
-    this.updateListener()
+    this.updateSelectedDataProducts = this.updateSelectedDataProducts.bind(this)
+    this.getSelectedDataProducts = this.getSelectedDataProducts.bind(this)
+    this.getDiskUsageRate = this.getDiskUsageRate.bind(this)
+
+    this.sendSaveRateUpdates = this.sendSaveRateUpdates.bind(this)
+
+    this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
+    
+    this.doNothing = this.doNothing.bind(this)
+
+    this.updateIdxSaveListener()
   }
 
   // Callback for handling ROS StatusIDX messages
-  idxStatusListener(message) {
+  idxSaveStatusListener(message) {
+    const saveDataRates = message.save_data_rates
+    const saveDirPrefix = message.current_folder_prefix
+    const saveNamePrefix = message.current_filename_prefix
+    const saveDataMsg = message.save_data
+    const saveData = saveDataMsg.save_continuous
+    var saveDataPrefix = ""
+    if (saveDirPrefix === ""){
+      saveDataPrefix = saveNamePrefix
+    } else {
+      saveDataPrefix = saveDirPrefix + "/" + saveNamePrefix
+    }
     this.setState({
-      saveDataConfigsMsg: message.save_data_configs,
-      saveDataPrefix: message.save_data_prefix,
-      saveDataNavEnabled: message.save_data_nav_enabled,
-      saveDataEnabled: message.save_data_enabled
+      saveRatesMsg: saveDataRates,
+      saveDataPrefix: saveDataPrefix,
+      saveDataEnabled: saveData
     })
+    this.updateSaveLists()
+    this.updateSelectedDataProducts()
   }
 
   // Function for configuring and subscribing to StatusIDX
-  updateListener() {
+  updateIdxSaveListener() {
     const { idxSensorNamespace, title } = this.props
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.saveListener) {
+      this.state.saveListener.unsubscribe()
     }
 
     if (title) {
-      var listener = this.props.ros.setupIDXStatusListener(
+      var saveListener = this.props.ros.setupSaveDataStatusListener(
         idxSensorNamespace,
-        this.idxStatusListener
+        this.idxSaveStatusListener
       )
-      this.setState({ listener: listener, disabled: false })
+      this.setState({ saveListener: saveListener, disabled: false })
     } else {
       this.setState({ disabled: true })
     }
@@ -93,7 +130,7 @@ class NepiSensorsImagingSaveData extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { idxSensorNamespace } = this.props
     if (prevProps.idxSensorNamespace !== idxSensorNamespace) {
-      this.updateListener()
+      this.updateIdxSaveListener()
     }
   }
 
@@ -105,222 +142,348 @@ class NepiSensorsImagingSaveData extends Component {
     }
   }
 
-  // Function for sending updated state through rosbridge
-  sendUpdate(topic, value, name, throttle = false) {
-   this.props.ros.publishAutoManualSelection3DX(
-      topic,
-      name,
-      true,
-      value,
-      throttle
-   )
-  }
 
-  // Function for creating settings options list from capabilities
-  updateSaveDataLists(saveDataConfigsMsg) {
-    var saveDataConfigsStr = saveDataConfigsMsg
-    saveDataConfigsStr = saveDataConfigsStr.replace("[","")
-    saveDataConfigsStr = saveDataConfigsStr.replace("]","")
-    saveDataConfigsStr = saveDataConfigsStr.replaceAll(" '","")
-    saveDataConfigsStr = saveDataConfigsStr.replaceAll("'","")
-    const saveDataConfigsStrList = saveDataConfigsStr.split(",")
-    var saveDataConfigsNameList = []
+  // Function for creating configs options list from capabilities
+  updateSaveLists() {
+    var saveRatesStr = this.state.saveRatesMsg
+    saveRatesStr = saveRatesStr.replaceAll("[","")
+    saveRatesStr = saveRatesStr.replaceAll("]","")
+    const saveRatesStrList = saveRatesStr.split(",")
+    var NamesList = []
+    var RatesList = []
     var new_config = true
-    this.state.saveDataConfigsNamesList.push("None")
-    this.state.saveDataConfigsRatesList.push("None")
-    for (var i in saveDataConfigsStrList){
+    var entry = ""
+    for (let ind = 0; ind < saveRatesStrList.length; ind++){
+      entry = saveRatesStrList[ind]
       if (new_config === true){
-        this.state.saveDataConfigsNamesList.push(item)
+        NamesList.push(entry)
         new_config = false
       } else {
-        this.state.saveDataConfigsRatesList.push(item)
+        RatesList.push(entry)
         new_config = true
       }
     }
-    this.state.saveDataConfigsNamesList.push("All")
-    this.state.saveDataConfigsRatesList.push("All")
-      
-    
+    // add None and All options to lists
+    NamesList.push("NONE")
+    RatesList.push("0.0")
+    NamesList.push("ALL")
+    RatesList.push(this.state.saveDataRate)
+    this.setState({saveNamesList:NamesList})
+    this.setState({saveRatesList:RatesList})
+  }
+
+
+  getSaveNamesList(){
+    const list = this.state.saveNamesList
+    return list
+  }
+
+  getSaveRatesList(){
+    const list = this.state.saveRatesList
+    return list
+  }
+
+
+  getSaveConfigString() {
+    const namesList = this.state.saveNamesList
+    const ratesList = this.state.saveRatesList
+    var configsStr = ""
+    var entryStr
+    var configsStrList = [""]
+    for (let ind = 0; ind < namesList.length; ind++) {
+      if (namesList[ind] !== "NONE" && namesList[ind] !== "ALL" ){
+        entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+        configsStrList.push(entryStr)
+      }
+    }
+    var navSaveRate = "0.0"
+    if (this.state.saveDataNavEnabled === true){
+      navSaveRate = this.state.saveDataRate
+    }
+    entryStr = ("nav : " + navSaveRate + " Hz\n")
+    configsStrList.push(entryStr)
+    configsStr = configsStrList.join("")
+    return configsStr
+  }
+
+  getSaveRateValue(dataName) {
+    const configsStrList = this.getsaveRatesAsList()
+    const configInd = configsStrList.indexOf(dataName)
+    return configsStrList[configInd + 1]
+  }
+
+  getSaveRateData(dataName) {
+    const configValue = this.getSaveRateValue(dataName)
+    return parseFloat(configValue)
+  }
+
+  sendSaveRateUpdates() {
+    const {updateSaveDataRate}  = this.props.ros
+    const saveNamesList = this.getSaveNamesList()
+    const selectedList = this.getSelectedDataProducts()
+    const saveDataRate = this.state.saveDataRate
+    // create updated Configs List
+    var updatedSelectedList = []
+    var noneSel = selectedList.indexOf("NONE") !== -1
+    var allSel = selectedList.indexOf("ALL") !== -1
+    var saveRateStr = ""
+    var rate = 0
+    var data_product = null
+    for (let ind = 0; ind < saveNamesList.length; ind++) {
+      data_product = saveNamesList[ind]
+      if (data_product !== "NONE" && data_product !== "ALL"){
+        if (allSel) {
+          saveRateStr = saveDataRate
+          updatedSelectedList.push(data_product)
+        } else if (noneSel){
+          saveRateStr = "0.0"
+        } else if (selectedList.indexOf(data_product) !== -1){
+          saveRateStr = saveDataRate
+          updatedSelectedList.push(data_product)
+        } else {
+          saveRateStr = "0.0"
+        }
+        rate = parseFloat(saveRateStr)
+        if (isNaN(rate) === false) {
+          updateSaveDataRate(this.props.idxSensorNamespace,data_product,rate)
+        }
+      }
+    }
+    this.setState({selectedDataProducts:updatedSelectedList})
+    if (this.save_data_nav_enabled){
+      rate = parseFloat(this.saveDataRate)
+      if (isNaN(rate) === false) {
+        const nsStrList = this.props.idxSensorNamespace.split("/")
+        const baseNamespace = nsStrList[0] + "/" + nsStrList[1] + "/nav_pose_mgr"
+        updateSaveDataRate(baseNamespace,"nav_pose",rate)
+      }
+    }
+  }
+
+
+  updateSelectedDataProducts() {
+    const NamesList = this.state.saveNamesList
+    const RatesList = this.state.saveRatesList
+    var selectedList = []
+    var name = ""
+    for (let ind = 0; ind < NamesList.length; ind++){
+      name = NamesList[ind]
+      if (name !== "NONE" && name !== "ALL"){
+        if (parseFloat(RatesList[ind]) > 0) {
+          selectedList.push(NamesList[ind])
+        }
+      }
+    }
+    this.setState({selectedDataProducts:selectedList})
+  }
+
+  getSelectedDataProducts(){
+    const list =  this.state.selectedDataProducts
+    return list
+  }
+
+  doNothing(){
+    var ret = false
+    return ret
+  }
+ 
+  onToggleDataProductSelection(event){
+    const data_product = event.target.getAttribute("data-product")
+    var selectedList = this.getSelectedDataProducts()
+    const ind = selectedList.indexOf(data_product)
+    if ( ind !== -1 ){
+      delete selectedList[ind]
+    } else {
+      selectedList.push(data_product)
+    }
+    this.setState({selectedDataProducts:selectedList})
+    this.sendSaveRateUpdates()
+  }
+
+  getSaveDataValue(){
+    const saveData = (this.state.saveDataEnabled === true)
+    return saveData
+  }
+
+  onChangeBoolSaveDataValue(){
+    const {updateSaveDataEnable}  = this.props.ros
+    const enabled = (this.state.saveDataEnabled === false)
+    const saveNavEnabled = (this.state.saveDataNavEnabled === true)
+    this.sendSaveRateUpdates()
+    updateSaveDataEnable(this.props.idxSensorNamespace,enabled)
+    if (saveNavEnabled === true){
+      const nsStrList = this.props.idxSensorNamespace.split("/")
+      const navNamespace = "/" + nsStrList[1] + "/" + nsStrList[2] + "/nav_pose_mgr"
+      updateSaveDataEnable(navNamespace,enabled)
+    }
+
+  }
+
+  getSaveDataNavValue(){
+    const saveDataNav = (this.state.saveDataNavEnabled === true)
+    return saveDataNav
+  }
+
+  onChangeBoolSaveDataNavValue(){
+    const enabled = (this.state.saveDataNavEnabled === false)
+    this.setState({saveDataNavEnabled:enabled})
+  }
+
+
+
+  onUpdateInputSaveDataRateValue(event) {
+    this.setState({ saveDataRate: event.target.value })
+    document.getElementById("input_rate").style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onKeySaveInputSaveDataRateValue(event) {
+    if(event.key === 'Enter'){
+      const rate = parseFloat(event.target.value)
+      if (isNaN(rate)){
+        this.setState({saveDataRate: "0.0"})
+      } else {
+        this.setState({saveDataRate: event.target.value })
+        this.sendSaveRateUpdates()
+      }
+      document.getElementById("input_rate").style.color = Styles.vars.colors.black
+    }
+  }
+
+  onUpdateInputSaveDataPrefixValue(event) {
+    this.setState({ saveDataPrefix: event.target.value })
+    document.getElementById("input_prefix").style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onKeySaveInputSaveDataPrefixValue(event) {
+    const { updateSaveDataPrefix} = this.props.ros
+    const key = event.key
+    const value = event.target.value
+    const navEnabled = (this.state.saveDataNavEnabled === true)
+    if(key === 'Enter'){
+      document.getElementById("input_prefix").style.color = Styles.vars.colors.black
+      updateSaveDataPrefix(this.props.idxSensorNamespace,value)
+    }
+    if (key === 'Enter' && navEnabled === true) {
+      const nsStrList = this.props.idxSensorNamespace.split("/")
+      const navNamespace = "/" + nsStrList[1] + "/" + nsStrList[2] + "/nav_pose_mgr"
+      updateSaveDataPrefix(navNamespace,value)
+    }
   }
   
+
   convertStrListToMenuList(strList){
     var menuList = []
-    for (var i in strList){
-      menuList.push(<Option>{strList[i]}</Option>)
+    for (let ind = 0; ind < strList.length; ind++){
+      menuList.push(<Option>{strList[ind]}</Option>)
     } 
     return menuList
   }
 
-
-  onChangeBoolSettingValue(){
-    const {updateIdxSetting}  = this.props.ros
-    const value = (this.getSettingValue(this.state.selectedSettingName) === "True") ? "False" : "True" 
-    updateIdxSetting(this.props.idxSensorNamespace,
-      this.state.selectedSettingName,this.state.selectedSettingType,value)
+  getDiskUsageRate(){
+    const {systemStatusDiskRate} = this.props.ros
+    return systemStatusDiskRate
   }
-
-  onChangeDescreteSettingValue(event){
-    const {updateIdxSetting}  = this.props.ros
-    const ind = event.nativeEvent.target.selectedIndex
-    const value = event.nativeEvent.target[ind].text
-    updateIdxSetting(this.props.idxSensorNamespace,
-      this.state.selectedSettingName,this.state.selectedSettingType,value)
-  }
-
-  onUpdateInputSettingValue(event) {
-    this.setState({ selectedSettingInput: event.target.value })
-    document.getElementById("input_setting").style.color = Styles.vars.colors.red
-    this.render()
-  }
-
-  onKeySaveInputSettingValue(event) {
-    const {updateIdxSetting}  = this.props.ros
-    if(event.key === 'Enter'){
-      const value = this.state.selectedSettingInput
-      updateIdxSetting(this.props.idxSensorNamespace,
-        this.state.selectedSettingName,this.state.selectedSettingType,value)
-      document.getElementById("input_setting").style.color = Styles.vars.colors.black
-      this.updateSelectedSettingInfo()
-    }
-  }
-
-  getSettingsList() {
-    const settings = this.state.settings
-    var settingsMsg = settings
-    var settingsStrList = []
-    if (settingsMsg != null){
-      settingsMsg = settingsMsg.replace("[","")
-      settingsMsg = settingsMsg.replace("]","")
-      settingsMsg = settingsMsg.replaceAll(" '","")
-      settingsMsg = settingsMsg.replaceAll("'","")
-      settingsStrList = settingsMsg.split(",")
-    }
-    return settingsStrList
-  }
-
-  getSettingValue(settingName) {
-    const settingsStrList = this.getSettingsList()
-    const settingInd = settingsStrList.indexOf(settingName)
-    return settingsStrList[settingInd + 1]
-  }
-
-
-  getSettingsString() {
-    var settingsStr = "None"
-    const settingsStrList = this.getSettingsList()
-    var settingsStrList2 = []
-    if (settingsStrList.length > 0){
-      let ind = 0   
-      for(var i in settingsStrList) {
-        if (ind === 0){
-          ind = 1
-        } else if (ind === 1) {
-          settingsStrList2.push(settingsStrList[i])
-          settingsStrList2.push(": ")
-          ind = 2
-        } else {
-          settingsStrList2.push(settingsStrList[i])
-          settingsStrList2.push("\n")
-          ind = 0
-        }
-      }
-      settingsStr =settingsStrList2.join("")
-    } 
-    return settingsStr
-  }
-
 
   render() {
-    const { idxSensors, resetIdxSaveDataTriggered} = this.props.ros
-    this.updateSaveDataLists(this.state.saveDataConfigsMsg)
+    const { resetSaveDataTriggered, onSnapshotEventTriggered} = this.props.ros
+    const saveDataEnabled = this.getSaveDataValue()
+    const saveDataNavEnabled = this.getSaveDataNavValue()
+    const dataProdcutSources = this.getSaveNamesList()
+    const selectedDataProducts = this.getSelectedDataProducts()
+    const diskUsage = this.getDiskUsageRate()
+    
     return (
       <Section title={"Save Data"}>
+
+         <div align={"left"} textAlign={"left"}  hidden={!this.state.show_save_data}>
+        
         <Columns>
-          <Column>
-            <div align={"left"} textAlign={"left"}>
-            <Label title={"Show Save Data"}>
-          <Toggle
-            checked={this.state.show_save_data}
-            onClick={() => {this.state.show_save_data=!this.state.show_save_data}}
-          />
-        </Label>
-            </div>
-          </Column>
-          <Column>
-          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_sensor_settings}>
+            <Column>
+              <div align={"left"} textAlign={"left"}>
               <ButtonMenu>
-                <Button onClick={() => resetIdxSaveDataTriggered(this.props.idxSensorNamespace)}>{"Reset Settings"}</Button>
-              </ButtonMenu>
-            </div>
-          </Column>
-        </Columns>
-        <div hidden={!this.state.show_sensor_settings}>
-
-          <Label title={"Select Setting"}>
-            <Select
-              id="selectedSettingName"
-              onChange={this.updateSelectedSettingInfo}
-              value={this.state.saveDataConfigsNamesList[this.state.selectedSettingInd]}
-            >
-              {this.convertStrListToMenuList(this.state.saveDataConfigsNamesList)}
-            </Select>
-          </Label>
-
-          <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingType !== "Bool" }>
-            <Label title={this.state.selectedSettingName}>
-              <Toggle
-                checked={ (this.getSettingValue(this.state.selectedSettingName) === "True")}
-                onClick={() => {this.onChangeBoolSettingValue()}}
-              />
-            </Label>
-            </div>
-
-            <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingType !== "Discrete" }>
-            <Label title={this.state.selectedSettingName}>
-              <Select
-                id="descreteSetting"
-                onChange={this.onChangeDescreteSettingValue}
-                value={this.getSettingValue(this.state.selectedSettingName)}
-              >
-                {this.convertStrListToMenuList(this.state.selectedSettingOptions)}
-              </Select>
-          </Label>
-          </div>
-
-          <div align={"left"} textAlign={"right"} 
-            hidden={!(this.state.selectedSettingType === "String" ||
-            this.state.selectedSettingType === "Int" ||
-            this.state.selectedSettingType === "Float")}
-          >
-
-              <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingLowerLimit === ""}>
-                  <Label title={"Lower Input Limit"}>
-                    <Input disabled value={this.state.selectedSettingLowerLimit} />
-                  </Label>
+                  <Button onClick={() => onSnapshotEventTriggered(this.props.idxSensorNamespace)}>{"Take Snapshot"}</Button>
+                </ButtonMenu>
               </div>
-
-              <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingUpperLimit === ""}>
-                  <Label title={"Upper Input Limit"}>
-                    <Input disabled value={this.state.selectedSettingUpperLimit} />
-                  </Label>
-              </div>
-
-              <Label title={this.state.selectedSettingName}>
-                <Input id="input_setting" 
-                  value={this.state.selectedSettingInput} 
-                  onChange={this.onUpdateInputSettingValue} 
-                  onKeyDown= {this.onKeySaveInputSettingValue} />
+              <Label title={"Save Data"}>
+                <Toggle
+                  checked={ (saveDataEnabled === true) }
+                  onClick={() => {this.onChangeBoolSaveDataValue()}}
+                />
               </Label>
-          </div>
+              <Label title={"Set Save Rate (Hz)"}>
+                <Input id="input_rate" 
+                    value={this.state.saveDataRate} 
+                    onChange={this.onUpdateInputSaveDataRateValue} 
+                    onKeyDown= {this.onKeySaveInputSaveDataRateValue} />
+            </Label>
 
+            <Label title={"Set Save Prefix"}>
+              <Input id="input_prefix" 
+                  value={this.state.saveDataPrefix} 
+                  onChange={this.onUpdateInputSaveDataPrefixValue} 
+                  onKeyDown= {this.onKeySaveInputSaveDataPrefixValue} />
+            </Label>
 
+            <Label title="Selected Message Topics">
+              <div onClick={this.doNothing} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                <Select style={{width: "10px"}}/>
+              </div>
+              <div hidden={false}>
+              {dataProdcutSources.map((data_product) =>
+              <div onClick={this.onToggleDataProductSelection}
+                style={{
+                  textAlign: "center",
+                  padding: `${Styles.vars.spacing.xs}`,
+                  color: Styles.vars.colors.black,
+                  backgroundColor: (selectedDataProducts.includes(data_product))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                  cursor: "pointer",
+                  }}>
+                  <body data-product={data_product} style={{color: Styles.vars.colors.black}}>{data_product}</body>
+              </div>
+              )}
+              </div>
+            </Label>
+            <Label title={"Enable Nav Data Saving"}>
+                <Toggle
+                  checked={ (saveDataNavEnabled === true) }
+                  onClick={() => {this.onChangeBoolSaveDataNavValue()}}
+                />
+              </Label>
+            </Column>
+            <Column>
+              <ButtonMenu>
+                <Button onClick={() => resetSaveDataTriggered(this.props.idxSensorNamespace)}>{"Reset Save Settings"}</Button>
+              </ButtonMenu>
+            </Column>
+          </Columns>
+       
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-          <Label title={"Current Settings"} >
-          </Label>
-          <pre style={{ height: "400px", overflowY: "auto" }}>
-            {this.getSettingsString()}
-          </pre>
+          <Columns>
+            <Column>
+              <Label title={"Saving"}>
+                <BooleanIndicator value={(this.getSaveDataValue() === true)} />
+              </Label>
+
+              <Label title={"Data Save Rate"}>
+                <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+              </Label>
+
+              <Label title={"Data Product Save Settings"}>
+              </Label>
+
+              <pre style={{ height: "200px", overflowY: "auto" }}>
+                {this.getSaveConfigString()}
+              </pre>
+            </Column>
+            <Column>
+            </Column>
+          </Columns>
+
         </div>
+
+
       </Section>
     )
   }

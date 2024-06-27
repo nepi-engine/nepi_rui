@@ -7,7 +7,7 @@
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
 import React, { Component } from "react"
-import { Link, Route, Switch, withRouter } from "react-router-dom"
+import { Route, Switch, withRouter } from "react-router-dom"
 import { observer, inject } from "mobx-react"
 
 import Page from "./Page"
@@ -24,7 +24,6 @@ import MultiImageViewer from "./NepiAppImageViewer"
 import NavPose from "./NepiSensorsNavPose"
 import Settings from "./NepiSystemAdmin"
 import SoftwareUpdate from "./NepiSystemSoftware"
-import Help from "./Help"
 import Automation from "./NepiAppAutomation"
 import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"

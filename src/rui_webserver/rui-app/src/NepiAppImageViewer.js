@@ -28,7 +28,6 @@ class NepiAppImageViewer extends Component {
 
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
     this.onChangeInputImgSelection = this.onChangeInputImgSelection.bind(this)
-    this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
 
     this.state = {
       selectedImageTopics: [null,null,null,null],
@@ -76,12 +75,9 @@ class NepiAppImageViewer extends Component {
     })
   }
 
-  onTakeSnapshot() {
-    this.props.ros.onSnapshotEventTriggered()
-  }
 
   render() {
-    const {selectedImageTopics, selectedImageLabels} = this.state
+    const {selectedImageTopics, selectedImageLabels, onEventTriggered} = this.state
 
     const imageOptions = this.createImageTopicsOptions()
     const colCount = ((selectedImageTopics[1] !== null) || (selectedImageTopics[2] !== null) || (selectedImageTopics[3] !== null))? 3 : 2
@@ -144,9 +140,11 @@ class NepiAppImageViewer extends Component {
               {imageOptions}
             </Select>
           </Label>
-          <ButtonMenu>
-            <Button onClick={this.onTakeSnapshot}>{"Snapshot"}</Button>
-          </ButtonMenu>
+          <div align={"left"} textAlign={"left"}  >
+            <ButtonMenu>
+              <Button onClick={this.onEventTriggered}>{"Event Trigger"}</Button>
+            </ButtonMenu>
+          </div>
         </Column>
       </Columns>
     )

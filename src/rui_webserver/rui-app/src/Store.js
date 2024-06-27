@@ -215,6 +215,7 @@ class ROSConnectionStore {
   @observable imageTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
+  @observable idxSettings = {}
   @observable ptxUnits = {}
   @observable lsxUnits = {}
   @observable resetTopics = []
@@ -521,7 +522,10 @@ class ROSConnectionStore {
         const idx_sensor_namespace = this.topicNames[i].split("/idx")[0]
         if (!(sensors_detected.includes(idx_sensor_namespace))) {
           this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Testing
-          if (this.idxSensors[idx_sensor_namespace]) { // Testing
+          this.callIDXSettingsCapabilitiesQueryService(idx_sensor_namespace)
+          const idxSensor = this.idxSensors[idx_sensor_namespace]
+          const idxSettings = this.idxSettings[idx_sensor_namespace]
+          if (idxSensor && idxSettings) { // Testing
             sensors_detected.push(idx_sensor_namespace)
           }
           idx_sensors_changed = true // Testing -- always declare changed
@@ -839,6 +843,86 @@ class ROSConnectionStore {
     })
   }
 
+
+
+
+
+
+  @action.bound
+  setupSaveDataStatusListener(saveDataNamespace, callback) {
+    if (saveDataNamespace) {
+      return this.addListener({
+        name: saveDataNamespace + "/save_data_status",
+        messageType: "nepi_ros_interfaces/SaveDataStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+
+  @action.bound
+  updateSaveDataPrefix(saveDataNamespace,saveDataPrefix) {
+    const namespace = saveDataNamespace + "/save_data_prefix"
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/String",
+      data: {'data':saveDataPrefix},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  updateSaveDataRate(saveDataNamespace,data_product,rate_hz) {
+    this.publishMessage({
+      name: saveDataNamespace + "/save_data_rate",
+      messageType: "nepi_ros_interfaces/SaveDataRate",
+      data: {
+        data_product: data_product,
+        save_rate_hz: rate_hz,
+      },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  updateSaveDataEnable(saveDataNamespace,checked) {
+     this.publishMessage({
+      name: saveDataNamespace + "/save_data",
+      messageType: "nepi_ros_interfaces/SaveData",
+      data: {
+        save_continuous: checked,
+        save_raw: false
+      },
+      noPrefix: true
+    })     
+  }
+
+  @action.bound
+  onSnapshotEventTriggered(saveDataNamespace) {
+    this.publishMessage({
+      name: saveDataNamespace + "/snapshot_trigger",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  resetSaveDataTriggered(saveDataNamespace) {
+    this.publishMessage({
+      name: saveDataNamespace + "/save_data_reset",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+
+
+
+
   // returns the listener, clients that use this
   setupStatus3DXListener(topic, callback) {
     if (topic) {
@@ -851,6 +935,46 @@ class ROSConnectionStore {
       })
     }
   }
+
+  
+  @action.bound
+  setupSettingsStatusListener(settingsNamespace, callback) {
+    if (settingsNamespace) {
+      return this.addListener({
+        name: settingsNamespace + "/settings_status",
+        messageType: "std_msgs/String",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+
+  @action.bound
+  resetSettingsTriggered(settingsNamespace) {
+    this.publishMessage({
+      name: settingsNamespace + "/reset_settings",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+
+  @action.bound
+  updateSetting(settingsNamespace,nameStr,typeStr,valueStr) {
+    this.publishMessage({
+      name: settingsNamespace + "/update_setting",
+      messageType: "nepi_ros_interfaces/SettingUpdate",
+      data: {type_str:typeStr,
+        name_str:nameStr,
+        value_str:valueStr
+      },
+      noPrefix: true
+    })
+  }
+
 
   setupIDXStatusListener(idxSensorNamespace, callback) {
     if (idxSensorNamespace) {
@@ -865,10 +989,32 @@ class ROSConnectionStore {
   }
 
 
+
   @action.bound
   saveIdxConfigTriggered(idxSensorNamespace) {
     this.publishMessage({
       name: idxSensorNamespace + "/save_config",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  updateIdxDeviceName(idxSensorNamespace,deviceName) {
+    const namespace = idxSensorNamespace + "/idx/update_device_name"
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/String",
+      data: {'data':deviceName},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  resetIdxDeviceNameTriggered(idxSensorNamespace) {
+    this.publishMessage({
+      name: idxSensorNamespace + "/idx/reset_device_name",
       messageType: "std_msgs/Empty",
       data: {},
       noPrefix: true
@@ -895,26 +1041,6 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  resetIdxSettingsTriggered(idxSensorNamespace) {
-    this.publishMessage({
-      name: idxSensorNamespace + "/idx/reset_settings",
-      messageType: "std_msgs/Empty",
-      data: {},
-      noPrefix: true
-    })
-  }
-
-  @action.bound
-  updateIdxSetting(idxSensorNamespace,name_str,type_str,value_str) {
-    const updateSettingMsg = "['" + type_str + "','" + name_str + "','" + value_str + "']"
-    this.publishMessage({
-      name: idxSensorNamespace + "/idx/update_settings",
-      messageType: "std_msgs/String",
-      data: {'data':updateSettingMsg},
-      noPrefix: true
-    })
-  }
 
   @action.bound
   setIdxControlsEnable(idxSensorNamespace,idxControls) {
@@ -925,6 +1051,7 @@ class ROSConnectionStore {
       noPrefix: true
     })     
   }
+
 
   @action.bound
   setIdxAutoAdjust(idxSensorNamespace,autoAdjust) {
@@ -1037,6 +1164,15 @@ class ROSConnectionStore {
       messageType: "nepi_ros_interfaces/IDXCapabilitiesQuery",  
     })
     this.idxSensors[idxSensorNamespace] = capabilities
+  }
+
+  @action.bound
+  async callIDXSettingsCapabilitiesQueryService(idxSensorNamespace) {
+    const capabilities = await this.callService({
+      name: idxSensorNamespace + "/settings_capabilities_query",
+      messageType: "nepi_ros_interfaces/SettingsCapabilitiesQuery",  
+    })
+    this.idxSettings[idxSensorNamespace] = capabilities
   }
 
   @action.bound
@@ -1493,9 +1629,9 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onSnapshotEventTriggered() {
+  onEventTriggered() {
     this.publishMessage({
-      name: "snapshot_event",
+      name: "event_trigger",
       messageType: "std_msgs/Empty",
       data: {}
     })

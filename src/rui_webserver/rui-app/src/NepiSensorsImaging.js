@@ -15,9 +15,11 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
-
+import NepiSensorsImagingInfo from "./NepiSensorsImagingInfo"
+import NepiSensorsImagingSaveData from "./NepiSensorsImagingSaveData"
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
 import NepiSensorsImagingSettings from "./NepiSensorsImagingSettings"
+
 import createShortUniqueValues from "./Utilities"
 
 @inject("ros")
@@ -34,8 +36,7 @@ class NepiSensorsImaging extends Component {
     this.createTopicOptions = this.createTopicOptions.bind(this)
     this.createImageOptions = this.createImageOptions.bind(this)
 
-    const idxSensorNamespaces = Object.keys(props.ros.idxSensors)
-    const idxSensorCount = idxSensorNamespaces.length
+    //const idxSensorNamespaces = Object.keys(props.ros.idxSensors)
 
 
     
@@ -161,40 +162,39 @@ class NepiSensorsImaging extends Component {
         <Columns>
           <Column>
             <Section title={"Selection"}>
-              <Label title={"Sensor"}>
-                <Select
-                  onChange={this.onTopicIDXSelected}
-                  value={this.state.currentIDXNamespace}
-                >
-                  {this.createTopicOptions(Object.keys(idxSensors))}
-                </Select>
-              </Label>
-              <Label title={"Image"}>
-                <Select
-                  id="topicSelect_0"
-                  onChange={this.onImageTopicSelected}
-                  value={this.state.imageTopic_0}
-                >
-                  {this.state.currentIDXNamespace
-                    ? this.createImageOptions(this.state.currentIDXNamespace)
-                    : NoneOption}
-                </Select>
-              </Label>
+
               <Columns>
               <Column>
-                  <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                <Label title={"Sensor"}>
+                  <Select
+                    onChange={this.onTopicIDXSelected}
+                    value={this.state.currentIDXNamespace}
+                  >
+                    {this.createTopicOptions(Object.keys(idxSensors))}
+                  </Select>
+                </Label>
+                <Label title={"Image"}>
+                  <Select
+                    id="topicSelect_0"
+                    onChange={this.onImageTopicSelected}
+                    value={this.state.imageTopic_0}
+                  >
+                    {this.state.currentIDXNamespace
+                      ? this.createImageOptions(this.state.currentIDXNamespace)
+                      : NoneOption}
+                  </Select>
+                </Label>
+              </Column>
+              <Column>
+                <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
                     <ButtonMenu>
                       <Button onClick={() => saveIdxConfigTriggered(this.state.currentIDXNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
-                  </div>
-                </Column>
-                <Column>
-                  <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>  
                     <ButtonMenu>
                       <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
                     </ButtonMenu>
                   </div>
-                </Column>
+              </Column>
               </Columns>
               {/*
               <Label title={"In Water"}>
@@ -209,10 +209,6 @@ class NepiSensorsImaging extends Component {
   }
 
   renderImageViewer() {
-    const { idxSensors, IdxSettingsResetTriggered  } = this.props.ros
-    const NoneOption = <Option>None</Option>
-    const SensorSelected = (this.state.currentIDXNamespace != null)
-
     return (
       <React.Fragment>
         <Columns>
@@ -231,26 +227,43 @@ class NepiSensorsImaging extends Component {
 
   render() {
     const SensorSelected = (this.state.currentIDXNamespace != null)
-    const NoneOption = <Option>None</Option>
     const ImageName = this.state.imageText_0
     
     return (
       <Columns>
         <Column>
+        <div hidden={!SensorSelected}>
+          <NepiSensorsImagingInfo
+                idxSensorNamespace={this.state.currentIDXNamespace}
+                title={"NepiSensorsImagingInfo"}
+            />
+        </div>
           {this.renderImageViewer()}
+          <div hidden={!SensorSelected}>
+            <NepiSensorsImagingSaveData
+                idxSensorNamespace={this.state.currentIDXNamespace}
+                title={"NepiSensorsImagingSaveData"}
+            />
+          </div>
+
+
         </Column>
         <Column>
           {this.renderSensorSelection()}
+
           <div hidden={!SensorSelected}>
-          <NepiSensorsImagingControls
-              idxSensorNamespace={this.state.currentIDXNamespace}
-              idxImageName = {ImageName}
-              title={this.state.currentIDXNamespaceText}
+            <NepiSensorsImagingControls
+                idxSensorNamespace={this.state.currentIDXNamespace}
+                idxImageName = {ImageName}
+                title={"NepiSensorsImagingControls"}
             />
+
             <NepiSensorsImagingSettings
               idxSensorNamespace={this.state.currentIDXNamespace}
-              title={this.state.currentIDXNamespaceText}
+              title={"NepiSensorsImagingSettings"}
             />
+
+
           </div>
          </Column>
       </Columns>

@@ -88,23 +88,23 @@ class NepiDashboard extends Component {
     )
   }
 
-  renderSledInfo() {
+  renderdeviceInfo() {
     const {
-      sledConnected,
-      sledType,
-      sledFirmwareVersion,
+      deviceConnected,
+      deviceType,
+      deviceFirmwareVersion,
       eggFirmwareVersion,
     } = this.props.ros
     return (
-      <Section title={"Sled Info"}>
+      <Section title={"device Info"}>
         <Label title={"Connected"}>
-          <BooleanIndicator value={sledConnected} />
+          <BooleanIndicator value={deviceConnected} />
         </Label>
         <Label title={"Type"}>
-          <Input disabled value={sledType} />
+          <Input disabled value={deviceType} />
         </Label>
         <Label title={"Firmware"}>
-          <Input disabled value={sledFirmwareVersion} />
+          <Input disabled value={deviceFirmwareVersion} />
         </Label>
         <Label title={"Sensor Firmware"}>
           <Input disabled value={eggFirmwareVersion} />
@@ -216,7 +216,7 @@ class NepiDashboard extends Component {
     const { onToggleSaveData, systemStatusDiskRate, deleteAllData } = this.props.ros
     return (
       <Section title={"Save Data"}>
-        <Label title={"Save Data"}>
+        <Label title={"Save All Data"}>
           <Toggle id={"toggle_save_data"} onClick={onToggleSaveData} />
         </Label>
         <Label title={"Save Freq. (Hz)"}>

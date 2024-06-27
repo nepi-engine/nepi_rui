@@ -33,10 +33,11 @@ class NepiSystemOnvif extends Component {
       selectedDeviceConfigModified: false,
 
       selectedDeviceConfigUUID: '',
+      selectedDeviceConfigDevicename: '',
       selectedDeviceConfigUsername: '',
       selectedDeviceConfigPassword: '',
       selectedDeviceConfigBasename: '',
-      selectedDeviceConfigIDXEnabled: false,
+      selectedDeviceConfigIDXEnabled: true,
       selectedDeviceConfigPTXEnabled: false,
       selectedDeviceConfigIDXDriver: '',
       selectedDeviceConfigPTXDriver: ''
@@ -58,8 +59,8 @@ class NepiSystemOnvif extends Component {
     let selectedConfig = null
     for (let i = 0; i < onvifDeviceConfigs.length; i++) {
       const config = onvifDeviceConfigs[i]
-      const uuid = config.uuid
-      if (uuid === item) {
+      const devname = config.device_name
+      if (devname === item) {
         selectedConfig = config
         break
       }
@@ -69,14 +70,15 @@ class NepiSystemOnvif extends Component {
     const defaultPTXDeviceDriver = (onvifPTXDeviceDrivers.length > 0)? onvifPTXDeviceDrivers[0] : ''
 
     this.setState({ 
-      selectedDeviceUUID: item,
+      selectedDeviceUUID: selectedConfig? selectedConfig.uuid : '',
 
       selectedDeviceConfigModified: false,
       selectedDeviceConfigUUID: selectedConfig? selectedConfig.uuid : '',
+      selectedDeviceConfigDevicename: selectedConfig? selectedConfig.device_name : '',
       selectedDeviceConfigUsername: selectedConfig? selectedConfig.username : '',
       selectedDeviceConfigPassword: selectedConfig? selectedConfig.password : '',
       selectedDeviceConfigBasename: selectedConfig? selectedConfig.node_base_name : '',
-      selectedDeviceConfigIDXEnabled: selectedConfig? selectedConfig.idx_enabled : false,
+      selectedDeviceConfigIDXEnabled: selectedConfig? selectedConfig.idx_enabled : true,
       selectedDeviceConfigPTXEnabled: selectedConfig? selectedConfig.ptx_enabled : false,
       selectedDeviceConfigIDXDriver: selectedConfig? selectedConfig.idx_driver : defaultIDXDeviceDriver,
       selectedDeviceConfigPTXDriver: selectedConfig? selectedConfig.ptx_driver : defaultPTXDeviceDriver,
@@ -90,6 +92,7 @@ class NepiSystemOnvif extends Component {
       selectedDeviceUUID: null,
       selectedDeviceConfigModified: true,
       selectedDeviceConfigUUID: 'XXXX-XXXX-XXXX-XXXXXXXXXXXX',
+      selectedDeviceConfigDevoceName: 'device_name',
       selectedDeviceConfigUsername: 'admin',
       selectedDeviceConfigPassword: 'admin',
       selectedDeviceConfigBasename: 'new_onvif_device',
@@ -104,6 +107,7 @@ class NepiSystemOnvif extends Component {
     const { callOnvifDeviceListQueryService } = this.props.ros
     let updated_config = {
       uuid : uuid,
+      device_name : this.state.selectedDeviceConfigDevicename,
       username : this.state.selectedDeviceConfigUsername,
       password : this.state.selectedDeviceConfigPassword,
       node_base_name : this.state.selectedDeviceConfigBasename,
@@ -124,10 +128,11 @@ class NepiSystemOnvif extends Component {
 
     this.setState({
       selectedDeviceConfigUUID: '',
+      selectedDeviceConfigDevicename: '',
       selectedDeviceConfigUsername: '',
       selectedDeviceConfigPassword: '',
       selectedDeviceConfigBasename: '',
-      selectedDeviceConfigIDXEnabled: false,
+      selectedDeviceConfigIDXEnabled: true,
       selectedDeviceConfigPTXEnabled: false,
       selectedDeviceConfigIDXDriver: '',
       selectedDeviceConfigPTXDriver: ''
@@ -193,6 +198,7 @@ class NepiSystemOnvif extends Component {
   render() {
     const { onvifDeviceStatuses, onvifDeviceConfigs } = this.props.ros;
     const { selectedDeviceUUID, 
+            selectedDeviceConfigDevName,
             selectedDeviceConfigModified,
             selectedDeviceConfigUUID,
             selectedDeviceConfigUsername,
@@ -205,11 +211,14 @@ class NepiSystemOnvif extends Component {
     let selectedDeviceStatus = null
         
     let detectedDeviceUUIDsForListBox = []
+    let detectedDeviceDevNamesForListBox = []
     if (onvifDeviceStatuses !== null) {
       for (let i = 0; i < onvifDeviceStatuses.length; i++) {
         const status = onvifDeviceStatuses[i]
         const uuid = status.uuid
+        const devname = status.device_name
         detectedDeviceUUIDsForListBox.push(uuid)
+        detectedDeviceDevNamesForListBox.push(devname)
         if ((selectedDeviceUUID !== null) && (uuid === selectedDeviceUUID)) {
           selectedDeviceStatus = status
         }
@@ -217,11 +226,14 @@ class NepiSystemOnvif extends Component {
     }
 
     let configuredDevicesUUIDsForListBox = []
+    let configuredDevicesDevNamesForListBox = []
     if (onvifDeviceConfigs !== null) {
       for (let i = 0; i < onvifDeviceConfigs.length; i++) {
         const config = onvifDeviceConfigs[i]
         const uuid = config.uuid
+        const devname = config.device_name
         configuredDevicesUUIDsForListBox.push(uuid)
+        configuredDevicesDevNamesForListBox.push(devname)
       }
     }
 
@@ -231,6 +243,7 @@ class NepiSystemOnvif extends Component {
     let uuid_for_config_text_field = (selectedDeviceConfigUUID !== '')?
       selectedDeviceConfigUUID :
       (selectedDeviceUUID !== null)? selectedDeviceUUID : ''
+     
     
     return (
       <Columns>
@@ -238,8 +251,8 @@ class NepiSystemOnvif extends Component {
           <Section title={"Detected Devices"}>
             <ListBox 
               id="detectedDevicesListBox" 
-              items={detectedDeviceUUIDsForListBox} 
-              selectedItem={selectedDeviceUUID} 
+              items={detectedDeviceDevNamesForListBox} 
+              selectedItem={this.state.selectedDeviceConfigDevicename} 
               onSelect={this.handleUUIDSelection} 
               style={{ color: 'black', backgroundColor: 'white' }}
             />
@@ -249,15 +262,15 @@ class NepiSystemOnvif extends Component {
           <Section title={"Configured Devices"}>
             <ListBox 
               id="runningScriptsListBox" 
-              items={configuredDevicesUUIDsForListBox} 
-              selectedItem={selectedDeviceUUID}
+              items={configuredDevicesDevNamesForListBox} 
+              selectedItem={this.state.selectedDeviceConfigDevicename}
               onSelect={this.handleUUIDSelection} 
               style={{ color: 'black', backgroundColor: 'white' }} 
             />
           </Section>
         </Column>
         <Column equalWidth={false}>
-          <Section title={selectedDeviceUUID? selectedDeviceUUID : ''}>
+          <Section title={selectedDeviceConfigDevName? selectedDeviceConfigDevName : ''}>
             <label style={{fontWeight: 'bold'}}>
               {"Status"}
             </label>
@@ -284,12 +297,19 @@ class NepiSystemOnvif extends Component {
                     style={{width: '100%'}} 
                   />
                 </Label>
-                <Label title={"IDX Running"}>
-                  <BooleanIndicator value={selectedDeviceStatus? selectedDeviceStatus.idx_node_running : ''} />
-                </Label>
+
                 <Label title={"Connected"}>
                   <BooleanIndicator value={selectedDeviceStatus? selectedDeviceStatus.connectable : ''} />
                 </Label>
+
+                <Label title={"Camera Running"}>
+                  <BooleanIndicator value={selectedDeviceStatus? selectedDeviceStatus.idx_node_running : ''} />
+                </Label>
+
+                <Label title={"PanTilt Running"}>
+                  <BooleanIndicator value={selectedDeviceStatus? selectedDeviceStatus.ptx_node_running : ''} />
+                </Label>
+
               </Column>
               <Column>
                 <Label title={"Port"}>
@@ -313,9 +333,7 @@ class NepiSystemOnvif extends Component {
                     style={{width: '100%'}} 
                   />
                 </Label>
-                <Label title={"PTX Running"}>
-                  <BooleanIndicator value={selectedDeviceStatus? selectedDeviceStatus.ptx_node_running : ''} />
-                </Label>
+
               </Column>
             </Columns>
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -357,7 +375,7 @@ class NepiSystemOnvif extends Component {
             </Label>
             <Columns>
               <Column>
-                <Label title={"IDX Enabled"}>
+                <Label title={"Enable Camera"}>
                   <Toggle
                     id={'onvif_idx_enabled_toggle'} 
                     checked={selectedDeviceConfigIDXEnabled} 
@@ -366,7 +384,7 @@ class NepiSystemOnvif extends Component {
                             }
                   />
                 </Label>
-                <Label title={"PTX Enabled"}>
+                <Label title={"Enable PanTilt"}>
                   <Toggle
                     id={'onvif_ptx_enabled_toggle'} 
                     checked={selectedDeviceConfigPTXEnabled} 
@@ -377,7 +395,7 @@ class NepiSystemOnvif extends Component {
                 </Label>
               </Column>
               <Column>
-                <Label title={"IDX Driver"}>
+                <Label title={"Camera Driver"}>
                   <Select
                     onChange={this.onIDXDriverSelected}
                     value={this.state.selectedDeviceConfigIDXDriver}
@@ -385,7 +403,7 @@ class NepiSystemOnvif extends Component {
                     {this.createIDXDriverOptions()}
                   </Select>
                 </Label>
-                <Label title={"PTX Driver"}>
+                <Label title={"PanTilt Driver"}>
                   <Select
                     onChange={this.onPTXDriverSelected}
                     value={this.state.selectedDeviceConfigPTXDriver}

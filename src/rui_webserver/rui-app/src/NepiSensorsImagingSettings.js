@@ -12,14 +12,13 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Select, { Option } from "./Select"
 import Input from "./Input"
+
 
 @inject("ros")
 @observer
@@ -31,7 +30,7 @@ class NepiSensorsImagingSettings extends Component {
 
     // these states track the values through IDX Status messages
     this.state = {
-      show_sensor_settings: false,
+      show_sensor_settings: true,
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
       capSettingsTypesList: [],
@@ -42,47 +41,54 @@ class NepiSensorsImagingSettings extends Component {
       selectedSettingValue: "",
       selectedSettingLowerLimit: "",
       selectedSettingUpperLimit: "",
-      selectedSettingOptions: null,
+      selectedSettingOptions: [],
       selectedSettingInput: "",
+
+      listener: null,
+
       disabled: false,
     }
 
-    this.updateListener = this.updateListener.bind(this)
-    this.idxStatusListener = this.idxStatusListener.bind(this)
-    this.sendUpdate = this.sendUpdate.bind(this)
+    this.updateSettingsListener = this.updateSettingsListener.bind(this)
+    this.settingsStatusListener = this.settingsStatusListener.bind(this)
+
     this.updateCapSettingsLists = this.updateCapSettingsLists.bind(this)
+    this.getCapSettingOptions = this.getCapSettingOptions.bind(this)
+
+    this.getSettingsAsList = this.getSettingsAsList.bind(this)
+    this.getSettingsAsString = this.getSettingsAsString.bind(this)
+    this.getSettingValue = this.getSettingValue.bind(this)
+
     this.onChangeBoolSettingValue = this.onChangeBoolSettingValue.bind(this)
     this.onChangeDescreteSettingValue = this.onChangeDescreteSettingValue.bind(this)
     this.onUpdateInputSettingValue = this.onUpdateInputSettingValue.bind(this)
     this.onKeySaveInputSettingValue = this.onKeySaveInputSettingValue.bind(this)
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
-    this.getCapSettingOptions = this.getCapSettingOptions.bind(this)
-    this.getSettingsList = this.getSettingsList.bind(this)
-    this.getSettingValue = this.getSettingValue.bind(this)
-    this.getSettingsString = this.getSettingsString.bind(this)
-    this.updateSelectedSettingInfo = this.updateSelectedSettingInfo.bind(this)
 
-    this.updateListener()
+    this.updateSelectedSettingInfo = this.updateSelectedSettingInfo.bind(this)
+    this.getSelectedSettingInfo = this.getSelectedSettingInfo.bind(this)
+
+    this.updateSettingsListener()
   }
 
-  // Callback for handling ROS StatusIDX messages
-  idxStatusListener(message) {
+  // Callback for handling ROS Settings Status messages
+  settingsStatusListener(message) {
     this.setState({
-      settings: message.settings,
+      settings: message.data,
     })
   }
 
-  // Function for configuring and subscribing to StatusIDX
-  updateListener() {
+  // Function for configuring and subscribing to Settings Status
+  updateSettingsListener() {
     const { idxSensorNamespace, title } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
 
     if (title) {
-      var listener = this.props.ros.setupIDXStatusListener(
+      var listener = this.props.ros.setupSettingsStatusListener(
         idxSensorNamespace,
-        this.idxStatusListener
+        this.settingsStatusListener
       )
       this.setState({ listener: listener, disabled: false })
     } else {
@@ -95,80 +101,88 @@ class NepiSensorsImagingSettings extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { idxSensorNamespace } = this.props
     if (prevProps.idxSensorNamespace !== idxSensorNamespace) {
-      this.updateListener()
+      this.updateSettingsListener()
     }
   }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to StatusIDX message
+  // Used to unsubscribe to Settings Status message
   componentWillUnmount() {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
   }
 
-  // Function for sending updated state through rosbridge
-  sendUpdate(topic, value, name, throttle = false) {
-   this.props.ros.publishAutoManualSelection3DX(
-      topic,
-      name,
-      true,
-      value,
-      throttle
-   )
+  getSettingsAsList(settingsMsg) {
+    var settingsStrList = []
+    if (settingsMsg != null){
+      settingsMsg = settingsMsg.replaceAll("[","")
+      settingsMsg = settingsMsg.replaceAll("]","")
+      settingsMsg = settingsMsg.replaceAll(" '","")
+      settingsMsg = settingsMsg.replaceAll("'","")
+      settingsStrList = settingsMsg.split(",")
+    }
+    return settingsStrList
   }
 
   // Function for creating settings options list from capabilities
-  updateCapSettingsLists(capabilities) {
+  updateCapSettingsLists() {
+    const {idxSettings} = this.props.ros
+    const capabilities = idxSettings[this.props.idxSensorNamespace]
+    var typesList = []
+    var namesList = []
     if (capabilities !== undefined){
-      var capSettingsMsg = capabilities.settings_options
+      const capSettingsMsg = capabilities.settings_options
       const capSettingsValid = (capSettingsMsg !== undefined)
       const capSettingsEmpty = (this.state.capSettingsNamesList.length === 0)
       if (capSettingsValid && capSettingsEmpty){
-        capSettingsMsg = capSettingsMsg.replace("[","")
-        capSettingsMsg = capSettingsMsg.replace("]","")
-        capSettingsMsg = capSettingsMsg.replaceAll(" '","")
-        capSettingsMsg = capSettingsMsg.replaceAll("'","")
-        const capSettingsStrList = capSettingsMsg.split(",")
-        var capSettingsNameList = []
+        const capSettingsStrList = this.getSettingsAsList(capSettingsMsg)
         var new_setting = false
-        var item = ''
-        this.state.capSettingsTypesList.push("None")
-        this.state.capSettingsNamesList.push("None")
-        for (var i in capSettingsStrList){
-          item = capSettingsStrList[i]
-          if (this.state.capSettingsTypes.indexOf(item) !== -1){
-            this.state.capSettingsTypesList.push(item)
+        var entry = ''
+        typesList.push("None")
+        namesList.push("None")
+        for (let ind = 0; ind < capSettingsStrList.length; ind++){
+          entry = capSettingsStrList[ind]
+          if (this.state.capSettingsTypes.indexOf(entry) !== -1){
+            typesList.push(entry)
             new_setting = true
-          } else if (new_setting && item !== 'None'){
-            this.state.capSettingsNamesList.push(item)
+          } else if (new_setting && entry !== 'None'){
+            namesList.push(entry)
             new_setting = false
           }
         }
+        this.setState({capSettingsTypesList:typesList})
+        this.setState({capSettingsNamesList:namesList})
       }
     }
   }
   
-  convertStrListToMenuList(strList){
+  convertStrListToMenuList(strList) {
     var menuList = []
-    for (var i in strList){
-      menuList.push(<Option>{strList[i]}</Option>)
+    for (let ind = 0; ind < strList.length; ind++){
+      menuList.push(<Option>{strList[ind]}</Option>)
     } 
     return menuList
   }
 
   getCapSettingOptions(capSettingName){
-    const {idxSensors} = this.props.ros
-    const capabilities = idxSensors[this.props.idxSensorNamespace]
+    const {idxSettings} = this.props.ros
+    const capabilities = idxSettings[this.props.idxSensorNamespace]
     var capSettingOptions = []
     if (capabilities !== undefined){
-      var capSettingsMsg = capabilities.settings_options
-      capSettingsMsg = capSettingsMsg.replace("[","")
-      capSettingsMsg = capSettingsMsg.replace("]","")
-      capSettingsMsg = capSettingsMsg.replaceAll(" '","")
-      capSettingsMsg = capSettingsMsg.replaceAll("'","")
-      const capSettingsStrList = capSettingsMsg.split(",")
-      const capInd = capSettingsStrList.indexOf(capSettingName)
+      const capSettingsMsg = capabilities.settings_options
+      const capSettingsStrList = this.getSettingsAsList(capSettingsMsg)
+      var capInd = -1
+      var lastEntry = 'None'
+      var entry = 'None'
+      for (let ind = 0; ind < capSettingsStrList.length; ind++){
+        entry = capSettingsStrList[ind]
+        if (entry === capSettingName && this.state.capSettingsTypes.indexOf(lastEntry) !== -1){
+          capInd = ind
+          break; 
+        }
+        lastEntry = entry
+      }
       if (capInd !== -1 && capSettingsStrList.length > (capInd + 1) ){
         var optionsInd = capInd + 1
         while ((optionsInd) < capSettingsStrList.length){
@@ -184,40 +198,65 @@ class NepiSensorsImagingSettings extends Component {
     return capSettingOptions
   }
 
-
+  getSettingValue(settingName) {
+    const settings = this.state.settings
+    const settingsStrList = this.getSettingsAsList(settings)
+    var setInd = -1
+    var lastEntry = 'None'
+    var entry = 'None'
+    for (let ind = 0; ind < settingsStrList.length; ind++){
+      entry = settingsStrList[ind]
+      if (entry === settingName && this.state.capSettingsTypes.indexOf(lastEntry) !== -1){
+        setInd = ind
+        break; 
+      }
+      lastEntry = entry
+    }
+    setInd++
+    var value = settingsStrList[setInd]
+    return value
+  }
 
   updateSelectedSettingInfo(event){
     const ind = event.nativeEvent.target.selectedIndex
     const name = event.nativeEvent.target[ind].text
-    this.state.selectedSettingInd = ind
-    this.state.selectedSettingName = name
-    this.state.selectedSettingType = this.state.capSettingsTypesList[ind]
-    this.state.selectedSettingValue = this.getSettingValue(name)
-    this.state.selectedSettingOptions = this.getCapSettingOptions(name)
-    if (this.state.selectedSettingType === "Int" || this.state.selectedSettingType === "Float" ) {
-      this.state.selectedSettingLowerLimit = this.state.selectedSettingOptions.length > 0 ? this.state.selectedSettingOptions[0] : ""
-      this.state.selectedSettingUpperLimit = this.state.selectedSettingOptions.length > 1 ? this.state.selectedSettingOptions[1] : ""
+    this.setState({selectedSettingInd : ind })
+    this.setState({selectedSettingName  :  name })
+    const type = this.state.capSettingsTypesList[ind]
+    this.setState({selectedSettingType  :  type }) 
+    const value = this.getSettingValue(name) 
+    this.setState({selectedSettingValue  : value })
+    const options = this.getCapSettingOptions(name)
+    this.setState({selectedSettingOptions  :  options })
+    if (type === "Int" || type === "Float" ) {
+      this.setState({selectedSettingLowerLimit  :  options.length > 0 ? options[0] : "" })
+      this.setState({selectedSettingUpperLimit  :  options.length > 1 ? options[1] : "" })
     } else {
-      this.state.selectedSettingLowerLimit = ""
-      this.state.selectedSettingUpperLimit = ""
+      this.setState({selectedSettingLowerLimit  :  "" })
+      this.setState({selectedSettingUpperLimit  :  "" })
     }
-    this.state.selectedSettingInput = this.state.selectedSettingValue
+    this.setState({selectedSettingInput  :  value })
     this.render()
+  }
+
+  getSelectedSettingInfo(){
+    const info = [this.state.selectedSettingInd, this.state.selectedSettingType , this.state.selectedSettingName , this.state.selectedSettingValue , this.state.selectedSettingLowerLimit , this.state.selectedSettingUpperLimit ]
+    return info
   }
 
 
   onChangeBoolSettingValue(){
-    const {updateIdxSetting}  = this.props.ros
+    const {updateSetting}  = this.props.ros
     const value = (this.getSettingValue(this.state.selectedSettingName) === "True") ? "False" : "True" 
-    updateIdxSetting(this.props.idxSensorNamespace,
+    updateSetting(this.props.idxSensorNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
   onChangeDescreteSettingValue(event){
-    const {updateIdxSetting}  = this.props.ros
+    const {updateSetting}  = this.props.ros
     const ind = event.nativeEvent.target.selectedIndex
     const value = event.nativeEvent.target[ind].text
-    updateIdxSetting(this.props.idxSensorNamespace,
+    updateSetting(this.props.idxSensorNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -228,54 +267,37 @@ class NepiSensorsImagingSettings extends Component {
   }
 
   onKeySaveInputSettingValue(event) {
-    const {updateIdxSetting}  = this.props.ros
+    const {updateSetting}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.selectedSettingInput
-      updateIdxSetting(this.props.idxSensorNamespace,
+      updateSetting(this.props.idxSensorNamespace,
         this.state.selectedSettingName,this.state.selectedSettingType,value)
       document.getElementById("input_setting").style.color = Styles.vars.colors.black
       this.updateSelectedSettingInfo()
     }
   }
 
-  getSettingsList() {
-    const settings = this.state.settings
-    var settingsMsg = settings
-    var settingsStrList = []
-    if (settingsMsg != null){
-      settingsMsg = settingsMsg.replace("[","")
-      settingsMsg = settingsMsg.replace("]","")
-      settingsMsg = settingsMsg.replaceAll(" '","")
-      settingsMsg = settingsMsg.replaceAll("'","")
-      settingsStrList = settingsMsg.split(",")
-    }
-    return settingsStrList
-  }
-
-  getSettingValue(settingName) {
-    const settingsStrList = this.getSettingsList()
-    const settingInd = settingsStrList.indexOf(settingName)
-    return settingsStrList[settingInd + 1]
-  }
 
 
-  getSettingsString() {
+
+  getSettingsAsString() {
     var settingsStr = "None"
-    const settingsStrList = this.getSettingsList()
+    const settings = this.state.settings
+    const settingsStrList = this.getSettingsAsList(settings)
     var settingsStrList2 = []
+    var counter = 0
     if (settingsStrList.length > 0){
-      let ind = 0   
-      for(var i in settingsStrList) {
-        if (ind === 0){
-          ind = 1
-        } else if (ind === 1) {
-          settingsStrList2.push(settingsStrList[i])
+      for(let ind = 0; ind < settingsStrList.length; ind++) {
+        if (counter === 0){
+          counter = 1
+        } else if (counter === 1) {
+          settingsStrList2.push(settingsStrList[ind])
           settingsStrList2.push(": ")
-          ind = 2
+          counter = 2
         } else {
-          settingsStrList2.push(settingsStrList[i])
+          settingsStrList2.push(settingsStrList[ind])
           settingsStrList2.push("\n")
-          ind = 0
+          counter = 0
         }
       }
       settingsStr =settingsStrList2.join("")
@@ -285,9 +307,9 @@ class NepiSensorsImagingSettings extends Component {
 
 
   render() {
-    const { idxSensors, resetIdxSettingsTriggered} = this.props.ros
-    const capabilities = idxSensors[this.props.idxSensorNamespace]
-    this.updateCapSettingsLists(capabilities)
+    const { resetSettingsTriggered} = this.props.ros
+    this.updateCapSettingsLists()
+    const selSetInfo = this.getSelectedSettingInfo()
     return (
       <Section title={"Sensor Settings"}>
         <Columns>
@@ -296,7 +318,7 @@ class NepiSensorsImagingSettings extends Component {
             <Label title={"Show Settings"}>
           <Toggle
             checked={this.state.show_sensor_settings}
-            onClick={() => {this.state.show_sensor_settings=!this.state.show_sensor_settings}}
+            onClick={() => {this.setState({show_sensor_settings : !this.state.show_sensor_settings})}}
           />
         </Label>
             </div>
@@ -304,76 +326,82 @@ class NepiSensorsImagingSettings extends Component {
           <Column>
           <div align={"left"} textAlign={"left"}  hidden={!this.state.show_sensor_settings}>
               <ButtonMenu>
-                <Button onClick={() => resetIdxSettingsTriggered(this.props.idxSensorNamespace)}>{"Reset Settings"}</Button>
+                <Button onClick={() => resetSettingsTriggered(this.props.idxSensorNamespace)}>{"Reset Sensor Settings"}</Button>
               </ButtonMenu>
             </div>
           </Column>
         </Columns>
         <div hidden={!this.state.show_sensor_settings}>
+        <Columns>
+          <Column>
+            <Label title={"Select Setting"}>
+              <Select
+                id="selectedSettingName"
+                onChange={this.updateSelectedSettingInfo}
+                value={this.state.capSettingsNamesList[this.state.selectedSettingInd]}
+              >
+                {this.convertStrListToMenuList(this.state.capSettingsNamesList)}
+              </Select>
+            </Label>
 
-          <Label title={"Select Setting"}>
-            <Select
-              id="selectedSettingName"
-              onChange={this.updateSelectedSettingInfo}
-              value={this.state.capSettingsNamesList[this.state.selectedSettingInd]}
-            >
-              {this.convertStrListToMenuList(this.state.capSettingsNamesList)}
-            </Select>
-          </Label>
+            <div align={"left"} textAlign={"right"} hidden={selSetInfo[1] !== "Bool" }>
+              <Label title={selSetInfo[2]}>
+                <Toggle
+                  checked={ (this.getSettingValue(selSetInfo[2]) === "True")}
+                  onClick={() => {this.onChangeBoolSettingValue()}}
+                />
+              </Label>
+              </div>
 
-          <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingType !== "Bool" }>
-            <Label title={this.state.selectedSettingName}>
-              <Toggle
-                checked={ (this.getSettingValue(this.state.selectedSettingName) === "True")}
-                onClick={() => {this.onChangeBoolSettingValue()}}
-              />
+              <div align={"left"} textAlign={"right"} hidden={selSetInfo[1] !== "Menu" && selSetInfo[1] !== "Discrete" }>
+              <Label title={selSetInfo[2]}>
+                <Select
+                  id="descreteSetting"
+                  onChange={this.onChangeDescreteSettingValue}
+                  value={this.getSettingValue(selSetInfo[2])}
+                >
+                  {this.convertStrListToMenuList(this.state.selectedSettingOptions)}
+                </Select>
             </Label>
             </div>
 
-            <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingType !== "Menu" && this.state.selectedSettingType !== "Discrete" }>
-            <Label title={this.state.selectedSettingName}>
-              <Select
-                id="descreteSetting"
-                onChange={this.onChangeDescreteSettingValue}
-                value={this.getSettingValue(this.state.selectedSettingName)}
-              >
-                {this.convertStrListToMenuList(this.state.selectedSettingOptions)}
-              </Select>
-          </Label>
-          </div>
+            <div align={"left"} textAlign={"right"} 
+              hidden={!(selSetInfo[1] === "String" ||
+              selSetInfo[1] === "Int" ||
+              selSetInfo[1] === "Float")}
+            >
 
-          <div align={"left"} textAlign={"right"} 
-            hidden={!(this.state.selectedSettingType === "String" ||
-            this.state.selectedSettingType === "Int" ||
-            this.state.selectedSettingType === "Float")}
-          >
+                <div align={"left"} textAlign={"right"} hidden={selSetInfo[4] === ""}>
+                    <Label title={"Lower Input Limit"}>
+                      <Input disabled value={selSetInfo[4]} />
+                    </Label>
+                </div>
 
-              <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingLowerLimit === ""}>
-                  <Label title={"Lower Input Limit"}>
-                    <Input disabled value={this.state.selectedSettingLowerLimit} />
-                  </Label>
-              </div>
+                <div align={"left"} textAlign={"right"} hidden={selSetInfo[5] === ""}>
+                    <Label title={"Upper Input Limit"}>
+                      <Input disabled value={selSetInfo[5]} />
+                    </Label>
+                </div>
 
-              <div align={"left"} textAlign={"right"} hidden={this.state.selectedSettingUpperLimit === ""}>
-                  <Label title={"Upper Input Limit"}>
-                    <Input disabled value={this.state.selectedSettingUpperLimit} />
-                  </Label>
-              </div>
-
-              <Label title={this.state.selectedSettingName}>
-                <Input id="input_setting" 
-                  value={this.state.selectedSettingInput} 
-                  onChange={this.onUpdateInputSettingValue} 
-                  onKeyDown= {this.onKeySaveInputSettingValue} />
-              </Label>
-          </div>
-
+                <Label title={selSetInfo[2]}>
+                  <Input id="input_setting" 
+                    value={this.state.selectedSettingInput} 
+                    onChange={this.onUpdateInputSettingValue} 
+                    onKeyDown= {this.onKeySaveInputSettingValue} />
+                </Label>
+                <Label title={"* Some changes may require power cycle"}>
+                </Label>
+            </div>
+          </Column>
+          <Column>
+          </Column>
+        </Columns>
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
           <Label title={"Current Settings"} >
           </Label>
           <pre style={{ height: "400px", overflowY: "auto" }}>
-            {this.getSettingsString()}
+            {this.getSettingsAsString()}
           </pre>
         </div>
       </Section>

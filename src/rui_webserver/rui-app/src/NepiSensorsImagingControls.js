@@ -29,7 +29,7 @@ class NepiSensorsImagingControls extends Component {
 
     // these states track the values through IDX Status messages
     this.state = {
-      show_controls: false,
+      show_controls: true,
       controlsEnable: null,
       autoAdjust: null,
       resolutionAdjustment: null,
@@ -41,18 +41,18 @@ class NepiSensorsImagingControls extends Component {
       rangeMin: null,
       rangeLimitMinM: null,
       rangeLimitMaxM: null,
-      listener: null,
       zoomAdjustment: null,
       rotateAdjustment: null,
       tiltAdjustment: null,
       frame3D: null,
+
+      listener: null,
 
       disabled: false,
     }
 
     this.updateListener = this.updateListener.bind(this)
     this.idxStatusListener = this.idxStatusListener.bind(this)
-    this.sendUpdate = this.sendUpdate.bind(this)
     
     //this.updateListener()
   }
@@ -113,26 +113,12 @@ class NepiSensorsImagingControls extends Component {
     }
   }
 
-  // Function for sending updated state through rosbridge
-  sendUpdate(topic, value, name, throttle = false) {
-   this.props.ros.publishAutoManualSelection3DX(
-      topic,
-      name,
-      true,
-      value,
-      throttle
-   )
-  }
-
 
   render() {
     const { idxSensors, resetIdxControlsTriggered, setIdxControlsEnable, setIdxAutoAdjust, setIdxFrame3D } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
     const has_auto_adjust = (capabilities && capabilities.auto_adjustment && !this.state.disabled)
     const has_range_adjust = (capabilities && capabilities.adjustable_range && !this.state.disabled)
-    const has_zoom = (capabilities && capabilities.zoom && !this.state.disabled)
-    const has_rotate = (capabilities && capabilities.rotate && !this.state.disabled)
-    const has_pointcloud = (capabilities && capabilities.has_pointcloud && !this.state.disabled)
     const imageName = this.props.idxImageName 
     return (
       <Section title={"Controls"}>
@@ -142,7 +128,7 @@ class NepiSensorsImagingControls extends Component {
               <Label title={"Show Controls"}>
                 <Toggle
                   checked={this.state.show_controls}
-                  onClick={() => {this.state.show_controls=!this.state.show_controls}}
+                  onClick={() => {this.setState({show_controls:!this.state.show_controls})}}
                 />
               </Label>
             </div>
@@ -173,7 +159,7 @@ class NepiSensorsImagingControls extends Component {
         
           <div hidden={!this.state.controlsEnable }>
 
-            <div hidden={(imageName != 'bw_2d_image' && imageName != 'color_2d_image')}>
+            <div hidden={(imageName !== 'bw_2d_image' && imageName !== 'color_2d_image')}>
               <div align={"left"} textAlign={"left"} hidden={!has_auto_adjust && !this.state.controlsEnable}>
                   <Label title={"Auto Adjust"}>
                     <Toggle
@@ -239,7 +225,7 @@ class NepiSensorsImagingControls extends Component {
               />
             </div>
 
-            <div hidden={!has_range_adjust || (imageName != 'depth_image' && imageName != 'depth_map' && imageName != 'pointcloud_image')}>
+            <div hidden={!has_range_adjust || (imageName !== 'depth_image' && imageName !== 'depth_map' && imageName !== 'pointcloud_image')}>
               <RangeAdjustment
                 title="Range Clip"
                 min={this.state.rangeMin}
@@ -254,7 +240,7 @@ class NepiSensorsImagingControls extends Component {
             </div>
 
 
-            <div hidden={ imageName != 'pointcloud_image'}>
+            <div hidden={ imageName !== 'pointcloud_image'}>
 
                 <SliderAdjustment
                       title={"Zoom"}
