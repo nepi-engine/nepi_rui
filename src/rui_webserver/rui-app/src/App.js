@@ -18,6 +18,7 @@ import HorizontalDivider from "./HorizontalDivider"
 
 import Dashboard from "./NepiDashboard"
 import SensorIDX from "./NepiSensorsImaging"
+import PointcloudViewer from "./NepiAppPointcloudViewer"
 import NEPIConnect from "./NepiAppConnect"
 import DetectionApp from "./NepiAppAIDetector"
 import MultiImageViewer from "./NepiAppImageViewer"
@@ -65,6 +66,7 @@ class App extends Component {
               label: "Applications",
               subItems: [
                 { path: "/imagery", label: "Image Viewer" },
+                { path: "/pcviewer", label: "Pointcloud Viewer" },
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
                 { path: "/image_sequencer", label: "Sequencer" },
@@ -104,6 +106,7 @@ class App extends Component {
           <Route exact path="/" component={Dashboard} />
           <Route path="/imagery" component={MultiImageViewer} />
           <Route path="/sensor_idx" component={SensorIDX} />
+          <Route path="/pcviewer" component={PointcloudViewer} />
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
           <Route path="/automation" component={Automation} />

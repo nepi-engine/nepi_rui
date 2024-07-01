@@ -153,7 +153,7 @@ class NepiSensorsImaging extends Component {
   }
 
   renderSensorSelection() {
-    const { idxSensors, resetIdxFactoryTriggered, saveIdxConfigTriggered  } = this.props.ros
+    const { idxSensors, resetIdxFactoryTriggered, saveConfigTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
     const SensorSelected = (this.state.currentIDXNamespace != null)
 
@@ -188,7 +188,7 @@ class NepiSensorsImaging extends Component {
               <Column>
                 <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
                     <ButtonMenu>
-                      <Button onClick={() => saveIdxConfigTriggered(this.state.currentIDXNamespace)}>{"Save Config"}</Button>
+                      <Button onClick={() => saveConfigTriggered(this.state.currentIDXNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
                     <ButtonMenu>
                       <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
@@ -241,7 +241,7 @@ class NepiSensorsImaging extends Component {
           {this.renderImageViewer()}
           <div hidden={!SensorSelected}>
             <NepiSensorsImagingSaveData
-                idxSensorNamespace={this.state.currentIDXNamespace}
+                saveNamespace={this.state.currentIDXNamespace}
                 title={"NepiSensorsImagingSaveData"}
             />
           </div>

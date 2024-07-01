@@ -29,13 +29,25 @@ const createShortUniqueValues = list => {
       }
     }
   }
-
   // Now create the return list
   for (i = 0; i < tokenizedList.length; ++i) {
     uniqueList.push(tokenizedList[i].slice(0, depthsToUnique[i]).reverse().join("/"))
   }
-
   return uniqueList
+}
+
+const createShortValues = list => {
+  var tokenizedList = []
+  var depthsToShort = 2
+  var shortList = []
+  for (var i = 0; i < list.length; ++i) {
+    tokenizedList.push(list[i].split("/").reverse())
+  }
+  // Now create the return list
+  for (i = 0; i < tokenizedList.length; ++i) {
+    shortList.push(tokenizedList[i].slice(0, depthsToShort).reverse().join("/"))
+  }
+  return shortList
 }
 
 export function setElementStyleModified(e) {

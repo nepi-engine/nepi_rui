@@ -22,28 +22,29 @@ import { Column, Columns } from "./Columns"
 @inject("ros")
 @observer
 
-// Component that contains the IDX Sensor controls
-class NepiSensorsImagingControls extends Component {
+// Component that contains the  Sensor controls
+class NepiAppPointcloudViewerControls extends Component {
   constructor(props) {
     super(props)
 
-    // these states track the values through IDX Status messages
+    // these states track the values through  Status messages
     this.state = {
-      show_controls: true,
-      controlsEnable: null,
-      autoAdjust: null,
-      resolutionAdjustment: null,
-      framerateAdjustment: null,
-      contrastAdjustment: null,
-      brightnessAdjustment: null,
-      thresholdingAdjustment: null,
-      rangeMax: null,
-      rangeMin: null,
+      rangeRatioMax: null,
+      rangeRatioMin: null,
       rangeLimitMinM: null,
       rangeLimitMaxM: null,
       zoomAdjustment: null,
       rotateAdjustment: null,
       tiltAdjustment: null,
+      camViewX: null,
+      camViewY: null,
+      camViewZ: null,
+      camPosX: null,
+      camPosY: null,
+      camPosZ: null,
+      camRotX: null,
+      camRotY: null,
+      camRotZ: null,
       frame3D: null,
 
       listener: null,
@@ -52,43 +53,44 @@ class NepiSensorsImagingControls extends Component {
     }
 
     this.updateListener = this.updateListener.bind(this)
-    this.idxStatusListener = this.idxStatusListener.bind(this)
+    this.StatusListener = this.StatusListener.bind(this)
     
-    //this.updateListener()
   }
 
-  // Callback for handling ROS StatusIDX messages
-  idxStatusListener(message) {
+  // Callback for handling ROS Status messages
+  StatusListener(message) {
     this.setState({
-      controlsEnable: message.controls_enable,
-      autoAdjust: message.auto_adjust,
-      resolutionAdjustment: message.resolution_mode,
-      framerateAdjustment: message.framerate_mode,
-      contrastAdjustment: message.contrast,
-      brightnessAdjustment: message.brightness,
-      thresholdingAdjustment: message.thresholding,
-      rangeMax: message.range_window.stop_range,
-      rangeMin: message.range_window.start_range,
-      rangeLimitMinM: message.min_range_m,
-      rangeLimitMaxM: message.max_range_m,
-      zoomAdjustment: message.zoom,
-      rotateAdjustment: message.rotate,
-      tiltAdjustment: message.tilt,
-      frame3D: message.frame_3d
+      rangeRatioMin: message.range_window.start_range,
+      rangeRatioMax: message.range_window.stop_range,
+      rangeLimitMinM: message.min_max_range_m.start_range,
+      rangeLimitMaxM: message.min_max_range_m.stop_range,
+      zoomAdjustment: message.zoom_ratio,
+      rotateAdjustment: message.rotate_ratio,
+      tiltAdjustment: message.tilt_ratio,
+      camViewX: message.camera_view.x,
+      camViewY: message.camera_view.y,
+      camViewZ: message.camera_view.z,
+      camPosX: message.camera_position.x,
+      camPosY: message.camera_position.y,
+      camPosZ: message.camera_position.z,
+      camRotX: message.camera_rotation.x,
+      camRotY: message.camera_rotation.y,
+      camRotZ: message.camera_rotation.z
+
     })
   }
 
-  // Function for configuring and subscribing to StatusIDX
+  // Function for configuring and subscribing to Status
   updateListener() {
-    const { idxSensorNamespace, title } = this.props
+    const { appNamespace, title } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
 
     if (title) {
-      var listener = this.props.ros.setupIDXStatusListener(
-        idxSensorNamespace,
-        this.idxStatusListener
+      var listener = this.props.ros.setupStatusListener(
+        appNamespace,
+        this.StatusListener
       )
       this.setState({ listener: listener, disabled: false })
     } else {
@@ -99,14 +101,14 @@ class NepiSensorsImagingControls extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { idxSensorNamespace } = this.props
-    if (prevProps.idxSensorNamespace !== idxSensorNamespace) {
+    const { appNamespace } = this.props
+    if (prevProps.appNamespace !== appNamespace) {
       this.updateListener()
     }
   }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to StatusIDX message
+  // Used to unsubscribe to Status message
   componentWillUnmount() {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
@@ -115,11 +117,7 @@ class NepiSensorsImagingControls extends Component {
 
 
   render() {
-    const { idxSensors, resetIdxControlsTriggered, setIdxControlsEnable, setIdxAutoAdjust, setIdxFrame3D } = this.props.ros
-    const capabilities = idxSensors[this.props.idxSensorNamespace]
-    const has_auto_adjust = (capabilities && capabilities.auto_adjustment && !this.state.disabled)
-    const has_range_adjust = (capabilities && capabilities.adjustable_range && !this.state.disabled)
-    const imageName = this.props.idxImageName 
+    const {  resetControlsTriggered } = this.props.ros
     return (
       <Section title={"Controls"}>
         <Columns>
@@ -136,44 +134,44 @@ class NepiSensorsImagingControls extends Component {
           <Column>
           </Column>
         </Columns>
-        <div hidden={!this.state.show_controls}>
+        <div >
           <Columns>
             <Column>
               <div align={"left"} textAlign={"left"}>
                 <Label title={"Enable Controls"}>
                   <Toggle
                   checked={this.state.controlsEnable}
-                  onClick={() => setIdxControlsEnable(this.props.idxSensorNamespace,!this.state.controlsEnable)}
+                  onClick={() => setControlsEnable(this.props.SensorNamespace,!this.state.controlsEnable)}
                   />
                 </Label>
               </div>
             </Column>
             <Column>
-            <div align={"left"} textAlign={"left"} hidden={!this.state.controlsEnable}>
+            <div align={"left"} textAlign={"left"} >
                 <ButtonMenu>
-                  <Button onClick={() => resetIdxControlsTriggered(this.props.idxSensorNamespace)}>{"Reset Controls"}</Button>
+                  <Button onClick={() => resetControlsTriggered(this.props.SensorNamespace)}>{"Reset Controls"}</Button>
                 </ButtonMenu>
               </div>
             </Column>
           </Columns>
         
-          <div hidden={!this.state.controlsEnable }>
+          <div >
 
-            <div hidden={(imageName !== 'bw_2d_image' && imageName !== 'color_2d_image')}>
-              <div align={"left"} textAlign={"left"} hidden={!has_auto_adjust && !this.state.controlsEnable}>
+            <div >
+              <div align={"left"} textAlign={"left"} >
                   <Label title={"Auto Adjust"}>
                     <Toggle
                       checked={this.state.autoAdjust}
-                      onClick={() => setIdxAutoAdjust(this.props.idxSensorNamespace,!this.state.autoAdjust)}
+                      onClick={() => setAutoAdjust(this.props.SensorNamespace,!this.state.autoAdjust)}
                     /> 
                   </Label>
               </div>
-              <div hidden={this.state.autoAdjust}>
+              <div >
                 <SliderAdjustment
                     title={"Brightness"}
                     msgType={"std_msgs/Float32"}
                     adjustment={this.state.brightnessAdjustment}
-                    topic={this.props.idxSensorNamespace + "/idx/set_brightness"}
+                    topic={this.props.SensorNamespace + "//set_brightness"}
                     scaled={0.01}
                     min={0}
                     max={100}
@@ -185,7 +183,7 @@ class NepiSensorsImagingControls extends Component {
                   title={"Contrast"}
                   msgType={"std_msgs/Float32"}
                   adjustment={this.state.contrastAdjustment}
-                  topic={this.props.idxSensorNamespace + "/idx/set_contrast"}
+                  topic={this.props.SensorNamespace + "//set_contrast"}
                   scaled={0.01}
                   min={0}
                   max={100}
@@ -197,7 +195,7 @@ class NepiSensorsImagingControls extends Component {
                     title={"Thresholding"}
                     msgType={"std_msgs/Float32"}
                     adjustment={this.state.thresholdingAdjustment}
-                    topic={this.props.idxSensorNamespace + "/idx/set_thresholding"}
+                    topic={this.props.SensorNamespace + "//set_thresholding"}
                     scaled={0.01}
                     min={0}
                     max={100}
@@ -209,7 +207,7 @@ class NepiSensorsImagingControls extends Component {
             
               <RadioButtonAdjustment
                   title={"Resolution"}
-                  topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
+                  topic={this.props.SensorNamespace + '//set_resolution_mode'}
                   msgType={"std_msgs/UInt8"}
                   adjustment={(capabilities && capabilities.adjustable_resolution)? this.state.resolutionAdjustment : null}
                   disabled={(capabilities && capabilities.adjustable_resolution && !this.state.disabled)? false : true}
@@ -217,7 +215,7 @@ class NepiSensorsImagingControls extends Component {
               />
               <RadioButtonAdjustment
                   title={"Framerate"}
-                  topic={this.props.idxSensorNamespace + '/idx/set_framerate_mode'}
+                  topic={this.props.SensorNamespace + '//set_framerate_mode'}
                   msgType={"std_msgs/UInt8"}
                   adjustment={(capabilities && capabilities.adjustable_framerate)? this.state.framerateAdjustment : null}
                   disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
@@ -225,14 +223,14 @@ class NepiSensorsImagingControls extends Component {
               />
             </div>
 
-            <div hidden={!has_range_adjust || (imageName !== 'depth_image' && imageName !== 'depth_map' && imageName !== 'pointcloud_image')}>
+            <div >
               <RangeAdjustment
                 title="Range Clip"
-                min={this.state.rangeMin}
-                max={this.state.rangeMax}
+                min={this.state.rangeRatioMin}
+                max={this.state.rangeRatioMax}
                 min_limit_m={this.state.rangeLimitMinM}
                 max_limit_m={this.state.rangeLimitMaxM}
-                topic={this.props.idxSensorNamespace + "/idx/set_range_window"}
+                topic={this.props.SensorNamespace + "//set_range_ratios"}
                 disabled={(capabilities && capabilities.adjustable_range && !this.state.disabled)? false : true}
                 tooltip={"Adjustable range"}
                 unit={"m"}
@@ -240,13 +238,13 @@ class NepiSensorsImagingControls extends Component {
             </div>
 
 
-            <div hidden={ imageName !== 'pointcloud_image'}>
+            <div >
 
                 <SliderAdjustment
                       title={"Zoom"}
                       msgType={"std_msgs/Float32"}
                       adjustment={this.state.zoomAdjustment}
-                      topic={this.props.idxSensorNamespace + "/idx/set_zoom_ratio"}
+                      topic={this.props.SensorNamespace + "/set_zoom_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
@@ -260,7 +258,7 @@ class NepiSensorsImagingControls extends Component {
                       title={"Rotate"}
                       msgType={"std_msgs/Float32"}
                       adjustment={this.state.rotateAdjustment}
-                      topic={this.props.idxSensorNamespace + "/idx/set_rotate_ratio"}
+                      topic={this.props.SensorNamespace + "/set_rotate_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
@@ -273,7 +271,7 @@ class NepiSensorsImagingControls extends Component {
                       title={"Tilt"}
                       msgType={"std_msgs/Float32"}
                       adjustment={this.state.tiltAdjustment}
-                      topic={this.props.idxSensorNamespace + "/idx/set_tilt_ratio"}
+                      topic={this.props.SensorNamespace + "/set_tilt_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
@@ -305,18 +303,7 @@ class NepiSensorsImagingControls extends Component {
                   <Toggle 
                     checked={this.state.frame3D === "nepi_center_frame"} 
                     disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
-                    onClick={() => setIdxFrame3D(this.props.idxSensorNamespace,"nepi_center_frame")}
-                  />
-                </div>
-                </Column>
-                <Column>
-                <div align={"center"} textAlign={"center"}>
-                  <Label title={"Sensor"} align={"center"}>
-                  </Label>
-                  <Toggle 
-                    checked={this.state.frame3D === "sensor_frame"} 
-                    disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
-                    onClick={() => setIdxFrame3D(this.props.idxSensorNamespace,"sensor_frame")}
+                    onClick={() => setFrame3D(this.props.SensorNamespace,"nepi_center_frame")}
                   />
                 </div>
                 </Column>
@@ -327,11 +314,12 @@ class NepiSensorsImagingControls extends Component {
                   <Toggle 
                     checked={this.state.frame3D === "map"} 
                     disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
-                    onClick={() => setIdxFrame3D(this.props.idxSensorNamespace,"map")}
+                    onClick={() => setFrame3D(this.props.SensorNamespace,"map")}
                   />
                 </div>
                 </Column>
               </Columns>
+
             </div>
             
           </div>
@@ -341,4 +329,4 @@ class NepiSensorsImagingControls extends Component {
   }
 
 }
-export default NepiSensorsImagingControls
+export default NepiAppPointcloudViewerControls

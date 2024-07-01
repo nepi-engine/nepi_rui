@@ -213,6 +213,7 @@ class ROSConnectionStore {
   @observable topicNames = null
   @observable topicTypes = null
   @observable imageTopics = []
+  @observable pointcloudTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
   @observable idxSettings = {}
@@ -409,13 +410,14 @@ class ROSConnectionStore {
         var newSensor3DXs = this.updateSensor3DXTopics()
         var newResettables = this.updateResetTopics()
         var newImageTopics = this.updateImageTopics()
+        var newPointcloudTopics = this.updatePointcloudTopics()
                 
         this.updateIDXSensorList()
         this.updatePTXUnits()
 		this.updateLSXUnits()
         this.updateNavPoseSourceTopics()
 
-        if (newPrefix || newSensor3DXs || newResettables || newImageTopics) {
+        if (newPrefix || newSensor3DXs || newResettables || newImageTopics || newPointcloudTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -481,6 +483,27 @@ class ROSConnectionStore {
 
     if (!this.imageTopics.equals(newImageTopics)) {
       this.imageTopics = newImageTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updatePointcloudTopics() {
+    // Function for updating image topics list
+    var newPointcloudTopics = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicTypes[i] === "sensor_msgs/PointCloud2") {
+        newPointcloudTopics.push(this.topicNames[i])
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newPointcloudTopics.sort()
+
+    if (!this.pointcloudTopics.equals(newPointcloudTopics)) {
+      this.pointcloudTopics = newPointcloudTopics
       return true
     } else {
       return false
@@ -844,15 +867,37 @@ class ROSConnectionStore {
   }
 
 
-
-
+  @action.bound
+  sendStringMsg(strNamespace,strMsg) {
+    const namespace = strNamespace
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/String",
+      data: {'data':strMsg},
+      noPrefix: true
+    })
+  }
 
 
   @action.bound
-  setupSaveDataStatusListener(saveDataNamespace, callback) {
-    if (saveDataNamespace) {
+  setupPointcloudRenderStatusListener(namespace, callback) {
+    if (namespace) {
       return this.addListener({
-        name: saveDataNamespace + "/save_data_status",
+        name: namespace,
+        messageType: "nepi_ros_interfaces/PointcloudRenderStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+
+  @action.bound
+  setupSaveDataStatusListener(saveNamespace, callback) {
+    if (saveNamespace) {
+      return this.addListener({
+        name: saveNamespace,
         messageType: "nepi_ros_interfaces/SaveDataStatus",
         noPrefix: true,
         callback: callback,
@@ -991,9 +1036,9 @@ class ROSConnectionStore {
 
 
   @action.bound
-  saveIdxConfigTriggered(idxSensorNamespace) {
+  saveConfigTriggered(namespace) {
     this.publishMessage({
-      name: idxSensorNamespace + "/save_config",
+      name: namespace + "/save_config",
       messageType: "std_msgs/Empty",
       data: {},
       noPrefix: true
