@@ -18,7 +18,7 @@ import HorizontalDivider from "./HorizontalDivider"
 
 import Dashboard from "./NepiDashboard"
 import SensorIDX from "./NepiSensorsImaging"
-import PointcloudViewer from "./NepiAppPointcloudViewer"
+import PointcloudApp from "./NepiAppPointcloud"
 import NEPIConnect from "./NepiAppConnect"
 import DetectionApp from "./NepiAppAIDetector"
 import MultiImageViewer from "./NepiAppImageViewer"
@@ -36,6 +36,7 @@ import LSX from "./NepiControlsLights"
 @inject("ros")
 @withRouter
 @observer
+
 class App extends Component {
 
   componentDidMount() {
@@ -66,7 +67,7 @@ class App extends Component {
               label: "Applications",
               subItems: [
                 { path: "/imagery", label: "Image Viewer" },
-                { path: "/pcviewer", label: "Pointcloud Viewer" },
+                { path: "/pointcloud_app", label: "Pointcloud App" },
                 { path: "/ai", label: "AI" },
                 { path: "/automation", label: "Automation"},
                 { path: "/image_sequencer", label: "Sequencer" },
@@ -106,7 +107,7 @@ class App extends Component {
           <Route exact path="/" component={Dashboard} />
           <Route path="/imagery" component={MultiImageViewer} />
           <Route path="/sensor_idx" component={SensorIDX} />
-          <Route path="/pcviewer" component={PointcloudViewer} />
+          <Route path="/pointcloud_app" component={PointcloudApp} />
           <Route path="/navPose" component={NavPose} />
           <Route path="/ai" component={DetectionApp} />
           <Route path="/automation" component={Automation} />

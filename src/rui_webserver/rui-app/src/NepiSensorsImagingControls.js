@@ -115,10 +115,11 @@ class NepiSensorsImagingControls extends Component {
 
 
   render() {
-    const { idxSensors, resetIdxControlsTriggered, setIdxControlsEnable, setIdxAutoAdjust, setIdxFrame3D } = this.props.ros
+    const { idxSensors, sendTriggerMsg, setIdxControlsEnable, setIdxAutoAdjust, setFrame3D } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
     const has_auto_adjust = (capabilities && capabilities.auto_adjustment && !this.state.disabled)
     const has_range_adjust = (capabilities && capabilities.adjustable_range && !this.state.disabled)
+    const resetControlsNamespace = this.props.idxSensorNamespace + "/idx/reset_controls"
     const imageName = this.props.idxImageName 
     return (
       <Section title={"Controls"}>
@@ -151,7 +152,7 @@ class NepiSensorsImagingControls extends Component {
             <Column>
             <div align={"left"} textAlign={"left"} hidden={!this.state.controlsEnable}>
                 <ButtonMenu>
-                  <Button onClick={() => resetIdxControlsTriggered(this.props.idxSensorNamespace)}>{"Reset Controls"}</Button>
+                  <Button onClick={() => sendTriggerMsg(resetControlsNamespace)}>{"Reset Controls"}</Button>
                 </ButtonMenu>
               </div>
             </Column>
@@ -305,7 +306,7 @@ class NepiSensorsImagingControls extends Component {
                   <Toggle 
                     checked={this.state.frame3D === "nepi_center_frame"} 
                     disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
-                    onClick={() => setIdxFrame3D(this.props.idxSensorNamespace,"nepi_center_frame")}
+                    onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"nepi_center_frame")}
                   />
                 </div>
                 </Column>
@@ -316,7 +317,7 @@ class NepiSensorsImagingControls extends Component {
                   <Toggle 
                     checked={this.state.frame3D === "sensor_frame"} 
                     disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
-                    onClick={() => setIdxFrame3D(this.props.idxSensorNamespace,"sensor_frame")}
+                    onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"sensor_frame")}
                   />
                 </div>
                 </Column>
@@ -327,7 +328,7 @@ class NepiSensorsImagingControls extends Component {
                   <Toggle 
                     checked={this.state.frame3D === "map"} 
                     disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
-                    onClick={() => setIdxFrame3D(this.props.idxSensorNamespace,"map")}
+                    onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"map")}
                   />
                 </div>
                 </Column>

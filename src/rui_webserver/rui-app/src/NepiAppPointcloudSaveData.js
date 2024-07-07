@@ -28,8 +28,8 @@ function roundWithSuffix(value, decimals, suffix) {
 @inject("ros")
 @observer
 
-// Component that contains the IDX Sensor controls
-class NepiSensorsImagingSaveData extends Component {
+// Component that contains the Save Controls
+class NepiAppPointcloudSaveData extends Component {
   constructor(props) {
     super(props)
 
@@ -490,4 +490,4 @@ class NepiSensorsImagingSaveData extends Component {
   }
 
 }
-export default NepiSensorsImagingSaveData
+export default NepiAppPointcloudSaveData

@@ -10,77 +10,100 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import { Columns, Column } from "./Columns"
+//import EnableAdjustment from "./EnableAdjustment"
+import Button, { ButtonMenu } from "./Button"
+import RangeAdjustment from "./RangeAdjustment"
+import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
+import Toggle from "react-toggle"
 import Label from "./Label"
+import { Column, Columns } from "./Columns"
+import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import Button, { ButtonMenu } from "./Button"
-import CameraViewer from "./CameraViewer"
-// import NepiPointcloudViewerSaveData from "./NepiPointcloudViewerSaveData"
-// import NepiPointcloudViewerControls from "./NepiPointcloudViewerControls"
 
-//import createShortValues from "./Utilities"
 
 @inject("ros")
 @observer
 
-// SensorIDX Application page
+// Component that contains the  Pointcloud App Viewer Controls
 class NepiAppPointcloudViewer extends Component {
   constructor(props) {
     super(props)
 
+    // these states track the values through  Status messages
     this.state = {
-      appName: "pointcloud_viewer",
-      appNamespace: null,
-      pointcloudTopicList: [],
-      selectedPointclouds: [],
-      viewableTopics: false,
+      standardImageSizeStrList: null,
+      rangeRatioMax: null,
+      rangeRatioMin: null,
+      rangeLimitMinM: null,
+      rangeLimitMaxM: null,
+      zoomAdjustment: null,
+      rotateAdjustment: null,
+      tiltAdjustment: null,
+      camViewX: null,
+      camViewY: null,
+      camViewZ: null,
+      camPosX: null,
+      camPosY: null,
+      camPosZ: null,
+      camRotX: null,
+      camRotY: null,
+      camRotZ: null,
 
-      disabled: true,
-      listener: null
+      listener: null,
 
+      disabled: false,
     }
 
-    this.createShortValues = this.createShortValues.bind(this)
-
-    this.getAppNamespace = this.getAppNamespace.bind(this)
-    this.getPointcloudOptions = this.getPointcloudOptions.bind(this)
-    this.getSelectedPointclouds = this.getSelectedPointclouds.bind(this)
-    this.updateSelectedPointclouds = this.updateSelectedPointclouds.bind(this)
-    this.updateSelectedPointclouds = this.updateSelectedPointclouds.bind(this)
-    this.onTogglePointcloudSelection = this.onTogglePointcloudSelection.bind(this)
-    this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
+    this.onUpdateCamText = this.onUpdateCamText.bind(this)
+    this.onKeyCamText = this.onKeyCamText.bind(this)
 
     this.updateListener = this.updateListener.bind(this)
     this.StatusListener = this.StatusListener.bind(this)
-
-  }
-
-  getAppNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var appNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      appNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
-    }
-    return appNamespace
+    
+    this.updateListener()
   }
 
   // Callback for handling ROS Status messages
   StatusListener(message) {
-    const pointcloudsMsg = message.pointcloud_topics
-    this.updateSelectedPointclouds(pointcloudsMsg)
+    this.setState({
+      standardImageSizeStrList: message.standard_image_sizes,
+      rangeRatioMin: message.range_clip_ratios.start_range,
+      rangeRatioMax: message.range_clip_ratios.stop_range,
+      rangeLimitMinM: message.range_min_max_m.start_range,
+      rangeLimitMaxM: message.range_min_max_m.stop_range,
+      zoomAdjustment: message.zoom_ratio,
+      rotateAdjustment: message.rotate_ratio,
+      tiltAdjustment: message.tilt_ratio,
+      camViewX: message.camera_view.x,
+      camViewY: message.camera_view.y,
+      camViewZ: message.camera_view.z,
+      camPosX: message.camera_position.x,
+      camPosY: message.camera_position.y,
+      camPosZ: message.camera_position.z,
+      camRotX: message.camera_rotation.x,
+      camRotY: message.camera_rotation.y,
+      camRotZ: message.camera_rotation.z,
+    })
+
+    const frames3d = this.getSettingsAsList(this.state.frames3d)
+    var frames3dlist = ["map"]
+    for (let ind = 0; ind < frames3d.length; ind++) {
+      frames3dlist.push(frames3d[ind])
+    }
+    this.setState({frame3dList: frames3dlist})
   }
 
+  // Function for configuring and subscribing to Status
   // Function for configuring and subscribing to Status
   updateListener() {
     const {title} = this.props
     const { setupPointcloudRenderStatusListener } = this.props.ros
-    const appNamespace = this.getAppNamespace()
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
-    if (appNamespace) {
-      const statusNamespace = appNamespace + "/status"
+    if (this.props.appNamespace.indexOf('null') === -1) {
+      const statusNamespace = this.props.appNamespace + "/status"
       var listener = setupPointcloudRenderStatusListener(
         statusNamespace,
         this.StatusListener
@@ -93,8 +116,10 @@ class NepiAppPointcloudViewer extends Component {
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
+  // Lifecycle method called when compnent updates.
+  // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const appNamespace = this.getAppNamespace()
+    const appNamespace = this.props.appNamespace
     if (prevState.appNamespace !== appNamespace && appNamespace !== null) {
       this.setState({appNamespace: appNamespace})
       this.updateListener()
@@ -109,200 +134,244 @@ class NepiAppPointcloudViewer extends Component {
     }
   }
 
-  // Function for creating image topic options.
-  getPointcloudOptions() {
-    const { pointcloudTopics } = this.props.ros
-    const appNamespace = this.getAppNamespace()
-    const thisPointcloudTopic = appNamespace + "/pointcloud"
-    var items = []
-    var pointcloudTopicShortnames = this.createShortValues(pointcloudTopics)
-    for (var i = 0; i < pointcloudTopics.length; i++) {
-      if (pointcloudTopics[i] !== thisPointcloudTopic){
-        items.push(<Option value={pointcloudTopics[i]}>{pointcloudTopicShortnames[i]}</Option>)
-      }
-    }
-    items.push(<Option>{"ALL"}</Option>) 
-    items.push(<Option>{"NONE"}</Option>) 
-    return items
+  onUpdateCamText(e) {
+    const stateVarName = e.target.id
+    const evalStr = 'this.setState({' + stateVarName + ': e.target.value})'
+    eval(evalStr);
+    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
   }
 
-  getSelectedPointclouds(){
-    const selectedPointclouds = this.state.selectedPointclouds
-    const appNamespace = this.state.appNamespace
-    return selectedPointclouds
-  }
 
-  updateSelectedPointclouds(pointcloudsMsg) {
-    var pointcloudsStrList = []
-    if (pointcloudsMsg != null){
-      pointcloudsMsg = pointcloudsMsg.replaceAll("[","")
-      pointcloudsMsg = pointcloudsMsg.replaceAll("]","")
-      pointcloudsMsg = pointcloudsMsg.replaceAll(" '","")
-      pointcloudsMsg = pointcloudsMsg.replaceAll("'","")
-      pointcloudsStrList = pointcloudsMsg.split(",")
-    }
-    this.setState({selectedPointclouds:pointcloudsStrList})
-  }
-
-  doNothing(){
-    var ret = false
-    return ret
-  }
- 
-  onTogglePointcloudSelection(event){
-    const {pointcloudTopics, sendStringMsg} = this.props.ros
-    const pointcloud = event.target.value
-    const appNamespace = this.getAppNamespace()
-    const addNamespace = appNamespace + "/add_pointcloud"
-    const removeNamespace = appNamespace + "/remove_pointcloud"
-    const selectedList = this.state.selectedPointclouds
-    if (appNamespace){
-      if (pointcloud === "NONE"){
-        for (let ind = 0; ind < selectedList.length; ind++) {
-          sendStringMsg(removeNamespace,selectedList[ind])
-        }
-      }
-      else if (pointcloud === "ALL"){
-        var pointcloud2
-        for (let ind = 0; ind < pointcloudTopics.length; ind++) {
-          pointcloud2 = pointcloudTopics[ind]
-          if (( pointcloud2 !== "NONE" || pointcloud2 !== "ALL") && selectedList.indexOf(pointcloud2) !== -1) {}
-          sendStringMsg(addNamespace,pointcloud2)
-        }
-      }
-      else if (selectedList.indexOf(pointcloud) !== -1){
-        sendStringMsg(removeNamespace,pointcloud)
-      }
-      else {
-        sendStringMsg(addNamespace,pointcloud)
-      }
+  onKeyCamText(e,topic, f1, f2, f3) {
+    const {sendFloatVector3Msg} = this.props.ros
+    var namespace = topic
+    var f1s = String(f1)
+    var f2s = String(f2)
+    var f3s = String(f3)
+    if(e.key === 'Enter'){
+      sendFloatVector3Msg(namespace,f1s,f2s,f3s)
+      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
     }
   }
 
-  createShortValues(list) {
-    var tokenizedList = []
-    var shortList = []
-    var shortName = ''
-    for (var i = 0; i < list.length; ++i) {
-      tokenizedList.push(list[i].split("/"))
-      shortName = tokenizedList[i][3] + "/" + tokenizedList[i][tokenizedList[i].length-1]
-      shortList.push(shortName)
-    }
-    return shortList
-  }
-
-  toggleViewableTopics() {
-    const set = !this.state.viewableTopics
-    this.setState({viewableTopics: set})
-  }
-
-  renderSensorSelection() {
-    const { saveConfigTriggered  } = this.props.ros
-    const {viewableTopics} = this.state
-    const appNamespace = this.getAppNamespace()
-    const pointcloudSources = this.getPointcloudOptions()
-    const selectedPointclouds = this.getSelectedPointclouds()
-
-    const NoneOption = <Option>None</Option>
-    const SensorSelected = (this.state.currentIDXNamespace != null)
-
-    return (
-      <React.Fragment>
-        <Columns>
-          <Column>
-            <Section title={"Selection"}>
-
-         
-                  <Label title="Add/Remove Pointclouds">
-                    <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={!viewableTopics}>
-                    {pointcloudSources.map((pointcloud) =>
-                    <div onClick={this.onTogglePointcloudSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (selectedPointclouds.includes(pointcloud.props.value))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body pointcloud-topic ={pointcloud} style={{color: Styles.vars.colors.black}}>{pointcloud}</body>
-                    </div>
-                    )}
-                    </div>
-                  </Label>
-
-                <div align={"left"} textAlign={"left"} hidden={appNamespace === null}>
-                    <ButtonMenu>
-                      <Button onClick={() => saveConfigTriggered(appNamespace)}>{"Save Config"}</Button>
-                    </ButtonMenu>
-                </div>
-            </Section>
-          </Column>
-        </Columns>
-      </React.Fragment>
-    )
-  }
-
-  renderImageViewer() {
-    const appNamespace = this.getAppNamespace()
-    const img_topic = appNamespace + "/pointcloud_image"
-    return (
-      <React.Fragment>
-        <Columns>
-          <Column equalWidth={false}>
-            <CameraViewer
-              imageTopic={img_topic}
-              title={"pointcloud_image"}
-              hideQualitySelector={false}
-            />
-          </Column>
-        </Columns>
-      </React.Fragment>
-    )
-  }
 
 
   render() {
-    const { namespacePrefix, deviceId } = this.props.ros
-    const namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
-    
+    const {  sendTriggerMsg, setFrame3d } = this.props.ros
     return (
-      <Columns>
-        <Column>
+      <Section title={"Controls"}>
+        <Columns>
+          <Column>
+ 
+          </Column>
+          <Column>
+          </Column>
+        </Columns>
+        <div >
+          <Columns>
+            <Column>
 
-          {this.renderImageViewer()}
-
-{/*        
-        <div hidden={false}>
-          <NepiPointcloudViewerSaveData
-                appNamespace={namespace}
-                title={"NepiPointcloudViewerSaveData}
-            />
-        </div>
-*/}
-
-
-        </Column>
-        <Column>
-
-          {this.renderSensorSelection()}
+            </Column>
+            <Column>
+            <div align={"left"} textAlign={"left"} >
+                <ButtonMenu>
+                  <Button onClick={() => sendTriggerMsg( this.props.appNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
+                </ButtonMenu>
+              </div>
+            </Column>
+          </Columns>
+        
 
 
+            <div >
+              <RangeAdjustment
+                title="Range Clip"
+                min={this.state.rangeRatioMin}
+                max={this.state.rangeRatioMax}
+                min_limit_m={this.state.rangeLimitMinM}
+                max_limit_m={this.state.rangeLimitMaxM}
+                topic={this.props.appNamespace + "/set_range_ratios"}
+                disabled={(!this.state.disabled)? false : true}
+                tooltip={"Adjustable range"}
+                unit={"m"}
+              />
+            </div>
 
-{/*        
-        <div hidden={false}>
-          <NepiPointcloudViewerControls
-                appNamespace={namespace}
-                title={"NepiPointcloudViewerControls}
-            />
-        </div>
-*/}
-         </Column>
-      </Columns>
+
+            <div >
+
+                <SliderAdjustment
+                      title={"Zoom"}
+                      msgType={"std_msgs/Float32"}
+                      adjustment={this.state.zoomAdjustment}
+                      topic={this.props.appNamespace + "/set_zoom_ratio"}
+                      scaled={0.01}
+                      min={0}
+                      max={100}
+                      disabled={false}
+                      tooltip={"Zoom controls for pointcloud image rendering"}
+                      unit={"%"}
+                  />
+
+
+                <SliderAdjustment
+                      title={"Rotate"}
+                      msgType={"std_msgs/Float32"}
+                      adjustment={this.state.rotateAdjustment}
+                      topic={this.props.appNamespace + "/set_rotate_ratio"}
+                      scaled={0.01}
+                      min={0}
+                      max={100}
+                      disabled={false}
+                      tooltip={"Rotate controls for pointcloud image rendering"}
+                      unit={"%"}
+                  />
+
+                  <SliderAdjustment
+                      title={"Tilt"}
+                      msgType={"std_msgs/Float32"}
+                      adjustment={this.state.tiltAdjustment}
+                      topic={this.props.appNamespace + "/set_tilt_ratio"}
+                      scaled={0.01}
+                      min={0}
+                      max={100}
+                      disabled={false}
+                      tooltip={"Tilt controls for pointcloud image rendering"}
+                      unit={"%"}
+                  />
+
+              <Label title={"Camera View"}>
+              </Label>
+              <Columns>
+                <Column>
+
+                  <Label title={"X  "}>
+                    <Input
+                      id="camViewX"
+                      value={(this.state.camViewX)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
+                    />
+                  </Label>
+
+                </Column>
+                <Column>
+
+                <Label title={"Y  "}>
+                    <Input
+                      id="camViewY"
+                      value={(this.state.camViewY)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
+                    />
+                  </Label>
+
+                </Column>
+                <Column>
+
+                <Label title={"Z  "}>
+                    <Input
+                      id="camViewZ"
+                      value={(this.state.camViewZ)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
+                    />
+                  </Label>
+
+                </Column>
+              </Columns>
+
+
+              <Label title={"Camera Position"}>
+              </Label>
+              <Columns>
+                <Column>
+
+                  <Label title={"X  "}>
+                    <Input
+                      id="camPosX"
+                      value={(this.state.camPosX)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
+                    />
+                  </Label>
+
+                </Column>
+                <Column>
+
+                <Label title={"Y  "}>
+                    <Input
+                      id="camPosY"
+                      value={(this.state.camPosY)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
+                    />
+                  </Label>
+
+                </Column>
+                <Column>
+
+                <Label title={"Z  "}>
+                    <Input
+                      id="camPosZ"
+                      value={(this.state.camPosZ)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
+                    />
+                  </Label>
+
+                </Column>
+              </Columns>
+
+
+              <Label title={"Camera Rotation"}>
+              </Label>
+              <Columns>
+                <Column>
+
+                  <Label title={"X  "}>
+                    <Input
+                      id="camcamRotX"
+                      value={(this.state.camcamRotX)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                    />
+                  </Label>
+
+                </Column>
+                <Column>
+
+                <Label title={"Y  "}>
+                    <Input
+                      id="camcamRotY"
+                      value={(this.state.camcamRotY)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                    />
+                  </Label>
+
+                </Column>
+                <Column>
+
+                <Label title={"Z  "}>
+                    <Input
+                      id="camcamRotZ"
+                      value={(this.state.camcamRotZ)}
+                      onChange={this.onUpdateCamText}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                    />
+                  </Label>
+
+                </Column>
+              </Columns>
+
+            </div>
+            
+          </div>
+        
+      </Section>
     )
   }
-}
 
+}
 export default NepiAppPointcloudViewer

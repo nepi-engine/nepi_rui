@@ -878,6 +878,88 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  sendTriggerMsg(namespace) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  sendFloatMsg(namespace, float_str) {
+    let floatVal = parseFloat(float_str)
+    if (!isNaN(floatVal)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "std_msgs/Float32",
+        data: {data: floatVal},
+        noPrefix: true
+      })
+    }
+  }
+
+  @action.bound
+  sendFloatVector3Msg(namespace, float1_str,float2_str,float3_str) {
+    let float1Val = parseFloat(float1_str)
+    let float2Val = parseFloat(float2_str)
+    let float3Val = parseFloat(float3_str)
+    if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "geometry_msgs/Vector3",
+        data: { 
+          x: float1Val,
+          y: float2Val,
+          z: float3Val
+        },
+        noPrefix: true
+      })
+    }
+  }
+
+  @action.bound
+  sendIntMsg(namespace, int_str) {
+    let intVal = parseFloat(int_str)
+    if (!isNaN(intVal)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "std_msgs/Int32",
+        data: {data: intVal},
+        noPrefix: true
+      })
+    }
+  }
+
+
+  @action.bound
+  setupPointcloudSelectionStatusListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_ros_interfaces/PointcloudSelectionStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+
+  @action.bound
+  setupPointcloudProcessStatusListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_ros_interfaces/PointcloudProcessStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
 
   @action.bound
   setupPointcloudRenderStatusListener(namespace, callback) {
@@ -1076,15 +1158,7 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  resetIdxControlsTriggered(idxSensorNamespace) {
-    this.publishMessage({
-      name: idxSensorNamespace + "/idx/reset_controls",
-      messageType: "std_msgs/Empty",
-      data: {},
-      noPrefix: true
-    })
-  }
+
 
 
   @action.bound
@@ -1109,9 +1183,9 @@ class ROSConnectionStore {
   }
   
   @action.bound
-  setIdxFrame3D(idxSensorNamespace, value) {
+  setFrame3D(namespace, value) {
       this.publishMessage({
-        name: idxSensorNamespace + "/idx/set_frame_3d",
+        name: namespace + '/set_frame_3d',
         messageType: "std_msgs/String",
         data: {'data':value},
         noPrefix: true
