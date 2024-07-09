@@ -36,7 +36,6 @@ import LSX from "./NepiControlsLights"
 @inject("ros")
 @withRouter
 @observer
-
 class App extends Component {
 
   componentDidMount() {

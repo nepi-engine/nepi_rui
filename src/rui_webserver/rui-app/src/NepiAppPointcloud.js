@@ -19,9 +19,10 @@ import CameraViewer from "./CameraViewer"
 import Input from "./Input"
 
 
-// import NepiAppPointcloudSaveData from "./NepiAppPointcloudSaveData"
 // import NepiAppPointcloudProcess from "./NepiAppPointcloudProcess"
 import NepiAppPointcloudViewer from "./NepiAppPointcloudViewer"
+
+import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
 //import createShortValues from "./Utilities"
 
@@ -40,14 +41,14 @@ class NepiAppPointcloud extends Component {
       selectedPointclouds: [],
       viewableTopics: false,
 
-      transforms_topic_list: null,
-      transofrm_data_list: null,
-      selectedTransformInd: null,
+      transforms_topic_list: [],
+      transofrm_data_list: [],
+      selectedTransformInd: 0,
       selectedTransformName: null,
       selectedTransformData: null,
 
       combineOption: null,
-      combineOptionsList: [""],
+      combineOptionsList: [],
       selectedCombineOptionsInd: 0,
 
       rangeMaxMeters: null,
@@ -70,12 +71,9 @@ class NepiAppPointcloud extends Component {
 
     this.getTransformTopicOptions = this.getTransformTopicOptions.bind(this)
     this.updateTranformsLists = this.updateTranformsLists.bind(this)
-    this.getTransformListByIndex = this.getTransformListByIndex.bind(this)
-    this.updateSelectedTransformData = this.updateSelectedTransformData.bind(this)
 
     this.getStrListAsList = this.getStrListAsList.bind(this)
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
-    this.onToggleFrame3dSelection = this.onToggleFrame3dSelection.bind(this)
 
     this.updateListener = this.updateListener.bind(this)
     this.StatusListener = this.StatusListener.bind(this)
@@ -96,11 +94,13 @@ class NepiAppPointcloud extends Component {
   StatusListener(message) {
     const pointcloudsMsg = message.pointcloud_topics
     this.updateSelectedPointclouds(pointcloudsMsg)
+    const combineOptionsMsg = message.combine_options
+    const combineOptions = this.getStrListAsList(combineOptionsMsg)
     const transformsTopicMsg = message.transforms_topic_list
     const transformsMsg = message.transforms_list
     this.updateTransformLists( transformsTopicMsg,transformsMsg)
     this.setState({
-    combineOptions: message.combine_options,
+    combineOptionsList: combineOptions,
     combineOption: message.combine_option,
     rangeMinMeters: message.range_min_max_m.start_range,
     rangeMaxMeters: message.range_min_max_m.stop_range,
@@ -226,8 +226,8 @@ class NepiAppPointcloud extends Component {
 
   // Function for creating image topic options.
   getTransformTopicOptions() {
-    const topicList = transforms_topic_list
-    var items = []
+    const topicList = this.state.transforms_topic_list
+    var items = [<Option value={"NONE"}>{"NONE"}</Option>]
     var topicListShortnames = this.createShortValues(topicList)
     for (var i = 0; i < topicList.length; i++) {
       items.push(<Option value={topicList[i]}>{topicListShortnames[i]}</Option>)
@@ -252,26 +252,13 @@ class NepiAppPointcloud extends Component {
     })
   }
 
-  getTransformListByIndex(topicIndex){
-    const transformsList = this.state.transforms_data_list
-    const startInd = (topicIndex - 1) * 7
-    const stopInd = startInd + 6
-    var transform = []
-
-    if (length(transformsList) < (stopInd+1)){
-      transform = transformsList.split(startInd,stopInd)
-    } 
-    else {
-      transform = [0,0,0,0,0,0,0]
-    }
-    return transfrom
-  }
 
   updateSelectedTransformData(topicIndex){
     const name = this.state.transforms_topic_list[topicIndex]
-    this.setState({selectedTransformInd: null,
-      selectedTransformName: null,
-      selectedTransformData: null,})
+    const data = this.state.transforms_list[topicIndex]
+    this.setState({selectedTransformInd: topicIndex,
+      selectedTransformName: name,
+      selectedTransformData: data,})
   }
 
 
@@ -308,27 +295,14 @@ class NepiAppPointcloud extends Component {
     return menuList
   }
 
-  onToggleFrame3dSelection(event){
-    const {sendStringMsg} = this.props.ros
-    const value = event.target.value
-    const namespace = this.props.appNamespace + '/set_frame_3d'
-    const frames3d = this.state.frames3d
-    const selectedInd = frames3d.indexOf[event.target.value]
-    if (this.props.appNamespace && selectedInd !== -1){
-        this.setState({selectedFrame3dInd: selectedInd})
-         sendStringMsg(namespace,value)
-    }
-  }
   renderPointcloudSelection() {
     const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {viewableTopics} = this.state
-    const connected = this.state.connected
     const appNamespace = this.getAppNamespace()
     const pointcloudSources = this.getPointcloudOptions()
     const selectedPointclouds = this.getSelectedPointclouds()
-
     const NoneOption = <Option>None</Option>
-    const SensorSelected = (this.state.currentIDXNamespace != null)
+
 
     return (
       <React.Fragment>
@@ -356,27 +330,6 @@ class NepiAppPointcloud extends Component {
                     )}
                     </div>
                   </Label>
-
-
-
-              <Columns>
-                <Column>
-                <div align={"center"} textAlign={"center"}>
- 
-                  <Label title={"Select 3d Frame"}>
-                    <Select
-                      id="selectedFrameName"
-                      onChange={this.onToggleFrame3dSelection}
-                      value={this.state.frame3dList[this.state.selectedFrame3dInd]}
-                    >
-                      {this.convertStrListToMenuList(this.state.frame3dList)}
-                    </Select>
-                  </Label>
-
-                </div>
-                </Column>
-              </Columns>
-
 
                 <div align={"left"} textAlign={"left"} hidden={appNamespace === null}>
                     <ButtonMenu>
@@ -414,19 +367,19 @@ class NepiAppPointcloud extends Component {
 
   render() {
     const { namespacePrefix, deviceId } = this.props.ros
-    const namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
-    
+    const appNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
+    const connected = this.state.connected
     return (
       <Columns>
         <Column>
 
           {this.renderImageViewer()}
 
-       
+
         <div hidden={!connected}>
-          <NepiAppPointcloudSaveData
-                appNamespace={namespace}
-                title={"NepiAppPointcloudSaveData"}
+          <Nepi_IF_SaveData
+                saveNamespace={appNamespace}
+                title={"Nepi_IF_SaveData"}
             />
         </div>
 
@@ -435,19 +388,24 @@ class NepiAppPointcloud extends Component {
 
           {this.renderPointcloudSelection()}
 
-
+{/*
         <div hidden={!connected}>
           <NepiAppPointcloudProcess
-                appNamespace={namespace + "/process"}
+                appNamespace={appNamespace + "/process"}
                 title={"NepiAppPointcloudProcess"}
             />
+        </div>
+*/}
 
+{/*
+        <div hidden={!connected}>
           <NepiAppPointcloudViewer
-                appNamespace={namespace + "/viewer"}
+                appNamespace={appNamespace + "/viewer"}
                 title={"NepiAppPointcloudViewer"}
             />
         </div>
 
+*/}
          </Column>
       </Columns>
     )

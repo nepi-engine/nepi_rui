@@ -40,7 +40,7 @@ class NepiAppPointcloudProcess extends Component {
       voxel_downsample_size_m: null,
       uniform_downsample_points: null,
       outlier_k_points: null,
-      framesList: null,
+      framesList: ['nepi_center_frame','sensor_frame','map'],
       frame_3d: null,
 
       listener: null,
@@ -49,7 +49,6 @@ class NepiAppPointcloudProcess extends Component {
     }
 
     this.getStrListAsList = this.getStrListAsList.bind(this)
-    this.updateFrames3dList = this.updateFrames3dList.bind(this)
 
     this.updateListener = this.updateListener.bind(this)
     this.StatusListener = this.StatusListener.bind(this)
@@ -80,13 +79,17 @@ class NepiAppPointcloudProcess extends Component {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
-    if (this.props.appNamespace.indexOf('null') === -1) {
-      const statusNamespace = this.props.appNamespace + "/status"
-      var listener = setupPointcloudProcessStatusListener(
-        statusNamespace,
-        this.StatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
+    if (this.props.appNamespace) {
+      if (this.props.appNamespace.indexOf('null') === -1) {
+        const statusNamespace = this.props.appNamespace + "/status"
+        var listener = setupPointcloudProcessStatusListener(
+          statusNamespace,
+          this.StatusListener
+        )
+        this.setState({ listener: listener, disabled: false })
+      } else {
+        this.setState({ disabled: true })
+      }
     } else {
       this.setState({ disabled: true })
     }
@@ -125,12 +128,6 @@ class NepiAppPointcloudProcess extends Component {
     return StrList
   }
 
-  updateFrames3dList(framesListMsg){
-    const list = this.getStrListAsList(framesListMsg)
-    this.setState({
-      framesList: list
-    })
-  }
 
   render() {
     const {  sendTriggerMsg, setFrame3d } = this.props.ros

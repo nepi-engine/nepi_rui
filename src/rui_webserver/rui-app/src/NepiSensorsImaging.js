@@ -16,9 +16,10 @@ import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 import NepiSensorsImagingInfo from "./NepiSensorsImagingInfo"
-import NepiSensorsImagingSaveData from "./NepiSensorsImagingSaveData"
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
-import NepiSensorsImagingSettings from "./NepiSensorsImagingSettings"
+
+import Nepi_IF_Settings from "./Nepi_IF_Settings"
+import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
 import createShortUniqueValues from "./Utilities"
 
@@ -240,9 +241,9 @@ class NepiSensorsImaging extends Component {
         </div>
           {this.renderImageViewer()}
           <div hidden={!SensorSelected}>
-            <NepiSensorsImagingSaveData
+            <Nepi_IF_SaveData
                 saveNamespace={this.state.currentIDXNamespace}
-                title={"NepiSensorsImagingSaveData"}
+                title={"Nepi_IF_SaveData"}
             />
           </div>
 
@@ -258,9 +259,9 @@ class NepiSensorsImaging extends Component {
                 title={"NepiSensorsImagingControls"}
             />
 
-            <NepiSensorsImagingSettings
-              idxSensorNamespace={this.state.currentIDXNamespace}
-              title={"NepiSensorsImagingSettings"}
+            <Nepi_IF_Settings
+              settingsNamespace={this.state.currentIDXNamespace}
+              title={"Nepi_IF_Settings"}
             />
 
 

@@ -28,20 +28,21 @@ function roundWithSuffix(value, decimals, suffix) {
 @inject("ros")
 @observer
 
-// Component that contains the Save Controls
-class NepiAppPointcloudSaveData extends Component {
+// Component that contains the Save Data Controls
+class Nepi_IF_SaveData extends Component {
   constructor(props) {
     super(props)
 
-    // these states track the values through IDX Status messages
+    // these states track the values through the components Save Data Status messages
     this.state = {
       show_save_data: true,
       reset_save_data: false,
       saveRatesMsg: "",
       saveDataPrefix: "",
       saveDataEnabled: false,
-      saveDataNavEnabled: false,
       saveDataRate: "1.0",
+      saveNavDataEnabled: false,
+      saveNavDataRate: "10.0",
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
@@ -62,15 +63,21 @@ class NepiAppPointcloudSaveData extends Component {
     this.getSaveRateValue = this.getSaveRateValue.bind(this)
     this.getSaveRateData = this.getSaveRateData.bind(this)
 
-    this.onChangeBoolSaveDataNavValue = this.onChangeBoolSaveDataNavValue.bind(this)
+
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
     this.onChangeBoolSaveDataValue = this.onChangeBoolSaveDataValue.bind(this)
-    this.getSaveDataNavValue = this.getSaveDataNavValue.bind(this)
+    this.getSaveNavDataValue = this.getSaveNavDataValue.bind(this)
     this.onUpdateInputSaveDataRateValue = this.onUpdateInputSaveDataRateValue.bind(this)
     this.onKeySaveInputSaveDataRateValue = this.onKeySaveInputSaveDataRateValue.bind(this)
     this.onUpdateInputSaveDataPrefixValue = this.onUpdateInputSaveDataPrefixValue.bind(this)
     this.onKeySaveInputSaveDataPrefixValue = this.onKeySaveInputSaveDataPrefixValue.bind(this)
     this.onToggleDataProductSelection = this.onToggleDataProductSelection.bind(this)
+    
+
+    this.getNavNamespace = this.getNavNamespace.bind(this)
+    this.onChangeBoolSaveNavDataValue = this.onChangeBoolSaveNavDataValue.bind(this)
+    this.onUpdateInputSaveNavDataRateValue = this.onUpdateInputSaveNavDataRateValue.bind(this)
+    this.onKeySaveInputSaveDataNavRateValue = this.onKeySaveInputSaveNavDataRateValue.bind(this)
 
     this.updateSelectedDataProducts = this.updateSelectedDataProducts.bind(this)
     this.getSelectedDataProducts = this.getSelectedDataProducts.bind(this)
@@ -81,6 +88,8 @@ class NepiAppPointcloudSaveData extends Component {
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
     
     this.doNothing = this.doNothing.bind(this)
+
+    this.onSnapshotTriggered = this.onSnapshotTriggered.bind(this)
 
     //this.updateSaveListener()
   }
@@ -110,17 +119,20 @@ class NepiAppPointcloudSaveData extends Component {
   // Function for configuring and subscribing to Status
   updateSaveListener() {
     const { saveNamespace, title } = this.props
-    const statusNamespace = saveNamespace + "/save_data_status"
     if (this.state.saveListener) {
       this.state.saveListener.unsubscribe()
     }
 
-    if (title) {
-      var saveListener = this.props.ros.setupSaveDataStatusListener(
-        statusNamespace,
-        this.SaveStatusListener
-      )
-      this.setState({ saveListener: saveListener, disabled: false })
+    if (saveNamespace != null) {
+      if (saveNamespace.indexOf('null') === -1){
+        var saveListener = this.props.ros.setupSaveDataStatusListener(
+          saveNamespace,
+          this.SaveStatusListener
+        )
+        this.setState({ saveListener: saveListener, disabled: false })
+      } else {
+        this.setState({ disabled: true })
+      }
     } else {
       this.setState({ disabled: true })
     }
@@ -198,8 +210,8 @@ class NepiAppPointcloudSaveData extends Component {
       }
     }
     var navSaveRate = "0.0"
-    if (this.state.saveDataNavEnabled === true){
-      navSaveRate = this.state.saveDataRate
+    if (this.state.saveNavDataEnabled === true){
+      navSaveRate = this.state.saveNavDataRate
     }
     entryStr = ("nav : " + navSaveRate + " Hz\n")
     configsStrList.push(entryStr)
@@ -251,14 +263,6 @@ class NepiAppPointcloudSaveData extends Component {
       }
     }
     this.setState({selectedDataProducts:updatedSelectedList})
-    if (this.save_data_nav_enabled){
-      rate = parseFloat(this.saveDataRate)
-      if (isNaN(rate) === false) {
-        const nsStrList = this.props.saveNamespace.split("/")
-        const baseNamespace = nsStrList[0] + "/" + nsStrList[1] + "/nav_pose_mgr"
-        updateSaveDataRate(baseNamespace,"nav_pose",rate)
-      }
-    }
   }
 
 
@@ -306,28 +310,42 @@ class NepiAppPointcloudSaveData extends Component {
     return saveData
   }
 
+  getNavNamespace()  {
+    const nsStrList = this.props.saveNamespace.split("/")
+    const navNamespace = "/" + nsStrList[1] + "/" + nsStrList[2] + "/nav_pose_mgr"
+    return navNamespace
+  }
+
   onChangeBoolSaveDataValue(){
     const {updateSaveDataEnable}  = this.props.ros
     const enabled = (this.state.saveDataEnabled === false)
-    const saveNavEnabled = (this.state.saveDataNavEnabled === true)
+    const saveNavEnabled = (this.state.saveNavDataEnabled === true)
     this.sendSaveRateUpdates()
     updateSaveDataEnable(this.props.saveNamespace,enabled)
     if (saveNavEnabled === true){
-      const nsStrList = this.props.saveNamespace.split("/")
-      const navNamespace = "/" + nsStrList[1] + "/" + nsStrList[2] + "/nav_pose_mgr"
+      const navNamespace = this.getNavNamespace()
       updateSaveDataEnable(navNamespace,enabled)
     }
 
   }
 
-  getSaveDataNavValue(){
-    const saveDataNav = (this.state.saveDataNavEnabled === true)
-    return saveDataNav
+  getSaveNavDataValue(){
+    const saveNavData = (this.state.saveNavDataEnabled === true)
+    return saveNavData
   }
 
-  onChangeBoolSaveDataNavValue(){
-    const enabled = (this.state.saveDataNavEnabled === false)
-    this.setState({saveDataNavEnabled:enabled})
+  onChangeBoolSaveNavDataValue(){
+    const {updateSaveDataRate} = this.props.ros
+    const navEnabled = (this.state.saveNavDataEnabled === false)
+    const nav_rate_str = this.state.saveNavDataRate
+    this.setState({saveNavDataEnabled:navEnabled})
+    if (navEnabled){
+      const nav_rate = parseFloat(nav_rate_str)
+      if (isNaN(nav_rate) === false) {
+        const navNamespace = this.getNavNamespace()
+        updateSaveDataRate(navNamespace,"nav_pose",nav_rate)
+      }
+    }
   }
 
 
@@ -341,13 +359,29 @@ class NepiAppPointcloudSaveData extends Component {
   onKeySaveInputSaveDataRateValue(event) {
     if(event.key === 'Enter'){
       const rate = parseFloat(event.target.value)
-      if (isNaN(rate)){
-        this.setState({saveDataRate: "0.0"})
-      } else {
+      if (!isNaN(rate)){
         this.setState({saveDataRate: event.target.value })
         this.sendSaveRateUpdates()
       }
       document.getElementById("input_rate").style.color = Styles.vars.colors.black
+    }
+  }
+
+
+  onUpdateInputSaveNavDataRateValue(event) {
+    this.setState({saveNavDataRate: event.target.value })
+    document.getElementById("nav_rate").style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onKeySaveInputSaveNavDataRateValue(event) {
+    if(event.key === 'Enter'){
+      const rate = parseFloat(event.target.value)
+      if (!isNaN(rate)){
+        this.setState({saveNavDataRate: event.target.value })
+        this.sendSaveRateUpdates()
+      }
+      document.getElementById("nav_rate").style.color = Styles.vars.colors.black
     }
   }
 
@@ -361,14 +395,13 @@ class NepiAppPointcloudSaveData extends Component {
     const { updateSaveDataPrefix} = this.props.ros
     const key = event.key
     const value = event.target.value
-    const navEnabled = (this.state.saveDataNavEnabled === true)
+    const navEnabled = (this.state.saveNavDataEnabled === true)
     if(key === 'Enter'){
       document.getElementById("input_prefix").style.color = Styles.vars.colors.black
       updateSaveDataPrefix(this.props.saveNamespace,value)
     }
     if (key === 'Enter' && navEnabled === true) {
-      const nsStrList = this.props.saveNamespace.split("/")
-      const navNamespace = "/" + nsStrList[1] + "/" + nsStrList[2] + "/nav_pose_mgr"
+      const navNamespace = this.getNavNamespace()
       updateSaveDataPrefix(navNamespace,value)
     }
   }
@@ -387,10 +420,21 @@ class NepiAppPointcloudSaveData extends Component {
     return systemStatusDiskRate
   }
 
+
+  onSnapshotTriggered(){
+    const { onSnapshotEventTriggered} = this.props.ros
+    onSnapshotEventTriggered(this.props.saveNamespace)
+    const navEnabled = (this.state.saveNavDataEnabled === true)
+    if (navEnabled){
+      const navNamespace = this.getNavNamespace()
+      onSnapshotEventTriggered(navNamespace)
+    }
+  }
+
   render() {
     const { resetSaveDataTriggered, onSnapshotEventTriggered} = this.props.ros
     const saveDataEnabled = this.getSaveDataValue()
-    const saveDataNavEnabled = this.getSaveDataNavValue()
+    const saveNavDataEnabled = this.getSaveNavDataValue()
     const dataProdcutSources = this.getSaveNamesList()
     const selectedDataProducts = this.getSelectedDataProducts()
     const diskUsage = this.getDiskUsageRate()
@@ -400,11 +444,11 @@ class NepiAppPointcloudSaveData extends Component {
 
          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_save_data}>
         
-        <Columns>
+          <Columns>
             <Column>
-              <div align={"left"} textAlign={"left"}>
+              <div align={"left"} textAlign={"left"} hidden={this.state.saveDataEnabled}>
               <ButtonMenu>
-                  <Button onClick={() => onSnapshotEventTriggered(this.props.saveNamespace)}>{"Take Snapshot"}</Button>
+                  <Button onClick={this.onSnapshotTriggered}>{"Take Snapshot"}</Button>
                 </ButtonMenu>
               </div>
               <Label title={"Save Data"}>
@@ -446,23 +490,32 @@ class NepiAppPointcloudSaveData extends Component {
               )}
               </div>
             </Label>
-            <Label title={"Enable Nav Data Saving"}>
+            <Label title={"Nav Data Saving"}>
+            </Label>
+            <Label title={"Enable"}>
                 <Toggle
-                  checked={ (saveDataNavEnabled === true) }
-                  onClick={() => {this.onChangeBoolSaveDataNavValue()}}
+                  checked={ (saveNavDataEnabled === true) }
+                  onClick={this.onChangeBoolSaveNavDataValue}
                 />
               </Label>
+              <Label title={"Max Rate (Hz)"}>
+                  <Input id="nav_rate" 
+                      value={this.state.saveNavDataRate} 
+                      onChange={this.onUpdateInputSaveNavDataRateValue} 
+                      onKeyDown= {this.onKeySaveInputSaveNavDataRateValue} />
+              </Label>
+
+
             </Column>
             <Column>
+
               <ButtonMenu>
                 <Button onClick={() => resetSaveDataTriggered(this.props.saveNamespace)}>{"Reset Save Settings"}</Button>
               </ButtonMenu>
-            </Column>
-          </Columns>
-       
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-          <Columns>
-            <Column>
+              <Label title={""}>
+              </Label>
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
               <Label title={"Saving"}>
                 <BooleanIndicator value={(this.getSaveDataValue() === true)} />
               </Label>
@@ -477,11 +530,10 @@ class NepiAppPointcloudSaveData extends Component {
               <pre style={{ height: "200px", overflowY: "auto" }}>
                 {this.getSaveConfigString()}
               </pre>
-            </Column>
-            <Column>
+
             </Column>
           </Columns>
-
+      
         </div>
 
 
@@ -490,4 +542,4 @@ class NepiAppPointcloudSaveData extends Component {
   }
 
 }
-export default NepiAppPointcloudSaveData
+export default Nepi_IF_SaveData

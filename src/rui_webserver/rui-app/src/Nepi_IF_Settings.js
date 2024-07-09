@@ -23,14 +23,14 @@ import Input from "./Input"
 @inject("ros")
 @observer
 
-// Component that contains the IDX Sensor controls
-class NepiSensorsImagingSettings extends Component {
+// Component that contains the Settings controls
+class Nepi_IF_Settings extends Component {
   constructor(props) {
     super(props)
 
-    // these states track the values through IDX Status messages
+    // these states track the values through  Status messages
     this.state = {
-      show_sensor_settings: true,
+      show_settings: true,
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
       capSettingsTypesList: [],
@@ -80,17 +80,21 @@ class NepiSensorsImagingSettings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const { idxSensorNamespace, title } = this.props
+    const { settingsNamespace, title } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
 
-    if (title) {
-      var listener = this.props.ros.setupSettingsStatusListener(
-        idxSensorNamespace,
-        this.settingsStatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
+    if (settingsNamespace != null) {
+      if (settingsNamespace.indexOf('null') === -1){
+        var listener = this.props.ros.setupSettingsStatusListener(
+          settingsNamespace,
+          this.settingsStatusListener
+        )
+        this.setState({ listener: listener, disabled: false })
+      } else {
+        this.setState({ disabled: true })
+      }
     } else {
       this.setState({ disabled: true })
     }
@@ -99,8 +103,8 @@ class NepiSensorsImagingSettings extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { idxSensorNamespace } = this.props
-    if (prevProps.idxSensorNamespace !== idxSensorNamespace) {
+    const { settingsNamespace } = this.props
+    if (prevProps.settingsNamespace !== settingsNamespace) {
       this.updateSettingsListener()
     }
   }
@@ -127,32 +131,34 @@ class NepiSensorsImagingSettings extends Component {
 
   // Function for creating settings options list from capabilities
   updateCapSettingsLists() {
-    const {idxSettings} = this.props.ros
-    const capabilities = idxSettings[this.props.idxSensorNamespace]
-    var typesList = []
-    var namesList = []
-    if (capabilities !== undefined){
-      const capSettingsMsg = capabilities.settings_options
-      const capSettingsValid = (capSettingsMsg !== undefined)
-      const capSettingsEmpty = (this.state.capSettingsNamesList.length === 0)
-      if (capSettingsValid && capSettingsEmpty){
-        const capSettingsStrList = this.getSettingsAsList(capSettingsMsg)
-        var new_setting = false
-        var entry = ''
-        typesList.push("None")
-        namesList.push("None")
-        for (let ind = 0; ind < capSettingsStrList.length; ind++){
-          entry = capSettingsStrList[ind]
-          if (this.state.capSettingsTypes.indexOf(entry) !== -1){
-            typesList.push(entry)
-            new_setting = true
-          } else if (new_setting && entry !== 'None'){
-            namesList.push(entry)
-            new_setting = false
+    const {settingsCaps} = this.props.ros
+    if (settingsCaps){
+      const capabilities = settingsCaps[this.props.settingsNamespace]
+      var typesList = []
+      var namesList = []
+      if (capabilities !== undefined){
+        const capSettingsMsg = capabilities.settings_options
+        const capSettingsValid = (capSettingsMsg !== undefined)
+        const capSettingsEmpty = (this.state.capSettingsNamesList.length === 0)
+        if (capSettingsValid && capSettingsEmpty){
+          const capSettingsStrList = this.getSettingsAsList(capSettingsMsg)
+          var new_setting = false
+          var entry = ''
+          typesList.push("None")
+          namesList.push("None")
+          for (let ind = 0; ind < capSettingsStrList.length; ind++){
+            entry = capSettingsStrList[ind]
+            if (this.state.capSettingsTypes.indexOf(entry) !== -1){
+              typesList.push(entry)
+              new_setting = true
+            } else if (new_setting && entry !== 'None'){
+              namesList.push(entry)
+              new_setting = false
+            }
           }
+          this.setState({capSettingsTypesList:typesList})
+          this.setState({capSettingsNamesList:namesList})
         }
-        this.setState({capSettingsTypesList:typesList})
-        this.setState({capSettingsNamesList:namesList})
       }
     }
   }
@@ -166,8 +172,8 @@ class NepiSensorsImagingSettings extends Component {
   }
 
   getCapSettingOptions(capSettingName){
-    const {idxSettings} = this.props.ros
-    const capabilities = idxSettings[this.props.idxSensorNamespace]
+    const {settingsCaps} = this.props.ros
+    const capabilities = settingsCaps[this.props.settingsNamespace]
     var capSettingOptions = []
     if (capabilities !== undefined){
       const capSettingsMsg = capabilities.settings_options
@@ -248,7 +254,7 @@ class NepiSensorsImagingSettings extends Component {
   onChangeBoolSettingValue(){
     const {updateSetting}  = this.props.ros
     const value = (this.getSettingValue(this.state.selectedSettingName) === "True") ? "False" : "True" 
-    updateSetting(this.props.idxSensorNamespace,
+    updateSetting(this.props.settingsNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -256,7 +262,7 @@ class NepiSensorsImagingSettings extends Component {
     const {updateSetting}  = this.props.ros
     const ind = event.nativeEvent.target.selectedIndex
     const value = event.nativeEvent.target[ind].text
-    updateSetting(this.props.idxSensorNamespace,
+    updateSetting(this.props.settingsNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -270,7 +276,7 @@ class NepiSensorsImagingSettings extends Component {
     const {updateSetting}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.selectedSettingInput
-      updateSetting(this.props.idxSensorNamespace,
+      updateSetting(this.props.settingsNamespace,
         this.state.selectedSettingName,this.state.selectedSettingType,value)
       document.getElementById("input_setting").style.color = Styles.vars.colors.black
       this.updateSelectedSettingInfo()
@@ -307,31 +313,31 @@ class NepiSensorsImagingSettings extends Component {
 
 
   render() {
-    const { resetSettingsTriggered} = this.props.ros
+    const { sendTriggeredMsg} = this.props.ros
     this.updateCapSettingsLists()
     const selSetInfo = this.getSelectedSettingInfo()
     return (
-      <Section title={"Sensor Settings"}>
+      <Section title={"Settings"}>
         <Columns>
           <Column>
             <div align={"left"} textAlign={"left"}>
             <Label title={"Show Settings"}>
           <Toggle
-            checked={this.state.show_sensor_settings}
-            onClick={() => {this.setState({show_sensor_settings : !this.state.show_sensor_settings})}}
+            checked={this.state.show_settings}
+            onClick={() => {this.setState({show_settings : !this.state.show_settings})}}
           />
         </Label>
             </div>
           </Column>
           <Column>
-          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_sensor_settings}>
+          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_settings}>
               <ButtonMenu>
-                <Button onClick={() => resetSettingsTriggered(this.props.idxSensorNamespace)}>{"Reset Sensor Settings"}</Button>
+                <Button onClick={() => sendTriggeredMsg(this.props.settingsNamespace + '/reset_settings')}>{"Reset Settings"}</Button>
               </ButtonMenu>
             </div>
           </Column>
         </Columns>
-        <div hidden={!this.state.show_sensor_settings}>
+        <div hidden={!this.state.show_settings}>
         <Columns>
           <Column>
             <Label title={"Select Setting"}>
@@ -409,4 +415,4 @@ class NepiSensorsImagingSettings extends Component {
   }
 
 }
-export default NepiSensorsImagingSettings
+export default Nepi_IF_Settings

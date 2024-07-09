@@ -216,7 +216,7 @@ class ROSConnectionStore {
   @observable pointcloudTopics = []
   @observable sensor3DXTopics = []
   @observable idxSensors = {}
-  @observable idxSettings = {}
+  @observable settingsCaps = {}
   @observable ptxUnits = {}
   @observable lsxUnits = {}
   @observable resetTopics = []
@@ -547,8 +547,8 @@ class ROSConnectionStore {
           this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Testing
           this.callIDXSettingsCapabilitiesQueryService(idx_sensor_namespace)
           const idxSensor = this.idxSensors[idx_sensor_namespace]
-          const idxSettings = this.idxSettings[idx_sensor_namespace]
-          if (idxSensor && idxSettings) { // Testing
+          const settingsCaps = this.settingsCaps[idx_sensor_namespace]
+          if (idxSensor && settingsCaps) { // Testing
             sensors_detected.push(idx_sensor_namespace)
           }
           idx_sensors_changed = true // Testing -- always declare changed
@@ -979,7 +979,7 @@ class ROSConnectionStore {
   setupSaveDataStatusListener(saveNamespace, callback) {
     if (saveNamespace) {
       return this.addListener({
-        name: saveNamespace,
+        name: saveNamespace + "/save_data_status",
         messageType: "nepi_ros_interfaces/SaveDataStatus",
         noPrefix: true,
         callback: callback,
@@ -1077,16 +1077,6 @@ class ROSConnectionStore {
     }
   }
 
-
-  @action.bound
-  resetSettingsTriggered(settingsNamespace) {
-    this.publishMessage({
-      name: settingsNamespace + "/reset_settings",
-      messageType: "std_msgs/Empty",
-      data: {},
-      noPrefix: true
-    })
-  }
 
 
   @action.bound
@@ -1291,7 +1281,7 @@ class ROSConnectionStore {
       name: idxSensorNamespace + "/settings_capabilities_query",
       messageType: "nepi_ros_interfaces/SettingsCapabilitiesQuery",  
     })
-    this.idxSettings[idxSensorNamespace] = capabilities
+    this.settingsCaps[idxSensorNamespace] = capabilities
   }
 
   @action.bound

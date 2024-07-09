@@ -102,13 +102,17 @@ class NepiAppPointcloudViewer extends Component {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
-    if (this.props.appNamespace.indexOf('null') === -1) {
-      const statusNamespace = this.props.appNamespace + "/status"
-      var listener = setupPointcloudRenderStatusListener(
-        statusNamespace,
-        this.StatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
+    if (this.props.appNamespace) {
+      if (this.props.appNamespace.indexOf('null') === -1) {
+        const statusNamespace = this.props.appNamespace + "/status"
+        var listener = setupPointcloudRenderStatusListener(
+          statusNamespace,
+          this.StatusListener
+        )
+        this.setState({ listener: listener, disabled: false })
+      } else {
+        this.setState({ disabled: true })
+      }
     } else {
       this.setState({ disabled: true })
     }
