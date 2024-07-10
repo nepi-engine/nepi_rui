@@ -29,7 +29,6 @@ class NepiSensorsImagingControls extends Component {
 
     // these states track the values through IDX Status messages
     this.state = {
-      show_controls: true,
       controlsEnable: null,
       autoAdjust: null,
       resolutionAdjustment: null,
@@ -123,21 +122,6 @@ class NepiSensorsImagingControls extends Component {
     const imageName = this.props.idxImageName 
     return (
       <Section title={"Controls"}>
-        <Columns>
-          <Column>
-            <div align={"left"} textAlign={"left"}>
-              <Label title={"Show Controls"}>
-                <Toggle
-                  checked={this.state.show_controls}
-                  onClick={() => {this.setState({show_controls:!this.state.show_controls})}}
-                />
-              </Label>
-            </div>
-          </Column>
-          <Column>
-          </Column>
-        </Columns>
-        <div hidden={!this.state.show_controls}>
           <Columns>
             <Column>
               <div align={"left"} textAlign={"left"}>
@@ -336,7 +320,7 @@ class NepiSensorsImagingControls extends Component {
             </div>
             
           </div>
-        </div>
+   
       </Section>
     )
   }

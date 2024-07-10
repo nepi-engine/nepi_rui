@@ -14,6 +14,7 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
+import Toggle from "react-toggle"
 import CameraViewer from "./CameraViewer"
 import NepiSensorsImagingInfo from "./NepiSensorsImagingInfo"
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
@@ -42,6 +43,11 @@ class NepiSensorsImaging extends Component {
 
     
     this.state = {
+
+      show_controls: true,
+      show_settings: true,
+      show_save_data: true,
+      
       // IDX Sensor topic to subscribe to and update
       currentIDXNamespace: null,
       currentIDXNamespaceText: "No sensor selected"
@@ -174,17 +180,21 @@ class NepiSensorsImaging extends Component {
                     {this.createTopicOptions(Object.keys(idxSensors))}
                   </Select>
                 </Label>
-                <Label title={"Image"}>
-                  <Select
-                    id="topicSelect_0"
-                    onChange={this.onImageTopicSelected}
-                    value={this.state.imageTopic_0}
-                  >
-                    {this.state.currentIDXNamespace
-                      ? this.createImageOptions(this.state.currentIDXNamespace)
-                      : NoneOption}
-                  </Select>
-                </Label>
+               
+                <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                  <Label title={"Image"}>
+                    <Select
+                      id="topicSelect_0"
+                      onChange={this.onImageTopicSelected}
+                      value={this.state.imageTopic_0}
+                    >
+                      {this.state.currentIDXNamespace
+                        ? this.createImageOptions(this.state.currentIDXNamespace)
+                        : NoneOption}
+                    </Select>
+                  </Label>
+                </div>
+
               </Column>
               <Column>
                 <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
@@ -194,14 +204,46 @@ class NepiSensorsImaging extends Component {
                     <ButtonMenu>
                       <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
                     </ButtonMenu>
-                  </div>
+                </div>
               </Column>
-              </Columns>
-              {/*
-              <Label title={"In Water"}>
-                <Toggle checked={deviceInWater} onClick={onToggleDeviceInWater} />
-              </Label>
-                  */}
+            </Columns>
+
+
+              
+            <Columns>
+            <Column>
+              <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                <Label title={"Show Controls"}>
+                  <Toggle
+                    checked={this.state.show_controls}
+                    onClick={() => {this.setState({show_controls:!this.state.show_controls})}}
+                  />
+                </Label>
+               </div>
+              </Column>
+              <Column>
+               <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                <Label title={"Show Settings"}>
+                  <Toggle
+                    checked={this.state.show_settings}
+                    onClick={() => {this.setState({show_controls:!this.state.show_settings})}}
+                  />
+                </Label>
+               </div>
+              </Column>
+              <Column>
+              <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                <Label title={"Show Save Data"}>
+                  <Toggle
+                    checked={this.state.show_save_data}
+                    onClick={() => {this.setState({show_controls:!this.state.show_save_data})}}
+                  />
+                </Label>
+              </div>
+            </Column>
+          </Columns>
+
+
             </Section>
           </Column>
         </Columns>
@@ -233,7 +275,7 @@ class NepiSensorsImaging extends Component {
     return (
       <Columns>
         <Column>
-        <div hidden={!SensorSelected}>
+        <div hidden={(!SensorSelected)}>
           <NepiSensorsImagingInfo
                 idxSensorNamespace={this.state.currentIDXNamespace}
                 title={"NepiSensorsImagingInfo"}
@@ -252,19 +294,19 @@ class NepiSensorsImaging extends Component {
         <Column>
           {this.renderSensorSelection()}
 
-          <div hidden={!SensorSelected}>
+          <div hidden={(!SensorSelected && this.state.show_controls)}>
             <NepiSensorsImagingControls
                 idxSensorNamespace={this.state.currentIDXNamespace}
                 idxImageName = {ImageName}
                 title={"NepiSensorsImagingControls"}
             />
+          </div>
 
+          <div hidden={(!SensorSelected && this.state.show_settings)}>
             <Nepi_IF_Settings
               settingsNamespace={this.state.currentIDXNamespace}
               title={"Nepi_IF_Settings"}
             />
-
-
           </div>
          </Column>
       </Columns>

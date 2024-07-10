@@ -41,7 +41,7 @@ class Nepi_IF_SaveData extends Component {
       saveDataPrefix: "",
       saveDataEnabled: false,
       saveDataRate: "1.0",
-      saveNavDataEnabled: false,
+      saveNavDataEnabled: true,
       saveNavDataRate: "10.0",
       saveNamesList: [],
       saveRatesList: [],
@@ -72,18 +72,20 @@ class Nepi_IF_SaveData extends Component {
     this.onUpdateInputSaveDataPrefixValue = this.onUpdateInputSaveDataPrefixValue.bind(this)
     this.onKeySaveInputSaveDataPrefixValue = this.onKeySaveInputSaveDataPrefixValue.bind(this)
     this.onToggleDataProductSelection = this.onToggleDataProductSelection.bind(this)
+    this.sendSaveRateUpdates = this.sendSaveRateUpdates.bind(this)
     
 
     this.getNavNamespace = this.getNavNamespace.bind(this)
     this.onChangeBoolSaveNavDataValue = this.onChangeBoolSaveNavDataValue.bind(this)
     this.onUpdateInputSaveNavDataRateValue = this.onUpdateInputSaveNavDataRateValue.bind(this)
-    this.onKeySaveInputSaveDataNavRateValue = this.onKeySaveInputSaveNavDataRateValue.bind(this)
+    this.onKeySaveInputSaveNavDataRateValue = this.onKeySaveInputSaveNavDataRateValue.bind(this)
+    this.sendSaveNavRateUpdate = this.sendSaveNavRateUpdate.bind(this)
 
     this.updateSelectedDataProducts = this.updateSelectedDataProducts.bind(this)
     this.getSelectedDataProducts = this.getSelectedDataProducts.bind(this)
     this.getDiskUsageRate = this.getDiskUsageRate.bind(this)
 
-    this.sendSaveRateUpdates = this.sendSaveRateUpdates.bind(this)
+ 
 
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
     
@@ -266,6 +268,16 @@ class Nepi_IF_SaveData extends Component {
   }
 
 
+  sendSaveNavRateUpdate() {
+    const {updateSaveDataRate}  = this.props.ros
+    const navNamespace = this.getNavNamespace()
+    const saveRateStr = this.state.saveNavDataRate
+    const rate = parseFloat(saveRateStr)
+    if (isNaN(rate) === false) {
+      updateSaveDataRate(navNamespace,'nav_pose',rate)
+    }
+  }
+
   updateSelectedDataProducts() {
     const NamesList = this.state.saveNamesList
     const RatesList = this.state.saveRatesList
@@ -324,6 +336,7 @@ class Nepi_IF_SaveData extends Component {
     updateSaveDataEnable(this.props.saveNamespace,enabled)
     if (saveNavEnabled === true){
       const navNamespace = this.getNavNamespace()
+      this.sendSaveNavRateUpdate()
       updateSaveDataEnable(navNamespace,enabled)
     }
 
@@ -379,7 +392,7 @@ class Nepi_IF_SaveData extends Component {
       const rate = parseFloat(event.target.value)
       if (!isNaN(rate)){
         this.setState({saveNavDataRate: event.target.value })
-        this.sendSaveRateUpdates()
+        this.sendSaveNavRateUpdate()
       }
       document.getElementById("nav_rate").style.color = Styles.vars.colors.black
     }
@@ -399,10 +412,10 @@ class Nepi_IF_SaveData extends Component {
     if(key === 'Enter'){
       document.getElementById("input_prefix").style.color = Styles.vars.colors.black
       updateSaveDataPrefix(this.props.saveNamespace,value)
-    }
-    if (key === 'Enter' && navEnabled === true) {
-      const navNamespace = this.getNavNamespace()
-      updateSaveDataPrefix(navNamespace,value)
+      if ( navEnabled === true) {
+        const navNamespace = this.getNavNamespace()
+        updateSaveDataPrefix(navNamespace,value)
+      }
     }
   }
   
@@ -446,7 +459,7 @@ class Nepi_IF_SaveData extends Component {
         
           <Columns>
             <Column>
-              <div align={"left"} textAlign={"left"} hidden={this.state.saveDataEnabled}>
+              <div align={"left"} textAlign={"left"} >
               <ButtonMenu>
                   <Button onClick={this.onSnapshotTriggered}>{"Take Snapshot"}</Button>
                 </ButtonMenu>

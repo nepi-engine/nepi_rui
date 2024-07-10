@@ -30,7 +30,6 @@ class Nepi_IF_Settings extends Component {
 
     // these states track the values through  Status messages
     this.state = {
-      show_settings: true,
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
       capSettingsTypesList: [],
@@ -318,25 +317,6 @@ class Nepi_IF_Settings extends Component {
     const selSetInfo = this.getSelectedSettingInfo()
     return (
       <Section title={"Settings"}>
-        <Columns>
-          <Column>
-            <div align={"left"} textAlign={"left"}>
-            <Label title={"Show Settings"}>
-          <Toggle
-            checked={this.state.show_settings}
-            onClick={() => {this.setState({show_settings : !this.state.show_settings})}}
-          />
-        </Label>
-            </div>
-          </Column>
-          <Column>
-          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_settings}>
-              <ButtonMenu>
-                <Button onClick={() => sendTriggeredMsg(this.props.settingsNamespace + '/reset_settings')}>{"Reset Settings"}</Button>
-              </ButtonMenu>
-            </div>
-          </Column>
-        </Columns>
         <div hidden={!this.state.show_settings}>
         <Columns>
           <Column>
@@ -400,6 +380,11 @@ class Nepi_IF_Settings extends Component {
             </div>
           </Column>
           <Column>
+          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_settings}>
+              <ButtonMenu>
+                <Button onClick={() => sendTriggeredMsg(this.props.settingsNamespace + '/reset_settings')}>{"Reset Settings"}</Button>
+              </ButtonMenu>
+            </div>
           </Column>
         </Columns>
 
