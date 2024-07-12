@@ -18,9 +18,8 @@ import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 import Input from "./Input"
 
-
-// import NepiAppPointcloudProcess from "./NepiAppPointcloudProcess"
-import NepiAppPointcloudViewer from "./NepiAppPointcloudViewer"
+import NepiPointcloudProcessControls from "./NepiPointcloudProcessControls"
+import NepiPointcloudRenderControls from "./NepiPointcloudRenderControls"
 
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
@@ -40,12 +39,14 @@ class NepiAppPointcloud extends Component {
       pointcloudTopicList: [],
       selectedPointclouds: [],
       viewableTopics: false,
-
+     
       transforms_topic_list: [],
       transofrm_data_list: [],
       selectedTransformInd: 0,
       selectedTransformName: null,
       selectedTransformData: null,
+
+      age_filter_s: null,
 
       combineOption: null,
       combineOptionsList: [],
@@ -55,7 +56,7 @@ class NepiAppPointcloud extends Component {
       rangeMinMeters: null,
 
       connected: false,
-      disabled: true,
+
       listener: null
 
     }
@@ -70,13 +71,13 @@ class NepiAppPointcloud extends Component {
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
 
     this.getTransformTopicOptions = this.getTransformTopicOptions.bind(this)
-    this.updateTranformsLists = this.updateTranformsLists.bind(this)
+    this.updateTranformsList = this.updateTranformsList.bind(this)
 
     this.getStrListAsList = this.getStrListAsList.bind(this)
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
 
-    this.updateListener = this.updateListener.bind(this)
-    this.StatusListener = this.StatusListener.bind(this)
+    this.updateSelectionListener = this.updateSelectionListener.bind(this)
+    this.selectionStatusListener = this.selectionStatusListener.bind(this)
 
   }
 
@@ -85,46 +86,40 @@ class NepiAppPointcloud extends Component {
     var appNamespace = null
     if (namespacePrefix !== null && deviceId !== null){
       appNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
-      this.setState({connected: true})
     }
     return appNamespace
   }
 
   // Callback for handling ROS Status messages
-  StatusListener(message) {
-    const pointcloudsMsg = message.pointcloud_topics
+  selectionStatusListener(message) {
+    const pointcloudsMsg = message.selected_pointcloud_topics
     this.updateSelectedPointclouds(pointcloudsMsg)
     const combineOptionsMsg = message.combine_options
     const combineOptions = this.getStrListAsList(combineOptionsMsg)
     const transformsTopicMsg = message.transforms_topic_list
     const transformsMsg = message.transforms_list
-    this.updateTransformLists( transformsTopicMsg,transformsMsg)
+    this.updateTranformsList( transformsTopicMsg,transformsMsg)
     this.setState({
+    age_filter_s: message.age_filter_s,
     combineOptionsList: combineOptions,
     combineOption: message.combine_option,
     rangeMinMeters: message.range_min_max_m.start_range,
     rangeMaxMeters: message.range_min_max_m.stop_range,
     })
+    this.setState({connected: true})
   }
 
   // Function for configuring and subscribing to Status
-  updateListener() {
-    const {title} = this.props
-    const { setupPointcloudSelectionStatusListener } = this.props.ros
-    const appNamespace = this.getAppNamespace()
+  updateSelectionListener() {
+    const statusNamespace = this.state.appNamespace + '/status'
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
-    if (appNamespace) {
-      const statusNamespace = appNamespace + "/status"
-      var listener = setupPointcloudSelectionStatusListener(
-        statusNamespace,
-        this.StatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
-    } else {
-      this.setState({ disabled: true })
-    }
+    var listener = this.props.ros.setupPointcloudSelectionStatusListener(
+          statusNamespace,
+          this.selectionStatusListener
+        )
+    this.setState({ listener: listener})
   }
 
   // Lifecycle method called when compnent updates.
@@ -132,10 +127,12 @@ class NepiAppPointcloud extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const appNamespace = this.getAppNamespace()
     if (prevState.appNamespace !== appNamespace && appNamespace !== null) {
-      this.setState({appNamespace: appNamespace})
-      this.updateListener()
+      if (appNamespace.indexOf('null') === -1)
+        this.setState({appNamespace: appNamespace})
+        this.updateSelectionListener()
+      } 
     }
-  }
+
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
@@ -160,8 +157,7 @@ class NepiAppPointcloud extends Component {
   // Function for creating image topic options.
   getPointcloudOptions() {
     const { pointcloudTopics } = this.props.ros
-    const appNamespace = this.getAppNamespace()
-    const thisPointcloudTopic = appNamespace + "/pointcloud"
+    const thisPointcloudTopic = this.state.appNamespace + "/process/pointcloud"
     var items = []
     var pointcloudTopicShortnames = this.createShortValues(pointcloudTopics)
     for (var i = 0; i < pointcloudTopics.length; i++) {
@@ -196,11 +192,10 @@ class NepiAppPointcloud extends Component {
   onTogglePointcloudSelection(event){
     const {pointcloudTopics, sendStringMsg} = this.props.ros
     const pointcloud = event.target.value
-    const appNamespace = this.getAppNamespace()
-    const addNamespace = appNamespace + "/add_pointcloud"
-    const removeNamespace = appNamespace + "/remove_pointcloud"
+    const addNamespace = this.state.appNamespace + "/add_pointcloud"
+    const removeNamespace = this.state.appNamespace + "/remove_pointcloud"
     const selectedList = this.state.selectedPointclouds
-    if (appNamespace){
+    if (this.state.appNamespace){
       if (pointcloud === "NONE"){
         for (let ind = 0; ind < selectedList.length; ind++) {
           sendStringMsg(removeNamespace,selectedList[ind])
@@ -236,7 +231,7 @@ class NepiAppPointcloud extends Component {
   }
 
 
-  updateTranformsLists(transformsTopicMsg,transformsMsg) {
+  updateTranformsList(transformsTopicMsg,transformsMsg) {
     var topicsList = this.getStrListAsList(transformsTopicMsg)
     var transformsStr = transformsMsg
     var transformsStrList = []
@@ -283,7 +278,6 @@ class NepiAppPointcloud extends Component {
 
   getSelectedPointclouds(){
     const selectedPointclouds = this.state.selectedPointclouds
-    const appNamespace = this.state.appNamespace
     return selectedPointclouds
   }
 
@@ -298,7 +292,6 @@ class NepiAppPointcloud extends Component {
   renderPointcloudSelection() {
     const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {viewableTopics} = this.state
-    const appNamespace = this.getAppNamespace()
     const pointcloudSources = this.getPointcloudOptions()
     const selectedPointclouds = this.getSelectedPointclouds()
     const NoneOption = <Option>None</Option>
@@ -310,7 +303,7 @@ class NepiAppPointcloud extends Component {
           <Column>
             <Section title={"Selection"}>
 
-         
+                <div align={"left"} textAlign={"left"} hidden={this.state.connected === false}>
                   <Label title="Add/Remove Pointclouds">
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
@@ -331,14 +324,17 @@ class NepiAppPointcloud extends Component {
                     </div>
                   </Label>
 
-                <div align={"left"} textAlign={"left"} hidden={appNamespace === null}>
+
+
+                
                     <ButtonMenu>
-                      <Button onClick={() => saveConfigTriggered(appNamespace)}>{"Save Config"}</Button>
+                      <Button onClick={() => saveConfigTriggered(this.state.appNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
                     <ButtonMenu>
-                      <Button onClick={() => sendTriggerMsg(appNamespace + "/reset_app")}>{"Reset App"}</Button>
+                      <Button onClick={() => sendTriggerMsg(this.state.appNamespace + "/reset_app")}>{"Reset App"}</Button>
                     </ButtonMenu>
                 </div>
+
             </Section>
           </Column>
         </Columns>
@@ -347,8 +343,7 @@ class NepiAppPointcloud extends Component {
   }
 
   renderImageViewer() {
-    const appNamespace = this.getAppNamespace()
-    const img_topic = appNamespace + "/pointcloud_image"
+    const img_topic = this.state.appNamespace + "/render/pointcloud_image"
     return (
       <React.Fragment>
         <Columns>
@@ -367,7 +362,6 @@ class NepiAppPointcloud extends Component {
 
   render() {
     const { namespacePrefix, deviceId } = this.props.ros
-    const appNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
     const connected = this.state.connected
     return (
       <Columns>
@@ -378,34 +372,36 @@ class NepiAppPointcloud extends Component {
 
         <div hidden={!connected}>
           <Nepi_IF_SaveData
-                saveNamespace={appNamespace}
+                saveNamespace={this.state.appNamespace}
                 title={"Nepi_IF_SaveData"}
             />
         </div>
+
 
         </Column>
         <Column>
 
           {this.renderPointcloudSelection()}
 
-{/*
-        <div hidden={!connected}>
-          <NepiAppPointcloudProcess
-                appNamespace={appNamespace + "/process"}
-                title={"NepiAppPointcloudProcess"}
-            />
-        </div>
-*/}
 
-{/*
         <div hidden={!connected}>
-          <NepiAppPointcloudViewer
-                appNamespace={appNamespace + "/viewer"}
-                title={"NepiAppPointcloudViewer"}
+          <NepiPointcloudProcessControls
+                processNamespace={this.state.appNamespace + "/process"}
+                title={"NepiPointcloudProcessControls"}
             />
         </div>
 
-*/}
+
+
+
+        <div hidden={!connected}>
+          <NepiPointcloudRenderControls
+                renderNamespace={this.state.appNamespace + "/render"}
+                title={"NepiPointcloudRenderControls"}
+            />
+        </div>
+
+
          </Column>
       </Columns>
     )

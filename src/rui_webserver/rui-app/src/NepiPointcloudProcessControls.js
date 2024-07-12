@@ -26,7 +26,7 @@ import Styles from "./Styles"
 @observer
 
 // Component that contains the  Pointcloud App Viewer Controls
-class NepiAppPointcloudProcess extends Component {
+class NepiPointcloudProcessControls extends Component {
   constructor(props) {
     super(props)
 
@@ -43,26 +43,26 @@ class NepiAppPointcloudProcess extends Component {
       framesList: ['nepi_center_frame','sensor_frame','map'],
       frame_3d: null,
 
-      listener: null,
+      processListener: null,
 
-      disabled: false,
     }
 
-    this.getStrListAsList = this.getStrListAsList.bind(this)
+    this.getProcessStrListAsList = this.getProcessStrListAsList.bind(this)
 
-    this.updateListener = this.updateListener.bind(this)
-    this.StatusListener = this.StatusListener.bind(this)
+    this.updateProcessListener = this.updateProcessListener.bind(this)
+    this.processStatusListener = this.processStatusListener.bind(this)
+
+    this.updateFrames3dList = this.updateFrames3dList.bind(this)
     
-    this.updateListener()
   }
 
   // Callback for handling ROS Status messages
-  StatusListener(message) {
+  processStatusListener(message) {
     this.setState({
-      range_clip_enabled: message.range_clip_enabled
+      range_clip_enabled: message.range_clip_enabled,
       range_clip_min_meters: message.range_clip_meters.start_range,
       range_clip_max_meters: message.range_clip_meters.stop_range,
-      clip_target_topic: message.clip_target_topic,.
+      clip_target_topic: message.clip_target_topic,
       voxel_downsample_size_m: message.voxel_downsample_size_m,
       uniform_downsample_points: message.uniform_downsample_points,
       outlier_k_points: message.outlier_k_points,
@@ -72,61 +72,55 @@ class NepiAppPointcloudProcess extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  // Function for configuring and subscribing to Status
-  updateListener() {
-    const {title} = this.props
-    const { setupPointcloudProcessStatusListener } = this.props.ros
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+  updateProcessListener() {
+    const statusNamespace = this.props.processNamespace + '/status'
+    if (this.state.processListener) {
+      this.state.processListener.unsubscribe()
     }
-    if (this.props.appNamespace) {
-      if (this.props.appNamespace.indexOf('null') === -1) {
-        const statusNamespace = this.props.appNamespace + "/status"
-        var listener = setupPointcloudProcessStatusListener(
+    var processListener = this.props.ros.setupPointcloudProcessStatusListener(
           statusNamespace,
-          this.StatusListener
+          this.processStatusListener
         )
-        this.setState({ listener: listener, disabled: false })
-      } else {
-        this.setState({ disabled: true })
-      }
-    } else {
-      this.setState({ disabled: true })
-    }
+    this.setState({ processListener: processListener})
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const appNamespace = this.props.appNamespace
-    if (prevState.appNamespace !== appNamespace && appNamespace !== null) {
-      this.setState({appNamespace: appNamespace})
-      this.updateListener()
+    const { processNamespace } = this.props
+    if (prevProps.processNamespace !== processNamespace && processNamespace !== null) {
+      if (processNamespace.indexOf('null') === -1){
+        this.updateProcessListener()
+      } 
     }
   }
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.processListener) {
+      this.state.processListener.unsubscribe()
     }
   }
 
-
-  getStrListAsList(transformsStr) {
-    var StrList = []
-    if (transformsStr != null){
-      transformsStr = transformsStr.replaceAll("[","")
-      transformsStr = transformsStr.replaceAll("]","")
-      transformsStr = transformsStr.replaceAll(" '","")
-      transformsStr = transformsStr.replaceAll("'","")
-      StrList = transformsStr.split(",")
-    }
-    return StrList
+  updateFrames3dList(framesListMsg){
+    const framesList = this.getProcessStrListAsList(framesListMsg)
+    this.setState({frames3dlist: framesList})
   }
+
+  getProcessStrListAsList(strList) {
+    var temp_list = []
+    var out_list = []
+    if (strList != null){
+      temp_list = strList.replaceAll("[","")
+      temp_list = temp_list.replaceAll("]","")
+      temp_list = temp_list.replaceAll(" '","")
+      temp_list = temp_list.replaceAll("'","")
+      out_list = temp_list.split(",")
+    }
+    return out_list
+  }
+
 
 
   render() {
@@ -144,7 +138,7 @@ class NepiAppPointcloudProcess extends Component {
 
             <div align={"left"} textAlign={"left"} >
               <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg( this.props.appNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
+                <Button onClick={() => sendTriggerMsg( this.props.processNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
               </ButtonMenu>
             </div>
 
@@ -156,4 +150,4 @@ class NepiAppPointcloudProcess extends Component {
   }
 
 }
-export default NepiAppPointcloudProcess
+export default NepiPointcloudProcessControls

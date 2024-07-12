@@ -47,14 +47,12 @@ class Nepi_IF_SaveData extends Component {
       saveRatesList: [],
       selectedDataProducts: [],
 
-      listener: null,
-
-      disabled: false,
+      saveStatusListener: null,
     }
 
 
-    this.updateSaveListener = this.updateSaveListener.bind(this)
-    this.SaveStatusListener = this.SaveStatusListener.bind(this)
+    this.updateSaveStatusListener = this.updateSaveStatusListener.bind(this)
+    this.saveStatusListener = this.saveStatusListener.bind(this)
 
     this.updateSaveLists = this.updateSaveLists.bind(this)
     this.getSaveNamesList = this.getSaveNamesList.bind(this)
@@ -93,11 +91,10 @@ class Nepi_IF_SaveData extends Component {
 
     this.onSnapshotTriggered = this.onSnapshotTriggered.bind(this)
 
-    //this.updateSaveListener()
   }
 
   // Callback for handling ROS Status messages
-  SaveStatusListener(message) {
+  saveStatusListener(message) {
     const saveDataRates = message.save_data_rates
     const saveDirPrefix = message.current_folder_prefix
     const saveNamePrefix = message.current_filename_prefix
@@ -119,41 +116,32 @@ class Nepi_IF_SaveData extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  updateSaveListener() {
+  updateSaveStatusListener() {
     const { saveNamespace, title } = this.props
-    if (this.state.saveListener) {
-      this.state.saveListener.unsubscribe()
+    if (this.state.saveStatusListener) {
+      this.state.saveStatusListener.unsubscribe()
     }
-
-    if (saveNamespace != null) {
-      if (saveNamespace.indexOf('null') === -1){
-        var saveListener = this.props.ros.setupSaveDataStatusListener(
+    var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
           saveNamespace,
-          this.SaveStatusListener
+          this.saveStatusListener
         )
-        this.setState({ saveListener: saveListener, disabled: false })
-      } else {
-        this.setState({ disabled: true })
-      }
-    } else {
-      this.setState({ disabled: true })
-    }
+    this.setState({ saveStatusListener: saveStatusListener})
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { saveNamespace } = this.props
-    if (prevProps.saveNamespace !== saveNamespace) {
-      this.updateSaveListener()
+    if (prevProps.saveNamespace !== saveNamespace && saveNamespace != null) {
+      this.updateSaveStatusListener()
     }
   }
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.saveStatusListener) {
+      this.state.saveStatusListener.unsubscribe()
     }
   }
 

@@ -26,7 +26,7 @@ import Styles from "./Styles"
 @observer
 
 // Component that contains the  Pointcloud App Viewer Controls
-class NepiAppPointcloudViewer extends Component {
+class NepiPointcloudRenderControls extends Component {
   constructor(props) {
     super(props)
 
@@ -50,22 +50,35 @@ class NepiAppPointcloudViewer extends Component {
       camRotY: null,
       camRotZ: null,
 
-      listener: null,
+      renderListener: null,
 
-      disabled: false,
     }
 
     this.onUpdateCamText = this.onUpdateCamText.bind(this)
     this.onKeyCamText = this.onKeyCamText.bind(this)
 
-    this.updateListener = this.updateListener.bind(this)
-    this.StatusListener = this.StatusListener.bind(this)
+    this.getRenderStrListAsList = this.getRenderStrListAsList.bind(this)
+    this.updateRenderListener = this.updateRenderListener.bind(this)
+    this.renderStatusListener = this.renderStatusListener.bind(this)
     
-    this.updateListener()
+  }
+
+
+  getRenderStrListAsList(strList) {
+    var temp_list = []
+    var out_list = []
+    if (strList != null){
+      temp_list = strList.replaceAll("[","")
+      temp_list = temp_list.replaceAll("]","")
+      temp_list = temp_list.replaceAll(" '","")
+      temp_list = temp_list.replaceAll("'","")
+      out_list = temp_list.split(",")
+    }
+    return out_list
   }
 
   // Callback for handling ROS Status messages
-  StatusListener(message) {
+  renderStatusListener(message) {
     this.setState({
       standardImageSizeStrList: message.standard_image_sizes,
       rangeRatioMin: message.range_clip_ratios.start_range,
@@ -85,8 +98,7 @@ class NepiAppPointcloudViewer extends Component {
       camRotY: message.camera_rotation.y,
       camRotZ: message.camera_rotation.z,
     })
-
-    const frames3d = this.getSettingsAsList(this.state.frames3d)
+    const frames3d = this.getRenderStrListAsList(this.state.frames3d)
     var frames3dlist = ["map"]
     for (let ind = 0; ind < frames3d.length; ind++) {
       frames3dlist.push(frames3d[ind])
@@ -95,46 +107,34 @@ class NepiAppPointcloudViewer extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  // Function for configuring and subscribing to Status
-  updateListener() {
-    const {title} = this.props
-    const { setupPointcloudRenderStatusListener } = this.props.ros
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+  updateRenderListener() {
+    const statusNamespace = this.props.renderNamespace + '/status'
+    if (this.state.renderListener) {
+      this.state.renderListener.unsubscribe()
     }
-    if (this.props.appNamespace) {
-      if (this.props.appNamespace.indexOf('null') === -1) {
-        const statusNamespace = this.props.appNamespace + "/status"
-        var listener = setupPointcloudRenderStatusListener(
+    var renderListener = this.props.ros.setupPointcloudRenderStatusListener(
           statusNamespace,
-          this.StatusListener
+          this.renderStatusListener
         )
-        this.setState({ listener: listener, disabled: false })
-      } else {
-        this.setState({ disabled: true })
-      }
-    } else {
-      this.setState({ disabled: true })
-    }
+    this.setState({ renderListener: renderListener })
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const appNamespace = this.props.appNamespace
-    if (prevState.appNamespace !== appNamespace && appNamespace !== null) {
-      this.setState({appNamespace: appNamespace})
-      this.updateListener()
+    const { renderNamespace } = this.props
+    if (prevProps.renderNamespace !== renderNamespace && renderNamespace !== null) {
+      if (renderNamespace.indexOf('null') === -1){
+        this.updateRenderListener()
+      } 
     }
   }
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.renderListener) {
+      this.state.renderListener.unsubscribe()
     }
   }
 
@@ -179,7 +179,7 @@ class NepiAppPointcloudViewer extends Component {
             <Column>
             <div align={"left"} textAlign={"left"} >
                 <ButtonMenu>
-                  <Button onClick={() => sendTriggerMsg( this.props.appNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
+                  <Button onClick={() => sendTriggerMsg( this.props.renderNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
                 </ButtonMenu>
               </div>
             </Column>
@@ -194,8 +194,7 @@ class NepiAppPointcloudViewer extends Component {
                 max={this.state.rangeRatioMax}
                 min_limit_m={this.state.rangeLimitMinM}
                 max_limit_m={this.state.rangeLimitMaxM}
-                topic={this.props.appNamespace + "/set_range_ratios"}
-                disabled={(!this.state.disabled)? false : true}
+                topic={this.props.renderNamespace + "/set_range_ratios"}
                 tooltip={"Adjustable range"}
                 unit={"m"}
               />
@@ -208,11 +207,10 @@ class NepiAppPointcloudViewer extends Component {
                       title={"Zoom"}
                       msgType={"std_msgs/Float32"}
                       adjustment={this.state.zoomAdjustment}
-                      topic={this.props.appNamespace + "/set_zoom_ratio"}
+                      topic={this.props.renderNamespace + "/set_zoom_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
-                      disabled={false}
                       tooltip={"Zoom controls for pointcloud image rendering"}
                       unit={"%"}
                   />
@@ -222,11 +220,10 @@ class NepiAppPointcloudViewer extends Component {
                       title={"Rotate"}
                       msgType={"std_msgs/Float32"}
                       adjustment={this.state.rotateAdjustment}
-                      topic={this.props.appNamespace + "/set_rotate_ratio"}
+                      topic={this.props.renderNamespace + "/set_rotate_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
-                      disabled={false}
                       tooltip={"Rotate controls for pointcloud image rendering"}
                       unit={"%"}
                   />
@@ -235,11 +232,10 @@ class NepiAppPointcloudViewer extends Component {
                       title={"Tilt"}
                       msgType={"std_msgs/Float32"}
                       adjustment={this.state.tiltAdjustment}
-                      topic={this.props.appNamespace + "/set_tilt_ratio"}
+                      topic={this.props.renderNamespace + "/set_tilt_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
-                      disabled={false}
                       tooltip={"Tilt controls for pointcloud image rendering"}
                       unit={"%"}
                   />
@@ -254,7 +250,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camViewX"
                       value={(this.state.camViewX)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
 
@@ -266,7 +262,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camViewY"
                       value={(this.state.camViewY)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
 
@@ -278,7 +274,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camViewZ"
                       value={(this.state.camViewZ)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
 
@@ -296,7 +292,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camPosX"
                       value={(this.state.camPosX)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
 
@@ -308,7 +304,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camPosY"
                       value={(this.state.camPosY)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
 
@@ -320,7 +316,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camPosZ"
                       value={(this.state.camPosZ)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
 
@@ -338,7 +334,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camcamRotX"
                       value={(this.state.camcamRotX)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
                     />
                   </Label>
 
@@ -350,7 +346,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camcamRotY"
                       value={(this.state.camcamRotY)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
                     />
                   </Label>
 
@@ -362,7 +358,7 @@ class NepiAppPointcloudViewer extends Component {
                       id="camcamRotZ"
                       value={(this.state.camcamRotZ)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.appNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
                     />
                   </Label>
 
@@ -378,4 +374,4 @@ class NepiAppPointcloudViewer extends Component {
   }
 
 }
-export default NepiAppPointcloudViewer
+export default NepiPointcloudRenderControls

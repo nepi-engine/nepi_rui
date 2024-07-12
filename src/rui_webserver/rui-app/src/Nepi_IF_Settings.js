@@ -43,9 +43,7 @@ class Nepi_IF_Settings extends Component {
       selectedSettingOptions: [],
       selectedSettingInput: "",
 
-      listener: null,
-
-      disabled: false,
+      settingsListener: null,
     }
 
     this.updateSettingsListener = this.updateSettingsListener.bind(this)
@@ -67,7 +65,6 @@ class Nepi_IF_Settings extends Component {
     this.updateSelectedSettingInfo = this.updateSelectedSettingInfo.bind(this)
     this.getSelectedSettingInfo = this.getSelectedSettingInfo.bind(this)
 
-    this.updateSettingsListener()
   }
 
   // Callback for handling ROS Settings Status messages
@@ -80,30 +77,21 @@ class Nepi_IF_Settings extends Component {
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
     const { settingsNamespace, title } = this.props
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.settingsListener) {
+      this.state.settingsListener.unsubscribe()
     }
-
-    if (settingsNamespace != null) {
-      if (settingsNamespace.indexOf('null') === -1){
-        var listener = this.props.ros.setupSettingsStatusListener(
-          settingsNamespace,
-          this.settingsStatusListener
-        )
-        this.setState({ listener: listener, disabled: false })
-      } else {
-        this.setState({ disabled: true })
-      }
-    } else {
-      this.setState({ disabled: true })
-    }
+    var settingsListener = this.props.ros.setupSettingsStatusListener(
+      settingsNamespace,
+      this.settingsStatusListener
+    )
+    this.setState({ settingsListener: settingsListener})
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { settingsNamespace } = this.props
-    if (prevProps.settingsNamespace !== settingsNamespace) {
+    if (prevProps.settingsNamespace !== settingsNamespace && settingsNamespace != null) {
       this.updateSettingsListener()
     }
   }
@@ -111,8 +99,8 @@ class Nepi_IF_Settings extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Settings Status message
   componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.settingsListener) {
+      this.state.settingsListener.unsubscribe()
     }
   }
 
@@ -317,7 +305,6 @@ class Nepi_IF_Settings extends Component {
     const selSetInfo = this.getSelectedSettingInfo()
     return (
       <Section title={"Settings"}>
-        <div hidden={!this.state.show_settings}>
         <Columns>
           <Column>
             <Label title={"Select Setting"}>
@@ -337,7 +324,9 @@ class Nepi_IF_Settings extends Component {
                   onClick={() => {this.onChangeBoolSettingValue()}}
                 />
               </Label>
-              </div>
+            </div>
+
+              
 
               <div align={"left"} textAlign={"right"} hidden={selSetInfo[1] !== "Menu" && selSetInfo[1] !== "Discrete" }>
               <Label title={selSetInfo[2]}>
@@ -348,8 +337,8 @@ class Nepi_IF_Settings extends Component {
                 >
                   {this.convertStrListToMenuList(this.state.selectedSettingOptions)}
                 </Select>
-            </Label>
-            </div>
+              </Label>
+              </div>
 
             <div align={"left"} textAlign={"right"} 
               hidden={!(selSetInfo[1] === "String" ||
@@ -378,9 +367,10 @@ class Nepi_IF_Settings extends Component {
                 <Label title={"* Some changes may require power cycle"}>
                 </Label>
             </div>
+
           </Column>
           <Column>
-          <div align={"left"} textAlign={"left"}  hidden={!this.state.show_settings}>
+          <div align={"left"} textAlign={"left"} >
               <ButtonMenu>
                 <Button onClick={() => sendTriggeredMsg(this.props.settingsNamespace + '/reset_settings')}>{"Reset Settings"}</Button>
               </ButtonMenu>
@@ -394,7 +384,6 @@ class Nepi_IF_Settings extends Component {
           <pre style={{ height: "400px", overflowY: "auto" }}>
             {this.getSettingsAsString()}
           </pre>
-        </div>
       </Section>
     )
   }

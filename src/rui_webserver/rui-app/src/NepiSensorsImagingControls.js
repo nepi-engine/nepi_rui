@@ -51,13 +51,12 @@ class NepiSensorsImagingControls extends Component {
     }
 
     this.updateListener = this.updateListener.bind(this)
-    this.idxStatusListener = this.idxStatusListener.bind(this)
+    this.statusListener = this.statusListener.bind(this)
     
-    //this.updateListener()
   }
 
   // Callback for handling ROS StatusIDX messages
-  idxStatusListener(message) {
+  statusListener(message) {
     this.setState({
       controlsEnable: message.controls_enable,
       autoAdjust: message.auto_adjust,
@@ -83,24 +82,22 @@ class NepiSensorsImagingControls extends Component {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
+    var listener = this.props.ros.setupIDXStatusListener(
+      idxSensorNamespace,
+      this.statusListener
+    )
+    this.setState({ listener: listener, disabled: false })
 
-    if (title) {
-      var listener = this.props.ros.setupIDXStatusListener(
-        idxSensorNamespace,
-        this.idxStatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
-    } else {
-      this.setState({ disabled: true })
-    }
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { idxSensorNamespace } = this.props
-    if (prevProps.idxSensorNamespace !== idxSensorNamespace) {
+    if (prevProps.idxSensorNamespace !== idxSensorNamespace && idxSensorNamespace != null) {
       this.updateListener()
+    } else if (idxSensorNamespace == null){
+      this.setState({ disabled: true })
     }
   }
 

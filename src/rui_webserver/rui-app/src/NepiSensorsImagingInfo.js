@@ -42,7 +42,7 @@ class NepiSensorsImagingInfo extends Component {
     }
 
     this.updateListener = this.updateListener.bind(this)
-    this.idxStatusListener = this.idxStatusListener.bind(this)
+    this.statusListener = this.statusListener.bind(this)
 
     this.getShowAdvSet = this.getShowAdvSet.bind(this)
     this.getDeviceName = this.getDeviceName.bind(this)
@@ -51,11 +51,10 @@ class NepiSensorsImagingInfo extends Component {
     this.onUpdateInputDeviceNameValue = this.onUpdateInputDeviceNameValue.bind(this)
     this.onKeySaveInputDeviceNameValue = this.onKeySaveInputDeviceNameValue.bind(this)
 
-    this.updateListener()
   }
 
   // Callback for handling ROS StatusIDX messages
-  idxStatusListener(message) {
+  statusListener(message) {
     this.setState({
       device_name: message.device_name,
       serial_num: message.serial_num,
@@ -72,26 +71,25 @@ class NepiSensorsImagingInfo extends Component {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
+    var listener = this.props.ros.setupIDXStatusListener(
+      idxSensorNamespace,
+      this.statusListener
+    )
+    this.setState({ listener: listener, disabled: false })
 
-    if (title) {
-      var listener = this.props.ros.setupIDXStatusListener(
-        idxSensorNamespace,
-        this.idxStatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
-    } else {
-      this.setState({ disabled: true })
-    }
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { idxSensorNamespace } = this.props
-    if (prevProps.idxSensorNamespace !== idxSensorNamespace) {
+    if (prevProps.idxSensorNamespace !== idxSensorNamespace && idxSensorNamespace != null) {
       this.updateListener()
+    } else if (idxSensorNamespace == null){
+      this.setState({ disabled: true })
     }
   }
+
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to StatusIDX message
