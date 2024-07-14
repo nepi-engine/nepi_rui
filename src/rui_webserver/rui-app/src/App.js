@@ -67,7 +67,7 @@ class App extends Component {
               subItems: [
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/pointcloud_app", label: "Pointcloud App" },
-                { path: "/ai", label: "AI" },
+                { path: "/ai", label: "AI Detector" },
                 { path: "/automation", label: "Automation"},
                 { path: "/image_sequencer", label: "Sequencer" },
                 { path: "/nepi_connect", label: "Connect" }
