@@ -23,7 +23,10 @@ import NepiPointcloudRenderControls from "./NepiPointcloudRenderControls"
 
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
-//import createShortValues from "./Utilities"
+function round(value, decimals = 0) {
+  return Number(value).toFixed(decimals)
+  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
 
 @inject("ros")
 @observer
@@ -45,12 +48,18 @@ class NepiAppPointcloud extends Component {
       selectedTransformInd: 0,
       selectedTransformName: null,
       selectedTransformData: null,
-
+      selectedTransformTX: 0,
+      selectedTransformTY: 0,
+      selectedTransformTZ: 0,
+      selectedTransformRX: 0,
+      selectedTransformRY: 0,
+      selectedTransformRZ: 0,
+      selectedTransformHO: 0,
       age_filter_s: null,
+      primary_pointcloud_topic: null,
 
       combineOption: null,
       combineOptionsList: [],
-      selectedCombineOptionsInd: 0,
 
       rangeMaxMeters: null,
       rangeMinMeters: null,
@@ -59,9 +68,11 @@ class NepiAppPointcloud extends Component {
 
       listener: null
 
+
+
     }
 
-    this.createShortValues = this.createShortValues.bind(this)
+    this.createShortValuesFromNamespace = this.createShortValuesFromNamespace.bind(this)
 
     this.getAppNamespace = this.getAppNamespace.bind(this)
     this.getPointcloudOptions = this.getPointcloudOptions.bind(this)
@@ -75,6 +86,18 @@ class NepiAppPointcloud extends Component {
 
     this.getStrListAsList = this.getStrListAsList.bind(this)
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
+
+    this.onAppDropdownSlectedSetState = this.onAppDropdownSlectedSetState.bind(this)
+    this.onAppDropdownSlectedSendStr = this.onAppDropdownSlectedSendStr.bind(this)
+    this.createAppDropdownOptions = this.createAppDropdownOptions.bind(this)
+    
+    this.onUpdateAppInputBoxValue = this.onUpdateAppInputBoxValue.bind(this)
+    this.onEnterSendInputBoxFloatValue = this.onEnterSendInputBoxFloatValue.bind(this)
+
+
+
+    this.onEnterSetInputBoxFloatValue = this.onEnterSetInputBoxFloatValue.bind(this)
+    this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
 
     this.updateSelectionListener = this.updateSelectionListener.bind(this)
     this.selectionStatusListener = this.selectionStatusListener.bind(this)
@@ -105,6 +128,7 @@ class NepiAppPointcloud extends Component {
     combineOption: message.combine_option,
     rangeMinMeters: message.range_min_max_m.start_range,
     rangeMaxMeters: message.range_min_max_m.stop_range,
+    primary_pointcloud_topic: message.primary_pointcloud_topic
     })
     this.setState({connected: true})
   }
@@ -159,7 +183,7 @@ class NepiAppPointcloud extends Component {
     const { pointcloudTopics } = this.props.ros
     const thisPointcloudTopic = this.state.appNamespace + "/process/pointcloud"
     var items = []
-    var pointcloudTopicShortnames = this.createShortValues(pointcloudTopics)
+    var pointcloudTopicShortnames = this.createShortValuesFromNamespace(pointcloudTopics)
     for (var i = 0; i < pointcloudTopics.length; i++) {
       if (pointcloudTopics[i] !== thisPointcloudTopic){
         items.push(<Option value={pointcloudTopics[i]}>{pointcloudTopicShortnames[i]}</Option>)
@@ -218,12 +242,29 @@ class NepiAppPointcloud extends Component {
     }
   }
 
+  updateCombineOptions(combineOptionsMsg) {
+    var combineStrList = []
+    if (combineOptionsMsg != null){
+      combineOptionsMsg = combineOptionsMsg.replaceAll("[","")
+      combineOptionsMsg = combineOptionsMsg.replaceAll("]","")
+      combineOptionsMsg = combineOptionsMsg.replaceAll(" '","")
+      combineOptionsMsg = combineOptionsMsg.replaceAll("'","")
+      combineStrList = combineOptionsMsg.split(",")
+    }
+    this.setState({combineOptionsList:combineStrList})
+  }
+
+  doNothing(){
+    var ret = false
+    return ret
+  }
+ 
 
   // Function for creating image topic options.
   getTransformTopicOptions() {
     const topicList = this.state.transforms_topic_list
     var items = [<Option value={"NONE"}>{"NONE"}</Option>]
-    var topicListShortnames = this.createShortValues(topicList)
+    var topicListShortnames = this.createShortValuesFromNamespace(topicList)
     for (var i = 0; i < topicList.length; i++) {
       items.push(<Option value={topicList[i]}>{topicListShortnames[i]}</Option>)
     }
@@ -258,7 +299,7 @@ class NepiAppPointcloud extends Component {
 
 
 
-  createShortValues(list) {
+  createShortValuesFromNamespace(list) {
     var tokenizedList = []
     var shortList = []
     var shortName = ''
@@ -289,6 +330,108 @@ class NepiAppPointcloud extends Component {
     return menuList
   }
 
+
+   onAppDropdownSlectedSetState(event, stateVarStr) {
+    var key = stateVarStr
+    var value = event.target.value
+    var obj  = {}
+    obj[key] = value
+    this.setState(obj)
+  }
+
+  onAppDropdownSlectedSendStr(event, topicName) {
+    const {sendStringMsg} = this.props.ros
+    const value = event.target.value
+    const namespace = this.props.appNamespace + topicName
+    sendStringMsg(namespace,value)
+  }
+
+
+   createAppDropdownOptions(options, filterOut, useShortNames, addNoneOption) {
+    var filteredTopics = options
+    var i
+    var i2
+    if (filterOut) {
+      for (i = 0; i < options.length; i++) {
+        for (i2 = 0; i2 < filterOut.length; i2++) {
+          if (options[i].includes(filterOut[i2])){
+            filteredTopics.pop(options[i])
+          }
+        }
+      }
+    }
+    var items = []
+    if (addNoneOption){
+      if (addNoneOption === true){
+        items.push(<Option>{"None"}</Option>)
+      }
+    }
+    var unique_names = null
+    if (useShortNames === true){
+      unique_names = this.createShortValuesFromNamespace(filteredTopics)
+    } 
+    else{
+      unique_names = filteredTopics
+    }
+      
+    for (i = 0; i < filteredTopics.length; i++) {
+      items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
+    }
+     return items
+  }
+  
+  onUpdateAppInputBoxValue(event,stateVarStr) {
+    var key = stateVarStr
+    var value = event.target.value
+    var obj  = {}
+    obj[key] = value
+    this.setState(obj)
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+
+  onEnterSendInputBoxFloatValue(event, topicName) {
+    const {sendFloatMsg} = this.props.ros
+    const namespace = this.state.appNamespace + topicName
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        sendFloatMsg(namespace,value)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+  onEnterSetInputBoxFloatValue(event, stateVarStr) {
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        var key = stateVarStr
+        var obj  = {}
+        obj[key] = value
+        this.setState(obj)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+  sendTransformUpdateMessage(){
+    const {sendFrame3DTransformUpdateMsg} = this.props.ros
+    const namespace = this.state.appNamespace + "/update_transform"
+    const transformNamespace = this.state.primary_pointcloud_topic
+    const TX = this.state.selectedTransformTX
+    const TY = this.state.selectedTransformTY
+    const TZ = this.state.selectedTransformTZ
+    const RX = this.state.selectedTransformRX
+    const RY = this.state.selectedTransformRY
+    const RZ = this.state.selectedTransformRZ
+    const HO = this.state.selectedTransformHO
+    const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
+
+    sendFrame3DTransformUpdateMsg(namespace,transformNamespace,transformList)
+  }
+
   renderPointcloudSelection() {
     const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {viewableTopics} = this.state
@@ -297,12 +440,13 @@ class NepiAppPointcloud extends Component {
     const NoneOption = <Option>None</Option>
 
 
+
     return (
       <React.Fragment>
-        <Columns>
-          <Column>
-            <Section title={"Selection"}>
 
+            <Section title={"Selection"}>
+            <Columns>
+            <Column>
                 <div align={"left"} textAlign={"left"} hidden={this.state.connected === false}>
                   <Label title="Add/Remove Pointclouds">
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
@@ -325,19 +469,192 @@ class NepiAppPointcloud extends Component {
                   </Label>
 
 
+                  <Label title={"Primary Pointcloud"}>
+                    <Select
+                      id="primary_pointcloud"
+                      onChange={(event) => this.onAppDropdownSlectedSendStr(event,"/set_primary_pointcloud")}
+                      value={this.state.primary_pointcloud_topic}
+                    >
+                      {this.state.selectedPointclouds
+                        ? this.createAppDropdownOptions(this.state.selectedPointclouds, ['pointcloud_app'], true, false)
+                        : NoneOption}
+                    </Select>
+                  </Label>
 
-                
+                  <Label title={"Age Filter (s)"}>
+                  <Input id="age_filter" 
+                      value={this.state.age_filter_s} 
+                      onChange={(event) => this.onUpdateAppInputBoxValue(event,"age_filter_s")} 
+                      onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_age_filter")} />
+              </Label>
+
+
+                <Label title={"Combine Options"}>
+                    <Select
+                      id="combine_options"
+                      onChange={(event) => this.onAppDropdownSlectedSendStr(event,"/set_combine_option")}
+                      value={this.state.combineOption}
+                    >
+                      {this.state.combineOptionsList
+                        ? this.createAppDropdownOptions(this.state.combineOptionsList, [], false, false)
+                        : NoneOption}
+                    </Select>
+                  </Label>
+
+                </div>
+
+                </Column>
+                </Columns>
+
+
+            <Label title={"X (m)"}>
+          <Input
+            value={round(this.state.selectedTransformTX, 2)}
+            id="XTranslation"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTX")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTX")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <Label title={"Y (m)"}>
+          <Input
+            value={round(this.state.selectedTransformTY, 2)}
+            id="YTranslation"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTY")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTY")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <Label title={"Z (m)"}>
+          <Input
+            value={round(this.state.selectedTransformTZ, 2)}
+            id="ZTranslation"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTZ")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTZ")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <Label title={"Roll (deg)"}>
+          <Input
+            value={round(this.state.selectedTransformRX, 2)}
+            id="XRotation"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRX")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRX")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <Label title={"Pitch (deg)"}>
+          <Input
+            value={round(this.state.selectedTransformRY, 2)}
+            id="YRotation"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRY")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRY")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <Label title={"Yaw (deg)"}>
+          <Input
+            value={round(this.state.selectedTransformRZ, 2)}
+            id="ZRotation"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRZ")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRZ")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <Label title={"Heading Offset (deg)"}>
+          <Input
+            value={round(this.state.selectedTransformHO, 2)}
+            id="HeadingOffset"
+            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformHO")}
+            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformHO")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+{/*
+        <Columns>
+          <Column>
+
+            <Label title={"Y (m)"}>
+              <Input
+                value={(this.state.yTranslationEdited !== null)? this.state.yTranslationEdited : round(navTransformYTrans, 2)}
+                id="YTranslation"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{ width: "80%" }}
+              />
+            </Label>
+            <Label title={"Z (m)"}>
+              <Input
+                value={(this.state.zTranslationEdited !== null)? this.state.zTranslationEdited : round(navTransformZTrans, 2)}
+                id="ZTranslation"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{ width: "80%" }}
+              />
+            </Label>
+          </Column>
+          <Column>
+            <Label title={"Roll (deg)"}>
+              <Input
+                value={(this.state.xRotationEdited !== null)? this.state.xRotationEdited : round(navTransformXRot, 2)}
+                id="XRotation"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{ width: "80%" }}
+              />
+            </Label>
+            <Label title={"Pitch (deg)"}>
+              <Input
+                value={(this.state.yRotationEdited !== null)? this.state.yRotationEdited : round(navTransformYRot, 2)}
+                id="YRotation"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{ width: "80%" }}
+              />
+            </Label>
+            <Label title={"Yaw (deg)"}>
+              <Input
+                value={(this.state.zRotationEdited !== null)? this.state.zRotationEdited : round(navTransformZRot, 2)}
+                id="ZRotation"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{ width: "80%" }}
+              />
+            </Label>
+            <Label title={"Heading (deg)"}>
+              <Input
+                value={(this.state.headingEdited !== null)? this.state.headingEdited : round(navHeadingOffset, 2)}
+                id="Heading"
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+                style={{ width: "80%" }}
+              />
+            </Label>
+            </Column>
+            </Columns>  
+*/}         
+
+                <ButtonMenu>
+                      <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+                    </ButtonMenu>
+
                     <ButtonMenu>
                       <Button onClick={() => saveConfigTriggered(this.state.appNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
                     <ButtonMenu>
                       <Button onClick={() => sendTriggerMsg(this.state.appNamespace + "/reset_app")}>{"Reset App"}</Button>
                     </ButtonMenu>
-                </div>
+
 
             </Section>
-          </Column>
-        </Columns>
+
+        
       </React.Fragment>
     )
   }
