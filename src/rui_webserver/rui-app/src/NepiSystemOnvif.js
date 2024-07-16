@@ -70,10 +70,10 @@ class NepiSystemOnvif extends Component {
     const defaultPTXDeviceDriver = (onvifPTXDeviceDrivers.length > 0)? onvifPTXDeviceDrivers[0] : ''
 
     this.setState({ 
-      selectedDeviceUUID: selectedConfig? selectedConfig.uuid : '',
+      selectedDeviceUUID: selectedConfig? selectedConfig.uuid : item,
 
       selectedDeviceConfigModified: false,
-      selectedDeviceConfigUUID: selectedConfig? selectedConfig.uuid : '',
+      selectedDeviceConfigUUID: selectedConfig? selectedConfig.uuid : item,
       selectedDeviceConfigDevicename: selectedConfig? selectedConfig.device_name : '',
       selectedDeviceConfigUsername: selectedConfig? selectedConfig.username : '',
       selectedDeviceConfigPassword: selectedConfig? selectedConfig.password : '',
