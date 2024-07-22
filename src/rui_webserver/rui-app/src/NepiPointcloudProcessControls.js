@@ -32,21 +32,23 @@ class NepiPointcloudProcessControls extends Component {
 
     // these states track the values through  Status messages
     this.state = {
-
-      range_clip_enabled: null,
-      range_clip_min_meters: null,
-      range_clip_max_meters: null,
+      show_process_controls: false,
+      range_clip_enabled: false,
+      range_clip_min_m: null,
+      range_clip_max_m: null,
       clip_target_topic: null,
       voxel_downsample_size_m: null,
       uniform_downsample_points: null,
       outlier_k_points: null,
       framesList: ['nepi_center_frame','sensor_frame','map'],
       frame_3d: null,
+      
 
       processListener: null,
 
     }
 
+    this.onChangeProcessShowVal = this.onChangeProcessShowVal.bind(this)
     this.getProcessStrListAsList = this.getProcessStrListAsList.bind(this)
 
     this.updateProcessListener = this.updateProcessListener.bind(this)
@@ -54,14 +56,19 @@ class NepiPointcloudProcessControls extends Component {
 
     this.updateFrames3dList = this.updateFrames3dList.bind(this)
     
+    this.onChangeBoolClipRangeEnabled = this.onChangeBoolClipRangeEnabled.bind(this)
+
+    this.onUpdateProcessInputBoxValue = this.onUpdateProcessInputBoxValue.bind(this)
+    this.onEnterSendInputBoxFloatValue = this.onEnterSendInputBoxFloatValue.bind(this)
+
   }
 
   // Callback for handling ROS Status messages
   processStatusListener(message) {
     this.setState({
       range_clip_enabled: message.range_clip_enabled,
-      range_clip_min_meters: message.range_clip_meters.start_range,
-      range_clip_max_meters: message.range_clip_meters.stop_range,
+      range_clip_min_m: message.range_clip_meters.start_range,
+      range_clip_max_m: message.range_clip_meters.stop_range,
       clip_target_topic: message.clip_target_topic,
       voxel_downsample_size_m: message.voxel_downsample_size_m,
       uniform_downsample_points: message.uniform_downsample_points,
@@ -103,6 +110,14 @@ class NepiPointcloudProcessControls extends Component {
     }
   }
 
+
+
+  onChangeProcessShowVal(){
+    const new_val = this.state.show_process_controls == false
+    this.setState({show_process_controls: new_val})
+  }
+
+
   updateFrames3dList(framesListMsg){
     const framesList = this.getProcessStrListAsList(framesListMsg)
     this.setState({frames3dlist: framesList})
@@ -121,29 +136,140 @@ class NepiPointcloudProcessControls extends Component {
     return out_list
   }
 
+  onChangeBoolClipRangeEnabled(){
+    const updateVal = this.state.range_clip_enabled == false
+    this.props.ros.sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",updateVal)
+    this.render()
+  }
 
+  onUpdateProcessInputBoxValue(event,stateVarNameStr) {
+    var key = stateVarNameStr
+    var value = event.target.value
+    var obj  = {}
+    obj[key] = value
+    this.setState(obj)
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onEnterSendInputBoxFloatValue(event, topicName) {
+    const {sendFloatMsg} = this.props.ros
+    const namespace = this.props.processNamespace + topicName
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        sendFloatMsg(namespace,value)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+
+  onEnterSendInputBoxRangeWindowValue(event, topicName, entryName) {
+    const {publishRangeWindow} = this.props.ros
+    const namespace = this.props.processNamespace + topicName
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        var min = this.state.range_clip_min_m
+        var max = this.state.range_clip_max_m
+        if (entryName === "min"){
+          min = value
+        }
+        else if (entryName === "max"){
+          max = value
+        }
+        publishRangeWindow(namespace,min,max,false)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
 
   render() {
     const {  sendTriggerMsg, setFrame3d } = this.props.ros
     return (
       <Section title={"Process Controls"}>
+
+
+      <Columns>
+      <Column>
+          <Label title="Show Process Controls">
+                <Toggle
+                checked={this.state.show_process_controls===true}
+                onClick={this.onChangeProcessShowVal}>
+                </Toggle>
+          </Label>
+      </Column>
+      <Column>
+
+      </Column>
+      </Columns>
+
+      <div hidden={!this.state.show_process_controls}>
         <Columns>
           <Column>
  
-          </Column>
-          <Column>
+           </Column>
+           <Column>
 
-          </Column>
-          <Column>
-
-            <div align={"left"} textAlign={"left"} >
-              <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg( this.props.processNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
+            <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( this.props.processNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
               </ButtonMenu>
-            </div>
 
-            </Column>
+           </Column>
           </Columns>
+
+          <Columns>
+          <Column>
+            <Label title="Clip Range Enabled">
+                  <Toggle
+                  checked={this.state.range_clip_enabled===true}
+                  onClick={this.onChangeBoolClipRangeEnabled}>
+                  </Toggle>
+            </Label>
+
+            <Label title={"Set Range Clip Ranges (m)"}>
+            </Label>
+
+           </Column>
+           <Column>
+
+
+           </Column>
+          </Columns>
+
+          <Columns>
+          <Column>
+
+
+          <Label title={"Set Range Clip Min"}>
+                    <Input id="set_range_clip_min" 
+                      value={this.state.range_clip_min_m} 
+                      onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_min_m")} 
+                      onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","min")} />
+              </Label>
+  
+           </Column>
+           <Column>
+
+           <Label title={"Set Range Clip Min"}>
+            <Input id="set_range_clip_max" 
+              value={this.state.range_clip_max_m} 
+              onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_max_m")} 
+              onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","max")} />                      
+          </Label>  
+
+           </Column>
+          </Columns>      
+
+            <Label title={"Voxel Downsample Size (m)"}>
+                    <Input id="voxel_downsample_size_m" 
+                      value={this.state.voxel_downsample_size_m} 
+                      onChange={(event) => this.onUpdateProcessInputBoxValue(event,"voxel_downsample_size")} 
+                      onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_voxel_downsample_size")} />
+                  </Label>
+
+        </div>
         
       </Section>
     )

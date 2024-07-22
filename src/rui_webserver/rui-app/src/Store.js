@@ -902,6 +902,17 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  sendBoolMsg(namespace, value) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/Bool",
+      data: {data: value},
+      noPrefix: true
+    })
+    
+  }
+
+  @action.bound
   sendFrame3DTransformUpdateMsg(namespace, transformNamespace, transformFloatList) {
     if (transformFloatList.length === 7){
       this.publishMessage({
@@ -2266,11 +2277,13 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
   publishRangeWindow(topic, min, max, throttle = true) {
-    if (throttle && this.isThrottled()) {
-      return
+    if (throttle){
+      if (throttle && this.isThrottled()) {
+        return
+      }
     }
-
     if (topic) {
       this.publishMessage({
         name: topic,

@@ -69,8 +69,7 @@ class App extends Component {
                 { path: "/ai", label: "AI Detector" },
                 { path: "/pointcloud_app", label: "Pointclouds" },
                 { path: "/automation", label: "Automation"},
-                { path: "/image_sequencer", label: "Sequencer" },
-                { path: "/nepi_connect", label: "Connect" }
+                { path: "/image_sequencer", label: "Sequencer" }
               ]
             },
             {
@@ -86,8 +85,9 @@ class App extends Component {
               label: "System",
               subItems: [
                 { path: "/admin", label: "Admin" },
+                { path: "/software_update", label: "Software"},
                 { path: "/onvif_mgr", label: "ONVIF"},
-                { path: "/software_update", label: "Software"}
+                { path: "/nepi_connect", label: "Connect" }
               ]
             },
             {

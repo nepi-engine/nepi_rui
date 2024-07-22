@@ -17,6 +17,7 @@ import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 import Input from "./Input"
+import Toggle from "react-toggle"
 
 import NepiPointcloudProcessControls from "./NepiPointcloudProcessControls"
 import NepiPointcloudRenderControls from "./NepiPointcloudRenderControls"
@@ -43,10 +44,12 @@ class NepiAppPointcloud extends Component {
       selectedPointclouds: [],
       viewableTopics: false,
      
+      showTransforms: false,
       transforms_topic_list: [],
-      transofrm_data_list: [],
+      transforms_list: [],
+      selectedTransformPointcloud: "",
       selectedTransformInd: 0,
-      selectedTransformName: null,
+      selectedTransformPointcloud: null,
       selectedTransformData: null,
       selectedTransformTX: 0,
       selectedTransformTY: 0,
@@ -95,9 +98,10 @@ class NepiAppPointcloud extends Component {
     this.onEnterSendInputBoxFloatValue = this.onEnterSendInputBoxFloatValue.bind(this)
 
 
-
+    this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
     this.onEnterSetInputBoxFloatValue = this.onEnterSetInputBoxFloatValue.bind(this)
     this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
+    this.setSelectedTransform = this.setSelectedTransform.bind(this)
 
     this.updateSelectionListener = this.updateSelectionListener.bind(this)
     this.selectionStatusListener = this.selectionStatusListener.bind(this)
@@ -129,6 +133,7 @@ class NepiAppPointcloud extends Component {
     rangeMinMeters: message.range_min_max_m.start_range,
     rangeMaxMeters: message.range_min_max_m.stop_range,
     primary_pointcloud_topic: message.primary_pointcloud_topic
+    
     })
     this.setState({connected: true})
   }
@@ -229,8 +234,11 @@ class NepiAppPointcloud extends Component {
         var pointcloud2
         for (let ind = 0; ind < pointcloudTopics.length; ind++) {
           pointcloud2 = pointcloudTopics[ind]
-          if (( pointcloud2 !== "NONE" || pointcloud2 !== "ALL") && selectedList.indexOf(pointcloud2) !== -1) {}
-          sendStringMsg(addNamespace,pointcloud2)
+          if ( pointcloud2 !== "NONE" || pointcloud2 !== "ALL"){
+            if (pointcloud2.indexOf('pointcloud_app') === -1 && selectedList.includes(pointcloud2) === false) {
+              sendStringMsg(addNamespace,pointcloud2)
+            }
+          }
         }
       }
       else if (selectedList.indexOf(pointcloud) !== -1){
@@ -274,17 +282,21 @@ class NepiAppPointcloud extends Component {
 
   updateTranformsList(transformsTopicMsg,transformsMsg) {
     var topicsList = this.getStrListAsList(transformsTopicMsg)
-    var transformsStr = transformsMsg
-    var transformsStrList = []
-    if (transformsStr != null){
-      transformsStr = transformsStr.replaceAll("[","")
-      transformsStr = transformsStr.replaceAll("]","")
-      transformsStr = transformsStr.replaceAll(" '","")
-      transformsStr = transformsStr.replaceAll("'","")
-      transformsStrList = transformsStr.split(",")
+    const transformsFlat = this.getStrListAsList(transformsMsg)
+    var transform = []
+    var transformsList = []
+    var tf_index = 0
+    for (var i = 0; i < transformsFlat.length; i++) {
+      transform.push(transformsFlat[i])
+      tf_index += 1
+      if (tf_index === 7){
+        transformsList.push(transform)
+        transform = []
+        tf_index = 0
+      }
     }
     this.setState({transforms_topic_list: topicsList,
-                   transforms_data_list: transformsStrList
+                  transforms_list: transformsList
     })
   }
 
@@ -293,7 +305,7 @@ class NepiAppPointcloud extends Component {
     const name = this.state.transforms_topic_list[topicIndex]
     const data = this.state.transforms_list[topicIndex]
     this.setState({selectedTransformInd: topicIndex,
-      selectedTransformName: name,
+      selectedTransformPointcloud: name,
       selectedTransformData: data,})
   }
 
@@ -342,7 +354,7 @@ class NepiAppPointcloud extends Component {
   onAppDropdownSlectedSendStr(event, topicName) {
     const {sendStringMsg} = this.props.ros
     const value = event.target.value
-    const namespace = this.props.appNamespace + topicName
+    const namespace = this.state.appNamespace + topicName
     sendStringMsg(namespace,value)
   }
 
@@ -419,7 +431,7 @@ class NepiAppPointcloud extends Component {
   sendTransformUpdateMessage(){
     const {sendFrame3DTransformUpdateMsg} = this.props.ros
     const namespace = this.state.appNamespace + "/update_transform"
-    const transformNamespace = this.state.primary_pointcloud_topic
+    const transformNamespace = this.state.selectedTransformPointcloud
     const TX = this.state.selectedTransformTX
     const TY = this.state.selectedTransformTY
     const TZ = this.state.selectedTransformTZ
@@ -432,21 +444,50 @@ class NepiAppPointcloud extends Component {
     sendFrame3DTransformUpdateMsg(namespace,transformNamespace,transformList)
   }
 
+  onClickToggleShowTransforms(){
+    const currentVal = this.state.showTransforms 
+    this.setState({showTransforms: !currentVal})
+    this.render()
+  }
+
+  setSelectedTransform(event){
+    const pointcloud = event.target.value
+    const pointclouds = this.state.transforms_topic_list
+    const transforms = this.state.transforms_list
+    const tf_index = pointclouds.indexOf(pointcloud)
+    if (tf_index !== -1){
+      this.setState({
+        selectedTransformPointcloud: pointcloud,
+        selectedTransformInd: tf_index
+      })
+      const transform = transforms[tf_index]
+      this.setState({
+        selectedTransformTX: transform[0],
+        selectedTransformTY: transform[1],
+        selectedTransformTZ: transform[2],
+        selectedTransformRX: transform[3],
+        selectedTransformRX: transform[4],
+        selectedTransformRY: transform[5],
+        selectedTransformRZ: transform[6],
+        selectedTransformHO: transform[7]
+      })
+      
+    }
+  }
+
   renderPointcloudSelection() {
     const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {viewableTopics} = this.state
     const pointcloudSources = this.getPointcloudOptions()
     const selectedPointclouds = this.getSelectedPointclouds()
     const NoneOption = <Option>None</Option>
-
-
-
     return (
       <React.Fragment>
 
             <Section title={"Selection"}>
             <Columns>
             <Column>
+
                 <div align={"left"} textAlign={"left"} hidden={this.state.connected === false}>
                   <Label title="Add/Remove Pointclouds">
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
@@ -480,16 +521,22 @@ class NepiAppPointcloud extends Component {
                         : NoneOption}
                     </Select>
                   </Label>
-
+                  
+                  <Columns>
+                  <Column>
                   <Label title={"Age Filter (s)"}>
-                  <Input id="age_filter" 
+                    <Input id="age_filter" 
                       value={this.state.age_filter_s} 
                       onChange={(event) => this.onUpdateAppInputBoxValue(event,"age_filter_s")} 
                       onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_age_filter")} />
-              </Label>
+                  </Label>
+
+                  </Column>
+                  <Column>
 
 
-                <Label title={"Combine Options"}>
+
+                  <Label title={"Combine Options"}>
                     <Select
                       id="combine_options"
                       onChange={(event) => this.onAppDropdownSlectedSendStr(event,"/set_combine_option")}
@@ -500,12 +547,36 @@ class NepiAppPointcloud extends Component {
                         : NoneOption}
                     </Select>
                   </Label>
+                  
+                   </Column>
+                  </Columns>
 
                 </div>
 
-                </Column>
-                </Columns>
+                <Label title="Show 3D Transforms">
+                <Toggle
+                checked={this.state.showTransforms===true}
+                onClick={this.onClickToggleShowTransforms}>
+                </Toggle>
+                </Label>
 
+                </Column>
+            </Columns>
+
+          <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
+          <Columns>
+            <Column>
+          <Label title={"Select Transforms"}>
+                    <Select
+                      id="select_transforms"
+                      onChange={this.setSelectedTransform}
+                      value={this.state.selectedTransformPointcloud}
+                    >
+                      {this.state.transforms_topic_list
+                        ? this.createAppDropdownOptions(this.state.transforms_topic_list, [], true, false)
+                        : NoneOption}
+                    </Select>
+                  </Label>
 
             <Label title={"X (m)"}>
           <Input
@@ -536,7 +607,8 @@ class NepiAppPointcloud extends Component {
             style={{ width: "80%" }}
           />
         </Label>
-
+        </Column>
+        <Column>
         <Label title={"Roll (deg)"}>
           <Input
             value={round(this.state.selectedTransformRX, 2)}
@@ -576,81 +648,27 @@ class NepiAppPointcloud extends Component {
             style={{ width: "80%" }}
           />
         </Label>
-{/*
-        <Columns>
-          <Column>
+        </Column>
+        </Columns>
 
-            <Label title={"Y (m)"}>
-              <Input
-                value={(this.state.yTranslationEdited !== null)? this.state.yTranslationEdited : round(navTransformYTrans, 2)}
-                id="YTranslation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Z (m)"}>
-              <Input
-                value={(this.state.zTranslationEdited !== null)? this.state.zTranslationEdited : round(navTransformZTrans, 2)}
-                id="ZTranslation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                style={{ width: "80%" }}
-              />
-            </Label>
-          </Column>
-          <Column>
-            <Label title={"Roll (deg)"}>
-              <Input
-                value={(this.state.xRotationEdited !== null)? this.state.xRotationEdited : round(navTransformXRot, 2)}
-                id="XRotation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Pitch (deg)"}>
-              <Input
-                value={(this.state.yRotationEdited !== null)? this.state.yRotationEdited : round(navTransformYRot, 2)}
-                id="YRotation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Yaw (deg)"}>
-              <Input
-                value={(this.state.zRotationEdited !== null)? this.state.zRotationEdited : round(navTransformZRot, 2)}
-                id="ZRotation"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                style={{ width: "80%" }}
-              />
-            </Label>
-            <Label title={"Heading (deg)"}>
-              <Input
-                value={(this.state.headingEdited !== null)? this.state.headingEdited : round(navHeadingOffset, 2)}
-                id="Heading"
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-                style={{ width: "80%" }}
-              />
-            </Label>
-            </Column>
-            </Columns>  
-*/}         
-
-                <ButtonMenu>
+                    <ButtonMenu>
                       <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
                     </ButtonMenu>
+
+                    </div>
+        <Columns>
+        <Column>
 
                     <ButtonMenu>
                       <Button onClick={() => saveConfigTriggered(this.state.appNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
+        </Column>
+        <Column>
                     <ButtonMenu>
                       <Button onClick={() => sendTriggerMsg(this.state.appNamespace + "/reset_app")}>{"Reset App"}</Button>
                     </ButtonMenu>
-
+        </Column>
+        </Columns>
 
             </Section>
 
