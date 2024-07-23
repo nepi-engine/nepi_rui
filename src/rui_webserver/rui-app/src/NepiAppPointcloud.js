@@ -49,7 +49,6 @@ class NepiAppPointcloud extends Component {
       transforms_list: [],
       selectedTransformPointcloud: "",
       selectedTransformInd: 0,
-      selectedTransformPointcloud: null,
       selectedTransformData: null,
       selectedTransformTX: 0,
       selectedTransformTY: 0,
@@ -467,10 +466,9 @@ class NepiAppPointcloud extends Component {
         selectedTransformTY: transform[1],
         selectedTransformTZ: transform[2],
         selectedTransformRX: transform[3],
-        selectedTransformRX: transform[4],
-        selectedTransformRY: transform[5],
-        selectedTransformRZ: transform[6],
-        selectedTransformHO: transform[7]
+        selectedTransformRY: transform[4],
+        selectedTransformRZ: transform[5],
+        selectedTransformHO: transform[6]
       })
       
     }
@@ -601,7 +599,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"X (m)"}>
                 <Input
-                  value={round(this.state.selectedTransformTX, 2)}
+                  value={this.state.selectedTransformTX}
                   id="XTranslation"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTX")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTX")}
@@ -611,7 +609,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"Y (m)"}>
                 <Input
-                  value={round(this.state.selectedTransformTY, 2)}
+                  value={this.state.selectedTransformTY}
                   id="YTranslation"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTY")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTY")}
@@ -621,7 +619,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"Z (m)"}>
                 <Input
-                  value={round(this.state.selectedTransformTZ, 2)}
+                  value={this.state.selectedTransformTZ}
                   id="ZTranslation"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTZ")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTZ")}
@@ -631,7 +629,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"Heading Offset (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformHO, 2)}
+                  value={this.state.selectedTransformHO}
                   id="HeadingOffset"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformHO")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformHO")}
@@ -644,7 +642,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"Roll (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformRX, 2)}
+                  value={this.state.selectedTransformRX}
                   id="XRotation"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRX")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRX")}
@@ -654,7 +652,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"Pitch (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformRY, 2)}
+                  value={this.state.selectedTransformRY}
                   id="YRotation"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRY")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRY")}
@@ -664,7 +662,7 @@ class NepiAppPointcloud extends Component {
 
               <Label title={"Yaw (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformRZ, 2)}
+                  value={this.state.selectedTransformRZ}
                   id="ZRotation"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRZ")}
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRZ")}
