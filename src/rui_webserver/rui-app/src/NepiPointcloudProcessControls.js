@@ -21,6 +21,10 @@ import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
+function round(value, decimals = 0) {
+  return Number(value).toFixed(decimals)
+  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
 
 @inject("ros")
 @observer
@@ -98,6 +102,7 @@ class NepiPointcloudProcessControls extends Component {
     if (prevProps.processNamespace !== processNamespace && processNamespace !== null) {
       if (processNamespace.indexOf('null') === -1){
         this.updateProcessListener()
+        this.render()
       } 
     }
   }
@@ -149,7 +154,6 @@ class NepiPointcloudProcessControls extends Component {
     obj[key] = value
     this.setState(obj)
     document.getElementById(event.target.id).style.color = Styles.vars.colors.red
-    this.render()
   }
 
   onEnterSendInputBoxFloatValue(event, topicName) {
@@ -163,6 +167,20 @@ class NepiPointcloudProcessControls extends Component {
       document.getElementById(event.target.id).style.color = Styles.vars.colors.black
     }
   }
+
+
+  onEnterSendInputBoxIntValue(event, topicName) {
+    const {sendIntMsg} = this.props.ros
+    const namespace = this.props.processNamespace + topicName
+    if(event.key === 'Enter'){
+      const value = parseInt(event.target.value)
+      if (!isNaN(value)){
+        sendIntMsg(namespace,value)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
 
 
   onEnterSendInputBoxRangeWindowValue(event, topicName, entryName) {
@@ -202,22 +220,15 @@ class NepiPointcloudProcessControls extends Component {
       </Column>
       <Column>
 
+      <div hidden={!this.state.show_process_controls}>
+          <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( this.props.processNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
+              </ButtonMenu>
+      </div>
       </Column>
       </Columns>
 
       <div hidden={!this.state.show_process_controls}>
-        <Columns>
-          <Column>
- 
-           </Column>
-           <Column>
-
-            <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( this.props.processNamespace + "/reset_controls")}>{"Reset Controls"}</Button>
-              </ButtonMenu>
-
-           </Column>
-          </Columns>
 
           <Columns>
           <Column>
@@ -248,26 +259,54 @@ class NepiPointcloudProcessControls extends Component {
                       onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_min_m")} 
                       onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","min")} />
               </Label>
-  
+            
+              </Column>
+              <Column>
+                  <Label title={"Set Range Clip Max"}>
+                    <Input id="set_range_clip_max" 
+                     value={this.state.range_clip_max_m} 
+                      onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_max_m")} 
+                      onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","max")} />                      
+                  </Label>  
+
            </Column>
-           <Column>
+          </Columns>  
 
-           <Label title={"Set Range Clip Min"}>
-            <Input id="set_range_clip_max" 
-              value={this.state.range_clip_max_m} 
-              onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_max_m")} 
-              onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","max")} />                      
-          </Label>  
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>    
 
-           </Column>
-          </Columns>      
 
-            <Label title={"Voxel Downsample Size (m)"}>
-                    <Input id="voxel_downsample_size_m" 
-                      value={this.state.voxel_downsample_size_m} 
-                      onChange={(event) => this.onUpdateProcessInputBoxValue(event,"voxel_downsample_size")} 
-                      onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_voxel_downsample_size")} />
-                  </Label>
+          <Columns>
+            <Column>
+
+              <Label title={"Pointclud Filtering"}></Label>
+                      
+{/*              <Label title={"Uniform Downsample k Points"}>
+                <Input id="uniform_downsample_k_points" 
+                  value={this.state.uniform_downsample_points} 
+                  onChange={(event) => this.onUpdateProcessInputBoxValue(event,"uniform_downsample_points")} 
+                  onKeyDown= {(event) => this.onEnterSendInputBoxIntValue(event,"/uniform_downsample_k_points")} />
+              </Label>
+*/}
+
+              <Label title={"Outlier Removal k Points"}>
+                <Input id="outlier_k_points" 
+                  value={this.state.outlier_k_points} 
+                  onChange={(event) => this.onUpdateProcessInputBoxValue(event,"outlier_k_points")} 
+                  onKeyDown= {(event) => this.onEnterSendInputBoxIntValue(event,"/outlier_removal_num_neighbors")} />
+              </Label>
+
+              <Label title={"Voxel Downsample Size (m)"}>
+                <Input id="voxel_downsample_size_m" 
+                  value={this.state.voxel_downsample_size_m} 
+                  onChange={(event) => this.onUpdateProcessInputBoxValue(event,"voxel_downsample_size_m")} 
+                  onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_voxel_downsample_size")} />
+              </Label>
+
+            </Column>
+            <Column>
+
+            </Column>
+          </Columns>  
 
         </div>
         

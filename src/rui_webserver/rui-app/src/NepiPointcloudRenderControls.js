@@ -163,7 +163,7 @@ class NepiPointcloudRenderControls extends Component {
   render() {
     const {  sendTriggerMsg, setFrame3d } = this.props.ros
     return (
-      <Section title={"Controls"}>
+      <Section title={"Render Controls"}>
         <Columns>
           <Column>
  
@@ -331,10 +331,10 @@ class NepiPointcloudRenderControls extends Component {
 
                   <Label title={"X  "}>
                     <Input
-                      id="camcamRotX"
-                      value={(this.state.camcamRotX)}
+                      id="camRotX"
+                      value={(this.state.camRotX)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
 
@@ -343,10 +343,10 @@ class NepiPointcloudRenderControls extends Component {
 
                 <Label title={"Y  "}>
                     <Input
-                      id="camcamRotY"
-                      value={(this.state.camcamRotY)}
+                      id="camRotY"
+                      value={(this.state.camRotY)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
 
@@ -355,10 +355,10 @@ class NepiPointcloudRenderControls extends Component {
 
                 <Label title={"Z  "}>
                     <Input
-                      id="camcamRotZ"
-                      value={(this.state.camcamRotZ)}
+                      id="camRotZ"
+                      value={(this.state.camRotZ)}
                       onChange={this.onUpdateCamText}
-                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camcamRotX,this.state.camcamRotY,this.state.camcamRotZ)}
+                      onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
 

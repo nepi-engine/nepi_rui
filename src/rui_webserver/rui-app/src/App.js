@@ -30,6 +30,7 @@ import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"
 import OnvifManager from "./NepiSystemOnvif"
 import LSX from "./NepiControlsLights"
+import RBX from "./NepiControlsRobots"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -77,7 +78,8 @@ class App extends Component {
               label: "Controls",
               subItems: [
 			    { path: "/lsx", label: "Lights" },
-                { path: "/ptx", label: "Pan&Tilts" }
+                { path: "/ptx", label: "Pan&Tilts" },
+                { path: "/rbx", label: "Robots" }
               ]
             },
             {
@@ -116,6 +118,7 @@ class App extends Component {
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/ptx" component={PTX} />
+          <Route path="/rbx" component={RBX} />
           <Route path='/docs' component={() => {
              window.location.href = 'https://nepi.com/documentation/';
              return null;

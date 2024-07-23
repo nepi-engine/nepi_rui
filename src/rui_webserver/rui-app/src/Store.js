@@ -219,6 +219,7 @@ class ROSConnectionStore {
   @observable settingsCaps = {}
   @observable ptxUnits = {}
   @observable lsxUnits = {}
+  @observable rbxRobots = {}
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -414,7 +415,8 @@ class ROSConnectionStore {
                 
         this.updateIDXSensorList()
         this.updatePTXUnits()
-		this.updateLSXUnits()
+		    this.updateLSXUnits()
+        this.updateRBXRobotsList()
         this.updateNavPoseSourceTopics()
 
         if (newPrefix || newSensor3DXs || newResettables || newImageTopics || newPointcloudTopics) {
@@ -545,7 +547,7 @@ class ROSConnectionStore {
         const idx_sensor_namespace = this.topicNames[i].split("/idx")[0]
         if (!(sensors_detected.includes(idx_sensor_namespace))) {
           this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Testing
-          this.callIDXSettingsCapabilitiesQueryService(idx_sensor_namespace)
+          this.callSettingsCapabilitiesQueryService(idx_sensor_namespace)
           const idxSensor = this.idxSensors[idx_sensor_namespace]
           const settingsCaps = this.settingsCaps[idx_sensor_namespace]
           if (idxSensor && settingsCaps) { // Testing
@@ -625,6 +627,38 @@ class ROSConnectionStore {
     return lsx_units_changed
   }  
   
+  @action.bound
+  updateRBXRobotsList() {
+    var rbx_robots_changed = false
+    var robots_detected = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicNames[i].endsWith("/rbx/status")) {
+        const rbx_robot_namespace = this.topicNames[i].split("/rbx")[0]
+        if (!(robots_detected.includes(rbx_robot_namespace))) {
+          this.callRBXCapabilitiesQueryService(rbx_robot_namespace)
+          this.callSettingsCapabilitiesQueryService(rbx_robot_namespace)
+          const rbxRobot = this.rbxRobots[rbx_robot_namespace]
+          const settingsCaps = this.settingsCaps[rbx_robot_namespace]
+          if (rbxRobot && settingsCaps) { // Testing
+            robots_detected.push(rbx_robot_namespace)
+          }
+          rbx_robots_changed = true // Testing -- always declare changed
+        }
+      }
+    }
+
+    // Now clean out any sensors that are no longer detected
+    const previously_known = Object.keys(this.rbxRobots)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(robots_detected.includes(previously_known[i]))) {
+        delete this.rbxRobots[previously_known[i]]
+        rbx_robots_changed = true
+      }
+    }
+    return rbx_robots_changed
+  }
+
+
   @action.bound
   updateResetTopics() {
     var newResetTopics = []
@@ -1147,6 +1181,29 @@ class ROSConnectionStore {
   }
 
 
+  setupRBXInfoListener(rbxRobotNamespace, callback) {
+    if (rbxRobotNamespace) {
+      return this.addListener({
+        name: rbxRobotNamespace + "/idx/info",
+        messageType: "nepi_ros_interfaces/RBXInfo",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  setupRBXStatusListener(rbxRobotNamespace, callback) {
+    if (rbxRobotNamespace) {
+      return this.addListener({
+        name: rbxRobotNamespace + "/idx/status",
+        messageType: "nepi_ros_interfaces/RBXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
 
   @action.bound
   saveConfigTriggered(namespace) {
@@ -1317,7 +1374,7 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  async callIDXSettingsCapabilitiesQueryService(idxSensorNamespace) {
+  async callSettingsCapabilitiesQueryService(idxSensorNamespace) {
     const capabilities = await this.callService({
       name: idxSensorNamespace + "/settings_capabilities_query",
       messageType: "nepi_ros_interfaces/SettingsCapabilitiesQuery",  
@@ -1341,6 +1398,16 @@ class ROSConnectionStore {
       messageType: "nepi_ros_interfaces/LSXCapabilitiesQuery",
     })
     this.lsxUnits[lsxUnitNamespace] = capabilities
+  }
+
+
+  @action.bound
+  async callRBXCapabilitiesQueryService(rbxRobotNamespace) {
+    const capabilities = await this.callService({
+      name: rbxRobotNamespace + "/rbx/capabilities_query",
+      messageType: "nepi_ros_interfaces/RBXCapabilitiesQuery",  
+    })
+    this.rbxRobots[rbxRobotNamespace] = capabilities
   }
 
   @action.bound
@@ -2231,7 +2298,8 @@ class ROSConnectionStore {
     this.last3DXUpdate = now
     return false
   }
-
+  
+  @action.bound
   publishValue(
     topic,
     msgType,
@@ -2251,6 +2319,7 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
   publishAutoManualSelection3DX(
     topic,
     name,
@@ -2300,7 +2369,7 @@ class ROSConnectionStore {
   }
 
 
-
+  @action.bound
   publishStitchedCloudEnabled(topic, enabled) {
     if (topic) {
       this.publishMessage({

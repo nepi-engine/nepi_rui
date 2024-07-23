@@ -133,14 +133,13 @@ class NepiAppPointcloud extends Component {
     rangeMinMeters: message.range_min_max_m.start_range,
     rangeMaxMeters: message.range_min_max_m.stop_range,
     primary_pointcloud_topic: message.primary_pointcloud_topic
-    
     })
     this.setState({connected: true})
   }
 
   // Function for configuring and subscribing to Status
   updateSelectionListener() {
-    const statusNamespace = this.state.appNamespace + '/status'
+    const statusNamespace = this.getAppNamespace() + '/status'
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
@@ -154,13 +153,15 @@ class NepiAppPointcloud extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const appNamespace = this.getAppNamespace()
-    if (prevState.appNamespace !== appNamespace && appNamespace !== null) {
-      if (appNamespace.indexOf('null') === -1)
-        this.setState({appNamespace: appNamespace})
+    const namespace = this.getAppNamespace()
+    if (prevState.appNamespace !== namespace && namespace !== null) {
+      if (namespace.indexOf('null') === -1) {
+        this.setState({appNamespace: namespace})
         this.updateSelectionListener()
       } 
     }
+  }
+
 
 
   // Lifecycle method called just before the component umounts.
@@ -194,7 +195,7 @@ class NepiAppPointcloud extends Component {
         items.push(<Option value={pointcloudTopics[i]}>{pointcloudTopicShortnames[i]}</Option>)
       }
     }
-    items.push(<Option>{"ALL"}</Option>) 
+    //items.push(<Option>{"ALL"}</Option>) 
     items.push(<Option>{"NONE"}</Option>) 
     return items
   }
@@ -475,20 +476,25 @@ class NepiAppPointcloud extends Component {
     }
   }
 
+
+
   renderPointcloudSelection() {
     const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {viewableTopics} = this.state
     const pointcloudSources = this.getPointcloudOptions()
     const selectedPointclouds = this.getSelectedPointclouds()
     const NoneOption = <Option>None</Option>
+    const connected = this.state.connected
     return (
       <React.Fragment>
 
             <Section title={"Selection"}>
-            <Columns>
-            <Column>
 
-                <div align={"left"} textAlign={"left"} hidden={this.state.connected === false}>
+
+
+            <Columns>
+              <Column>
+
                   <Label title="Add/Remove Pointclouds">
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
@@ -509,7 +515,10 @@ class NepiAppPointcloud extends Component {
                     </div>
                   </Label>
 
+             </Column>
+             <Column>
 
+             <div align={"left"} textAlign={"left"} hidden={connected === false}>
                   <Label title={"Primary Pointcloud"}>
                     <Select
                       id="primary_pointcloud"
@@ -521,9 +530,17 @@ class NepiAppPointcloud extends Component {
                         : NoneOption}
                     </Select>
                   </Label>
-                  
-                  <Columns>
-                  <Column>
+              </div>
+
+              </Column>
+            </Columns>
+
+            <div align={"left"} textAlign={"left"} hidden={connected === false}>
+
+            <Label title={""}></Label>
+
+            <Columns>
+              <Column>
                   <Label title={"Age Filter (s)"}>
                     <Input id="age_filter" 
                       value={this.state.age_filter_s} 
@@ -531,10 +548,18 @@ class NepiAppPointcloud extends Component {
                       onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_age_filter")} />
                   </Label>
 
-                  </Column>
-                  <Column>
+                  <Label title={""}></Label>
+                  <Label title={""}></Label>
+                  
+                  <Label title="Show 3D Transforms">
+                    <Toggle
+                      checked={this.state.showTransforms===true}
+                      onClick={this.onClickToggleShowTransforms}>
+                    </Toggle>
+                  </Label>
 
-
+              </Column>
+              <Column>
 
                   <Label title={"Combine Options"}>
                     <Select
@@ -548,25 +573,12 @@ class NepiAppPointcloud extends Component {
                     </Select>
                   </Label>
                   
-                   </Column>
-                  </Columns>
+                  <Label title={""}></Label>
+                  <Label title={""}></Label>
 
-                </div>
+                  <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
 
-                <Label title="Show 3D Transforms">
-                <Toggle
-                checked={this.state.showTransforms===true}
-                onClick={this.onClickToggleShowTransforms}>
-                </Toggle>
-                </Label>
-
-                </Column>
-            </Columns>
-
-          <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
-          <Columns>
-            <Column>
-          <Label title={"Select Transforms"}>
+                  <Label title={"Select Transforms"}>
                     <Select
                       id="select_transforms"
                       onChange={this.setSelectedTransform}
@@ -578,99 +590,122 @@ class NepiAppPointcloud extends Component {
                     </Select>
                   </Label>
 
-            <Label title={"X (m)"}>
-          <Input
-            value={round(this.state.selectedTransformTX, 2)}
-            id="XTranslation"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTX")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTX")}
-            style={{ width: "80%" }}
-          />
-        </Label>
+                  </div>
+              </Column>
+            </Columns>
+            <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
 
-        <Label title={"Y (m)"}>
-          <Input
-            value={round(this.state.selectedTransformTY, 2)}
-            id="YTranslation"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTY")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTY")}
-            style={{ width: "80%" }}
-          />
-        </Label>
+          <Columns>
+            <Column>
 
-        <Label title={"Z (m)"}>
-          <Input
-            value={round(this.state.selectedTransformTZ, 2)}
-            id="ZTranslation"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTZ")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTZ")}
-            style={{ width: "80%" }}
-          />
-        </Label>
-        </Column>
-        <Column>
-        <Label title={"Roll (deg)"}>
-          <Input
-            value={round(this.state.selectedTransformRX, 2)}
-            id="XRotation"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRX")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRX")}
-            style={{ width: "80%" }}
-          />
-        </Label>
 
-        <Label title={"Pitch (deg)"}>
-          <Input
-            value={round(this.state.selectedTransformRY, 2)}
-            id="YRotation"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRY")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRY")}
-            style={{ width: "80%" }}
-          />
-        </Label>
+              <Label title={"X (m)"}>
+                <Input
+                  value={round(this.state.selectedTransformTX, 2)}
+                  id="XTranslation"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTX")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTX")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
 
-        <Label title={"Yaw (deg)"}>
-          <Input
-            value={round(this.state.selectedTransformRZ, 2)}
-            id="ZRotation"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRZ")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRZ")}
-            style={{ width: "80%" }}
-          />
-        </Label>
+              <Label title={"Y (m)"}>
+                <Input
+                  value={round(this.state.selectedTransformTY, 2)}
+                  id="YTranslation"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTY")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTY")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
 
-        <Label title={"Heading Offset (deg)"}>
-          <Input
-            value={round(this.state.selectedTransformHO, 2)}
-            id="HeadingOffset"
-            onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformHO")}
-            onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformHO")}
-            style={{ width: "80%" }}
-          />
-        </Label>
-        </Column>
-        </Columns>
+              <Label title={"Z (m)"}>
+                <Input
+                  value={round(this.state.selectedTransformTZ, 2)}
+                  id="ZTranslation"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTZ")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTZ")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
 
-                    <ButtonMenu>
-                      <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
-                    </ButtonMenu>
+              <Label title={"Heading Offset (deg)"}>
+                <Input
+                  value={round(this.state.selectedTransformHO, 2)}
+                  id="HeadingOffset"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformHO")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformHO")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
 
-                    </div>
-        <Columns>
-        <Column>
+            </Column>
+            <Column>
 
-                    <ButtonMenu>
-                      <Button onClick={() => saveConfigTriggered(this.state.appNamespace)}>{"Save Config"}</Button>
-                    </ButtonMenu>
-        </Column>
-        <Column>
-                    <ButtonMenu>
-                      <Button onClick={() => sendTriggerMsg(this.state.appNamespace + "/reset_app")}>{"Reset App"}</Button>
-                    </ButtonMenu>
-        </Column>
-        </Columns>
+              <Label title={"Roll (deg)"}>
+                <Input
+                  value={round(this.state.selectedTransformRX, 2)}
+                  id="XRotation"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRX")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRX")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
 
-            </Section>
+              <Label title={"Pitch (deg)"}>
+                <Input
+                  value={round(this.state.selectedTransformRY, 2)}
+                  id="YRotation"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRY")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRY")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <Label title={"Yaw (deg)"}>
+                <Input
+                  value={round(this.state.selectedTransformRZ, 2)}
+                  id="ZRotation"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRZ")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRZ")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <ButtonMenu>
+                <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+              </ButtonMenu>
+
+            </Column>
+          </Columns>
+          </div>
+
+    
+          <Columns>
+            <Column>
+            
+              <Label title={""}></Label>
+
+              <ButtonMenu>
+                <Button onClick={() => saveConfigTriggered(this.state.appNamespace)}>{"Save Config"}</Button>
+              </ButtonMenu>
+
+            </Column>
+            <Column>
+            
+              <Label title={""}></Label>
+
+              <ButtonMenu>
+                <Button onClick={() => sendTriggerMsg(this.state.appNamespace + "/reset_app")}>{"Reset App"}</Button>
+              </ButtonMenu>
+
+            </Column>
+          </Columns>
+
+
+          </div>
+          
+        </Section>
 
         
       </React.Fragment>
