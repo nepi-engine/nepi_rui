@@ -17,13 +17,13 @@ import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import CameraViewer from "./CameraViewer"
 
-//import NepiSensorsImagingInfo from "./NepiSensorsImagingInfo"
-//import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
+import NepiRobotControls from "./NepiControlsRobotsControls"
 
+import NepiDeviceInfo from "./NepiDeviceInfo"
 import Nepi_IF_Settings from "./Nepi_IF_Settings"
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
-import createShortUniqueValues from "./Utilities"
+import createShortValuesFromNamespace from "./Utilities"
 
 @inject("ros")
 @observer
@@ -39,14 +39,31 @@ class NepiControlsRobots extends Component {
       show_controls: true,
       show_settings: true,
       show_save_data: true,
-      
+
+
+      device_name: null,
+      serial_num: null,
+      hw_version: null,
+      sw_version: null,
+      standy: null,
+      state: null,
+      mode: null,
+      error_bound_m: null,
+      error_bound_deg: null,
+      error_stabilize_s: null,
+      cmd_timeout: null,
+      image_source: null,
+      image_status_overlay: null,
+      home_lat: null,
+      home_long: null,
+      home_alt: null,
+      fake_gps_enabled: null,
+        
       // RBX Sensor topic to subscribe to and update
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No robot selected",
 
-      connected: false,
-
-      listener: null
+      rbxInfoListener: null
     }
 
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
@@ -56,31 +73,47 @@ class NepiControlsRobots extends Component {
     this.createImageOptions = this.createImageOptions.bind(this)
 
     this.updateInfoListener = this.updateInfoListener.bind(this)
-    this.infoStatusListener = this.infoStatusListener.bind(this)
-    //const RBXSensorNamespaces = Object.keys(props.ros.RBXSensors)
+    this.infoListener = this.infoListener.bind(this)
+    //const RBXRobotNamespaces = Object.keys(props.ros.RBXRobots)
 
   }
 
 
   // Callback for handling ROS Status messages
-  infoStatusListener(message) {
+  infoListener(message) {
     this.setState({
-    
+      device_name: message.device_name,
+      serial_num: message.serial_num,
+      hw_version: message.hw_version,
+      sw_version: message.sw_version,
+      standy: message.standy,
+      state: message.state,
+      mode: message.mode,
+      error_bound_m: message.error_bounds.max_distance_error_m,
+      error_bound_deg: message.error_bounds.max_rotation_error_deg,
+      error_stabilize_s: message.error_bounds.max_stabilize_time_s,
+      cmd_timeout: message.cmd_timeout,
+      image_source: message.image_source,
+      image_status_overlay: message.image_status_overlay,
+      home_lat: message.home_lat,
+      home_long: message.home_long,
+      home_alt: message.home_alt,
+      fake_gps_enabled: message.fake_gps_enabled
     })
-    this.setState({connected: true})
   }
 
   // Function for configuring and subscribing to Status
   updateInfoListener() {
-    const infoNamespace = this.state.currentRBXNamespace + '/rbx/info'
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    const robotNamespace = this.state.currentRBXNamespace
+    if (this.state.rbxInfoListener) {
+      this.state.rbxInfoListener.unsubscribe()
     }
-    var listener = this.props.ros.setupRBXInfoListener(
-          infoNamespace,
-          this.infoStatusListener
+    var listener = this.props.ros.setupStatusListener(
+          robotNamespace + "/rbx/info" ,
+          "nepi_ros_interfaces/RBXInfo",
+          this.infoListener
         )
-    this.setState({ listener: listener})
+    this.setState({ rbxInfoListener: listener})
   }
 
   // Lifecycle method called when compnent updates.
@@ -119,7 +152,7 @@ class NepiControlsRobots extends Component {
 
     var items = []
     items.push(<Option>{"None"}</Option>)
-    var unique_names = createShortUniqueValues(filteredTopics)
+    var unique_names = createShortValuesFromNamespace(filteredTopics)
     for (i = 0; i < filteredTopics.length; i++) {
       items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
     }
@@ -132,24 +165,25 @@ class NepiControlsRobots extends Component {
     return items
   }
 
-  createImageOptions(RBXSensorNamespace) {
+  createImageOptions(RBXRobotNamespace) {
     var items = []
+    const rbx_img_namespace = RBXRobotNamespace + "/image"
     items.push(<Option>{"None"}</Option>)
 
     const image_topics = this.props.ros.imageTopics
-    var sensor_img_topics = []
+    var img_topics = []
 
     for (var i = 0; i < image_topics.length; i++) {
       const topic = image_topics[i]
-      if (topic.startsWith(RBXSensorNamespace) === false || image_topics[i].includes("rbx") === false ) {
+      if (topic.startsWith(RBXRobotNamespace) === false) {
         continue
       }
-      sensor_img_topics.push(topic)
+      img_topics.push(topic)
     }
 
-    const sensor_img_topics_short = createShortUniqueValues(sensor_img_topics)
-    for (i = 0; i < sensor_img_topics.length; i++) {
-      items.push(<Option value={sensor_img_topics[i]}>{sensor_img_topics_short[i]}</Option>)
+    const img_topics_short = createShortValuesFromNamespace(img_topics)
+    for (i = 0; i < img_topics.length; i++) {
+      items.push(<Option value={img_topics[i]}>{img_topics_short[i]}</Option>)
     }
     return items    
   }
@@ -157,7 +191,7 @@ class NepiControlsRobots extends Component {
   clearTopicRBXSelection() {
     this.setState({
       currentRBXNamespace: null,
-      currentRBXNamespaceText: "No sensor selected",
+      currentRBXNamespaceText: "No robot selected",
       imageTopic_0: null,
       imageText_0: null        
     })
@@ -178,7 +212,7 @@ class NepiControlsRobots extends Component {
     var autoSelectedImgTopic = null
     var autoSelectedImgTopicText = null
     autoSelectedImgTopic = value.concat("/rbx/image")
-    autoSelectedImgTopicText = createShortUniqueValues([autoSelectedImgTopic])[0]
+    autoSelectedImgTopicText = createShortValuesFromNamespace([autoSelectedImgTopic])[0]
   
     this.setState({
       currentRBXNamespace: value,
@@ -203,7 +237,8 @@ class NepiControlsRobots extends Component {
   renderSensorSelection() {
     const { rbxRobots, sendTriggerMsg, saveConfigTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const SensorSelected = (this.state.currentRBXNamespace != null)
+    const robotSelected = (this.state.currentRBXNamespace != null)
+    const capabilities = rbxRobots[this.state.currentRBXNamespace]
 
     return (
       <React.Fragment>
@@ -222,7 +257,7 @@ class NepiControlsRobots extends Component {
                   </Select>
                 </Label>
                
-                <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
                   <Label title={"Image"}>
                     <Select
                       id="topicSelect_0"
@@ -238,7 +273,7 @@ class NepiControlsRobots extends Component {
 
               </Column>
               <Column>
-                <div align={"left"} textAlign={"left"} hidden={!SensorSelected}>
+                <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
                     <ButtonMenu>
                       <Button onClick={() => saveConfigTriggered(this.state.currentRBXNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
@@ -275,26 +310,28 @@ class NepiControlsRobots extends Component {
 
 
   render() {
-    const SensorSelected = (this.state.currentRBXNamespace != null)
+    const robotSelected = (this.state.currentRBXNamespace != null)
     const ImageName = this.state.imageText_0
     
     return (
       <Columns>
         <Column>
-{/*
-          <div hidden={(!SensorSelected)}>
-            <NepiControlsRobotsInfo
-                  rbxRobotNamespace={this.state.currentRBXNamespace}
-                  title={"NepiSensorsImagingInfo"}
+
+        <div hidden={(!robotSelected)}>
+            <NepiDeviceInfo
+                  deviceNamespace={this.state.currentRBXNamespace}
+                  status_topic={"/rbx/info"}
+                  status_msg_type={"nepi_ros_interfaces/RBXInfo"}
+                  name_update_topic={"/rbx/update_device_name"}
+                  name_reset_topic={"/rbx/reset_device_name"}
+                  title={"NepiRobotInfo"}
               />
           </div>
-
-*/}
 
           {this.renderImageViewer()}
 
       
-          <div hidden={!SensorSelected}>
+          <div hidden={!robotSelected}>
             <Nepi_IF_SaveData
                 saveNamespace={this.state.currentRBXNamespace}
                 title={"Nepi_IF_SaveData"}
@@ -306,19 +343,18 @@ class NepiControlsRobots extends Component {
         <Column>
           {this.renderSensorSelection()}
 
-{/*
 
-          <div hidden={(!SensorSelected && this.state.show_controls)}>
-            <NepiControslsRobotsControls
-                rbxRobotNamespace={this.state.currentRBXNamespace}
-                rbxImageName = {ImageName}
-                title={"NepiSensorsImagingControls"}
+
+          <div hidden={(!robotSelected && this.state.show_controls)}>
+            <NepiRobotControls
+                rbxNamespace={this.state.currentRBXNamespace}
+                title={"NepiRobotControls"}
             />
           </div>
 
-*/}
 
-          <div hidden={(!SensorSelected && this.state.show_settings)}>
+
+          <div hidden={(!robotSelected && this.state.show_settings)}>
             <Nepi_IF_Settings
               settingsNamespace={this.state.currentRBXNamespace}
               title={"Nepi_IF_Settings"}

@@ -214,7 +214,6 @@ class ROSConnectionStore {
   @observable topicTypes = null
   @observable imageTopics = []
   @observable pointcloudTopics = []
-  @observable sensor3DXTopics = []
   @observable idxSensors = {}
   @observable settingsCaps = {}
   @observable ptxUnits = {}
@@ -229,7 +228,7 @@ class ROSConnectionStore {
   @observable imageFilterSequencer = null
   @observable imageFilterPTX = null
   
-  @observable last3DXUpdate = new Date()
+  @observable lastUpdate = new Date()
 
   @observable classifiers = []
   @observable classifierImgTopic = null
@@ -408,7 +407,6 @@ class ROSConnectionStore {
         this.topicNames = result.topics
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
-        var newSensor3DXs = this.updateSensor3DXTopics()
         var newResettables = this.updateResetTopics()
         var newImageTopics = this.updateImageTopics()
         var newPointcloudTopics = this.updatePointcloudTopics()
@@ -419,7 +417,7 @@ class ROSConnectionStore {
         this.updateRBXRobotsList()
         this.updateNavPoseSourceTopics()
 
-        if (newPrefix || newSensor3DXs || newResettables || newImageTopics || newPointcloudTopics) {
+        if (newPrefix || newResettables || newImageTopics || newPointcloudTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -506,32 +504,6 @@ class ROSConnectionStore {
 
     if (!this.pointcloudTopics.equals(newPointcloudTopics)) {
       this.pointcloudTopics = newPointcloudTopics
-      return true
-    } else {
-      return false
-    }
-  }
-
-  @action.bound
-  updateSensor3DXTopics() {
-    // Function for updating 3DX Sensor topic list
-    var newSensor3DXTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      var topic_name_parts = this.topicNames[i].split("/")
-      var last_element = topic_name_parts.pop()
-      var topic_base = topic_name_parts.join("/")
-      if (
-        last_element === "status_3dx" &&
-        this.topicTypes[i] === "nepi_ros_interfaces/Status3DX"
-      ) {
-        newSensor3DXTopics.push(topic_base)
-      }
-    }
-    // sort the sensor topics for comparison to work
-    newSensor3DXTopics.sort()
-
-    if (!this.sensor3DXTopics.equals(newSensor3DXTopics)) {
-      this.sensor3DXTopics = newSensor3DXTopics
       return true
     } else {
       return false
@@ -863,6 +835,37 @@ class ROSConnectionStore {
   }
 
 
+  /*******************************/
+  // Generic Listener Functions
+  /*******************************/
+
+  @action.bound
+  setupStatusListener(namespace, msg_type, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: msg_type,
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupMsgListener(namespace, msg_type, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "std_msgs/String",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
   setupImageSystemStatusListener() {
     this.addListener({
       name: "system_status",
@@ -901,6 +904,180 @@ class ROSConnectionStore {
   }
 
 
+
+  /*******************************/
+  // Custom Listener Functions
+  /*******************************/
+
+  @action.bound
+  setupPTXStatusListener(ptxNamespace, callback) {
+    if (ptxNamespace) {
+      return this.addListener({
+        name: ptxNamespace + "/ptx/status",
+        messageType: "nepi_ros_interfaces/PanTiltStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+    
+  @action.bound
+  setupLSXStatusListener(lsxNamespace, callback) {
+    if (lsxNamespace) {
+      return this.addListener({
+        name: lsxNamespace + "/lsx/status",
+        messageType: "nepi_ros_interfaces/LSXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  setupRUISettingsListener() {
+    this.addListener({
+      name: "rui_config_mgr/settings",
+      messageType: "nepi_ros_interfaces/RUISettings",
+      callback: message => {
+        this.streamingImageQuality = message.streaming_image_quality
+        this.nepiLinkHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
+      }
+    })
+  }
+
+
+  @action.bound
+  setupIDXStatusListener(idxSensorNamespace, callback) {
+    if (idxSensorNamespace) {
+      return this.addListener({
+        name: idxSensorNamespace + "/idx/status",
+        messageType: "nepi_ros_interfaces/IDXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupRBXInfoListener(rbxRobotNamespace, callback) {
+    if (rbxRobotNamespace) {
+      return this.addListener({
+        name: rbxRobotNamespace + "/rbx/info",
+        messageType: "nepi_ros_interfaces/RBXInfo",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupRBXStatusListener(rbxRobotNamespace, callback) {
+    if (rbxRobotNamespace) {
+      return this.addListener({
+        name: rbxRobotNamespace + "/idx/status",
+        messageType: "nepi_ros_interfaces/RBXStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupPointcloudSelectionStatusListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_ros_interfaces/PointcloudSelectionStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  
+  @action.bound
+  setupPointcloudProcessStatusListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_ros_interfaces/PointcloudProcessStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupPointcloudRenderStatusListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_ros_interfaces/PointcloudRenderStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+
+  @action.bound
+  setupSaveDataStatusListener(saveNamespace, callback) {
+    if (saveNamespace) {
+      return this.addListener({
+        name: saveNamespace + "/save_data_status",
+        messageType: "nepi_ros_interfaces/SaveDataStatus",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupSettingsStatusListener(settingsNamespace, callback) {
+    if (settingsNamespace) {
+      return this.addListener({
+        name: settingsNamespace + "/settings_status",
+        messageType: "std_msgs/String",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+
+  /*******************************/
+  // Generic Send Data Functions
+  /*******************************/
+  @action.bound
+  sendTriggerMsg(namespace) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  sendBoolMsg(namespace, value) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/Bool",
+      data: {data: value},
+      noPrefix: true
+    })
+    
+  }
+
   @action.bound
   sendStringMsg(strNamespace,strMsg) {
     const namespace = strNamespace
@@ -912,14 +1089,18 @@ class ROSConnectionStore {
     })
   }
 
+
   @action.bound
-  sendTriggerMsg(namespace) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "std_msgs/Empty",
-      data: {},
-      noPrefix: true
-    })
+  sendIntMsg(namespace, int_str) {
+    let intVal = parseFloat(int_str)
+    if (!isNaN(intVal)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "std_msgs/Int32",
+        data: {data: intVal},
+        noPrefix: true
+      })
+    }
   }
 
   @action.bound
@@ -935,16 +1116,7 @@ class ROSConnectionStore {
     }
   }
 
-  @action.bound
-  sendBoolMsg(namespace, value) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "std_msgs/Bool",
-      data: {data: value},
-      noPrefix: true
-    })
-    
-  }
+
 
   @action.bound
   sendFrame3DTransformUpdateMsg(namespace, transformNamespace, transformFloatList) {
@@ -995,73 +1167,11 @@ class ROSConnectionStore {
     }
   }
 
-  @action.bound
-  sendIntMsg(namespace, int_str) {
-    let intVal = parseFloat(int_str)
-    if (!isNaN(intVal)) {
-      this.publishMessage({
-        name: namespace,
-        messageType: "std_msgs/Int32",
-        data: {data: intVal},
-        noPrefix: true
-      })
-    }
-  }
 
 
-  @action.bound
-  setupPointcloudSelectionStatusListener(namespace, callback) {
-    if (namespace) {
-      return this.addListener({
-        name: namespace,
-        messageType: "nepi_ros_interfaces/PointcloudSelectionStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-
-
-  @action.bound
-  setupPointcloudProcessStatusListener(namespace, callback) {
-    if (namespace) {
-      return this.addListener({
-        name: namespace,
-        messageType: "nepi_ros_interfaces/PointcloudProcessStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-
-  @action.bound
-  setupPointcloudRenderStatusListener(namespace, callback) {
-    if (namespace) {
-      return this.addListener({
-        name: namespace,
-        messageType: "nepi_ros_interfaces/PointcloudRenderStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-
-
-  @action.bound
-  setupSaveDataStatusListener(saveNamespace, callback) {
-    if (saveNamespace) {
-      return this.addListener({
-        name: saveNamespace + "/save_data_status",
-        messageType: "nepi_ros_interfaces/SaveDataStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
+  /*******************************/
+  // Custom Send Data Functions
+  /*******************************/
 
 
   @action.bound
@@ -1122,35 +1232,8 @@ class ROSConnectionStore {
   }
 
 
+ 
 
-
-
-  // returns the listener, clients that use this
-  setupStatus3DXListener(topic, callback) {
-    if (topic) {
-      return this.addListener({
-        name: topic + "/status_3dx",
-        messageType: "nepi_ros_interfaces/Status3DX",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-
-  
-  @action.bound
-  setupSettingsStatusListener(settingsNamespace, callback) {
-    if (settingsNamespace) {
-      return this.addListener({
-        name: settingsNamespace + "/settings_status",
-        messageType: "std_msgs/String",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
 
 
 
@@ -1168,42 +1251,8 @@ class ROSConnectionStore {
   }
 
 
-  setupIDXStatusListener(idxSensorNamespace, callback) {
-    if (idxSensorNamespace) {
-      return this.addListener({
-        name: idxSensorNamespace + "/idx/status",
-        messageType: "nepi_ros_interfaces/IDXStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
 
-
-  setupRBXInfoListener(rbxRobotNamespace, callback) {
-    if (rbxRobotNamespace) {
-      return this.addListener({
-        name: rbxRobotNamespace + "/idx/info",
-        messageType: "nepi_ros_interfaces/RBXInfo",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-
-  setupRBXStatusListener(rbxRobotNamespace, callback) {
-    if (rbxRobotNamespace) {
-      return this.addListener({
-        name: rbxRobotNamespace + "/idx/status",
-        messageType: "nepi_ros_interfaces/RBXStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
+ 
 
   @action.bound
   saveConfigTriggered(namespace) {
@@ -1215,26 +1264,6 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  updateIdxDeviceName(idxSensorNamespace,deviceName) {
-    const namespace = idxSensorNamespace + "/idx/update_device_name"
-    this.publishMessage({
-      name: namespace,
-      messageType: "std_msgs/String",
-      data: {'data':deviceName},
-      noPrefix: true
-    })
-  }
-
-  @action.bound
-  resetIdxDeviceNameTriggered(idxSensorNamespace) {
-    this.publishMessage({
-      name: idxSensorNamespace + "/idx/reset_device_name",
-      messageType: "std_msgs/Empty",
-      data: {},
-      noPrefix: true
-    })
-  }
 
   @action.bound
   resetIdxFactoryTriggered(idxSensorNamespace) {
@@ -1280,40 +1309,7 @@ class ROSConnectionStore {
       })     
     }
 
-  setupPTXStatusListener(ptxNamespace, callback) {
-    if (ptxNamespace) {
-      return this.addListener({
-        name: ptxNamespace + "/ptx/status",
-        messageType: "nepi_ros_interfaces/PanTiltStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-  
-  setupLSXStatusListener(lsxNamespace, callback) {
-    if (lsxNamespace) {
-      return this.addListener({
-        name: lsxNamespace + "/lsx/status",
-        messageType: "nepi_ros_interfaces/LSXStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
 
-  setupRUISettingsListener() {
-    this.addListener({
-      name: "rui_config_mgr/settings",
-      messageType: "nepi_ros_interfaces/RUISettings",
-      callback: message => {
-        this.streamingImageQuality = message.streaming_image_quality
-        this.nepiLinkHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
-      }
-    })
-  }
 
   async callNepiStatusService(oneshot = false) {
     const _pollOnce = async () => {
@@ -2288,14 +2284,14 @@ class ROSConnectionStore {
     })
   }
 
-  // 3DX Sensor Control methods //////////////////////////////////////////////
+  // Control methods //////////////////////////////////////////////
   @action.bound
   isThrottled() {
     var now = new Date()
-    if (now - this.last3DXUpdate < UPDATE_PERIOD) {
+    if (now - this.lastUpdate < UPDATE_PERIOD) {
       return true
     }
-    this.last3DXUpdate = now
+    this.lastUpdate = now
     return false
   }
   
@@ -2319,32 +2315,6 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  publishAutoManualSelection3DX(
-    topic,
-    name,
-    checked,
-    adjustment,
-    throttle = true
-  ) {
-    if (throttle && this.isThrottled()) {
-      return
-    }
-
-    if (topic) {
-      this.publishMessage({
-        name: topic + "/set_" + name,
-        messageType: "nepi_ros_interfaces/AutoManualSelection3DX",
-        noPrefix: true,
-        data: {
-          enabled: checked,
-          adjustment: adjustment
-        }
-      })
-    } else {
-      console.warn("publishAutoManualSelection3DX: sensor3DXTopicBase not set")
-    }
-  }
 
   @action.bound
   publishRangeWindow(topic, min, max, throttle = true) {
@@ -2369,21 +2339,6 @@ class ROSConnectionStore {
   }
 
 
-  @action.bound
-  publishStitchedCloudEnabled(topic, enabled) {
-    if (topic) {
-      this.publishMessage({
-        name: topic + "/enable_stitched_cloud",
-        messageType: "std_msgs/Bool",
-        noPrefix: true,
-        data: {
-          data: enabled
-        }
-      })
-    } else {
-      console.warn("publishStitchedCloudEnabled: sensor3DXTopicBase not set")
-    }
-  }
 
   /////////////////////////////////////////////////////////////////////////
 

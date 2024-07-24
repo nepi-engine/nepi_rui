@@ -50,6 +50,18 @@ const createShortValues = list => {
   return shortList
 }
 
+const createShortValuesFromNamespace = list => {
+  var tokenizedList = []
+  var shortList = []
+  var shortName = ''
+  for (var i = 0; i < list.length; ++i) {
+    tokenizedList.push(list[i].split("/"))
+    shortName = tokenizedList[i][3] + "/" + tokenizedList[i][tokenizedList[i].length-1]
+    shortList.push(shortName)
+  }
+  return shortList
+}
+
 export function setElementStyleModified(e) {
   e.style.color = Styles.vars.colors.red
   e.style.fontWeight = "bold"
@@ -59,6 +71,8 @@ export function clearElementStyleModified(e) {
   e.style.color = Styles.vars.colors.black
   e.style.fontWeight = "normal"
 }
+
+
 
 /*
 // Function for creating short unique values from a list

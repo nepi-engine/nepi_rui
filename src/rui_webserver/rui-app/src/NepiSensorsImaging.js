@@ -16,9 +16,10 @@ import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import CameraViewer from "./CameraViewer"
-import NepiSensorsImagingInfo from "./NepiSensorsImagingInfo"
+
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
 
+import NepiDeviceInfo from "./NepiDeviceInfo"
 import Nepi_IF_Settings from "./Nepi_IF_Settings"
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
@@ -160,7 +161,7 @@ class NepiSensorsImaging extends Component {
   }
 
   renderSensorSelection() {
-    const { idxSensors, resetIdxFactoryTriggered, saveConfigTriggered  } = this.props.ros
+    const { idxSensors, sendTriggerMsg, saveConfigTriggered  } = this.props.ros
     const NoneOption = <Option>None</Option>
     const SensorSelected = (this.state.currentIDXNamespace != null)
 
@@ -202,7 +203,7 @@ class NepiSensorsImaging extends Component {
                       <Button onClick={() => saveConfigTriggered(this.state.currentIDXNamespace)}>{"Save Config"}</Button>
                     </ButtonMenu>
                     <ButtonMenu>
-                      <Button onClick={() => resetIdxFactoryTriggered(this.state.currentIDXNamespace)}>{"Factory Reset"}</Button>
+                      <Button onClick={() => sendTriggerMsg(this.state.currentIDXNamespace + "/idx/reset_factory")}>{"Factory Reset"}</Button>
                     </ButtonMenu>
                 </div>
               </Column>
@@ -278,8 +279,12 @@ class NepiSensorsImaging extends Component {
         <Column>
 
           <div hidden={(!SensorSelected)}>
-            <NepiSensorsImagingInfo
-                  idxSensorNamespace={this.state.currentIDXNamespace}
+            <NepiDeviceInfo
+                  deviceNamespace={this.state.currentIDXNamespace}
+                  status_topic={"/idx/status"}
+                  status_msg_type={"nepi_ros_interfaces/IDXStatus"}
+                  name_update_topic={"/idx/update_device_name"}
+                  name_reset_topic={"/idx/reset_device_name"}
                   title={"NepiSensorsImagingInfo"}
               />
           </div>
