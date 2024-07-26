@@ -178,21 +178,24 @@ class NepiPointcloudRenderControls extends Component {
     return (
       <Section title={"Render Controls"}>
 
-            <Label title="Render Enabled">
+   
+        <Columns>
+          <Column>
+ 
+          <Label title="Render Enabled">
               <Toggle
               checked={this.state.renderEnabled===true}
               onClick={this.onChangeBoolRenderEnabled}>
               </Toggle>
             </Label>
-        
-        <Columns>
-          <Column>
  
+
           </Column>
           <Column>
           </Column>
         </Columns>
         <div >
+        <div hidden={!this.state.renderEnabled}>    
           <Columns>
             <Column>
 
@@ -385,7 +388,7 @@ class NepiPointcloudRenderControls extends Component {
 
                 </Column>
               </Columns>
-
+              </div>
             </div>
             
           </div>
