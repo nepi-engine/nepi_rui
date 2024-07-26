@@ -32,6 +32,7 @@ class NepiPointcloudRenderControls extends Component {
 
     // these states track the values through  Status messages
     this.state = {
+      renderEnabled: false,
       standardImageSizeStrList: null,
       rangeRatioMax: null,
       rangeRatioMin: null,
@@ -60,6 +61,10 @@ class NepiPointcloudRenderControls extends Component {
     this.getRenderStrListAsList = this.getRenderStrListAsList.bind(this)
     this.updateRenderListener = this.updateRenderListener.bind(this)
     this.renderStatusListener = this.renderStatusListener.bind(this)
+
+    this.onChangeBoolRenderEnabled = this.onChangeBoolRenderEnabled.bind(this)
+
+
     
   }
 
@@ -80,6 +85,7 @@ class NepiPointcloudRenderControls extends Component {
   // Callback for handling ROS Status messages
   renderStatusListener(message) {
     this.setState({
+      renderEnabled: message.render_enable,
       standardImageSizeStrList: message.standard_image_sizes,
       rangeRatioMin: message.range_clip_ratios.start_range,
       rangeRatioMax: message.range_clip_ratios.stop_range,
@@ -130,6 +136,13 @@ class NepiPointcloudRenderControls extends Component {
     }
   }
 
+  onChangeBoolRenderEnabled(){
+    const updateVal = this.state.renderEnabled == false
+    this.props.ros.sendBoolMsg(this.props.renderNamespace + "/set_render_enable",updateVal)
+    this.render()
+  }
+
+
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
@@ -164,6 +177,14 @@ class NepiPointcloudRenderControls extends Component {
     const {  sendTriggerMsg, setFrame3d } = this.props.ros
     return (
       <Section title={"Render Controls"}>
+
+            <Label title="Render Enabled">
+              <Toggle
+              checked={this.state.renderEnabled===true}
+              onClick={this.onChangeBoolRenderEnabled}>
+              </Toggle>
+            </Label>
+        
         <Columns>
           <Column>
  
