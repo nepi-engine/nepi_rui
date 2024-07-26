@@ -58,28 +58,28 @@ class App extends Component {
               path: "/sensors",
               label: "Sensors",
               subItems: [
-                { path: "/sensor_idx", label: "Imaging"},
-                { path: "/navPose", label: "NavPose" }
-              ]
-            },
-            {
-              path: "/applications",
-              label: "Applications",
-              subItems: [
-                { path: "/imagery", label: "Image Viewer" },
-                { path: "/ai", label: "AI Detector" },
-                { path: "/pointcloud_app", label: "Pointclouds" },
-                { path: "/automation", label: "Automation"},
-                { path: "/image_sequencer", label: "Sequencer" }
+                { path: "/sensor_idx", label: "Imaging"}
               ]
             },
             {
               path: "/controls",
               label: "Controls",
               subItems: [
-			    { path: "/lsx", label: "Lights" },
+			          { path: "/lsx", label: "Lights" },
                 { path: "/ptx", label: "Pan&Tilts" },
                 { path: "/rbx", label: "Robots" }
+              ]
+            },
+            {
+              path: "/applications",
+              label: "Applications",
+              subItems: [
+                { path: "/navPose", label: "NavPose" },
+                { path: "/imagery", label: "Image Viewer" },
+                { path: "/ai", label: "AI Detector" },
+                { path: "/pointcloud_app", label: "Pointclouds" },
+                { path: "/automation", label: "Automation"},
+                { path: "/image_sequencer", label: "Sequencer" }
               ]
             },
             {

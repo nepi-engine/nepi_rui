@@ -960,31 +960,6 @@ class ROSConnectionStore {
     }
   }
 
-  @action.bound
-  setupRBXInfoListener(rbxRobotNamespace, callback) {
-    if (rbxRobotNamespace) {
-      return this.addListener({
-        name: rbxRobotNamespace + "/rbx/info",
-        messageType: "nepi_ros_interfaces/RBXInfo",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
-
-  @action.bound
-  setupRBXStatusListener(rbxRobotNamespace, callback) {
-    if (rbxRobotNamespace) {
-      return this.addListener({
-        name: rbxRobotNamespace + "/idx/status",
-        messageType: "nepi_ros_interfaces/RBXStatus",
-        noPrefix: true,
-        callback: callback,
-        manageListener: false
-      })
-    }
-  }
 
   @action.bound
   setupPointcloudSelectionStatusListener(namespace, callback) {
