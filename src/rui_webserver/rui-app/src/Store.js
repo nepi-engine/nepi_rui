@@ -1092,6 +1092,22 @@ class ROSConnectionStore {
   }
 
 
+  @action.bound
+  sendFramesendErrorBoundsMsg(namespace, max_m,max_d,min_stab) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_ros_interfaces/RBXErrorBounds",
+      data: { 
+        data: {
+          max_distance_error_m: max_m,
+          max_rotation_error_deg: max_d,
+          min_stabilize_time_s: min_stab
+        }
+      },
+      noPrefix: true
+    })
+  }
+
 
   @action.bound
   sendFrame3DTransformUpdateMsg(namespace, transformNamespace, transformFloatList) {

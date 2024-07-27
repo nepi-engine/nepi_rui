@@ -16,14 +16,18 @@ import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import CameraViewer from "./CameraViewer"
-
 import NepiRobotControls from "./NepiControlsRobotsControls"
-
 import NepiDeviceInfo from "./NepiDeviceInfo"
 import Nepi_IF_Settings from "./Nepi_IF_Settings"
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
-
 import createShortValuesFromNamespace from "./Utilities"
+import Input from "./Input"
+import Styles from "./Styles"
+
+function round(value, decimals = 0) {
+  return Number(value).toFixed(decimals)
+  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
 
 @inject("ros")
 @observer
@@ -45,12 +49,12 @@ class NepiControlsRobots extends Component {
       serial_num: null,
       hw_version: null,
       sw_version: null,
-      standy: null,
-      state: null,
-      mode: null,
-      error_bound_m: null,
-      error_bound_deg: null,
-      error_stabilize_s: null,
+      standby: null,
+      state_index: null,
+      mode_index: null,
+      error_bound_m: 0,
+      error_bound_deg: 0,
+      error_stabilize_s: 0,
       cmd_timeout: null,
       image_source: null,
       image_status_overlay: null,
@@ -58,8 +62,12 @@ class NepiControlsRobots extends Component {
       home_long: null,
       home_alt: null,
       fake_gps_enabled: null,
-        
-      // RBX Sensor topic to subscribe to and update
+      states_list: null,
+      states_menu: null,
+      modes_list: null,
+      modes_menu: null,
+
+
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No robot selected",
 
@@ -72,8 +80,19 @@ class NepiControlsRobots extends Component {
     this.createTopicOptions = this.createTopicOptions.bind(this)
     this.createImageOptions = this.createImageOptions.bind(this)
 
+    this.onDropdownSlectedSendIndex = this.onDropdownSlectedSendIndex.bind(this)
+    this.getStrListAsList = this.getStrListAsList.bind(this)
+    this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
+
     this.updateInfoListener = this.updateInfoListener.bind(this)
     this.infoListener = this.infoListener.bind(this)
+
+    this.onChangeBoolStandby = this.onChangeBoolStandby.bind(this)
+    this.onChangeBoolImgStatusOverlay = this.onChangeBoolImgStatusOverlay.bind(this)
+
+    this.onUpdateAppInputBoxValue = this.onUpdateAppInputBoxValue.bind(this)
+    this.onEnterSetInputErrorBoundValue = this.onEnterSetInputErrorBoundValue.bind(this)
+
     //const RBXRobotNamespaces = Object.keys(props.ros.RBXRobots)
 
   }
@@ -86,9 +105,9 @@ class NepiControlsRobots extends Component {
       serial_num: message.serial_num,
       hw_version: message.hw_version,
       sw_version: message.sw_version,
-      standy: message.standy,
-      state: message.state,
-      mode: message.mode,
+      standby: message.standby,
+      state_index: message.state,
+      mode_index: message.mode,
       error_bound_m: message.error_bounds.max_distance_error_m,
       error_bound_deg: message.error_bounds.max_rotation_error_deg,
       error_stabilize_s: message.error_bounds.max_stabilize_time_s,
@@ -104,7 +123,9 @@ class NepiControlsRobots extends Component {
 
   // Function for configuring and subscribing to Status
   updateInfoListener() {
+    const {rbxRobots} = this.props.ros
     const robotNamespace = this.state.currentRBXNamespace
+    const capabilities = rbxRobots[this.state.currentRBXNamespace]
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
     }
@@ -113,7 +134,18 @@ class NepiControlsRobots extends Component {
           "nepi_ros_interfaces/RBXInfo",
           this.infoListener
         )
-    this.setState({ rbxInfoListener: listener})
+    const states=this.getStrListAsList(capabilities.state_options)
+    const states_menu_options=this.convertStrListToMenuList(states)
+    const modes=this.getStrListAsList(capabilities.mode_options)
+    const modes_menu_options=this.convertStrListToMenuList(modes)
+
+
+    this.setState({ rbxInfoListener: listener,
+      states_list: states,
+      states_menu: states_menu_options,
+      modes_list: modes,
+      modes_menu: modes_menu_options,
+    })
   }
 
   // Lifecycle method called when compnent updates.
@@ -134,6 +166,26 @@ class NepiControlsRobots extends Component {
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
+  }
+
+  getStrListAsList(transformsStr) {
+    var StrList = []
+    if (transformsStr != null){
+      transformsStr = transformsStr.replaceAll("[","")
+      transformsStr = transformsStr.replaceAll("]","")
+      transformsStr = transformsStr.replaceAll(" '","")
+      transformsStr = transformsStr.replaceAll("'","")
+      StrList = transformsStr.split(",")
+    }
+    return StrList
+  }
+
+  convertStrListToMenuList(strList) {
+    var menuList = []
+    for (let ind = 0; ind < strList.length; ind++){
+      menuList.push(<Option>{strList[ind]}</Option>)
+    } 
+    return menuList
   }
 
   // Function for creating topic options for Select input
@@ -227,11 +279,86 @@ class NepiControlsRobots extends Component {
     var rbx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[rbx].text
     var value = event.target.value
-
     this.setState({
       imageTopic_0: value,
       imageText_0: text === "None" ? null : text
     })
+  }
+
+  onDropdownSlectedSendIndex(event, topicName) {
+    const {SendIndexMsg} = this.props.ros
+    const value = event.target.value
+    if (value !== "None") {
+    const index = event.target.selectedIndex
+    const namespace = this.state.currentRBXNamespace + topicName
+    SendIndexMsg(namespace,index)
+    }
+  }
+
+ onChangeBoolStandby(){
+    const updateVal = this.state.standby == false
+    this.props.ros.sendBoolMsg(this.state.currentRBXNamespace + "/",updateVal)
+    this.render()
+  }
+
+
+  onChangeBoolImgStatusOverlay(){
+    const updateVal = this.state.image_status_overlay == false
+    this.props.ros.sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_image_overlay",updateVal)
+    this.render()
+  }
+
+  onChangeBoolFakeGPS(){
+    const updateVal = this.state.fake_gps_enabled == false
+    this.props.ros.sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_fake_gps",updateVal)
+    this.render()
+  }
+
+
+  onEnterSendInputBoxFloatValue(event, topicName) {
+    const {sendFloatMsg} = this.props.ros
+    const namespace = this.state.appNamespace + topicName
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        sendFloatMsg(namespace,value)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+  onEnterSetInputErrorBoundValue(event, stateVarStr) {
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        var key = stateVarStr
+        var obj  = {}
+        obj[key] = value
+        this.setState(obj)
+      }
+      this.sendErrorBounds()
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+  onUpdateAppInputBoxValue(event,stateVarStr) {
+    var key = stateVarStr
+    var value = event.target.value
+    var obj  = {}
+    obj[key] = value
+    this.setState(obj)
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+
+  sendErrorBounds(){
+    const {sendErrorBoundsMsg} = this.props.ros
+    const max_m = this.state.error_bound_m
+    const max_d = this.state.error_bound_deg
+    const min_stab = this.state.error_stabilize_s
+    const namespace = this.state.currentRBXNamespace + "/rbx/set_goto_error_bounds"
+    sendErrorBoundsMsg(namespace,max_m,max_d,min_stab)
   }
 
   renderSensorSelection() {
@@ -239,12 +366,15 @@ class NepiControlsRobots extends Component {
     const NoneOption = <Option>None</Option>
     const robotSelected = (this.state.currentRBXNamespace != null)
     const capabilities = rbxRobots[this.state.currentRBXNamespace]
+    const current_state = this.state.state_index ? this.state.states[this.state.state_index] : "None"
+    const current_mode = this.state.mode_index ? this.state.modes[this.state.mode_index] : "None"
 
     return (
       <React.Fragment>
+                    <Section title={"Selection"}>
         <Columns>
           <Column>
-            <Section title={"Selection"}>
+
 
               <Columns>
               <Column>
@@ -256,19 +386,44 @@ class NepiControlsRobots extends Component {
                     {this.createTopicOptions(Object.keys(rbxRobots))}
                   </Select>
                 </Label>
-               
-                <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
+
+     <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
+
                   <Label title={"Image"}>
                     <Select
                       id="topicSelect_0"
                       onChange={this.onImageTopicSelected}
                       value={this.state.imageTopic_0}
-                    >
+                      >
                       {this.state.currentRBXNamespace
-                        ? this.createImageOptions(this.state.currentRBXNamespace)
-                        : NoneOption}
+                      ? this.createImageOptions(this.state.currentRBXNamespace)
+                      : NoneOption}
                     </Select>
-                  </Label>
+                    </Label>
+
+                    <Label title={"State"}>
+                    <Select
+                      id="robot_state"
+                      onChange={(event) => this.onDropdownSlectedSendIndex(event,"/rbx/set_state")}
+                      value={current_state}
+                    >
+                      {this.state.states_list ? this.state.states_menu : NoneOption}
+                    </Select>
+                    </Label>
+
+
+                    <Label title={"Mode"}>
+                    <Select
+                      id="robot_mode"
+                      onChange={(event) => this.onDropdownSlectedSendIndex(event,"/rbx/set_mode")}
+                      value={current_mode}
+                    >
+                      {this.state.mode_list ? this.state.modes_menu : NoneOption}
+                    </Select>
+                    </Label>
+
+
+                   
                 </div>
 
               </Column>
@@ -280,14 +435,119 @@ class NepiControlsRobots extends Component {
                     <ButtonMenu>
                       <Button onClick={() => sendTriggerMsg(this.state.currentRBXNamespace + "/reset_factory")}>{"Factory Reset"}</Button>
                     </ButtonMenu>
+{/*
+                    <Label title="Standby">
+                      <Toggle
+                      checked={this.state.standby===true}
+                      onClick={this.onChangeBoolStandby}>
+                      </Toggle>
+                    </Label>
+*/}
+                    <Label title="Image Status Overlay">
+                      <Toggle
+                      checked={this.state.image_status_overlay===true}
+                      onClick={this.onChangeBoolImgStatusOverlay}>
+                      </Toggle>
+                    </Label>
+
                 </div>
               </Column>
             </Columns>
 
 
-            </Section>
+
           </Column>
         </Columns>
+
+        <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+        <label style={{fontWeight: 'bold'}}>
+          {"Error Bounds"}
+        </label>
+
+        <Columns>
+        <Column>
+
+        <Label title={"Max (m)"}>
+                <Input
+                  value={this.state.error_bound_m}
+                  id="error_m"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"error_bound_m")}
+                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_m")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              </Column>
+              <Column>
+
+              <Label title={"Max deg"}>
+                <Input
+                  value={this.state.error_bound_deg}
+                  id="error"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"error_bound_deg")}
+                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_deg")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              </Column>
+              <Column>
+
+              <Label title={"Stablize Time (s)"}>
+                <Input
+                  value={this.state.error_stabilize_s}
+                  id="error_stablize"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"error_stabilize_s")}
+                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_stabilize_s")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              </Column>
+              </Columns>
+
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+              <Label title="Enable Fake GPS">
+                <Toggle
+                checked={this.state.fake_gps_enabled===true}
+                onClick={this.onChangeBoolFakeGPS}>
+                </Toggle>
+              </Label>
+
+              <Columns>
+              <Column>
+
+              <Label title={"latitude"}>
+                <Input disabled value="Test" />
+              </Label>
+
+              </Column>
+              <Column>
+
+                    <Label title={"longitude"}>
+                <Input disabled value="Test"/>
+              </Label>
+
+              </Column>
+              <Column>
+
+              <Label title={"altitude"}>
+                <Input disabled value={"Test"} />
+              </Label>
+
+              </Column>
+              </Columns>
+
+              <ButtonMenu>
+                <Button onClick={() => sendTriggerMsg(this.state.currentRBXNamespace + "/rbx/reset_fake_gps")}>{"Reset Fake GPS"}</Button>
+              </ButtonMenu>
+
+              </div>
+              </Section>
+
       </React.Fragment>
     )
   }
@@ -360,7 +620,6 @@ class NepiControlsRobots extends Component {
               title={"Nepi_IF_Settings"}
             />
           </div>
-
 
          </Column>
       </Columns>

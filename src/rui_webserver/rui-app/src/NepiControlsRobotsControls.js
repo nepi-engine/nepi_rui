@@ -20,6 +20,8 @@ import { Column, Columns } from "./Columns"
 import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import BooleanIndicator from "./BooleanIndicator"
+
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -129,7 +131,129 @@ class NepiRobotControls extends Component {
     const {  sendTriggerMsg } = this.props.ros
     return (
       <Section title={"Process Controls"}>
+<label style={{fontWeight: 'bold'}}>
+          {"Initial State"}
+        </label>
+        
+        <Columns>
+          <Column>
+          
+            <Label title={"Latitude"}>
+              <Input
+                disabled value={this.state.current_long}
+                id="InitLatitude"
+              />
 
+            </Label>
+            <Label title={"Longitude"}>
+              <Input
+                disabled value={this.state.current_altitude}
+                id="InitLongitude"
+              />
+
+            </Label>
+            <Label title={"Altitude (m)"}>
+              <Input
+                disabled value={this.state.current_heading}
+                id="InitAltitude"
+              />
+
+            </Label>
+          </Column>
+          <Column>
+            <Label title={"Roll (deg)"}>
+              <Input
+                disabled value={this.state.current_roll}
+                id="InitRoll"
+              />
+
+            </Label>
+            <Label title={"Pitch (deg)"}>
+              <Input
+                disabled value={this.state.current_pitch}
+                id="InitPitch"
+              />
+
+            </Label>
+            <Label title={"Yaw (deg)"}>
+              <Input
+                disabled value={this.state.current_yaw}
+                id="InitYaw"
+              />
+              
+            </Label>
+            </Column>
+            </Columns>
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+            <Columns>
+            <Column>
+
+            <Label title={"Current Process"}>
+              <Input
+                disabled value={this.state.process_current}
+                id="current_process"
+              />
+            </Label>
+
+            <Label title={"Ready"}>
+              <BooleanIndicator value={(this.state.ready !== null)? this.state.ready : false} />
+            </Label>
+
+            <Label title={"Autonomous Control Mode Ready"}>
+              <BooleanIndicator value={(this.state.autonomous_ready !== null)? this.state.autonomous_ready : false} />
+            </Label>
+
+
+            </Column>
+            <Column>
+
+            <Label title={"Current Battery"}>
+              <Input 
+               disabled value={this.state.battery}
+                id="current_battery"
+              />
+            </Label>
+
+            <Label title={"CMD Success"}>
+              <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
+            </Label>
+
+            </Column>
+            </Columns>
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+            <Columns>
+            <Column>
+
+            <label style={{fontWeight: 'bold'}}>
+             {"Errors"}
+            </label>
+
+
+
+            </Column>
+            </Columns>
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+            <Columns>
+            <Column>
+
+            <Label title={"Last Command"}>
+              <Input
+                disabled value={this.state.last_cmd_str}
+                id="last_command"
+              />
+            </Label>
+
+            </Column>
+            <Column>
+            </Column>
+            </Columns>
 
       </Section>
     )
