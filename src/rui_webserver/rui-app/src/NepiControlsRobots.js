@@ -17,6 +17,7 @@ import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import CameraViewer from "./CameraViewer"
 import NepiRobotControls from "./NepiControlsRobotsControls"
+import NepiRobotMessages from "./NepiControlsRobotsMessages"
 import NepiDeviceInfo from "./NepiDeviceInfo"
 import Nepi_IF_Settings from "./Nepi_IF_Settings"
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
@@ -598,6 +599,12 @@ class NepiControlsRobots extends Component {
             />
           </div>
 
+          <div hidden={(!robotSelected && this.state.show_controls)}>
+            <NepiRobotMessages
+                rbxNamespace={this.state.currentRBXNamespace}
+                title={"NepiRobotMessages"}
+            />
+          </div>
 
         </Column>
         <Column>

@@ -46,6 +46,7 @@ class Nepi_IF_SaveData extends Component {
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
+      showSaveData: false,
 
       saveStatusListener: null,
     }
@@ -60,6 +61,7 @@ class Nepi_IF_SaveData extends Component {
     this.getSaveConfigString = this.getSaveConfigString.bind(this)
     this.getSaveRateValue = this.getSaveRateValue.bind(this)
     this.getSaveRateData = this.getSaveRateData.bind(this)
+    this.onClickToggleShowSaveData = this.onClickToggleShowSaveData.bind(this)
 
 
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
@@ -173,6 +175,12 @@ class Nepi_IF_SaveData extends Component {
     RatesList.push(this.state.saveDataRate)
     this.setState({saveNamesList:NamesList})
     this.setState({saveRatesList:RatesList})
+  }
+
+  onClickToggleShowSaveData(){
+    const currentVal = this.state.showSaveData 
+    this.setState({showSaveData: !currentVal})
+    this.render()
   }
 
 
@@ -443,7 +451,22 @@ class Nepi_IF_SaveData extends Component {
     return (
       <Section title={"Save Data"}>
 
-         <div align={"left"} textAlign={"left"}  hidden={!this.state.show_save_data}>
+            <Columns>
+            <Column>
+
+              <Label title="Show Save Data Controls">
+                    <Toggle
+                      checked={this.state.showSaveData===true}
+                      onClick={this.onClickToggleShowSaveData}>
+                    </Toggle>
+                  </Label>
+
+              </Column>
+              <Column>
+            </Column>
+            </Columns>
+
+            <div align={"left"} textAlign={"left"} hidden={this.state.showSaveData === false}>
         
           <Columns>
             <Column>
