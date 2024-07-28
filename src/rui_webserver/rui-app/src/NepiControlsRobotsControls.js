@@ -58,18 +58,18 @@ class NepiRobotControls extends Component {
       last_cmd_str: null,
       last_error_message: null,
 
-      rbxStatusListener: null,
+      controlsStatusListener : null,
 
     }
 
-    this.updateRbxStatusListener = this.updateRbxStatusListener.bind(this)
-    this.statusListener = this.statusListener.bind(this)
+    this.updateControlsStatusListener = this.updateControlsStatusListener.bind(this)
+    this.controlsStatusListener = this.controlsStatusListener.bind(this)
   }
 
 
 
   // Callback for handling ROS Status messages
-  statusListener(message) {
+  controlsStatusListener(message) {
     this.setState({
       current_long: message.current_long ,
       current_altitude: message.current_altitude ,
@@ -93,17 +93,17 @@ class NepiRobotControls extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  updateRbxStatusListener() {
-    const statusNamespace = this.props.rbxNamespace + '/status'
-    if (this.state.rbxStatusListener) {
-      this.state.rbxStatusListener.unsubscribe()
+  updateControlsStatusListener() {
+    const statusNamespace = this.props.rbxNamespace + '/rbx/status'
+    if (this.state.controlsStatusListener ) {
+      this.state.controlsStatusListener .unsubscribe()
     }
     var listener = this.props.ros.setupStatusListener(
           statusNamespace + "/rbx/status",
           "nepi_ros_interfaces/RBXStatus",
-          this.statusListener
+          this.controlsStatusListener
         )
-    this.setState({ rbxStatusListener: listener})
+    this.setState({ controlsStatusListener : listener})
   }
 
   // Lifecycle method called when compnent updates.
@@ -112,7 +112,7 @@ class NepiRobotControls extends Component {
     const { rbxNamespace } = this.props
     if (prevProps.rbxNamespace !== rbxNamespace && rbxNamespace !== null) {
       if (rbxNamespace.indexOf('null') === -1){
-        this.updateRbxStatusListener()
+        this.updateControlsStatusListener()
         this.render()
       } 
     }
@@ -121,8 +121,8 @@ class NepiRobotControls extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.rbxStatusListener) {
-      this.state.rbxStatusListener.unsubscribe()
+    if (this.state.controlsStatusListener ) {
+      this.state.controlsStatusListener .unsubscribe()
     }
   }
 
