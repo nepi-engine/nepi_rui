@@ -74,22 +74,22 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/navPose", label: "NavPose" },
                 { path: "/imagery", label: "Image Viewer" },
-                { path: "/ai", label: "AI Detector" },
-                { path: "/pointcloud_app", label: "Pointclouds" },
-                { path: "/automation", label: "Automation"},
-                { path: "/image_sequencer", label: "Sequencer" }
+                { path: "/image_sequencer", label: "Imgage Sequencer" },
+                { path: "/pointcloud_app", label: "Pointcloud Viewer" },
+                { path: "/ai", label: "AI Detector" }
               ]
             },
+            { path: "/automation", label: "Automation" },
             {
               path: "/system",
               label: "System",
               subItems: [
-                { path: "/admin", label: "Admin" },
+                { path: "/system_config", label: "System Config" },
                 { path: "/software_update", label: "Software"},
+                { path: "/navPose", label: "NavPose" },
                 { path: "/onvif_mgr", label: "ONVIF"},
-                { path: "/nepi_connect", label: "Connect" }
+                { path: "/nepi_connect", label: "Connect" },
               ]
             },
             {
@@ -114,7 +114,7 @@ class App extends Component {
           <Route path="/automation" component={Automation} />
           <Route path="/onvif_mgr" component={OnvifManager} />
           <Route path="/image_sequencer" component={ImageSequencer} />
-          <Route path="/admin" component={Settings} />
+          <Route path="/system_config" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/ptx" component={PTX} />

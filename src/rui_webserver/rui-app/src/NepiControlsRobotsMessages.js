@@ -164,8 +164,6 @@ class NepiRobotMessages extends Component {
     return (
       <Section title={"Messages"}>
 
-            <Columns>
-            <Column>
 
             <Label title={"Last Command"}>
               <Input
@@ -174,18 +172,12 @@ class NepiRobotMessages extends Component {
               />
             </Label>
 
-            </Column>
-            <Column>
-
             <Label title={"Last Error"}>
               <Input
                 disabled value={this.state.last_cmd_str}
                 id="last_error_Message"
               />
             </Label>
-
-            </Column>
-            </Columns>
 
             <Columns>
             <Column>

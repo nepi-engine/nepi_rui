@@ -38,7 +38,7 @@ class NepiAppPointcloud extends Component {
     super(props)
 
     this.state = {
-      appName: "pointcloud_app",
+      appName: "app_pointcloud",
       appNamespace: null,
       pointcloudTopicList: [],
       selectedPointclouds: [],
@@ -187,7 +187,7 @@ class NepiAppPointcloud extends Component {
   // Function for creating image topic options.
   getPointcloudOptions() {
     const { pointcloudTopics } = this.props.ros
-    const thisPointcloudTopic = this.state.appNamespace + "/process/pointcloud"
+    const thisPointcloudTopic = this.state.appNamespace + "pointcloud"
     var items = []
     var pointcloudTopicShortnames = this.createShortValuesFromNamespace(pointcloudTopics)
     for (var i = 0; i < pointcloudTopics.length; i++) {
@@ -361,24 +361,17 @@ class NepiAppPointcloud extends Component {
 
 
    createAppDropdownOptions(options, filterOut, useShortNames, addNoneOption) {
-    var filteredTopics = options
+    var filteredTopics = []
     var i
-    var i2
+    var filteredTopics = []
     if (filterOut) {
       for (i = 0; i < options.length; i++) {
-        for (i2 = 0; i2 < filterOut.length; i2++) {
-          if (options[i].includes(filterOut[i2])){
-            filteredTopics.pop(options[i])
+          if (filterOut.includes(options[i]) === false){
+            filteredTopics.push(options[i])
           }
-        }
       }
     }
-    var items = []
-    if (addNoneOption){
-      if (addNoneOption === true){
-        items.push(<Option>{"None"}</Option>)
-      }
-    }
+
     var unique_names = null
     if (useShortNames === true){
       unique_names = this.createShortValuesFromNamespace(filteredTopics)
@@ -386,7 +379,14 @@ class NepiAppPointcloud extends Component {
     else{
       unique_names = filteredTopics
     }
-      
+  
+    var items = []
+    if (addNoneOption){
+      if (addNoneOption === true){
+        items.push(<Option>{"None"}</Option>)
+      }
+    }
+
     for (i = 0; i < filteredTopics.length; i++) {
       items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
     }
@@ -526,7 +526,7 @@ class NepiAppPointcloud extends Component {
                       value={this.state.primary_pointcloud_topic}
                     >
                       {this.state.selectedPointclouds
-                        ? this.createAppDropdownOptions(this.state.selectedPointclouds, ['pointcloud_app'], true, false)
+                        ? this.createAppDropdownOptions(this.state.selectedPointclouds, [this.state.appNamespace + '/pointcloud'], true, false)
                         : NoneOption}
                     </Select>
                   </Label>
@@ -713,7 +713,7 @@ class NepiAppPointcloud extends Component {
   }
 
   renderImageViewer() {
-    const img_topic = this.state.appNamespace + "/render/pointcloud_image"
+    const img_topic = this.state.appNamespace + "/pointcloud_image"
     return (
       <React.Fragment>
         <Columns>
@@ -740,26 +740,25 @@ class NepiAppPointcloud extends Component {
           {this.renderImageViewer()}
 
 
-        <div hidden={!connected}>
-          <Nepi_IF_SaveData
-                saveNamespace={this.state.appNamespace}
-                title={"Nepi_IF_SaveData"}
+          <div hidden={!connected}>
+          <NepiPointcloudProcessControls
+                processNamespace={this.state.appNamespace + "/process"}
+                title={"NepiPointcloudProcessControls"}
             />
-        </div>
+          </div>
+
+          <div hidden={!connected}>
+            <Nepi_IF_SaveData
+                  saveNamespace={this.state.appNamespace}
+                  title={"Nepi_IF_SaveData"}
+              />
+          </div>
 
 
         </Column>
         <Column>
 
           {this.renderPointcloudSelection()}
-
-
-        <div hidden={!connected}>
-          <NepiPointcloudProcessControls
-                processNamespace={this.state.appNamespace + "/process"}
-                title={"NepiPointcloudProcessControls"}
-            />
-        </div>
 
 
 

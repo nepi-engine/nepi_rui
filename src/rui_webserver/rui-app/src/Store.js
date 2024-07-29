@@ -853,7 +853,7 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  setupMsgListener(namespace, msg_type, callback) {
+  setupStringListener(namespace,callback) {
     if (namespace) {
       return this.addListener({
         name: namespace,
