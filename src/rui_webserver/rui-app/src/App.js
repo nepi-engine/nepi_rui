@@ -85,7 +85,7 @@ class App extends Component {
               path: "/system",
               label: "System",
               subItems: [
-                { path: "/system_config", label: "System Config" },
+                { path: "/system_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
                 { path: "/navPose", label: "NavPose" },
                 { path: "/onvif_mgr", label: "ONVIF"},

@@ -92,7 +92,7 @@ class NepiAppPointcloud extends Component {
 
     this.onAppDropdownSlectedSetState = this.onAppDropdownSlectedSetState.bind(this)
     this.onAppDropdownSlectedSendStr = this.onAppDropdownSlectedSendStr.bind(this)
-    this.createAppDropdownOptions = this.createAppDropdownOptions.bind(this)
+    this.createDropdownBoxOptions = this.createDropdownBoxOptions.bind(this)
     
     this.onUpdateAppInputBoxValue = this.onUpdateAppInputBoxValue.bind(this)
     this.onEnterSendInputBoxFloatValue = this.onEnterSendInputBoxFloatValue.bind(this)
@@ -187,7 +187,7 @@ class NepiAppPointcloud extends Component {
   // Function for creating image topic options.
   getPointcloudOptions() {
     const { pointcloudTopics } = this.props.ros
-    const thisPointcloudTopic = this.state.appNamespace + "pointcloud"
+    const thisPointcloudTopic = this.state.appNamespace + "/pointcloud"
     var items = []
     var pointcloudTopicShortnames = this.createShortValuesFromNamespace(pointcloudTopics)
     for (var i = 0; i < pointcloudTopics.length; i++) {
@@ -360,14 +360,14 @@ class NepiAppPointcloud extends Component {
   }
 
 
-   createAppDropdownOptions(options, filterOut, useShortNames, addNoneOption) {
+   createDropdownBoxOptions(optionsStrList, useShortNames, filterOut, prefixOptionsStrList, appendOptionsStrList) {
     var filteredTopics = []
     var i
     var filteredTopics = []
     if (filterOut) {
-      for (i = 0; i < options.length; i++) {
-          if (filterOut.includes(options[i]) === false){
-            filteredTopics.push(options[i])
+      for (i = 0; i < optionsStrList.length; i++) {
+          if (filterOut.includes(optionsStrList[i]) === false){
+            filteredTopics.push(optionsStrList[i])
           }
       }
     }
@@ -379,17 +379,19 @@ class NepiAppPointcloud extends Component {
     else{
       unique_names = filteredTopics
     }
-  
     var items = []
-    if (addNoneOption){
-      if (addNoneOption === true){
-        items.push(<Option>{"None"}</Option>)
-      }
+    for (i = 0; i < prefixOptionsStrList.length; i++) {
+        items.push(<Option>{prefixOptionsStrList[i]}</Option>)
     }
 
     for (i = 0; i < filteredTopics.length; i++) {
       items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
     }
+
+    for (i = 0; i < appendOptionsStrList.length; i++) {
+        items.push(<Option>{appendOptionsStrList[i]}</Option>)
+    }
+
      return items
   }
   
@@ -476,8 +478,6 @@ class NepiAppPointcloud extends Component {
     }
   }
 
-
-
   renderPointcloudSelection() {
     const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {viewableTopics} = this.state
@@ -526,7 +526,7 @@ class NepiAppPointcloud extends Component {
                       value={this.state.primary_pointcloud_topic}
                     >
                       {this.state.selectedPointclouds
-                        ? this.createAppDropdownOptions(this.state.selectedPointclouds, [this.state.appNamespace + '/pointcloud'], true, false)
+                        ? this.createDropdownBoxOptions(this.state.selectedPointclouds, true, [],[],[])
                         : NoneOption}
                     </Select>
                   </Label>
@@ -568,7 +568,7 @@ class NepiAppPointcloud extends Component {
                       value={this.state.combineOption}
                     >
                       {this.state.combineOptionsList
-                        ? this.createAppDropdownOptions(this.state.combineOptionsList, [], false, false)
+                        ? this.createDropdownBoxOptions(this.state.combineOptionsList, false, [],[],[])
                         : NoneOption}
                     </Select>
                   </Label>
@@ -585,7 +585,7 @@ class NepiAppPointcloud extends Component {
                       value={this.state.selectedTransformPointcloud}
                     >
                       {this.state.transforms_topic_list
-                        ? this.createAppDropdownOptions(this.state.transforms_topic_list, [], true, false)
+                        ? this.createDropdownBoxOptions(this.state.transforms_topic_list, true, [],[],[])
                         : NoneOption}
                     </Select>
                   </Label>
