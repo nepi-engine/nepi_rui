@@ -1137,8 +1137,6 @@ class ROSConnectionStore {
   }
 
 
-
-
   @action.bound
   sendFloatVector3Msg(namespace, float1_str,float2_str,float3_str) {
     let float1Val = parseFloat(float1_str)
@@ -1147,7 +1145,7 @@ class ROSConnectionStore {
     if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val)) {
       this.publishMessage({
         name: namespace,
-        messageType: "geometry_msgs/Vector3",
+        messageType: "geographic_msgs/Vector3",
         data: { 
           x: float1Val,
           y: float2Val,
@@ -1158,6 +1156,25 @@ class ROSConnectionStore {
     }
   }
 
+
+  @action.bound
+  sendGeoPointMsg(namespace, lat_str,long_str,alt_str) {
+    let latVal = parseFloat(lat_str)
+    let longVal = parseFloat(long_str)
+    let altVal = parseFloat(alt_str)
+    if (!isNaN(latVal) && !isNaN(longVal) && !isNaN(altVal)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "geographic_msgs/GeoPoint",
+        data: { 
+          latitude: latVal,
+          longitude: longVal,
+          altitude: altVal
+        },
+        noPrefix: true
+      })
+    }
+  }
 
 
   /*******************************/

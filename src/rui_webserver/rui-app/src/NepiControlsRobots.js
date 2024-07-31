@@ -68,7 +68,9 @@ class NepiControlsRobots extends Component {
       states_menu: null,
       modes_list: null,
       modes_menu: null,
-
+      home_lat: null,
+      home_long: null,
+      home_alt: null,
       image_topic: null,
 
 
@@ -364,6 +366,18 @@ class NepiControlsRobots extends Component {
     this.render()
   }
 
+  onEnterSetInputBoxFloatValue(event, stateVarStr) {
+    if(event.key === 'Enter'){
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        var key = stateVarStr
+        var obj  = {}
+        obj[key] = value
+        this.setState(obj)
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
 
   sendErrorBounds(){
     const {sendErrorBoundsMsg} = this.props.ros
@@ -375,11 +389,12 @@ class NepiControlsRobots extends Component {
   }
 
   renderSensorSelection() {
-    const { rbxRobots, sendTriggerMsg, saveConfigTriggered  } = this.props.ros
+    const { rbxRobots, sendTriggerMsg, saveConfigTriggered, sendGeoPointMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
     const robotSelected = (this.state.currentRBXNamespace != null)
     const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null)? this.state.states_list[this.state.state_index] : "None"
     const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null)? this.state.modes_list[this.state.mode_index] : "None"
+    const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
 
     return (
       <React.Fragment>
@@ -522,42 +537,65 @@ class NepiControlsRobots extends Component {
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-{/*
               <Columns>
               <Column>
 
               <Label title={"latitude"}>
-                <Input disabled value="Test" />
+                <Input
+                  value={this.state.home_lat}
+                  id="home_lat"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_lat")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"home_lat")}
+                  style={{ width: "80%" }}
+                />
               </Label>
 
               </Column>
               <Column>
 
-                    <Label title={"longitude"}>
-                <Input disabled value="Test"/>
+              <Label title={"longitude"}>
+                <Input
+                  value={this.state.home_long}
+                  id="home_long"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_long")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"home_long")}
+                  style={{ width: "80%" }}
+                />
               </Label>
 
               </Column>
               <Column>
 
               <Label title={"altitude"}>
-                <Input disabled value={this.state.latitude} />
+                <Input
+                  value={this.state.home_alt}
+                  id="home_alt"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_alt")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"home_alt")}
+                  style={{ width: "80%" }}
+                />
               </Label>
+
+              <ButtonMenu>
+                <Button onClick={() => sendGeoPointMsg(this.state.currentRBXNamespace + "/rbx/set_home", this.state.home_lat, this.state.home_long, this.state.home_alt )}>{"Set Home"}</Button>
+              </ButtonMenu>
 
               </Column>
               </Columns>
-*/}
-
-
 
               <Columns>
             <Column>
+
+            <div hidden={(has_fake_gps===false)}>
+
               <Label title="Enable Fake GPS">
                 <Toggle
                 checked={this.state.fake_gps_enabled===true}
                 onClick={this.onChangeBoolFakeGPS}>
                 </Toggle>
               </Label>
+
+              </div>
 
               </Column>
               <Column>
@@ -637,14 +675,14 @@ class NepiControlsRobots extends Component {
           {this.renderSensorSelection()}
 
 
-{/*
+
           <div hidden={(!robotSelected && this.state.show_controls)}>
             <NepiRobotControls
                 rbxNamespace={this.state.currentRBXNamespace}
                 title={"NepiRobotControls"}
             />
           </div>
-    */}
+
 
 
 

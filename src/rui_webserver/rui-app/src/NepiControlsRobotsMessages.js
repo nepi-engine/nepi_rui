@@ -21,6 +21,8 @@ import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
+import ListBox from './ListBox';
+import './ListBox.css';
 
 
 function round(value, decimals = 0) {
@@ -90,7 +92,7 @@ class NepiRobotMessages extends Component {
       cmd_success: message.cmd_success ,
       manual_ready: message.manual_motor_control_mode_ready ,
       autonomous_ready: message.autonomous_control_mode_ready ,
-      last_cmd_str: message.last_cmd_str ,
+      last_cmd_str: message.last_cmd_string ,
       last_error_message: message.last_error_message 
     })
     const motorControlsStrList = message.current_motor_control_settings
@@ -98,12 +100,12 @@ class NepiRobotMessages extends Component {
 
   // Function for configuring and subscribing to Status
   updateMessagesStatusListener() {
-    const statusNamespace = this.props.rbxNamespace + '/rbx/status'
+    const Namespace = this.props.rbxNamespace
     if (this.state.MessagesStatusListener ) {
       this.state.MessagesStatusListener .unsubscribe()
     }
     var listener = this.props.ros.setupStatusListener(
-          statusNamespace + "/rbx/status",
+          Namespace + "/rbx/status",
           "nepi_ros_interfaces/RBXStatus",
           this.MessagesStatusListener
         )
@@ -174,7 +176,7 @@ class NepiRobotMessages extends Component {
 
             <Label title={"Last Error"}>
               <Input
-                disabled value={this.state.last_cmd_str}
+                disabled value={this.state.last_error_message}
                 id="last_error_Message"
               />
             </Label>
@@ -189,6 +191,15 @@ class NepiRobotMessages extends Component {
                   onKeyDown= {(event) => this.onEnterMessagesQueueVar(event)} />
               </Label>
 
+{/*             <Section title={""}>
+            <ListBox 
+              id="Messages" 
+              items={"Test"} 
+              selectedItem={""} 
+              style={{ color: 'black', backgroundColor: 'white' }}
+            />
+          </Section>
+*/}
             </Column>
             <Column>
 
