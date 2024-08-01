@@ -409,6 +409,7 @@ class NepiRobotControls extends Component {
             <Label title={""}></Label>
 
             <div hidden={(this.state.selected_goto_control!=="Pose")}>
+
             <label style={{fontWeight: 'bold'}}>
                 {"GoTo Pose"}
               </label>
@@ -605,14 +606,6 @@ class NepiRobotControls extends Component {
             </Columns>
             </div>
             </div>
-
-
-            <ButtonMenu>
-                <Button onClick={() =>  this.state.autonomous_ready ? 
-                  sendFloatGotoPositionMsg(this.props.rbxNamespace + "/rbx/goto_position", this.state.x_meters, this.state.y_meters, this.state.z_meters, this.state.yaw_deg_position ):
-                  this.doNothing()
-                  }>{"Send"}</Button>
-              </ButtonMenu>
 
             <Columns>
             <Column>
