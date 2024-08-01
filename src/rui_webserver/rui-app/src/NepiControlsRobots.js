@@ -536,6 +536,9 @@ class NepiControlsRobots extends Component {
               </Columns>
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+              <label style={{fontWeight: 'bold'}}>
+                {"Home"}
+              </label>
 
               <Columns>
               <Column>

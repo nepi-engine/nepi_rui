@@ -1145,7 +1145,7 @@ class ROSConnectionStore {
     if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val)) {
       this.publishMessage({
         name: namespace,
-        messageType: "geographic_msgs/Vector3",
+        messageType: "nepi_ros_interfaces/Vector3",
         data: { 
           x: float1Val,
           y: float2Val,
@@ -1176,6 +1176,66 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
+  sendFloatGotoPoseMsg(namespace, float1_str,float2_str,float3_str) {
+    let float1Val = parseFloat(float1_str)
+    let float2Val = parseFloat(float2_str)
+    let float3Val = parseFloat(float3_str)
+    if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "geographic_msgs/RBXGotoPose",
+        data: { 
+          roll_deg: float1Val,
+          pitch_deg: float2Val,
+          yaw_deg: float3Val
+        },
+        noPrefix: true
+      })
+    }
+  }
+
+  @action.bound
+  sendFloatGotoPositionMsg(namespace, float1_str,float2_str,float3_str,float4_str) {
+    let float1Val = parseFloat(float1_str)
+    let float2Val = parseFloat(float2_str)
+    let float3Val = parseFloat(float3_str)
+    let float4Val = parseFloat(float4_str)
+    if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val) && !isNaN(float4Val)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "geographic_msgs/RBXGotoPosition",
+        data: { 
+          x_meters: float1Val,
+          y_meters: float2Val,
+          z_meters: float3Val,
+          yaw_deg: float4Val
+        },
+        noPrefix: true
+      })
+    }
+  }
+
+  @action.bound
+  sendFloatGotoLocationMsg(namespace, float1_str,float2_str,float3_str,float4_str) {
+    let float1Val = parseFloat(float1_str)
+    let float2Val = parseFloat(float2_str)
+    let float3Val = parseFloat(float3_str)
+    let float4Val = parseFloat(float4_str)
+    if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val) && !isNaN(float4Val)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "geographic_msgs/RBXGotoLocation",
+        data: { 
+          lat: float1Val,
+          long: float2Val,
+          altitude_meters: float3Val,
+          yaw_deg: float4Val
+        },
+        noPrefix: true
+      })
+    }
+  }
 
   /*******************************/
   // Custom Send Data Functions
