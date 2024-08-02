@@ -18,7 +18,7 @@ import Button, { ButtonMenu } from "./Button"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 import {ColoredTextIndicator, indicator_colors} from "./ColoredIndicator"
 
-import createShortUniqueValues from "./Utilities"
+import createShortValuesFromNamespace from "./Utilities"
 
 import CameraViewer from "./CameraViewer"
 
@@ -58,7 +58,7 @@ class NepiAppAIDetector extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
-    var uniqueNames = createShortUniqueValues(imageTopics)
+    var uniqueNames = createShortValuesFromNamespace(imageTopics)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
     for (var i = 0; i < imageTopics.length; i++) {

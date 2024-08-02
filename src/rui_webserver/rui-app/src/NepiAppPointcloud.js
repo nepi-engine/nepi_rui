@@ -19,6 +19,8 @@ import CameraViewer from "./CameraViewer"
 import Input from "./Input"
 import Toggle from "react-toggle"
 
+import createShortValuesFromNamespace from "./Utilities"
+
 import NepiPointcloudProcessControls from "./NepiPointcloudProcessControls"
 import NepiPointcloudRenderControls from "./NepiPointcloudRenderControls"
 
@@ -74,8 +76,6 @@ class NepiAppPointcloud extends Component {
 
 
     }
-
-    this.createShortValuesFromNamespace = this.createShortValuesFromNamespace.bind(this)
 
     this.getAppNamespace = this.getAppNamespace.bind(this)
     this.getPointcloudOptions = this.getPointcloudOptions.bind(this)
@@ -189,7 +189,7 @@ class NepiAppPointcloud extends Component {
     const { pointcloudTopics } = this.props.ros
     const thisPointcloudTopic = this.state.appNamespace + "/pointcloud"
     var items = []
-    var pointcloudTopicShortnames = this.createShortValuesFromNamespace(pointcloudTopics)
+    var pointcloudTopicShortnames = createShortValuesFromNamespace(pointcloudTopics)
     for (var i = 0; i < pointcloudTopics.length; i++) {
       if (pointcloudTopics[i] !== thisPointcloudTopic){
         items.push(<Option value={pointcloudTopics[i]}>{pointcloudTopicShortnames[i]}</Option>)
@@ -273,7 +273,7 @@ class NepiAppPointcloud extends Component {
   getTransformTopicOptions() {
     const topicList = this.state.transforms_topic_list
     var items = [<Option value={"NONE"}>{"NONE"}</Option>]
-    var topicListShortnames = this.createShortValuesFromNamespace(topicList)
+    var topicListShortnames = createShortValuesFromNamespace(topicList)
     for (var i = 0; i < topicList.length; i++) {
       items.push(<Option value={topicList[i]}>{topicListShortnames[i]}</Option>)
     }
@@ -310,19 +310,6 @@ class NepiAppPointcloud extends Component {
       selectedTransformData: data,})
   }
 
-
-
-  createShortValuesFromNamespace(list) {
-    var tokenizedList = []
-    var shortList = []
-    var shortName = ''
-    for (var i = 0; i < list.length; ++i) {
-      tokenizedList.push(list[i].split("/"))
-      shortName = tokenizedList[i][3] + "/" + tokenizedList[i][tokenizedList[i].length-1]
-      shortList.push(shortName)
-    }
-    return shortList
-  }
 
   toggleViewableTopics() {
     const set = !this.state.viewableTopics

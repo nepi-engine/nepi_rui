@@ -74,6 +74,7 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
+                { path: "/navPose", label: "NavPose Mgr" },
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
@@ -87,7 +88,6 @@ class App extends Component {
               subItems: [
                 { path: "/system_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
-                { path: "/navPose", label: "NavPose" },
                 { path: "/onvif_mgr", label: "ONVIF"},
                 { path: "/nepi_connect", label: "Connect" },
               ]

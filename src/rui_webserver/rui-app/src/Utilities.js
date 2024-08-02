@@ -36,7 +36,7 @@ const createShortUniqueValues = list => {
   return uniqueList
 }
 
-const createShortValues = list => {
+export const createShortValues = list => {
   var tokenizedList = []
   var depthsToShort = 2
   var shortList = []
@@ -50,17 +50,19 @@ const createShortValues = list => {
   return shortList
 }
 
-const createShortValuesFromNamespace = list => {
+export const createShortValuesFromNamespace = list => {
   var tokenizedList = []
   var shortList = []
   var shortName = ''
   for (var i = 0; i < list.length; ++i) {
-    tokenizedList.push(list[i].split("/"))
-    shortName = tokenizedList[i][3] + "/" + tokenizedList[i][tokenizedList[i].length-1]
+    tokenizedList = list[i].split("/")
+    var list_len = tokenizedList.length
+    shortName = tokenizedList[list_len-3] + "/" + tokenizedList[list_len-3]
     shortList.push(shortName)
   }
   return shortList
 }
+
 
 export function setElementStyleModified(e) {
   e.style.color = Styles.vars.colors.red
