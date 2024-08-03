@@ -49,11 +49,12 @@ class NepiAppAIDetector extends Component {
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.onToggleRunLocalizer = this.onToggleRunLocalizer.bind(this)
+    this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
 
     this.checkForClassifierRunning()
   }
   // Function for creating image topic options.
-  createImageTopicsOption() {
+  createImageTopicsOptions() {
     const {imageFilterDetection} = this.props.ros
     var items = []
     items.push(<Option>{"None"}</Option>)
