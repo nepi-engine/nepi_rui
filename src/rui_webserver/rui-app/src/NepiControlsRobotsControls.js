@@ -113,6 +113,7 @@ class NepiRobotControls extends Component {
     this.SetLocationCurrent = this.SetLocationCurrent.bind(this)
     this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
     this.sendActionIndex = this.sendActionIndex.bind(this)
+    this.setLocationToCurrent = this.setLocationToCurrent.bind(this)
   }
 
 
@@ -133,12 +134,12 @@ class NepiRobotControls extends Component {
       ready: message.ready ,
       battery: message.battery ,
       errors_current_x:[message.errors_current.x_m],
-      errors_current_x:[message.errors_current.y_m],
-      errors_current_x:[message.errors_current.z_m],
-      errors_current_x:[message.errors_current.heading_deg],
-      errors_current_x:[message.errors_current.roll_deg],
-      errors_current_x:[message.errors_current.pitch_deg],
-      errors_current_x: [message.errors_current.yaw_deg],
+      errors_current_y:[message.errors_current.y_m],
+      errors_current_z:[message.errors_current.z_m],
+      errors_current_heading_deg:[message.errors_current.heading_deg],
+      errors_current_roll_deg:[message.errors_current.roll_deg],
+      errors_current_pitch_deg:[message.errors_current.pitch_deg],
+      errors_current_yaw_deg: [message.errors_current.yaw_deg],
       errors_prev: [message.errors_prev.x_m ,message.errors_prev.x_m, message.errors_prev.x_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
       cmd_success: message.cmd_success ,
       manual_ready: message.manual_motor_control_mode_ready ,
@@ -265,6 +266,15 @@ class NepiRobotControls extends Component {
     })
   }
 
+  setLocationToCurrent(event) {
+    this.setState({
+      location_lat: this.state.current_lat,
+      location_long: this.state.current_long,
+      altitude_meters: this.state.current_altitude,
+      yaw_deg_location: this.state.current_yaw,
+    })
+  }
+
 
   render() {
     const {  sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg } = this.props.ros
@@ -313,6 +323,12 @@ class NepiRobotControls extends Component {
               />
             </Label>
 
+            <div hidden={(this.state.selected_control_type!=="Autonomous")}>
+            <Label title={"Autonomous Ready"}>
+              <BooleanIndicator value={(this.state.autonomous_ready !== null)? this.state.autonomous_ready : false} />
+            </Label>
+            </div>
+
             </Column>
             </Columns>
 
@@ -323,13 +339,6 @@ class NepiRobotControls extends Component {
             <Columns>
             <Column>
 
-            <Label title={"Autonomous Ready"}>
-              <BooleanIndicator value={(this.state.autonomous_ready !== null)? this.state.autonomous_ready : false} />
-            </Label>
-
-
-            </Column>
-            <Column>
 
             <ButtonMenu>
                 <Button onClick={() => sendTriggerMsg(this.props.rbxNamespace + "/rbx/go_stop")}>{"stop"}</Button>
@@ -340,266 +349,15 @@ class NepiRobotControls extends Component {
 
             <div hidden={(!this.state.has_go_home)}>
             <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg(this.props.rbxNamespace + "/rbx/go_home")}>{"Go Home"}</Button>
-            </ButtonMenu>
-            </div>
-
-            </Column>
-            </Columns>
-            </div>
-
-            <div hidden={(this.state.selected_control_type!=="Autonomous")}>
-            <Columns>
-            <Column>
-            <Label title={"Select Goto Type"}>
-              <Select
-                id="selected_auto_control"
-                onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_auto_control")}
-                value={this.state.selected_auto_control}
-              >
-                {this.state.controls_auto_list ? this.state.controls_auto_menu : NoneOption}
-              </Select>
-              </Label>
-
-              </Column>
-              <Column>
-            </Column>
-            </Columns>
-
-            <Label title={""}></Label>
-
-            <div hidden={(this.state.selected_auto_control!=="Pose")}>
-
-            <label style={{fontWeight: 'bold'}}>
-                {"GoTo Pose"}
-              </label>
-            <Columns>
-            <Column>
-
-            <Label title={"Roll Deg"}>
-                <Input
-                  value={this.state.roll_deg}
-                  id="roll_deg"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"roll_deg")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"roll_deg")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-            </Column>
-            <Column>
-
-            <Label title={"Pitch Deg"}>
-                <Input
-                  value={this.state.pitch_deg}
-                  id="pitch_deg"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"pitch_deg")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"pitch_deg")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-            </Column>
-            <Column>
-
-            <Label title={"Yaw Deg"}>
-                <Input
-                  value={this.state.yaw_deg}
-                  id="yaw_deg"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"yaw_deg_position")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"yaw_deg_pose")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              </Column>
-              <Column>
-
-              <ButtonMenu>
-                <Button onClick={() => this.state.autonomous_ready ? 
-                  sendFloatGotoPoseMsg(this.props.rbxNamespace + "/rbx/goto_pose", this.state.roll_deg, this.state.pitch_deg, this.state.yaw_deg_pose ) :
-                  doNothing()
-                  }>{"Send"}</Button>
-              </ButtonMenu>
-
-
-            </Column>
-            </Columns>
-            </div>
-
-              
-              
-              
-
-              <div hidden={(this.state.selected_auto_control!=="Position")}>
-            <label style={{fontWeight: 'bold'}}>
-                {"GoTo Position"}
-              </label>
-
-            <Columns>
-            <Column>
-
-            <Label title={"X (m)"}>
-                <Input
-                  value={this.state.x_meters}
-                  id="x_meters"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"x_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"x_meters")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-            </Column>
-            <Column>
-
-            <Label title={"Y (m)"}>
-                <Input
-                  value={this.state.y_meters}
-                  id="y_meters"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"y_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"y_meters")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-            </Column>
-            <Column>
-
-            <Label title={"Z (m)"}>
-                <Input
-                  value={this.state.z_meters}
-                  id="z_meters"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"z_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"z_meters")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              </Column>
-              <Column>
-
-              <Label title={"Yaw Deg"}>
-                <Input
-                  value={this.state.yaw_deg_position}
-                  id="yaw_deg_position"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"yaw_deg_position")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"yaw_deg_position")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              <ButtonMenu>
                 <Button onClick={() =>  this.state.autonomous_ready ? 
-                  sendFloatGotoPositionMsg(this.props.rbxNamespace + "/rbx/goto_position", this.state.x_meters, this.state.y_meters, this.state.z_meters, this.state.yaw_deg_position ):
-                  doNothing()
-                  }>{"Send"}</Button>
-              </ButtonMenu>
-
-            </Column>
-            </Columns>
-            </div>             
-
-              <div hidden={(this.state.selected_auto_control!=="Location")}>
-            <label style={{fontWeight: 'bold'}}>
-                {"GoTo Location"}
-              </label>
-            <Columns>
-            <Column>
-
-            <Label title={"Latitude"}>
-                <Input
-                  value={this.state.location_lat}
-                  id="location_lat"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"location_lat")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"location_lat")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              <ButtonMenu>
-                <Button onClick={() => this.SetLocationCurrent()}>{"Set to Current"}</Button>
-              </ButtonMenu>
-
-            </Column>
-            <Column>
-
-            <Label title={"Longitude"}>
-                <Input
-                  value={this.state.location_long}
-                  id="location_long"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"location_long")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"location_long")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-            </Column>
-            <Column>
-
-            <Label title={"Altitude (m)"}>
-                <Input
-                  value={this.state.altitude_meters}
-                  id="altitude_meters"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"altitude_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"altitude_meters")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              </Column>
-              <Column>
-
-              <Label title={"Yaw Deg"}>
-                <Input
-                  value={this.state.yaw_deg_location}
-                  id="yaw_deg_location"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"yaw_deg_location")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"yaw_deg_location")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              <ButtonMenu>
-                <Button onClick={() =>  this.state.autonomous_ready ? 
-                  sendFloatGotoLocationMsg(this.props.rbxNamespace + "/rbx/goto_location", this.state.location_lat, this.state.location_long, this.state.altitude_meters, this.state.yaw_deg_location ):
-                  doNothing()
+                  sendTriggerMsg(this.props.rbxNamespace + "/rbx/go_home"):
+                  this.doNothing()
                 }>{"Send"}</Button>
               </ButtonMenu>
-
-            </Column>
-            </Columns>
-            </div>
-
-            <Columns>
-            <Column>
-            <div hidden={(this.state.selected_auto_control!=="Action")}>
-            <Label title={"Select Action"}>
-              <Select
-                id="action_select"
-                onChange={(event) => this.onDropdownSelectedAction(event)}
-                value={this.state.selected_action}
-              >
-                {this.state.actions_list ? this.state.actions_menu : NoneOption}
-              </Select>
-              </Label>
               </div>
 
-              
-              </Column>
-              <Column>
-
-            <div hidden={(this.state.selected_auto_control!=="Action")}>
-            <ButtonMenu>
-              <Button onClick={() =>  this.state.autonomous_ready ? 
-                this.sendActionIndex():
-                doNothing()
-              }>{"Send Action"}</Button>
-            </ButtonMenu>
-            </div>
-
             </Column>
             </Columns>
-
             </div>
 
             <Columns>
@@ -615,12 +373,291 @@ class NepiRobotControls extends Component {
 
             </Column>
             </Columns>
+
+            <Label title={""}></Label>
+
+            <div hidden={(this.state.selected_control_type!=="Autonomous")}>
             <Columns>
             <Column>
+
+            <Label title={"Select Goto Type"}>
+              <Select
+                id="selected_auto_control"
+                onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_auto_control")}
+                value={this.state.selected_auto_control}
+              >
+                {this.state.controls_auto_list ? this.state.controls_auto_menu : NoneOption}
+              </Select>
+              </Label>
+
+
+            <div hidden={(this.state.selected_auto_control!=="Pose")}>
+
+            <label style={{fontWeight: 'bold'}}>
+                {"GoTo Pose"}
+              </label>
+
+
+            <Label title={"Roll Deg"}>
+                <Input
+                  value={this.state.roll_deg}
+                  id="roll_deg"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"roll_deg")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"roll_deg")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+            <Label title={"Pitch Deg"}>
+                <Input
+                  value={this.state.pitch_deg}
+                  id="pitch_deg"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"pitch_deg")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"pitch_deg")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+            <Label title={"Yaw Deg"}>
+                <Input
+                  value={this.state.yaw_deg}
+                  id="yaw_deg"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"yaw_deg_pose")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"yaw_deg_pose")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <ButtonMenu>
+                <Button onClick={() => this.state.autonomous_ready ? 
+                  sendFloatGotoPoseMsg(this.props.rbxNamespace + "/rbx/goto_pose", this.state.roll_deg, this.state.pitch_deg, this.state.yaw_deg_pose ) :
+                  this.doNothing()
+                  }>{"Send"}</Button>
+              </ButtonMenu>
+            </div>
+
+            <div hidden={(this.state.selected_auto_control!=="Position")}>
+            <label style={{fontWeight: 'bold'}}>
+                {"GoTo Position"}
+              </label>
+
+            <Label title={"X (m)"}>
+                <Input
+                  value={this.state.x_meters}
+                  id="x_meters"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"x_meters")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"x_meters")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+            <Label title={"Y (m)"}>
+                <Input
+                  value={this.state.y_meters}
+                  id="y_meters"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"y_meters")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"y_meters")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+            <Label title={"Z (m)"}>
+                <Input
+                  value={this.state.z_meters}
+                  id="z_meters"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"z_meters")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"z_meters")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <Label title={"Yaw Deg"}>
+                <Input
+                  value={this.state.yaw_deg_position}
+                  id="yaw_deg_position"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"yaw_deg_position")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"yaw_deg_position")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <ButtonMenu>
+                <Button onClick={() =>  this.state.autonomous_ready ? 
+                  sendFloatGotoPositionMsg(this.props.rbxNamespace + "/rbx/goto_position", this.state.x_meters, this.state.y_meters, this.state.z_meters, this.state.yaw_deg_position ):
+                  this.doNothing()
+                  }>{"Send"}</Button>
+              </ButtonMenu>
+
+              </div>
+
+              <div hidden={(this.state.selected_auto_control!=="Location")}>
+            <label style={{fontWeight: 'bold'}}>
+                {"GoTo Location"}
+              </label>
+
+            <Label title={"Latitude"}>
+                <Input
+                  value={this.state.location_lat}
+                  id="location_lat"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"location_lat")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"location_lat")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+
+            <Label title={"Longitude"}>
+                <Input
+                  value={this.state.location_long}
+                  id="location_long"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"location_long")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"location_long")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+            <Label title={"Altitude (m)"}>
+                <Input
+                  value={this.state.altitude_meters}
+                  id="altitude_meters"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"altitude_meters")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"altitude_meters")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <Label title={"Yaw Deg"}>
+                <Input
+                  value={this.state.yaw_deg_location}
+                  id="yaw_deg_location"
+                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"yaw_deg_location")}
+                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"yaw_deg_location")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <ButtonMenu>
+                <Button onClick={() => this.setLocationToCurrent()}>{"Set to Current"}</Button>
+              </ButtonMenu>
+
+              <ButtonMenu>
+                <Button onClick={() =>  this.state.autonomous_ready ? 
+                  sendFloatGotoLocationMsg(this.props.rbxNamespace + "/rbx/goto_location", this.state.location_lat, this.state.location_long, this.state.altitude_meters, this.state.yaw_deg_location ):
+                  this.doNothing()
+                }>{"Send"}</Button>
+              </ButtonMenu>
+
+              </div>
+
+
+              <div hidden={(this.state.selected_auto_control!=="Action")}>
+              <Label title={""}></Label>
+              <Label title={""}></Label>
+
+              <Label title={"Select Action"}>
+                    <Select
+                      id="select _action"
+                      onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_action")}
+                      value={this.state.selected_action}
+                    >
+                      {this.state.actions_list ? this.state.actions_menu : NoneOption}
+                    </Select>
+                    </Label>
+
+            <ButtonMenu>
+              <Button onClick={() =>  this.state.autonomous_ready ? 
+                this.sendActionIndex():
+                this.doNothing()
+              }>{"Send Action"}</Button>
+            </ButtonMenu>
+            </div>
+
             </Column>
             <Column>
+
+            <label style={{fontWeight: 'bold'}}>
+                {"Current Errors"}
+              </label>
+
+            <Label title={"x (m)"}>
+              <Input
+                disabled value={this.state.errors_current_x}
+                id="x_error"
+              />
+
+            </Label>
+
+            <Label title={"y (m)"}>
+              <Input
+                disabled value={this.state.errors_current_y}
+                id="y_error"
+              />
+
+            </Label>
+
+            <Label title={"z (m)"}>
+              <Input
+                disabled value={this.state.errors_current_z}
+                id="z_error"
+              />
+
+            </Label>
+
+            <Label title={"Roll"}>
+              <Input
+                disabled value={this.state.errors_current_roll_deg}
+                id="roll_error"
+              />
+
+            </Label>
+
+            <Label title={"Pitch"}>
+              <Input
+                disabled value={this.state.errors_current_pitch_deg}
+                id="pitch_error"
+              />
+
+            </Label>
+
+            <Label title={"Yaw"}>
+              <Input
+                disabled value={this.state.errors_current_yaw_deg}
+                id="yaw_error"
+              />
+
+            </Label>
+
+            <Label title={"Heading"}>
+              <Input
+                disabled value={this.state.errors_current_heading_deg}
+                id="heading_error"
+              />
+
+            </Label>
+
+            </Column>
+            </Columns>
+           
+
+
+
+            
+            <Columns>
+            <Column>
+
+            <Label title={""}></Label>
+
+            <Label title={"Last Command Python Code"}>
+              <Input
+                disabled value={this.state.last_cmd_str}
+                id="last_command"
+              />
+            </Label>
+
             </Column>
             <Column>
+
+            <Label title={""}></Label>
 
             <Label title={"CMD Success"}>
               <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
@@ -628,51 +665,12 @@ class NepiRobotControls extends Component {
 
             </Column>
             </Columns>
-
-
-            <label style={{fontWeight: 'bold'}}>
-              {"Current Error: x(m), y(m), z(m), Heading(deg), Roll(deg), Pitch(deg),Yaw(deg)"}
-            </label>
+            </div>
 
 
 
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-
-            <Columns>
-            <Column>
-
-            <label style={{fontWeight: 'bold'}}>
-             {"Errors"}
-            </label>
-
-
-
-            </Column>
-            </Columns>
-
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-            <Columns>
-            <Column>
-
-            </Column>
-            <Column>
-
-            <Columns>
-            <Column>
-
-            <Label title={"Last Command"}>
-              <Input
-                disabled value={this.state.last_cmd_str}
-                id="last_command"
-              />
-            </Label>
-            </Column>
-            </Columns>
-
-            </Column>
-            </Columns>
 
             <label style={{fontWeight: 'bold'}}>
               {"Nave Pose"}
@@ -732,12 +730,20 @@ class NepiRobotControls extends Component {
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+              <Columns>
+              <Column>
+              
               <Label title={"Current Battery"}>
                 <Input 
                 disabled value={this.state.battery}
                   id="current_battery"
                 />
               </Label>
+
+              </Column>
+              <Column>
+              </Column>
+              </Columns>
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
               </div>
