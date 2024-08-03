@@ -144,7 +144,7 @@ class NepiPointcloudProcessControls extends Component {
           <Label title="Show Process Controls">
                 <Toggle
                 checked={this.state.show_process_controls===true}
-                onClick={() => onChangeSwitchStateValue("show_process_controls",this.state.show_process_controls)}>
+                onClick={() => onChangeSwitchStateValue.bind(this)("show_process_controls",this.state.show_process_controls)}>
                 </Toggle>
           </Label>
       </Column>
@@ -165,7 +165,7 @@ class NepiPointcloudProcessControls extends Component {
             <Label title="Clip Range Enabled">
                   <Toggle
                   checked={this.state.range_clip_enabled===true}
-                  onClick={() => this.props.ros.sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",!this.state.range_clip_enabled)}>
+                  onClick={() => sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",!this.state.range_clip_enabled)}>
                   </Toggle>
             </Label>
 
@@ -186,7 +186,7 @@ class NepiPointcloudProcessControls extends Component {
           <Label title={"Set Range Clip Min"}>
                     <Input id="set_range_clip_min" 
                       value={this.state.range_clip_min_m} 
-                      onChange={(event) => onUpdateSetStateValue(event,"range_clip_min_m")} 
+                      onChange={(event) => onUpdateSetStateValue.bind(this)(event,"range_clip_min_m")} 
                       onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","min")} />
               </Label>
             
@@ -195,7 +195,7 @@ class NepiPointcloudProcessControls extends Component {
                   <Label title={"Set Range Clip Max"}>
                     <Input id="set_range_clip_max" 
                      value={this.state.range_clip_max_m} 
-                      onChange={(event) => onUpdateSetStateValue(event,"range_clip_max_m")} 
+                      onChange={(event) => onUpdateSetStateValue.bind(this)(event,"range_clip_max_m")} 
                       onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","max")} />                      
                   </Label>  
 
@@ -213,7 +213,7 @@ class NepiPointcloudProcessControls extends Component {
 {/*              <Label title={"Uniform Downsample k Points"}>
                 <Input id="uniform_downsample_k_points" 
                   value={this.state.uniform_downsample_points} 
-                  onChange={(event) => onUpdateSetStateValue(event,"uniform_downsample_points")} 
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"uniform_downsample_points")} 
                   onKeyDown= {(event) => this.onEnterSendInputBoxIntValue(event,"/uniform_downsample_k_points")} />
               </Label>
 */}
@@ -221,14 +221,14 @@ class NepiPointcloudProcessControls extends Component {
               <Label title={"Outlier Removal k Points"}>
                 <Input id="outlier_k_points" 
                   value={this.state.outlier_k_points} 
-                  onChange={(event) => onUpdateSetStateValue(event,"outlier_k_points")} 
-                  onKeyDown= {(event) => onEnterSendIntValue(event,this.props.processNamespace + "/outlier_removal_num_neighbors")} />
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"outlier_k_points")} 
+                  onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.processNamespace + "/outlier_removal_num_neighbors")} />
               </Label>
 
               <Label title={"Voxel Downsample Size (m)"}>
                 <Input id="voxel_downsample_size_m" 
                   value={this.state.voxel_downsample_size_m} 
-                  onChange={(event) => onUpdateSetStateValue(event,"voxel_downsample_size_m")} 
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"voxel_downsample_size_m")} 
                   onKeyDown= {(event) => onEnterSendFloatValue(event,this.props.processNamespace + "/set_voxel_downsample_size")} />
               </Label>
 

@@ -20,7 +20,7 @@ import Select, { Option } from "./Select"
 import Input from "./Input"
 
 
-import { round, convertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue } from "./Utilities"
+import { round, convertStrToStrList, createMenuListFromStrList, onChangeSwitchStateValue, onUpdateSetStateValue } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -292,7 +292,7 @@ class Nepi_IF_Settings extends Component {
         <Label title={"Show Settings Menu"}>
           <Toggle
             checked={ (this.state.show_settings === true)}
-            onClick={() => onUpdateSetStateValue("show_settings",this.state.show_settings)}
+            onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",this.state.show_settings)}
           />
         </Label>
 

@@ -81,7 +81,6 @@ class NepiAppPointcloud extends Component {
     this.getAppNamespace = this.getAppNamespace.bind(this)
     this.getPointcloudOptions = this.getPointcloudOptions.bind(this)
     this.getSelectedPointclouds = this.getSelectedPointclouds.bind(this)
-    this.updateSelectedPointclouds = this.updateSelectedPointclouds.bind(this)
     this.onTogglePointcloudSelection = this.onTogglePointcloudSelection.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
 
@@ -343,7 +342,7 @@ class NepiAppPointcloud extends Component {
                   <Label title={"Primary Pointcloud"}>
                     <Select
                       id="primary_pointcloud"
-                      onChange={(event) => onDropdownSelectedSendStr(event,"/set_primary_pointcloud")}
+                      onChange={(event) => onDropdownSelectedSendStr.bind(this)(event,"/set_primary_pointcloud")}
                       value={this.state.primary_pointcloud_topic}
                     >
                       {this.state.selectedPointclouds
@@ -365,8 +364,8 @@ class NepiAppPointcloud extends Component {
                   <Label title={"Age Filter (s)"}>
                     <Input id="age_filter" 
                       value={this.state.age_filter_s} 
-                      onChange={(event) => onUpdateSetStateValue(event,"age_filter_s")} 
-                      onKeyDown= {(event) => onEnterSendFloatValue(event,this.state.appNamespace + "/set_age_filter")} />
+                      onChange={(event) => onUpdateSetStateValue.bind(this)(event,"age_filter_s")} 
+                      onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.state.appNamespace + "/set_age_filter")} />
                   </Label>
 
                   <Label title={""}></Label>
@@ -385,7 +384,7 @@ class NepiAppPointcloud extends Component {
                   <Label title={"Combine Options"}>
                     <Select
                       id="combine_options"
-                      onChange={(event) => onDropdownSelectedSendStr(event,"/set_combine_option")}
+                      onChange={(event) => onDropdownSelectedSendStr.bind(this)(event,"/set_combine_option")}
                       value={this.state.combineOption}
                     >
                       {this.state.combineOptionsList
@@ -424,8 +423,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformTX, 2)}
                   id="XTranslation"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformTX")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformTX")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -434,8 +433,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformTY, 2)}
                   id="YTranslation"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformTY")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformTY")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -444,8 +443,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformTZ, 2)}
                   id="ZTranslation"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformTZ")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformTZ")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -454,8 +453,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformHO, 2)}
                   id="HeadingOffset"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformHO")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformHO")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformHO")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformHO")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -467,8 +466,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformRX, 2)}
                   id="XRotation"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformRX")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformRX")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -477,8 +476,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformRY, 2)}
                   id="YRotation"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformRY")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformRY")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -487,8 +486,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformRZ, 2)}
                   id="ZRotation"
-                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformRZ")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformRZ")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
                   style={{ width: "80%" }}
                 />
               </Label>

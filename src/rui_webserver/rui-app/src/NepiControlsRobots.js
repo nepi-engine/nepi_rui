@@ -83,7 +83,6 @@ class NepiControlsRobots extends Component {
     this.updateInfoListener = this.updateInfoListener.bind(this)
     this.infoListener = this.infoListener.bind(this)
 
-    this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onTopicRBXSelected = this.onTopicRBXSelected.bind(this)
     this.clearTopicRBXSelection = this.clearTopicRBXSelection.bind(this)
     this.createTopicOptions = this.createTopicOptions.bind(this)
@@ -328,7 +327,7 @@ class NepiControlsRobots extends Component {
                     <Label title={"Set State"}>
                     <Select
                       id="robot_state"
-                      onChange={(event) => onDropdownSelectedSendIndex(event,this.state.currentRBXNamespace + "/rbx/set_state")}
+                      onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_state")}
                       value={current_state}
                     >
                       {this.state.states_list ? this.state.states_menu : NoneOption}
@@ -339,7 +338,7 @@ class NepiControlsRobots extends Component {
                     <Label title={"Set Mode"}>
                     <Select
                       id="robot_mode"
-                      onChange={(event) => onDropdownSelectedSendIndex(event,this.state.currentRBXNamespace + "/rbx/set_mode")}
+                      onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_mode")}
                       value={current_mode}
                     >
                       {this.state.modes_list ? this.state.modes_menu : NoneOption}
@@ -370,7 +369,7 @@ class NepiControlsRobots extends Component {
                     <Label title="Image Status Overlay">
                       <Toggle
                       checked={this.state.image_status_overlay===true}
-                      onClick={sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_image_overlay", !this.state.image_status_overlay)}>
+                      onClick={() => sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_image_overlay", this.state.image_status_overlay === false)}>
                       </Toggle>
                     </Label>
 
@@ -397,7 +396,7 @@ class NepiControlsRobots extends Component {
                 <Input
                   value={this.state.error_bound_m}
                   id="error_m"
-                  onChange= {(event) => onUpdateSetStateValue(event,"error_bound_m")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_m")}
                   onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_m")}
                   style={{ width: "80%" }}
                 />
@@ -410,7 +409,7 @@ class NepiControlsRobots extends Component {
                 <Input
                   value={this.state.error_bound_deg}
                   id="error"
-                  onChange= {(event) => onUpdateSetStateValue(event,"error_bound_deg")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_deg")}
                   onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_deg")}
                   style={{ width: "80%" }}
                 />
@@ -423,7 +422,7 @@ class NepiControlsRobots extends Component {
                 <Input
                   value={this.state.error_stabilize_s}
                   id="error_stablize"
-                  onChange= {(event) => onUpdateSetStateValue(event,"error_stabilize_s")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_stabilize_s")}
                   onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_stabilize_s")}
                   style={{ width: "80%" }}
                 />
@@ -444,8 +443,8 @@ class NepiControlsRobots extends Component {
                 <Input
                   value={this.state.home_lat}
                   id="home_lat"
-                  onChange= {(event) => onUpdateSetStateValue(event,"home_lat")}
-                  onKeyDown= {(event) => onEnterSendFloatValue(event, this.state.appNamespace +"home_lat")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_lat")}
+                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace +"home_lat")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -457,8 +456,8 @@ class NepiControlsRobots extends Component {
                 <Input
                   value={this.state.home_long}
                   id="home_long"
-                  onChange= {(event) => onUpdateSetStateValue(event,"home_long")}
-                  onKeyDown= {(event) => onEnterSendFloatValue(event, this.state.appNamespace + "home_long")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_long")}
+                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_long")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -471,7 +470,7 @@ class NepiControlsRobots extends Component {
                   value={this.state.home_alt}
                   id="home_alt"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_alt")}
-                  onKeyDown= {(event) => onEnterSendFloatValue(event, this.state.appNamespace + "home_alt")}
+                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_alt")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -491,7 +490,7 @@ class NepiControlsRobots extends Component {
               <Label title="Enable Fake GPS">
                 <Toggle
                 checked={this.state.fake_gps_enabled===true}
-                onClick={sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_fake_gps", !this.state.fake_gps_enabled)}>
+                onClick={() => sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_fake_gps", this.state.fake_gps_enabled === false)}>
                 </Toggle>
               </Label>
 

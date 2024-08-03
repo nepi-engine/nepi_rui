@@ -25,6 +25,7 @@ import BooleanIndicator from "./BooleanIndicator"
 import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
   onDropdownSelectedSendStr, onDropdownSelectedSetState, onDropdownSelectedSendIndex,
   onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
+  onChangeSwitchStateValue,
   doNothing} from "./Utilities"
 
 @inject("ros")
@@ -131,7 +132,13 @@ class NepiRobotControls extends Component {
       process_last: message.process_last ,
       ready: message.ready ,
       battery: message.battery ,
-      errors_current: [message.errors_current.x_m ,message.errors_current.x_m, message.errors_current.x_m, message.errors_current.heading_deg, message.errors_current.roll_deg, message.errors_current.pitch_deg, message.errors_current.yaw_deg],
+      errors_current_x:[message.errors_current.x_m],
+      errors_current_x:[message.errors_current.y_m],
+      errors_current_x:[message.errors_current.z_m],
+      errors_current_x:[message.errors_current.heading_deg],
+      errors_current_x:[message.errors_current.roll_deg],
+      errors_current_x:[message.errors_current.pitch_deg],
+      errors_current_x: [message.errors_current.yaw_deg],
       errors_prev: [message.errors_prev.x_m ,message.errors_prev.x_m, message.errors_prev.x_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
       cmd_success: message.cmd_success ,
       manual_ready: message.manual_motor_control_mode_ready ,
@@ -146,7 +153,7 @@ class NepiRobotControls extends Component {
       const capabilities = rbxRobots[this.props.rbxNamespace]
       if (capabilities){
         const actions=convertStrToStrList(capabilities.action_options)
-        const actions_menu_options=createMenuListFromStrList(actions)
+        const actions_menu_options=createMenuListFromStrList(actions,false,[],[],[])
         
         this.setState({ 
           rbx_capabilities: capabilities,
@@ -173,7 +180,7 @@ class NepiRobotControls extends Component {
         if (this.state.has_autonomous_controls){
           controls_type_list.push("Autonomous")
         }
-        const controls_type_menu = createMenuListFromStrList(controls_type_list)
+        const controls_type_menu = createMenuListFromStrList(controls_type_list,false,[],[],[])
         this.setState({
           controls_type_list: controls_type_list,
           controls_type_menu: controls_type_menu
@@ -190,7 +197,7 @@ class NepiRobotControls extends Component {
       if (this.state.has_goto_location){
         controls_auto_list.push("Location")
       }
-      const controls_auto_menu = createMenuListFromStrList(controls_auto_list)
+      const controls_auto_menu = createMenuListFromStrList(controls_auto_list,false,[],[],[])
       this.setState({
         controls_auto_list: controls_auto_list,
         controls_auto_menu: controls_auto_menu
@@ -269,7 +276,7 @@ class NepiRobotControls extends Component {
                      <Label title="Show Process Controls">
                     <Toggle
                       checked={this.state.show_process_controls===true}
-                      onClick={() => onUpdateSetStateValue("show_process_controls", this.state.show_process_controls)}>
+                      onClick={() => onChangeSwitchStateValue.bind(this)("show_process_controls",this.state.show_process_controls)}>
                     </Toggle>
                   </Label>
 
@@ -288,7 +295,7 @@ class NepiRobotControls extends Component {
             <Label title={"Select Control Type"}>
                     <Select
                       id="selected_control_type"
-                      onChange={(event) => onDropdownSelectedSetState(event,"selected_control_type")}
+                      onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_control_type")}
                       value={this.state.selected_control_type}
                     >
                       {this.state.controls_type_list ? this.state.controls_type_menu : NoneOption}
@@ -347,7 +354,7 @@ class NepiRobotControls extends Component {
             <Label title={"Select Goto Type"}>
               <Select
                 id="selected_auto_control"
-                onChange={(event) => onDropdownSelectedSetState(event,"selected_auto_control")}
+                onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_auto_control")}
                 value={this.state.selected_auto_control}
               >
                 {this.state.controls_auto_list ? this.state.controls_auto_menu : NoneOption}
@@ -373,8 +380,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.roll_deg}
                   id="roll_deg"
-                  onChange= {(event) => onUpdateSetStateValue(event,"roll_deg")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"roll_deg")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"roll_deg")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"roll_deg")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -386,8 +393,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.pitch_deg}
                   id="pitch_deg"
-                  onChange= {(event) => onUpdateSetStateValue(event,"pitch_deg")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"pitch_deg")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"pitch_deg")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"pitch_deg")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -399,8 +406,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.yaw_deg}
                   id="yaw_deg"
-                  onChange= {(event) => onUpdateSetStateValue(event,"yaw_deg_position")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"yaw_deg_pose")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"yaw_deg_position")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"yaw_deg_pose")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -436,8 +443,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.x_meters}
                   id="x_meters"
-                  onChange= {(event) => onUpdateSetStateValue(event,"x_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"x_meters")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"x_meters")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"x_meters")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -449,8 +456,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.y_meters}
                   id="y_meters"
-                  onChange= {(event) => onUpdateSetStateValue(event,"y_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"y_meters")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"y_meters")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"y_meters")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -462,8 +469,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.z_meters}
                   id="z_meters"
-                  onChange= {(event) => onUpdateSetStateValue(event,"z_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"z_meters")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"z_meters")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"z_meters")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -475,8 +482,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.yaw_deg_position}
                   id="yaw_deg_position"
-                  onChange= {(event) => onUpdateSetStateValue(event,"yaw_deg_position")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"yaw_deg_position")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"yaw_deg_position")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"yaw_deg_position")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -503,8 +510,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.location_lat}
                   id="location_lat"
-                  onChange= {(event) => onUpdateSetStateValue(event,"location_lat")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"location_lat")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"location_lat")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"location_lat")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -520,8 +527,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.location_long}
                   id="location_long"
-                  onChange= {(event) => onUpdateSetStateValue(event,"location_long")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"location_long")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"location_long")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"location_long")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -533,8 +540,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.altitude_meters}
                   id="altitude_meters"
-                  onChange= {(event) => onUpdateSetStateValue(event,"altitude_meters")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"altitude_meters")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"altitude_meters")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"altitude_meters")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -546,8 +553,8 @@ class NepiRobotControls extends Component {
                 <Input
                   value={this.state.yaw_deg_location}
                   id="yaw_deg_location"
-                  onChange= {(event) => onUpdateSetStateValue(event,"yaw_deg_location")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"yaw_deg_location")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"yaw_deg_location")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"yaw_deg_location")}
                   style={{ width: "80%" }}
                 />
               </Label>
