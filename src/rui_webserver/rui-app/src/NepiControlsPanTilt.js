@@ -19,7 +19,7 @@ import Label from "./Label"
 import Input from "./Input"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
-import createShortUniqueValues, {setElementStyleModified, clearElementStyleModified} from "./Utilities"
+import {createShortUniqueValues, setElementStyleModified, clearElementStyleModified} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)

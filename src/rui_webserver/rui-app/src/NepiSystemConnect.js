@@ -17,7 +17,7 @@ import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
 import Select from "./Select"
 import Styles from "./Styles"
-import createShortUniqueValues, {setElementStyleModified, clearElementStyleModified} from "./Utilities"
+import {createShortUniqueValues, setElementStyleModified, clearElementStyleModified} from "./Utilities"
 //var qr = require("qrcode")
 
 // const reorder = (list, startIndex, endIndex) => {
@@ -30,7 +30,7 @@ import createShortUniqueValues, {setElementStyleModified, clearElementStyleModif
 
 @inject("ros")
 @observer
-class NEPIConnect extends Component {
+class NepiSystemConnect extends Component {
   constructor(props) {
     super(props)
 
@@ -402,4 +402,4 @@ class NEPIConnect extends Component {
   }
   */
 }
-export default NEPIConnect
+export default NepiSystemConnect

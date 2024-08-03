@@ -23,7 +23,7 @@ import NepiDeviceInfo from "./NepiDeviceInfo"
 import Nepi_IF_Settings from "./Nepi_IF_Settings"
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
-import createShortUniqueValues from "./Utilities"
+import {createShortUniqueValues} from "./Utilities"
 
 @inject("ros")
 @observer

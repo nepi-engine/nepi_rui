@@ -22,6 +22,14 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
 
+import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
+  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
+  onUpdateSetStateValue, 
+  onEnterSendFloatValue, onEnterSetStateFloatValue,
+  onEnterSendIntValue,
+  onChangeSwitchStateValue, 
+  doNothing} from "./Utilities"
+
 @inject("ros")
 @observer
 
@@ -55,31 +63,13 @@ class NepiPointcloudRenderControls extends Component {
 
     }
 
-    this.onUpdateCamText = this.onUpdateCamText.bind(this)
     this.onKeyCamText = this.onKeyCamText.bind(this)
 
-    this.getRenderStrListAsList = this.getRenderStrListAsList.bind(this)
     this.updateRenderListener = this.updateRenderListener.bind(this)
     this.renderStatusListener = this.renderStatusListener.bind(this)
 
-    this.onChangeBoolRenderEnabled = this.onChangeBoolRenderEnabled.bind(this)
-
 
     
-  }
-
-
-  getRenderStrListAsList(strList) {
-    var temp_list = []
-    var out_list = []
-    if (strList != null){
-      temp_list = strList.replaceAll("[","")
-      temp_list = temp_list.replaceAll("]","")
-      temp_list = temp_list.replaceAll(" '","")
-      temp_list = temp_list.replaceAll("'","")
-      out_list = temp_list.split(",")
-    }
-    return out_list
   }
 
   // Callback for handling ROS Status messages
@@ -104,7 +94,7 @@ class NepiPointcloudRenderControls extends Component {
       camRotY: message.camera_rotation.y,
       camRotZ: message.camera_rotation.z,
     })
-    const frames3d = this.getRenderStrListAsList(this.state.frames3d)
+    const frames3d = convertStrToStrList(this.state.frames3d)
     var frames3dlist = ["map"]
     for (let ind = 0; ind < frames3d.length; ind++) {
       frames3dlist.push(frames3d[ind])
@@ -136,12 +126,6 @@ class NepiPointcloudRenderControls extends Component {
     }
   }
 
-  onChangeBoolRenderEnabled(){
-    const updateVal = this.state.renderEnabled == false
-    this.props.ros.sendBoolMsg(this.props.renderNamespace + "/set_render_enable",updateVal)
-    this.render()
-  }
-
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
@@ -149,13 +133,6 @@ class NepiPointcloudRenderControls extends Component {
     if (this.state.renderListener) {
       this.state.renderListener.unsubscribe()
     }
-  }
-
-  onUpdateCamText(e) {
-    const stateVarName = e.target.id
-    const evalStr = 'this.setState({' + stateVarName + ': e.target.value})'
-    eval(evalStr);
-    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
   }
 
 
@@ -185,7 +162,7 @@ class NepiPointcloudRenderControls extends Component {
           <Label title="Render Enabled">
               <Toggle
               checked={this.state.renderEnabled===true}
-              onClick={this.onChangeBoolRenderEnabled}>
+              onClick={() => this.props.ros.sendBoolMsg(this.props.renderNamespace + "/set_render_enable",!this.state.renderEnabled)}>
               </Toggle>
             </Label>
  
@@ -273,7 +250,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camViewX"
                       value={(this.state.camViewX)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camViewX")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
@@ -285,7 +262,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camViewY"
                       value={(this.state.camViewY)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camViewY")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
@@ -297,7 +274,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camViewZ"
                       value={(this.state.camViewZ)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camViewZ")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
@@ -315,7 +292,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camPosX"
                       value={(this.state.camPosX)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camPosX")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
@@ -327,7 +304,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camPosY"
                       value={(this.state.camPosY)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camPosY")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
@@ -339,7 +316,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camPosZ"
                       value={(this.state.camPosZ)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camPosZ")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
@@ -357,7 +334,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camRotX"
                       value={(this.state.camRotX)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camRotX")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
@@ -369,7 +346,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camRotY"
                       value={(this.state.camRotY)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camRotY")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
@@ -381,7 +358,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camRotZ"
                       value={(this.state.camRotZ)}
-                      onChange={this.onUpdateCamText}
+                      onChange={(event) => onUpdateSetStateValue(event,"camRotZ")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>

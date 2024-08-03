@@ -18,7 +18,7 @@ import Button, { ButtonMenu } from "./Button"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 import {ColoredTextIndicator, indicator_colors} from "./ColoredIndicator"
 
-import createShortValuesFromNamespace from "./Utilities"
+import { filterStrList, createShortValuesFromNamespaces } from "./Utilities"
 
 import CameraViewer from "./CameraViewer"
 
@@ -50,35 +50,39 @@ class NepiAppAIDetector extends Component {
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.onToggleRunLocalizer = this.onToggleRunLocalizer.bind(this)
 
+    //this.createShortValuesFromNamespace = this.createShortValuesFromNamespace.bind(this)
+
+
     this.checkForClassifierRunning()
   }
   // Function for creating image topic options.
-  createImageTopicsOptions() {
+  f() {
     const {imageFilterDetection} = this.props.ros
     var items = []
     items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
-    var uniqueNames = createShortValuesFromNamespace(imageTopics)
+    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node'])
+    var uniqueNames = createShortValuesFromNamespaces(imageTopicsFiltered)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
-    for (var i = 0; i < imageTopics.length; i++) {
+    for (var i = 0; i < imageTopicsFiltered .length; i++) {
       // Run the filter
-      if (imageFilterDetection && !(imageFilterDetection.test(imageTopics[i]))) {
+      if (imageFilterDetection && !(imageFilterDetection.test(imageTopicsFiltered [i]))) {
         continue
       }
       if (classifier_not_stopped) {
-        if (imageTopics[i] === this.props.ros.reportedClassifier.selected_img_topic) {
-          items.push(<Option selected="selected" value={imageTopics[i]}>{uniqueNames[i]}</Option>)
+        if (imageTopicsFiltered[i] === this.props.ros.reportedClassifier.selected_img_topic) {
+          items.push(<Option selected="selected" value={imageTopicsFiltered [i]}>{uniqueNames[i]}</Option>)
         }
         else {
-          items.push(<Option value={imageTopics[i]}>{uniqueNames[i]}</Option>)
+          items.push(<Option value={imageTopicsFiltered [i]}>{uniqueNames[i]}</Option>)
         }
       }
-      else if (imageTopics[i] === this.state.imageTopic) {
-        items.push(<Option selected="selected" value={imageTopics[i]}>{uniqueNames[i]}</Option>)
+      else if (imageTopicsFiltered[i] === this.state.imageTopic) {
+        items.push(<Option selected="selected" value={imageTopicsFiltered[i]}>{uniqueNames[i]}</Option>)
       }
       else {
-        items.push(<Option value={imageTopics[i]}>{uniqueNames[i]}</Option>)
+        items.push(<Option value={imageTopicsFiltered[i]}>{uniqueNames[i]}</Option>)
       }
     }
     return items
@@ -201,6 +205,7 @@ class NepiAppAIDetector extends Component {
 
     stopClassifier()
   }
+
 
   render() {
     const {

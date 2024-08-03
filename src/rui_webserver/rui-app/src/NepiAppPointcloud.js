@@ -19,17 +19,15 @@ import CameraViewer from "./CameraViewer"
 import Input from "./Input"
 import Toggle from "react-toggle"
 
-import createShortValuesFromNamespace from "./Utilities"
+import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
+  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
+  onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
+  doNothing} from "./Utilities"
 
 import NepiPointcloudProcessControls from "./NepiPointcloudProcessControls"
 import NepiPointcloudRenderControls from "./NepiPointcloudRenderControls"
 
 import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
-
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
 
 @inject("ros")
 @observer
@@ -77,6 +75,9 @@ class NepiAppPointcloud extends Component {
 
     }
 
+    this.updateSelectionListener = this.updateSelectionListener.bind(this)
+    this.selectionStatusListener = this.selectionStatusListener.bind(this)
+
     this.getAppNamespace = this.getAppNamespace.bind(this)
     this.getPointcloudOptions = this.getPointcloudOptions.bind(this)
     this.getSelectedPointclouds = this.getSelectedPointclouds.bind(this)
@@ -84,27 +85,14 @@ class NepiAppPointcloud extends Component {
     this.onTogglePointcloudSelection = this.onTogglePointcloudSelection.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
 
-    this.getTransformTopicOptions = this.getTransformTopicOptions.bind(this)
     this.updateTranformsList = this.updateTranformsList.bind(this)
-
-    this.getStrListAsList = this.getStrListAsList.bind(this)
-    this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
-
-    this.onAppDropdownSlectedSetState = this.onAppDropdownSlectedSetState.bind(this)
-    this.onAppDropdownSlectedSendStr = this.onAppDropdownSlectedSendStr.bind(this)
-    this.createDropdownBoxOptions = this.createDropdownBoxOptions.bind(this)
     
-    this.onUpdateAppInputBoxValue = this.onUpdateAppInputBoxValue.bind(this)
-    this.onEnterSendInputBoxFloatValue = this.onEnterSendInputBoxFloatValue.bind(this)
-
-
     this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
-    this.onEnterSetInputBoxFloatValue = this.onEnterSetInputBoxFloatValue.bind(this)
+    
     this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
     this.setSelectedTransform = this.setSelectedTransform.bind(this)
 
-    this.updateSelectionListener = this.updateSelectionListener.bind(this)
-    this.selectionStatusListener = this.selectionStatusListener.bind(this)
+
 
   }
 
@@ -119,14 +107,15 @@ class NepiAppPointcloud extends Component {
 
   // Callback for handling ROS Status messages
   selectionStatusListener(message) {
-    const pointcloudsMsg = message.selected_pointcloud_topics
-    this.updateSelectedPointclouds(pointcloudsMsg)
-    const combineOptionsMsg = message.combine_options
-    const combineOptions = this.getStrListAsList(combineOptionsMsg)
-    const transformsTopicMsg = message.transforms_topic_list
-    const transformsMsg = message.transforms_list
-    this.updateTranformsList( transformsTopicMsg,transformsMsg)
+    const pointcloudTopicsStr = message.selected_pointcloud_topics
+    var pointcloudsStrList = convertStrToStrList(pointcloudTopicsStr)
+    const combineOptionsStr = message.combine_options
+    const combineOptions = convertStrToStrList(combineOptionsStr)
+    const transformsTopicStr = message.transforms_topic_list
+    const transformsStr = message.transforms_list
+    this.updateTranformsList( transformsTopicStr,transformsStr)
     this.setState({
+    selectedPointclouds:pointcloudsStrList,
     age_filter_s: message.age_filter_s,
     combineOptionsList: combineOptions,
     combineOption: message.combine_option,
@@ -162,8 +151,6 @@ class NepiAppPointcloud extends Component {
     }
   }
 
-
-
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
@@ -172,24 +159,12 @@ class NepiAppPointcloud extends Component {
     }
   }
 
-  getStrListAsList(transformsStr) {
-    var StrList = []
-    if (transformsStr != null){
-      transformsStr = transformsStr.replaceAll("[","")
-      transformsStr = transformsStr.replaceAll("]","")
-      transformsStr = transformsStr.replaceAll(" '","")
-      transformsStr = transformsStr.replaceAll("'","")
-      StrList = transformsStr.split(",")
-    }
-    return StrList
-  }
-
   // Function for creating image topic options.
   getPointcloudOptions() {
     const { pointcloudTopics } = this.props.ros
     const thisPointcloudTopic = this.state.appNamespace + "/pointcloud"
     var items = []
-    var pointcloudTopicShortnames = createShortValuesFromNamespace(pointcloudTopics)
+    var pointcloudTopicShortnames = createShortValuesFromNamespaces(pointcloudTopics)
     for (var i = 0; i < pointcloudTopics.length; i++) {
       if (pointcloudTopics[i] !== thisPointcloudTopic){
         items.push(<Option value={pointcloudTopics[i]}>{pointcloudTopicShortnames[i]}</Option>)
@@ -202,23 +177,6 @@ class NepiAppPointcloud extends Component {
 
 
 
-  updateSelectedPointclouds(pointcloudsMsg) {
-    var pointcloudsStrList = []
-    if (pointcloudsMsg != null){
-      pointcloudsMsg = pointcloudsMsg.replaceAll("[","")
-      pointcloudsMsg = pointcloudsMsg.replaceAll("]","")
-      pointcloudsMsg = pointcloudsMsg.replaceAll(" '","")
-      pointcloudsMsg = pointcloudsMsg.replaceAll("'","")
-      pointcloudsStrList = pointcloudsMsg.split(",")
-    }
-    this.setState({selectedPointclouds:pointcloudsStrList})
-  }
-
-  doNothing(){
-    var ret = false
-    return ret
-  }
- 
   onTogglePointcloudSelection(event){
     const {pointcloudTopics, sendStringMsg} = this.props.ros
     const pointcloud = event.target.value
@@ -251,39 +209,11 @@ class NepiAppPointcloud extends Component {
     }
   }
 
-  updateCombineOptions(combineOptionsMsg) {
-    var combineStrList = []
-    if (combineOptionsMsg != null){
-      combineOptionsMsg = combineOptionsMsg.replaceAll("[","")
-      combineOptionsMsg = combineOptionsMsg.replaceAll("]","")
-      combineOptionsMsg = combineOptionsMsg.replaceAll(" '","")
-      combineOptionsMsg = combineOptionsMsg.replaceAll("'","")
-      combineStrList = combineOptionsMsg.split(",")
-    }
-    this.setState({combineOptionsList:combineStrList})
-  }
-
-  doNothing(){
-    var ret = false
-    return ret
-  }
  
 
-  // Function for creating image topic options.
-  getTransformTopicOptions() {
-    const topicList = this.state.transforms_topic_list
-    var items = [<Option value={"NONE"}>{"NONE"}</Option>]
-    var topicListShortnames = createShortValuesFromNamespace(topicList)
-    for (var i = 0; i < topicList.length; i++) {
-      items.push(<Option value={topicList[i]}>{topicListShortnames[i]}</Option>)
-    }
-    return items
-  }
-
-
   updateTranformsList(transformsTopicMsg,transformsMsg) {
-    var topicsList = this.getStrListAsList(transformsTopicMsg)
-    const transformsFlat = this.getStrListAsList(transformsMsg)
+    var topicsList = convertStrToStrList(transformsTopicMsg)
+    const transformsFlat = convertStrToStrList(transformsMsg)
     var transform = []
     var transformsList = []
     var tf_index = 0
@@ -322,101 +252,6 @@ class NepiAppPointcloud extends Component {
     return selectedPointclouds
   }
 
-  convertStrListToMenuList(strList) {
-    var menuList = []
-    for (let ind = 0; ind < strList.length; ind++){
-      menuList.push(<Option>{strList[ind]}</Option>)
-    } 
-    return menuList
-  }
-
-
-   onAppDropdownSlectedSetState(event, stateVarStr) {
-    var key = stateVarStr
-    var value = event.target.value
-    var obj  = {}
-    obj[key] = value
-    this.setState(obj)
-  }
-
-  onAppDropdownSlectedSendStr(event, topicName) {
-    const {sendStringMsg} = this.props.ros
-    const value = event.target.value
-    const namespace = this.state.appNamespace + topicName
-    sendStringMsg(namespace,value)
-  }
-
-
-   createDropdownBoxOptions(optionsStrList, useShortNames, filterOut, prefixOptionsStrList, appendOptionsStrList) {
-    var filteredTopics = []
-    var i
-    var filteredTopics = []
-    if (filterOut) {
-      for (i = 0; i < optionsStrList.length; i++) {
-          if (filterOut.includes(optionsStrList[i]) === false){
-            filteredTopics.push(optionsStrList[i])
-          }
-      }
-    }
-
-    var unique_names = null
-    if (useShortNames === true){
-      unique_names = this.createShortValuesFromNamespace(filteredTopics)
-    } 
-    else{
-      unique_names = filteredTopics
-    }
-    var items = []
-    for (i = 0; i < prefixOptionsStrList.length; i++) {
-        items.push(<Option>{prefixOptionsStrList[i]}</Option>)
-    }
-
-    for (i = 0; i < filteredTopics.length; i++) {
-      items.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
-    }
-
-    for (i = 0; i < appendOptionsStrList.length; i++) {
-        items.push(<Option>{appendOptionsStrList[i]}</Option>)
-    }
-
-     return items
-  }
-  
-  onUpdateAppInputBoxValue(event,stateVarStr) {
-    var key = stateVarStr
-    var value = event.target.value
-    var obj  = {}
-    obj[key] = value
-    this.setState(obj)
-    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
-    this.render()
-  }
-
-
-  onEnterSendInputBoxFloatValue(event, topicName) {
-    const {sendFloatMsg} = this.props.ros
-    const namespace = this.state.appNamespace + topicName
-    if(event.key === 'Enter'){
-      const value = parseFloat(event.target.value)
-      if (!isNaN(value)){
-        sendFloatMsg(namespace,value)
-      }
-      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-    }
-  }
-
-  onEnterSetInputBoxFloatValue(event, stateVarStr) {
-    if(event.key === 'Enter'){
-      const value = parseFloat(event.target.value)
-      if (!isNaN(value)){
-        var key = stateVarStr
-        var obj  = {}
-        obj[key] = value
-        this.setState(obj)
-      }
-      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-    }
-  }
 
   sendTransformUpdateMessage(){
     const {sendFrame3DTransformUpdateMsg} = this.props.ros
@@ -430,7 +265,6 @@ class NepiAppPointcloud extends Component {
     const RZ = this.state.selectedTransformRZ
     const HO = this.state.selectedTransformHO
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
-
     sendFrame3DTransformUpdateMsg(namespace,transformNamespace,transformList)
   }
 
@@ -509,11 +343,11 @@ class NepiAppPointcloud extends Component {
                   <Label title={"Primary Pointcloud"}>
                     <Select
                       id="primary_pointcloud"
-                      onChange={(event) => this.onAppDropdownSlectedSendStr(event,"/set_primary_pointcloud")}
+                      onChange={(event) => onDropdownSelectedSendStr(event,"/set_primary_pointcloud")}
                       value={this.state.primary_pointcloud_topic}
                     >
                       {this.state.selectedPointclouds
-                        ? this.createDropdownBoxOptions(this.state.selectedPointclouds, true, [],[],[])
+                        ? createMenuListFromStrList(this.state.selectedPointclouds, true, [],[],[])
                         : NoneOption}
                     </Select>
                   </Label>
@@ -531,8 +365,8 @@ class NepiAppPointcloud extends Component {
                   <Label title={"Age Filter (s)"}>
                     <Input id="age_filter" 
                       value={this.state.age_filter_s} 
-                      onChange={(event) => this.onUpdateAppInputBoxValue(event,"age_filter_s")} 
-                      onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_age_filter")} />
+                      onChange={(event) => onUpdateSetStateValue(event,"age_filter_s")} 
+                      onKeyDown= {(event) => onEnterSendFloatValue(event,this.state.appNamespace + "/set_age_filter")} />
                   </Label>
 
                   <Label title={""}></Label>
@@ -551,11 +385,11 @@ class NepiAppPointcloud extends Component {
                   <Label title={"Combine Options"}>
                     <Select
                       id="combine_options"
-                      onChange={(event) => this.onAppDropdownSlectedSendStr(event,"/set_combine_option")}
+                      onChange={(event) => onDropdownSelectedSendStr(event,"/set_combine_option")}
                       value={this.state.combineOption}
                     >
                       {this.state.combineOptionsList
-                        ? this.createDropdownBoxOptions(this.state.combineOptionsList, false, [],[],[])
+                        ? createMenuListFromStrList(this.state.combineOptionsList, false, [],[],[])
                         : NoneOption}
                     </Select>
                   </Label>
@@ -572,7 +406,7 @@ class NepiAppPointcloud extends Component {
                       value={this.state.selectedTransformPointcloud}
                     >
                       {this.state.transforms_topic_list
-                        ? this.createDropdownBoxOptions(this.state.transforms_topic_list, true, [],[],[])
+                        ? createMenuListFromStrList(this.state.transforms_topic_list, true, [],["NONE"],[])
                         : NoneOption}
                     </Select>
                   </Label>
@@ -590,8 +424,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformTX, 2)}
                   id="XTranslation"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTX")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTX")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformTX")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformTX")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -600,8 +434,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformTY, 2)}
                   id="YTranslation"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTY")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTY")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformTY")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformTY")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -610,8 +444,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformTZ, 2)}
                   id="ZTranslation"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformTZ")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformTZ")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformTZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformTZ")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -620,8 +454,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformHO, 2)}
                   id="HeadingOffset"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformHO")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformHO")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformHO")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformHO")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -633,8 +467,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformRX, 2)}
                   id="XRotation"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRX")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRX")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformRX")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformRX")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -643,8 +477,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformRY, 2)}
                   id="YRotation"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRY")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRY")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformRY")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformRY")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -653,8 +487,8 @@ class NepiAppPointcloud extends Component {
                 <Input
                   value={round(this.state.selectedTransformRZ, 2)}
                   id="ZRotation"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"selectedTransformRZ")}
-                  onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"selectedTransformRZ")}
+                  onChange= {(event) => onUpdateSetStateValue(event,"selectedTransformRZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue(event,"selectedTransformRZ")}
                   style={{ width: "80%" }}
                 />
               </Label>

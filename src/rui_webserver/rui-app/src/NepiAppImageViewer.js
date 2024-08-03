@@ -15,7 +15,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
-import createShortUniqueValues from "./Utilities"
+import {createShortUniqueValues} from "./Utilities"
 
 @inject("ros")
 @observer

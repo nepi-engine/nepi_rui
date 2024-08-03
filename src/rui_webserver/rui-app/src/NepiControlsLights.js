@@ -16,7 +16,7 @@ import CameraViewer from "./CameraViewer"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
-import createShortUniqueValues from "./Utilities"
+import {createShortUniqueValues} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)

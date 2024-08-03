@@ -21,7 +21,7 @@ import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select" 
 import Styles from "./Styles"
 
-import createShortUniqueValues from "./Utilities"
+import {createShortUniqueValues} from "./Utilities"
 
 @inject("ros")
 @observer

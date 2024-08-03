@@ -21,10 +21,13 @@ import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
+import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
+  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
+  onUpdateSetStateValue, 
+  onEnterSendFloatValue, onEnterSetStateFloatValue,
+  onEnterSendIntValue,
+  onChangeSwitchStateValue, 
+  doNothing} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -52,23 +55,16 @@ class NepiPointcloudProcessControls extends Component {
 
     }
 
-    this.onChangeProcessShowVal = this.onChangeProcessShowVal.bind(this)
-    this.getProcessStrListAsList = this.getProcessStrListAsList.bind(this)
-
+    this.onEnterSendInputBoxRangeWindowValue = this.onEnterSendInputBoxRangeWindowValue.bind(this)
+  
     this.updateProcessListener = this.updateProcessListener.bind(this)
     this.processStatusListener = this.processStatusListener.bind(this)
-
-    this.updateFrames3dList = this.updateFrames3dList.bind(this)
-    
-    this.onChangeBoolClipRangeEnabled = this.onChangeBoolClipRangeEnabled.bind(this)
-
-    this.onUpdateProcessInputBoxValue = this.onUpdateProcessInputBoxValue.bind(this)
-    this.onEnterSendInputBoxFloatValue = this.onEnterSendInputBoxFloatValue.bind(this)
 
   }
 
   // Callback for handling ROS Status messages
   processStatusListener(message) {
+    const framesList = convertStrToStrList(message.available_3d_frames)
     this.setState({
       range_clip_enabled: message.range_clip_enabled,
       range_clip_min_m: message.range_clip_meters.start_range,
@@ -77,9 +73,9 @@ class NepiPointcloudProcessControls extends Component {
       voxel_downsample_size_m: message.voxel_downsample_size_m,
       uniform_downsample_points: message.uniform_downsample_points,
       outlier_k_points: message.outlier_k_points,
-      frame_3d: message.frame_3d
+      frame_3d: message.frame_3d,
+      frames3dlist: framesList
     })
-    this.updateFrames3dList(message.available_3d_frames)
   }
 
   // Function for configuring and subscribing to Status
@@ -117,72 +113,6 @@ class NepiPointcloudProcessControls extends Component {
 
 
 
-  onChangeProcessShowVal(){
-    const new_val = this.state.show_process_controls == false
-    this.setState({show_process_controls: new_val})
-  }
-
-
-  updateFrames3dList(framesListMsg){
-    const framesList = this.getProcessStrListAsList(framesListMsg)
-    this.setState({frames3dlist: framesList})
-  }
-
-  getProcessStrListAsList(strList) {
-    var temp_list = []
-    var out_list = []
-    if (strList != null){
-      temp_list = strList.replaceAll("[","")
-      temp_list = temp_list.replaceAll("]","")
-      temp_list = temp_list.replaceAll(" '","")
-      temp_list = temp_list.replaceAll("'","")
-      out_list = temp_list.split(",")
-    }
-    return out_list
-  }
-
-  onChangeBoolClipRangeEnabled(){
-    const updateVal = this.state.range_clip_enabled == false
-    this.props.ros.sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",updateVal)
-    this.render()
-  }
-
-  onUpdateProcessInputBoxValue(event,stateVarNameStr) {
-    var key = stateVarNameStr
-    var value = event.target.value
-    var obj  = {}
-    obj[key] = value
-    this.setState(obj)
-    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
-  }
-
-  onEnterSendInputBoxFloatValue(event, topicName) {
-    const {sendFloatMsg} = this.props.ros
-    const namespace = this.props.processNamespace + topicName
-    if(event.key === 'Enter'){
-      const value = parseFloat(event.target.value)
-      if (!isNaN(value)){
-        sendFloatMsg(namespace,value)
-      }
-      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-    }
-  }
-
-
-  onEnterSendInputBoxIntValue(event, topicName) {
-    const {sendIntMsg} = this.props.ros
-    const namespace = this.props.processNamespace + topicName
-    if(event.key === 'Enter'){
-      const value = parseInt(event.target.value)
-      if (!isNaN(value)){
-        sendIntMsg(namespace,value)
-      }
-      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-    }
-  }
-
-
-
   onEnterSendInputBoxRangeWindowValue(event, topicName, entryName) {
     const {publishRangeWindow} = this.props.ros
     const namespace = this.props.processNamespace + topicName
@@ -204,7 +134,7 @@ class NepiPointcloudProcessControls extends Component {
   }
 
   render() {
-    const {  sendTriggerMsg, setFrame3d } = this.props.ros
+    const {  sendTriggerMsg, sendBoolMsg, setFrame3d } = this.props.ros
     return (
       <Section title={"Process Controls"}>
 
@@ -214,7 +144,7 @@ class NepiPointcloudProcessControls extends Component {
           <Label title="Show Process Controls">
                 <Toggle
                 checked={this.state.show_process_controls===true}
-                onClick={this.onChangeProcessShowVal}>
+                onClick={() => onChangeSwitchStateValue("show_process_controls",this.state.show_process_controls)}>
                 </Toggle>
           </Label>
       </Column>
@@ -235,7 +165,7 @@ class NepiPointcloudProcessControls extends Component {
             <Label title="Clip Range Enabled">
                   <Toggle
                   checked={this.state.range_clip_enabled===true}
-                  onClick={this.onChangeBoolClipRangeEnabled}>
+                  onClick={() => this.props.ros.sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",!this.state.range_clip_enabled)}>
                   </Toggle>
             </Label>
 
@@ -256,7 +186,7 @@ class NepiPointcloudProcessControls extends Component {
           <Label title={"Set Range Clip Min"}>
                     <Input id="set_range_clip_min" 
                       value={this.state.range_clip_min_m} 
-                      onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_min_m")} 
+                      onChange={(event) => onUpdateSetStateValue(event,"range_clip_min_m")} 
                       onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","min")} />
               </Label>
             
@@ -265,7 +195,7 @@ class NepiPointcloudProcessControls extends Component {
                   <Label title={"Set Range Clip Max"}>
                     <Input id="set_range_clip_max" 
                      value={this.state.range_clip_max_m} 
-                      onChange={(event) => this.onUpdateProcessInputBoxValue(event,"range_clip_max_m")} 
+                      onChange={(event) => onUpdateSetStateValue(event,"range_clip_max_m")} 
                       onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","max")} />                      
                   </Label>  
 
@@ -283,7 +213,7 @@ class NepiPointcloudProcessControls extends Component {
 {/*              <Label title={"Uniform Downsample k Points"}>
                 <Input id="uniform_downsample_k_points" 
                   value={this.state.uniform_downsample_points} 
-                  onChange={(event) => this.onUpdateProcessInputBoxValue(event,"uniform_downsample_points")} 
+                  onChange={(event) => onUpdateSetStateValue(event,"uniform_downsample_points")} 
                   onKeyDown= {(event) => this.onEnterSendInputBoxIntValue(event,"/uniform_downsample_k_points")} />
               </Label>
 */}
@@ -291,15 +221,15 @@ class NepiPointcloudProcessControls extends Component {
               <Label title={"Outlier Removal k Points"}>
                 <Input id="outlier_k_points" 
                   value={this.state.outlier_k_points} 
-                  onChange={(event) => this.onUpdateProcessInputBoxValue(event,"outlier_k_points")} 
-                  onKeyDown= {(event) => this.onEnterSendInputBoxIntValue(event,"/outlier_removal_num_neighbors")} />
+                  onChange={(event) => onUpdateSetStateValue(event,"outlier_k_points")} 
+                  onKeyDown= {(event) => onEnterSendIntValue(event,this.props.processNamespace + "/outlier_removal_num_neighbors")} />
               </Label>
 
               <Label title={"Voxel Downsample Size (m)"}>
                 <Input id="voxel_downsample_size_m" 
                   value={this.state.voxel_downsample_size_m} 
-                  onChange={(event) => this.onUpdateProcessInputBoxValue(event,"voxel_downsample_size_m")} 
-                  onKeyDown= {(event) => this.onEnterSendInputBoxFloatValue(event,"/set_voxel_downsample_size")} />
+                  onChange={(event) => onUpdateSetStateValue(event,"voxel_downsample_size_m")} 
+                  onKeyDown= {(event) => onEnterSendFloatValue(event,this.props.processNamespace + "/set_voxel_downsample_size")} />
               </Label>
 
             </Column>

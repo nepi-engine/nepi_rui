@@ -44,7 +44,7 @@ const styles = Styles.Create({
 
 @inject("ros")
 @observer
-class NepiSystemAdmin extends Component {
+class NepiSystemDevice extends Component {
   constructor(props) {
     super(props)
 
@@ -699,4 +699,4 @@ class NepiSystemAdmin extends Component {
     )
   }
 }
-export default NepiSystemAdmin
+export default NepiSystemDevice

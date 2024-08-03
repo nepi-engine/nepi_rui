@@ -6,9 +6,85 @@
  *
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
+
+
+import React, { Component } from "react"
+import { observer, inject } from "mobx-react"
+import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-const createShortUniqueValues = list => {
+
+/////////////////////////////
+// MISC FUNCTIONS
+
+export function doNothing(){
+  var ret = false
+  return ret
+}
+
+export function round(value, decimals = 0) {
+  return Number(value).toFixed(decimals)
+  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
+}
+
+export function convertStrToStrList(inputStr) {
+  var strList = []
+  if (inputStr != null){
+    inputStr = inputStr.replaceAll("[","")
+    inputStr = inputStr.replaceAll("]","")
+    inputStr = inputStr.replaceAll(" '","")
+    inputStr = inputStr.replaceAll("'","")
+    strList = inputStr.split(",")
+  }
+  return strList
+}
+
+export function filterStrList(inputList,filterList) {
+  var outputList = []
+  for (var i = 0; i < inputList.length; ++i) {
+    var filter_check = false
+    for (var j = 0; j < filterList.length; ++j) {
+      if (inputList[i].indexOf(filterList[j]) !== -1) {
+        filter_check = true
+      }
+    }
+    if (filter_check === false){
+      outputList.push(inputList[i])
+    }
+  }
+  return outputList
+}
+
+/////////////////////////////
+// TOGGLE FUNCTIONS
+
+export function onChangeSwitchStateValue(stateVarNameStr,currentVal){
+  var key = stateVarNameStr
+  var value = currentVal === false
+  var obj  = {}
+  obj[key] = value
+  this.setState(obj)
+}
+
+
+/////////////////////////////
+// MENU FUNCTIONS
+
+export function createShortValues(list) {
+  var tokenizedList = []
+  var depthsToShort = 2
+  var shortList = []
+  for (var i = 0; i < list.length; ++i) {
+    tokenizedList.push(list[i].split("/").reverse())
+  }
+  // Now create the return list
+  for (i = 0; i < tokenizedList.length; ++i) {
+    shortList.push(tokenizedList[i].slice(0, depthsToShort).reverse().join("/"))
+  }
+  return shortList
+}
+
+export function createShortUniqueValues(list) {
   var tokenizedList = []
   var depthsToUnique = []
   var uniqueList = []
@@ -36,34 +112,137 @@ const createShortUniqueValues = list => {
   return uniqueList
 }
 
-export const createShortValues = list => {
-  var tokenizedList = []
-  var depthsToShort = 2
-  var shortList = []
-  for (var i = 0; i < list.length; ++i) {
-    tokenizedList.push(list[i].split("/").reverse())
-  }
-  // Now create the return list
-  for (i = 0; i < tokenizedList.length; ++i) {
-    shortList.push(tokenizedList[i].slice(0, depthsToShort).reverse().join("/"))
-  }
-  return shortList
-}
 
-export const createShortValuesFromNamespace = list => {
+export function createShortValuesFromNamespaces(inputList) {
   var tokenizedList = []
-  var shortList = []
+  var outputList = []
   var shortName = ''
-  for (var i = 0; i < list.length; ++i) {
-    tokenizedList = list[i].split("/")
-    var list_len = tokenizedList.length
-    shortName = tokenizedList[list_len-3] + "/" + tokenizedList[list_len-3]
-    shortList.push(shortName)
+  for (var i = 0; i < inputList.length; ++i) {
+      tokenizedList = inputList[i].split("/")
+      var tokens_len = tokenizedList.length
+      shortName = tokenizedList[tokens_len-3] + "/" + tokenizedList[tokens_len-1]
+      outputList.push(shortName)
   }
-  return shortList
+  return outputList
 }
 
 
+export function createMenuListFromStrList(optionsStrList, useShortNames, filterOut, prefixOptionsStrList, appendOptionsStrList) {
+  var filteredTopics = []
+  var i
+  var filteredTopics = []
+  if (filterOut) {
+    for (i = 0; i < optionsStrList.length; i++) {
+        if (filterOut.includes(optionsStrList[i]) === false){
+          filteredTopics.push(optionsStrList[i])
+        }
+    }
+  }
+  var unique_names = null
+  if (useShortNames === true){
+    unique_names = createShortValuesFromNamespaces(filteredTopics)
+  } 
+  else{
+    unique_names = filteredTopics
+  }
+  var menuList = []
+  for (i = 0; i < prefixOptionsStrList.length; i++) {
+      let option = prefixOptionsStrList[i]
+      menuList.push(<Option value={option}>{option}</Option>)
+  }
+
+  for (i = 0; i < filteredTopics.length; i++) {
+    menuList.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
+  }
+
+  for (i = 0; i < appendOptionsStrList.length; i++) {
+    let option = appendOptionsStrList[i]
+    menuList.push(<Option value={option}>{option}</Option>)
+  }
+
+   return menuList
+}
+
+
+export function onDropdownSelectedSetState(event, stateVarStr) {
+  var key = stateVarStr
+  var value = event.target.value
+  var obj  = {}
+  obj[key] = value
+  this.setState(obj)
+}
+
+export function onDropdownSelectedSendStr(event, namespace) {
+  const {sendStringMsg} = this.props.ros
+  const value = event.target.value
+  sendStringMsg(namespace,value)
+}
+
+export function onDropdownSelectedSendIndex(event, namespace) {
+  const {sendIntMsg} = this.props.ros
+  const value = event.target.value
+  if (value !== "None") {
+    const index = event.target.selectedIndex
+    sendIntMsg(namespace,index)
+  }
+}
+
+
+/////////////////////////////
+// INPUT BOX FUNCTIONS
+
+export function onUpdateSetStateValue(event,stateVarStr) {
+  var key = stateVarStr
+  var value = event.target.value
+  var obj  = {}
+  obj[key] = value
+  this.setState(obj)
+  document.getElementById(event.target.id).style.color = Styles.vars.colors.red
+  this.render()
+}
+
+
+
+export function onEnterSendIntValue(event, namespace) {
+  const {sendIntMsg} = this.props.ros
+  if(event.key === 'Enter'){
+    const value = parseInt(event.target.value)
+    if (!isNaN(value)){
+      sendIntMsg(namespace,value)
+    }
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+  }
+}
+
+
+export function onEnterSendFloatValue(event, namespace) {
+  const {sendFloatMsg} = this.props.ros
+  if(event.key === 'Enter'){
+    const value = parseFloat(event.target.value)
+    if (!isNaN(value)){
+      sendFloatMsg(namespace,value)
+    }
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+  }
+}
+
+export function onEnterSetStateFloatValue(event, stateVarStr) {
+  if(event.key === 'Enter'){
+    const value = parseFloat(event.target.value)
+    if (!isNaN(value)){
+      var key = stateVarStr
+      var obj  = {}
+      obj[key] = value
+      this.setState(obj)
+    }
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+  }
+}
+
+
+
+/////////////////////////////
+// STYLE FUNCTIONS
 export function setElementStyleModified(e) {
   e.style.color = Styles.vars.colors.red
   e.style.fontWeight = "bold"
@@ -74,40 +253,3 @@ export function clearElementStyleModified(e) {
   e.style.fontWeight = "normal"
 }
 
-
-
-/*
-// Function for creating short unique values from a list
-// of strings, used to reduce topic names for display
-const createShortUniqueValues = list => {
-  var uniqueList = []
-  var depth = 0
-  var unique = false
-
-  while (!unique) {
-    uniqueList = []
-    depth += 1
-    unique = true
-
-    for (var i = 0; i < list.length && unique; i++) {
-      var parts = list[i].split("/")
-      var newParts = []
-      for (var j = 0; j < depth && j < parts.length; j++) {
-        newParts.push(parts.pop())
-      }
-
-      var value = newParts.reverse().join("/")
-      if (uniqueList.includes(value)) {
-        // not unique
-        unique = false
-        continue
-      } else {
-        uniqueList.push(value)
-      }
-    }
-  }
-  return uniqueList
-}
-*/
-
-export default createShortUniqueValues

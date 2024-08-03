@@ -20,6 +20,8 @@ import Select, { Option } from "./Select"
 import Input from "./Input"
 
 
+import { round, convertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue } from "./Utilities"
+
 @inject("ros")
 @observer
 
@@ -30,6 +32,7 @@ class Nepi_IF_Settings extends Component {
 
     // these states track the values through  Status messages
     this.state = {
+      show_settings: false,
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
       capSettingsTypesList: [],
@@ -52,7 +55,6 @@ class Nepi_IF_Settings extends Component {
     this.updateCapSettingsLists = this.updateCapSettingsLists.bind(this)
     this.getCapSettingOptions = this.getCapSettingOptions.bind(this)
 
-    this.getSettingsAsList = this.getSettingsAsList.bind(this)
     this.getSettingsAsString = this.getSettingsAsString.bind(this)
     this.getSettingValue = this.getSettingValue.bind(this)
 
@@ -60,7 +62,6 @@ class Nepi_IF_Settings extends Component {
     this.onChangeDescreteSettingValue = this.onChangeDescreteSettingValue.bind(this)
     this.onUpdateInputSettingValue = this.onUpdateInputSettingValue.bind(this)
     this.onKeySaveInputSettingValue = this.onKeySaveInputSettingValue.bind(this)
-    this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
 
     this.updateSelectedSettingInfo = this.updateSelectedSettingInfo.bind(this)
     this.getSelectedSettingInfo = this.getSelectedSettingInfo.bind(this)
@@ -104,17 +105,6 @@ class Nepi_IF_Settings extends Component {
     }
   }
 
-  getSettingsAsList(settingsMsg) {
-    var settingsStrList = []
-    if (settingsMsg != null){
-      settingsMsg = settingsMsg.replaceAll("[","")
-      settingsMsg = settingsMsg.replaceAll("]","")
-      settingsMsg = settingsMsg.replaceAll(" '","")
-      settingsMsg = settingsMsg.replaceAll("'","")
-      settingsStrList = settingsMsg.split(",")
-    }
-    return settingsStrList
-  }
 
   // Function for creating settings options list from capabilities
   updateCapSettingsLists() {
@@ -128,7 +118,7 @@ class Nepi_IF_Settings extends Component {
         const capSettingsValid = (capSettingsMsg !== undefined)
         const capSettingsEmpty = (this.state.capSettingsNamesList.length === 0)
         if (capSettingsValid && capSettingsEmpty){
-          const capSettingsStrList = this.getSettingsAsList(capSettingsMsg)
+          const capSettingsStrList = convertStrToStrList(capSettingsMsg)
           var new_setting = false
           var entry = ''
           typesList.push("None")
@@ -150,13 +140,6 @@ class Nepi_IF_Settings extends Component {
     }
   }
   
-  convertStrListToMenuList(strList) {
-    var menuList = []
-    for (let ind = 0; ind < strList.length; ind++){
-      menuList.push(<Option>{strList[ind]}</Option>)
-    } 
-    return menuList
-  }
 
   getCapSettingOptions(capSettingName){
     const {settingsCaps} = this.props.ros
@@ -164,7 +147,7 @@ class Nepi_IF_Settings extends Component {
     var capSettingOptions = []
     if (capabilities !== undefined){
       const capSettingsMsg = capabilities.settings_options
-      const capSettingsStrList = this.getSettingsAsList(capSettingsMsg)
+      const capSettingsStrList = convertStrToStrList(capSettingsMsg)
       var capInd = -1
       var lastEntry = 'None'
       var entry = 'None'
@@ -193,7 +176,7 @@ class Nepi_IF_Settings extends Component {
 
   getSettingValue(settingName) {
     const settings = this.state.settings
-    const settingsStrList = this.getSettingsAsList(settings)
+    const settingsStrList = convertStrToStrList(settings)
     var setInd = -1
     var lastEntry = 'None'
     var entry = 'None'
@@ -276,7 +259,7 @@ class Nepi_IF_Settings extends Component {
   getSettingsAsString() {
     var settingsStr = "None"
     const settings = this.state.settings
-    const settingsStrList = this.getSettingsAsList(settings)
+    const settingsStrList = convertStrToStrList(settings)
     var settingsStrList2 = []
     var counter = 0
     if (settingsStrList.length > 0){
@@ -303,8 +286,16 @@ class Nepi_IF_Settings extends Component {
     const { sendTriggeredMsg} = this.props.ros
     this.updateCapSettingsLists()
     const selSetInfo = this.getSelectedSettingInfo()
+
     return (
       <Section title={"Settings"}>
+        <Label title={"Show Settings Menu"}>
+          <Toggle
+            checked={ (this.state.show_settings === true)}
+            onClick={() => onUpdateSetStateValue("show_settings",this.state.show_settings)}
+          />
+        </Label>
+
         <Columns>
           <Column>
             <Label title={"Select Setting"}>
@@ -313,7 +304,7 @@ class Nepi_IF_Settings extends Component {
                 onChange={this.updateSelectedSettingInfo}
                 value={this.state.capSettingsNamesList[this.state.selectedSettingInd]}
               >
-                {this.convertStrListToMenuList(this.state.capSettingsNamesList)}
+                {createMenuListFromStrList(this.state.capSettingsNamesList,false,[],[],[])}
               </Select>
             </Label>
 
@@ -335,7 +326,7 @@ class Nepi_IF_Settings extends Component {
                   onChange={this.onChangeDescreteSettingValue}
                   value={this.getSettingValue(selSetInfo[2])}
                 >
-                  {this.convertStrListToMenuList(this.state.selectedSettingOptions)}
+                  {createMenuListFromStrList(this.state.selectedSettingOptions,false,[],[],[])}
                 </Select>
               </Label>
               </div>
