@@ -22,7 +22,7 @@ import PointcloudApp from "./NepiAppPointcloud"
 import NEPIConnect from "./NepiSystemConnect"
 import DetectionApp from "./NepiAppAIDetector"
 import MultiImageViewer from "./NepiAppImageViewer"
-import NavPose from "./NepiSensorsNavPose"
+import NavPoseMgr from "./NepiMgrNavPose"
 import Settings from "./NepiSystemDevice"
 import SoftwareUpdate from "./NepiSystemSoftware"
 import Automation from "./NepiAppAutomation"
@@ -70,11 +70,11 @@ class App extends Component {
                 { path: "/rbx", label: "Robots" }
               ]
             },
+            { path: "/navPose", label: "NavPose" },
             {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/navPose", label: "NavPose Mgr" },
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
@@ -109,7 +109,7 @@ class App extends Component {
           <Route path="/imagery" component={MultiImageViewer} />
           <Route path="/sensor_idx" component={SensorIDX} />
           <Route path="/pointcloud_app" component={PointcloudApp} />
-          <Route path="/navPose" component={NavPose} />
+          <Route path="/navPose" component={NavPoseMgr} />
           <Route path="/ai" component={DetectionApp} />
           <Route path="/automation" component={Automation} />
           <Route path="/onvif_mgr" component={OnvifManager} />

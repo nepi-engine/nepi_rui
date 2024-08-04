@@ -64,7 +64,7 @@ function navSatFixServiceAsString(service_id) {
 
 @inject("ros")
 @observer
-class NavPose extends Component {
+class NavPoseMgr extends Component {
   constructor(props) {
     super(props)
 
@@ -718,4 +718,4 @@ class NavPose extends Component {
   }
 }
 
-export default NavPose
+export default NavPoseMgr

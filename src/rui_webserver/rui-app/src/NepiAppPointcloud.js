@@ -33,7 +33,7 @@ import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 @observer
 
 // Pointcloud Application page
-class NepiAppPointcloud extends Component {
+class PointcloudApp extends Component {
   constructor(props) {
     super(props)
 
@@ -597,4 +597,4 @@ class NepiAppPointcloud extends Component {
   }
 }
 
-export default NepiAppPointcloud
+export default PointcloudApp

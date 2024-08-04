@@ -866,6 +866,32 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  setupVector3Listener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "geometry_msgs/Vector3",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
+  setupFloatListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "std_msgs/Float32",
+        noPrefix: true,
+        callback: callback,
+        manageListener: false
+      })
+    }
+  }
+
+  @action.bound
   setupImageSystemStatusListener() {
     this.addListener({
       name: "system_status",
@@ -1029,6 +1055,7 @@ class ROSConnectionStore {
   }
 
 
+
   /*******************************/
   // Generic Send Data Functions
   /*******************************/
@@ -1145,7 +1172,7 @@ class ROSConnectionStore {
     if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val)) {
       this.publishMessage({
         name: namespace,
-        messageType: "nepi_ros_interfaces/Vector3",
+        messageType: "geometry_msgs/Vector3",
         data: { 
           x: float1Val,
           y: float2Val,
