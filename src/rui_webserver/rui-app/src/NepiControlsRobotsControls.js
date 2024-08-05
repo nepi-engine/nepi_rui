@@ -460,8 +460,9 @@ class NepiRobotControls extends Component {
             <label style={{fontWeight: 'bold'}}>
                 {"GoTo Position"}
               </label>
+      
 
-            <Label title={"X (m)"}>
+            <Label title={"Forward -> X (m)"}>
                 <Input
                   value={this.state.x_meters}
                   id="x_meters"
@@ -471,7 +472,7 @@ class NepiRobotControls extends Component {
                 />
               </Label>
 
-            <Label title={"Y (m)"}>
+            <Label title={"Right -> Y (m)"}>
                 <Input
                   value={this.state.y_meters}
                   id="y_meters"
@@ -481,7 +482,7 @@ class NepiRobotControls extends Component {
                 />
               </Label>
 
-            <Label title={"Z (m)"}>
+            <Label title={"Down -> Z (m)"}>
                 <Input
                   value={this.state.z_meters}
                   id="z_meters"
