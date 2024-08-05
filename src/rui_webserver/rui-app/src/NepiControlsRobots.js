@@ -345,6 +345,17 @@ class NepiControlsRobots extends Component {
      <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
 
 
+                    <Label title={"Set Mode"}>
+                    <Select
+                      id="robot_mode"
+                      onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_mode")}
+                      value={current_mode}
+                    >
+                      {this.state.modes_list ? this.state.modes_menu : NoneOption}
+                    </Select>
+                    </Label>
+
+
                     <Label title={"Set State"}>
                     <Select
                       id="robot_state"
@@ -356,17 +367,7 @@ class NepiControlsRobots extends Component {
                     </Label>
 
 
-                    <Label title={"Set Mode"}>
-                    <Select
-                      id="robot_mode"
-                      onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_mode")}
-                      value={current_mode}
-                    >
-                      {this.state.modes_list ? this.state.modes_menu : NoneOption}
-                    </Select>
-                    </Label>
-
-                    <Label title={"Select Action"}>
+                    <Label title={"Setup Actions"}>
               <Select
                 id="action_select"
                 onChange={(event) => this.onDropdownSelectedAction(event)}
@@ -454,7 +455,7 @@ class NepiControlsRobots extends Component {
                   value={this.state.error_bound_m}
                   id="error_m"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_m")}
-                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue.bind(event,"error_bound_m")}
+                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_m")}
                   style={{ width: "80%" }}
                 />
               </Label>
@@ -465,7 +466,7 @@ class NepiControlsRobots extends Component {
               <Label title={"Max deg"}>
                 <Input
                   value={this.state.error_bound_deg}
-                  id="error"
+                  id="error_deg"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_deg")}
                   onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_deg")}
                   style={{ width: "80%" }}

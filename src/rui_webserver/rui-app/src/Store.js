@@ -1224,7 +1224,7 @@ class ROSConnectionStore {
     if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val)) {
       this.publishMessage({
         name: namespace,
-        messageType: "geographic_msgs/RBXGotoPose",
+        messageType: "nepi_ros_interfaces/RBXGotoPose",
         data: { 
           roll_deg: float1Val,
           pitch_deg: float2Val,
@@ -1244,7 +1244,7 @@ class ROSConnectionStore {
     if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val) && !isNaN(float4Val)) {
       this.publishMessage({
         name: namespace,
-        messageType: "geographic_msgs/RBXGotoPosition",
+        messageType: "nepi_ros_interfaces/RBXGotoPosition",
         data: { 
           x_meters: float1Val,
           y_meters: float2Val,
@@ -1265,7 +1265,7 @@ class ROSConnectionStore {
     if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val) && !isNaN(float4Val)) {
       this.publishMessage({
         name: namespace,
-        messageType: "geographic_msgs/RBXGotoLocation",
+        messageType: "nepi_ros_interfaces/RBXGotoLocation",
         data: { 
           lat: float1Val,
           long: float2Val,
