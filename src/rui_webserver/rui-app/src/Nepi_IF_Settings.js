@@ -289,12 +289,25 @@ class Nepi_IF_Settings extends Component {
 
     return (
       <Section title={"Settings"}>
-        <Label title={"Show Settings Menu"}>
+
+          <Columns>
+          <Column>
+
+          <Label title={"Show Settings Menu"}>
           <Toggle
             checked={ (this.state.show_settings === true)}
             onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",this.state.show_settings)}
           />
         </Label>
+
+            </Column>
+            <Column>
+
+            </Column>
+            </Columns>
+
+
+        <div hidden={!this.state.show_settings}>
 
         <Columns>
           <Column>
@@ -375,6 +388,8 @@ class Nepi_IF_Settings extends Component {
           <pre style={{ height: "400px", overflowY: "auto" }}>
             {this.getSettingsAsString()}
           </pre>
+
+        </div>
       </Section>
     )
   }

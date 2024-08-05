@@ -1094,11 +1094,24 @@ class ROSConnectionStore {
 
   @action.bound
   sendIntMsg(namespace, int_str) {
-    let intVal = parseFloat(int_str)
+    let intVal = parseInt(int_str)
     if (!isNaN(intVal)) {
       this.publishMessage({
         name: namespace,
         messageType: "std_msgs/Int32",
+        data: {data: intVal},
+        noPrefix: true
+      })
+    }
+  }
+
+  @action.bound
+  sendInt8Msg(namespace, int_str) {
+    let intVal = parseInt(int_str)
+    if (!isNaN(intVal)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "std_msgs/Int8",
         data: {data: intVal},
         noPrefix: true
       })
@@ -1120,7 +1133,7 @@ class ROSConnectionStore {
 
 
   @action.bound
-  sendFramesendErrorBoundsMsg(namespace, max_m,max_d,min_stab) {
+  sendErrorBoundsMsg(namespace, max_m,max_d,min_stab) {
     this.publishMessage({
       name: namespace,
       messageType: "nepi_ros_interfaces/RBXErrorBounds",

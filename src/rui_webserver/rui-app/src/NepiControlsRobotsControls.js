@@ -22,13 +22,11 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import getStrListAsList from "./Utilities"
-
-
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
+import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
+  onDropdownSelectedSendStr, onDropdownSelectedSetState, onDropdownSelectedSendIndex8,
+  onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
+  onChangeSwitchStateValue,
+  doNothing} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -77,16 +75,17 @@ class NepiRobotControls extends Component {
       action_options: null,
       data_products: null,
 
-      controls_list: null,
-      controls_menu: null,
-      selected_control: null,
-      controls_goto_list: null,
-      controls_goto_menu: null,
-      selected_goto_control: null,
+      controls_type_list: null,
+      controls_type_menu: null,
+      selected_control_type: null,
+
+      controls_auto_list: null,
+      controls_auto_menu: null,
+      selected_auto_control: null,
       actions_list: null,
       actions_menu: null,
-      selected_action: null,
-      selected_action_index: null,
+      selected_go_action: null,
+      selected_go_action_index: 0,
     
  
       controlsStatusListener : null,
@@ -107,26 +106,13 @@ class NepiRobotControls extends Component {
 
     }
 
-    this.getStrListAsList = this.getStrListAsList.bind(this)
-    this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
 
     this.updateControlsStatusListener = this.updateControlsStatusListener.bind(this)
     this.controlsStatusListener = this.controlsStatusListener.bind(this)
 
-    this.onControlSelected = this.onControlSelected.bind(this)
-
-    this.onUpdateAppInputBoxValue = this.onUpdateAppInputBoxValue.bind(this)
-    this.onEnterSetInputBoxFloatValue = this.onEnterSetInputBoxFloatValue.bind(this)
-
-    this.onClickToggleShowProcessControls = this.onClickToggleShowProcessControls.bind(this)
-    this.doNothing = this.doNothing.bind(this)
-
-    this.onGotoControlSelected = this.onGotoControlSelected.bind(this)
-    this.SetToCurrent = this.SetToCurrent.bind(this)
-    this.getRoundedStrFromFloatList = this.getRoundedStrFromFloatList.bind(this)
-
+    this.SetLocationCurrent = this.SetLocationCurrent.bind(this)
     this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
-    this.sendActionIndex = this.sendActionIndex.bind(this)
+    this.sendGoActionIndex = this.sendGoActionIndex.bind(this)
     this.setLocationToCurrent = this.setLocationToCurrent.bind(this)
   }
 
@@ -147,9 +133,6 @@ class NepiRobotControls extends Component {
       process_last: message.process_last ,
       ready: message.ready ,
       battery: message.battery ,
-<<<<<<< HEAD
-      errors_current: [message.errors_current.x_m ,message.errors_current.x_m, message.errors_current.x_m, message.errors_current.heading_deg, message.errors_current.roll_deg, message.errors_current.pitch_deg, message.errors_current.yaw_deg],
-=======
       errors_current_x:[message.errors_current.x_m],
       errors_current_y:[message.errors_current.y_m],
       errors_current_z:[message.errors_current.z_m],
@@ -157,7 +140,6 @@ class NepiRobotControls extends Component {
       errors_current_roll_deg:[message.errors_current.roll_deg],
       errors_current_pitch_deg:[message.errors_current.pitch_deg],
       errors_current_yaw_deg: [message.errors_current.yaw_deg],
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
       errors_prev: [message.errors_prev.x_m ,message.errors_prev.x_m, message.errors_prev.x_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
       cmd_success: message.cmd_success ,
       manual_ready: message.manual_motor_control_mode_ready ,
@@ -171,8 +153,8 @@ class NepiRobotControls extends Component {
     if (this.state.rbx_capabilities === null){
       const capabilities = rbxRobots[this.props.rbxNamespace]
       if (capabilities){
-        const actions=this.getStrListAsList(capabilities.action_options)
-        const actions_menu_options=this.convertStrListToMenuList(actions)
+        const actions=convertStrToStrList(capabilities.action_options)
+        const actions_menu_options=createMenuListFromStrList(actions,false,[],[],[])
         
         this.setState({ 
           rbx_capabilities: capabilities,
@@ -186,40 +168,40 @@ class NepiRobotControls extends Component {
           has_goto_position: capabilities.has_goto_position,
           has_goto_location: capabilities.has_goto_location,
           has_fake_gps: capabilities.has_fake_gps,
-          action_options: capabilities.action_options,
+          action_options: capabilities.go_action_options,
           actions_list: actions,
           actions_menu: actions_menu_options,
 
           data_products: capabilities.data_products,
         })
-        var controls_list = ["None"]
+        var controls_type_list = ["None"]
         if (this.state.has_motor_controls){
-          controls_list.push("Manual")
+          controls_type_list.push("Manual")
         }
         if (this.state.has_autonomous_controls){
-          controls_list.push("Autonomous")
+          controls_type_list.push("Autonomous")
         }
-        const controls_menu = this.convertStrListToMenuList(controls_list)
+        const controls_type_menu = createMenuListFromStrList(controls_type_list,false,[],[],[])
         this.setState({
-          controls_list: controls_list,
-          controls_menu: controls_menu
+          controls_type_list: controls_type_list,
+          controls_type_menu: controls_type_menu
         })
       }
 
-      var controls_goto_list = ["None", "Action"]
+      var controls_auto_list = ["None", "Action"]
       if (this.state.has_goto_pose){
-        controls_goto_list.push("Pose")
+        controls_auto_list.push("Pose")
       }
       if (this.state.has_goto_position){
-        controls_goto_list.push("Position")
+        controls_auto_list.push("Position")
       }
       if (this.state.has_goto_location){
-        controls_goto_list.push("Location")
+        controls_auto_list.push("Location")
       }
-      const controls_goto_menu = this.convertStrListToMenuList(controls_goto_list)
+      const controls_auto_menu = createMenuListFromStrList(controls_auto_list,false,[],[],[])
       this.setState({
-        controls_goto_list: controls_goto_list,
-        controls_goto_menu: controls_goto_menu
+        controls_auto_list: controls_auto_list,
+        controls_auto_menu: controls_auto_menu
       })
 
     }
@@ -259,103 +241,23 @@ class NepiRobotControls extends Component {
     }
   }
 
-  onControlSelected(event) {
-    this.setState({
-      selected_control: event.target.value
-    }) 
-  }
-
-  onGotoControlSelected(event) {
-    this.setState({
-      selected_goto_control: event.target.value
-    }) 
-  }
-
-
-  getRoundedStrFromFloatList(inputList){
-    var rList = []
-    for (let ind = 0; ind < inputList.length; ind++){
-      rList.push(round(inputList[ind],2))
-    }
-    var outputStr = "["
-    for (let ind = 0; ind < rList.length; ind++){
-      outputStr +=  rList[ind] + ","
-    }
-    outputStr += "]"
-    outputStr = outputStr.replace(",]","]")
-    return outputStr
-
-
-
-
-
-  }
-
-  getStrListAsList(transformsStr) {
-    var StrList = []
-    if (transformsStr != null){
-      transformsStr = transformsStr.replaceAll("[","")
-      transformsStr = transformsStr.replaceAll("]","")
-      transformsStr = transformsStr.replaceAll(" '","")
-      transformsStr = transformsStr.replaceAll("'","")
-      StrList = transformsStr.split(",")
-    }
-    return StrList
-  }
-
-  convertStrListToMenuList(strList) {
-    var menuList = []
-    for (let ind = 0; ind < strList.length; ind++){
-      menuList.push(<Option>{strList[ind]}</Option>)
-    } 
-    return menuList
-  }
-
-  onUpdateAppInputBoxValue(event,stateVarStr) {
-    var key = stateVarStr
-    var value = event.target.value
-    var obj  = {}
-    obj[key] = value
-    this.setState(obj)
-    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
-    this.render()
-  }
-
-  onClickToggleShowProcessControls(){
-    const currentVal = this.state.show_process_controls 
-    this.setState({show_process_controls: !currentVal})
-    this.render()
-  }
-
-  onEnterSetInputBoxFloatValue(event, stateVarStr) {
-    if(event.key === 'Enter'){
-      const value = parseFloat(event.target.value)
-      if (!isNaN(value)){
-        var key = stateVarStr
-        var obj  = {}
-        obj[key] = value
-        this.setState(obj)
-      }
-      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-    }
-  }
-
-  sendActionIndex(){
+  
+  sendGoActionIndex(){
   const {sendIntMsg} = this.props.ros
   const namespace = this.props.rbxNamespace + "/rbx/go_action"
-  if (this.state.selected_action_index !== null) {
-      sendIntMsg(namespace,this.state.selected_action_index)
+  if (this.state.selected_go_action_index !== null) {
+      sendIntMsg(namespace,this.state.selected_go_action_index)
     }
   }
 
   onDropdownSelectedAction(event) {
     this.setState({
-      selected_action: event.target.value,
-      selected_action_index: event.target.selectedIndex
+      selected_go_action: event.target.value,
+      selected_go_action_index: event.target.selectedIndex
     })
   }
 
-  SetToCurrent(event) {
+  SetLocationCurrent(event) {
     this.setState({
       location_lat: this.state.current_lat,
       location_long: this.state.current_long,
@@ -364,11 +266,6 @@ class NepiRobotControls extends Component {
     })
   }
 
-<<<<<<< HEAD
-  doNothing(){
-    return false
-  }
-=======
   setLocationToCurrent(event) {
     this.setState({
       location_lat: this.state.current_lat,
@@ -378,7 +275,6 @@ class NepiRobotControls extends Component {
     })
   }
 
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
 
   render() {
     const {  sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg } = this.props.ros
@@ -387,14 +283,23 @@ class NepiRobotControls extends Component {
     return (
       <Section title={"Process Controls"}>
 
-                     <Label title="Show Process Controls">
+
+          <Columns>
+          <Column>
+                  <Label title="Show Process Controls">
                     <Toggle
                       checked={this.state.show_process_controls===true}
-                      onClick={this.onClickToggleShowProcessControls}>
+                      onClick={() => onChangeSwitchStateValue.bind(this)("show_process_controls",this.state.show_process_controls)}>
                     </Toggle>
                   </Label>
 
-                  <div hidden={!this.state.show_process_controls}>
+            </Column>
+            <Column>
+
+            </Column>
+            </Columns>
+
+        <div hidden={!this.state.show_process_controls}>
 
        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -408,14 +313,20 @@ class NepiRobotControls extends Component {
 
             <Label title={"Select Control Type"}>
                     <Select
-                      id="selected_control"
-                      onChange={this.onControlSelected}
-                      value={this.state.selected_control}
+                      id="selected_control_type"
+                      onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_control_type")}
+                      value={this.state.selected_control_type}
                     >
-                      {this.state.controls_list ? this.state.controls_menu : NoneOption}
+                      {this.state.controls_type_list ? this.state.controls_type_menu : NoneOption}
                     </Select>
                     </Label>
 
+
+            <div hidden={(this.state.selected_control_type!=="Autonomous")}>
+            <Label title={"Autonomous Ready"}>
+              <BooleanIndicator value={(this.state.autonomous_ready !== null)? this.state.autonomous_ready : false} />
+            </Label>
+            </div>
 
             </Column>
             <Column>
@@ -427,11 +338,13 @@ class NepiRobotControls extends Component {
               />
             </Label>
 
-            <div hidden={(this.state.selected_control_type!=="Autonomous")}>
-            <Label title={"Autonomous Ready"}>
-              <BooleanIndicator value={(this.state.autonomous_ready !== null)? this.state.autonomous_ready : false} />
+            <Label title={"Last Process"}>
+              <Input
+                disabled value={this.state.process_last}
+                id="last_process"
+              />
             </Label>
-            </div>
+
 
             </Column>
             </Columns>
@@ -439,7 +352,7 @@ class NepiRobotControls extends Component {
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-            <div hidden={(this.state.selected_control!=="Autonomous")}>
+            <div hidden={(this.state.selected_control_type!=="Autonomous")}>
             <Columns>
             <Column>
 
@@ -464,9 +377,6 @@ class NepiRobotControls extends Component {
             </Columns>
             </div>
 
-<<<<<<< HEAD
-            <div hidden={(this.state.selected_control!=="Autonomous")}>
-=======
             <Columns>
             <Column>
 
@@ -484,22 +394,21 @@ class NepiRobotControls extends Component {
             <Label title={""}></Label>
 
             <div hidden={(this.state.selected_control_type!=="Autonomous")}>
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
             <Columns>
             <Column>
 
             <Label title={"Select Goto Type"}>
               <Select
-                id="select_goto_control"
-                onChange={this.onGotoControlSelected}
-                value={this.state.selected_goto_control}
+                id="selected_auto_control"
+                onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_auto_control")}
+                value={this.state.selected_auto_control}
               >
-                {this.state.controls_goto_list ? this.state.controls_goto_menu : NoneOption}
+                {this.state.controls_auto_list ? this.state.controls_auto_menu : NoneOption}
               </Select>
               </Label>
 
 
-            <div hidden={(this.state.selected_goto_control!=="Pose")}>
+            <div hidden={(this.state.selected_auto_control!=="Pose")}>
 
             <label style={{fontWeight: 'bold'}}>
                 {"GoTo Pose"}
@@ -528,13 +437,9 @@ class NepiRobotControls extends Component {
 
             <Label title={"Yaw Deg"}>
                 <Input
-                  value={this.state.yaw_deg}
-                  id="yaw_deg"
-<<<<<<< HEAD
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"yaw_deg_position")}
-=======
+                  value={this.state.yaw_deg_pose}
+                  id="yaw_deg_pose"
                   onChange= {(event) => this.onUpdateAppInputBoxValue(event,"yaw_deg_pose")}
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
                   onKeyDown= {(event) => this.onEnterSetInputBoxFloatValue(event,"yaw_deg_pose")}
                   style={{ width: "80%" }}
                 />
@@ -548,15 +453,7 @@ class NepiRobotControls extends Component {
               </ButtonMenu>
             </div>
 
-<<<<<<< HEAD
-              
-              
-              
-
-              <div hidden={(this.state.selected_goto_control!=="Position")}>
-=======
             <div hidden={(this.state.selected_auto_control!=="Position")}>
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
             <label style={{fontWeight: 'bold'}}>
                 {"GoTo Position"}
               </label>
@@ -610,7 +507,7 @@ class NepiRobotControls extends Component {
 
               </div>
 
-              <div hidden={(this.state.selected_goto_control!=="Location")}>
+              <div hidden={(this.state.selected_auto_control!=="Location")}>
             <label style={{fontWeight: 'bold'}}>
                 {"GoTo Location"}
               </label>
@@ -625,15 +522,6 @@ class NepiRobotControls extends Component {
                 />
               </Label>
 
-<<<<<<< HEAD
-              <ButtonMenu>
-                <Button onClick={() => this.SetToCurrent()}>{"Set to Current"}</Button>
-              </ButtonMenu>
-
-            </Column>
-            <Column>
-=======
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
 
             <Label title={"Longitude"}>
                 <Input
@@ -676,49 +564,26 @@ class NepiRobotControls extends Component {
                 }>{"Send"}</Button>
               </ButtonMenu>
 
-<<<<<<< HEAD
-            </Column>
-            </Columns>
-            </div>
-
-            <Columns>
-            <Column>
-            <div hidden={(this.state.selected_goto_control!=="Action")}>
-            <Label title={"Select Action"}>
-              <Select
-                id="action_select"
-                onChange={(event) => this.onDropdownSelectedAction(event)}
-                value={this.state.selected_action}
-              >
-                {this.state.actions_list ? this.state.actions_menu : NoneOption}
-              </Select>
-              </Label>
-=======
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
               </div>
 
 
-<<<<<<< HEAD
-            <div hidden={(this.state.selected_goto_control!=="Action")}>
-=======
               <div hidden={(this.state.selected_auto_control!=="Action")}>
               <Label title={""}></Label>
               <Label title={""}></Label>
 
               <Label title={"Select Action"}>
                     <Select
-                      id="select _action"
-                      onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_action")}
-                      value={this.state.selected_action}
+                      id="selected_go_action"
+                      onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"selected_go_action")}
+                      value={this.state.selected_go_action}
                     >
                       {this.state.actions_list ? this.state.actions_menu : NoneOption}
                     </Select>
                     </Label>
 
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
             <ButtonMenu>
               <Button onClick={() =>  this.state.autonomous_ready ? 
-                this.sendActionIndex():
+                this.sendGoActionIndex():
                 this.doNothing()
               }>{"Send Action"}</Button>
             </ButtonMenu>
@@ -727,7 +592,11 @@ class NepiRobotControls extends Component {
             </Column>
             <Column>
 
-            <label style={{fontWeight: 'bold'}}>
+            <Label title={"CMD Success"}>
+              <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
+            </Label>
+
+            <label>
                 {"Current Errors"}
               </label>
 
@@ -737,12 +606,6 @@ class NepiRobotControls extends Component {
                 id="x_error"
               />
 
-<<<<<<< HEAD
-            <div hidden={(this.state.selected_control!=="Manual")}>
-            <Label title={"Manual Ready"}>
-              <BooleanIndicator value={(this.state.manual_ready !== null)? this.state.manual_ready : false} />
-=======
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
             </Label>
 
             <Label title={"y (m)"}>
@@ -761,16 +624,10 @@ class NepiRobotControls extends Component {
 
             </Label>
 
-<<<<<<< HEAD
-              <Input
-                disabled value={this.getRoundedStrFromFloatList(this.state.errors_current)}
-                id="current_error"
-=======
             <Label title={"Roll"}>
               <Input
                 disabled value={this.state.errors_current_roll_deg}
                 id="roll_error"
->>>>>>> 9641a3cc0492dd3c992ab8b17c1614b190914da3
               />
 
             </Label>
@@ -806,29 +663,17 @@ class NepiRobotControls extends Component {
 
 
             
-            <Columns>
-            <Column>
 
-            <Label title={""}></Label>
+            <Label title={"Last Command"} ></Label>
+            
 
-            <Label title={"Last Command Python Code"}>
               <Input
                 disabled value={this.state.last_cmd_str}
                 id="last_command"
               />
-            </Label>
 
-            </Column>
-            <Column>
 
-            <Label title={""}></Label>
 
-            <Label title={"CMD Success"}>
-              <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
-            </Label>
-
-            </Column>
-            </Columns>
             </div>
 
 

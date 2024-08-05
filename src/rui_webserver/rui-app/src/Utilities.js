@@ -187,6 +187,15 @@ export function onDropdownSelectedSendIndex(event, namespace) {
   }
 }
 
+export function onDropdownSelectedSendIndex8(event, namespace) {
+  const {sendInt8Msg} = this.props.ros
+  const value = event.target.value
+  if (value !== "None") {
+    const index = event.target.selectedIndex
+    sendInt8Msg(namespace,index)
+  }
+}
+
 
 /////////////////////////////
 // INPUT BOX FUNCTIONS
