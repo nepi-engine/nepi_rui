@@ -372,7 +372,7 @@ class NepiRobotControls extends Component {
                 <Button onClick={() =>  this.state.autonomous_ready ? 
                   sendTriggerMsg(this.props.rbxNamespace + "/rbx/go_home"):
                   this.doNothing()
-                }>{"Send"}</Button>
+                }>{"Go Home"}</Button>
               </ButtonMenu>
               </div>
 
@@ -683,85 +683,7 @@ class NepiRobotControls extends Component {
             </div>
 
 
-{/*
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-
-            <label style={{fontWeight: 'bold'}}>
-              {"Nave Pose"}
-            </label>
-
-            <Columns>
-            <Column>
-          
-            <Label title={"Latitude"}>
-              <Input
-                disabled value={this.state.current_lat}
-                id="InitLatitude"
-              />
-
-            </Label>
-            <Label title={"Longitude"}>
-              <Input
-                disabled value={this.state.current_long}
-                id="InitLongitude"
-              />
-
-            </Label>
-            <Label title={"Altitude (m)"}>
-              <Input
-                disabled value={this.state.current_altitude}
-                id="InitAltitude"
-              />
-
-            </Label>
-            </Column>
-            <Column>
-            <Label title={"Roll (deg)"}>
-              <Input
-                disabled value={this.state.current_roll}
-                id="InitRoll"
-              />
-
-              </Label>
-              <Label title={"Pitch (deg)"}>
-                <Input
-                  disabled value={this.state.current_pitch}
-                  id="InitPitch"
-                />
-
-              </Label>
-              <Label title={"Yaw (deg)"}>
-                <Input
-                  disabled value={this.state.current_yaw}
-                  id="InitYaw"
-                />
-              </Label>
-
-              </Column>
-              </Columns>
-
-
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-              <Columns>
-              <Column>
-              
-              <Label title={"Current Battery"}>
-                <Input 
-                disabled value={this.state.battery}
-                  id="current_battery"
-                />
-              </Label>
-
-              </Column>
-              <Column>
-              </Column>
-              </Columns>
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-            */}
         </div>
 
       </Section>

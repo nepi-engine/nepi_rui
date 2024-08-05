@@ -25,6 +25,8 @@ import ListBox from './ListBox';
 import './ListBox.css';
 
 
+import { onChangeSwitchStateValue} from "./Utilities"
+
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
   //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
@@ -40,7 +42,8 @@ class NepiRobotMessages extends Component {
 
     // these states track the values through  Status messages
     this.state = {
-      
+      show_messages: false,
+
       current_lat: null,
       current_long: null,
       current_altitude: null,
@@ -61,6 +64,8 @@ class NepiRobotMessages extends Component {
       last_error_message: null,
       msg_queue_size: 50,
 
+      has_battery_feedback: null,
+
       MessagesStatusListener : null,
 
     }
@@ -77,6 +82,7 @@ class NepiRobotMessages extends Component {
   // Callback for handling ROS Status messages
   MessagesStatusListener(message) {
     this.setState({
+      current_lat: message.current_lat ,      
       current_long: message.current_long ,
       current_altitude: message.current_altitude ,
       current_heading: message.current_heading ,
@@ -87,6 +93,7 @@ class NepiRobotMessages extends Component {
       process_last: message.process_last ,
       ready: message.ready ,
       battery: message.battery ,
+
       errors_current: [message.errors_current.x_m ,message.errors_current.x_m, message.errors_current.x_m, message.errors_current.heading_deg, message.errors_current.roll_deg, message.errors_current.pitch_deg, message.errors_current.yaw_deg],
       errors_prev: [message.errors_prev.x_m ,message.errors_prev.x_m, message.errors_prev.x_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
       cmd_success: message.cmd_success ,
@@ -96,7 +103,11 @@ class NepiRobotMessages extends Component {
       last_error_message: message.last_error_message 
     })
     const motorControlsStrList = message.current_motor_control_settings
+
+  
   }
+
+
 
   // Function for configuring and subscribing to Status
   updateMessagesStatusListener() {
@@ -166,21 +177,54 @@ class NepiRobotMessages extends Component {
     return (
       <Section title={"Messages"}>
 
+            <Columns>
+            <Column>
+                  <Label title="Show Process Controls">
+                    <Toggle
+                      checked={this.state.show_messages===true}
+                      onClick={() => onChangeSwitchStateValue.bind(this)("show_messages",this.state.show_messages)}>
+                    </Toggle>
+                  </Label>
 
-            <Label title={"Last Command"}>
-              <Input
-                disabled value={this.state.last_cmd_str}
-                id="last_command_Message"
+            </Column>
+            <Column>
+
+            </Column>
+            </Columns>
+
+            <div hidden={!this.state.show_messages}>
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+            <Columns>
+            <Column>
+            
+            <Label title={"Current Battery"}>
+              <Input 
+              disabled value={this.state.battery}
+                id="current_battery"
               />
             </Label>
 
-            <Label title={"Last Error"}>
-              <Input
-                disabled value={this.state.last_error_message}
-                id="last_error_Message"
-              />
-            </Label>
+            </Column>
+            <Column>
+            </Column>
+            </Columns>
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+            <Label title={"Last Command"} >
+          </Label>
+          <pre style={{ height: "25px", overflowY: "auto" }}>
+            {this.state.last_cmd_str}
+          </pre>
+
+          <Label title={"Last Error"} >
+          </Label>
+          <pre style={{ height: "25px", overflowY: "auto" }}>
+            {this.state.last_error_message}
+          </pre>
+
+
+{/*
             <Columns>
             <Column>
 
@@ -190,22 +234,70 @@ class NepiRobotMessages extends Component {
                   onChange={(event) => this.onUpdateMessagesInputBoxValue(event,"msg_queue_size")} 
                   onKeyDown= {(event) => this.onEnterMessagesQueueVar(event)} />
               </Label>
-
-{/*             <Section title={""}>
-            <ListBox 
-              id="Messages" 
-              items={"Test"} 
-              selectedItem={""} 
-              style={{ color: 'black', backgroundColor: 'white' }}
-            />
-          </Section>
-*/}
+              
             </Column>
             <Column>
 
             </Column>
             </Columns>
+*/}
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+            <label style={{fontWeight: 'bold'}}>
+              {"Nave Pose"}
+            </label>
+
+            <Columns>
+            <Column>
+          
+            <Label title={"Latitude"}>
+              <Input
+                disabled value={this.state.current_lat}
+                id="InitLatitude"
+              />
+
+            </Label>
+            <Label title={"Longitude"}>
+              <Input
+                disabled value={this.state.current_long}
+                id="InitLongitude"
+              />
+
+            </Label>
+            <Label title={"Altitude (m)"}>
+              <Input
+                disabled value={this.state.current_altitude}
+                id="InitAltitude"
+              />
+
+            </Label>
+            </Column>
+            <Column>
+            <Label title={"Roll (deg)"}>
+              <Input
+                disabled value={this.state.current_roll}
+                id="InitRoll"
+              />
+
+              </Label>
+              <Label title={"Pitch (deg)"}>
+                <Input
+                  disabled value={this.state.current_pitch}
+                  id="InitPitch"
+                />
+
+              </Label>
+              <Label title={"Yaw (deg)"}>
+                <Input
+                  disabled value={this.state.current_yaw}
+                  id="InitYaw"
+                />
+              </Label>
+
+              </Column>
+              </Columns>
+
+              </div>
       </Section>
     )
   }
