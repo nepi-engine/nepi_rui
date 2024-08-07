@@ -288,7 +288,7 @@ class Nepi_IF_Settings extends Component {
     const selSetInfo = this.getSelectedSettingInfo()
 
     return (
-      <Section title={"Settings"}>
+      <Section title={"Device Settings"}>
 
           <Columns>
           <Column>

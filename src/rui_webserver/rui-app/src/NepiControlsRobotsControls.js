@@ -38,7 +38,7 @@ class NepiRobotControls extends Component {
 
     // these states track the values through  Status messages
     this.state = {
-      show_process_controls: false,
+      show_process_controls: true,
 
       current_lat: null,
       current_long: null,
@@ -283,7 +283,7 @@ class NepiRobotControls extends Component {
     return (
       <Section title={"Process Controls"}>
 
-
+{/*
           <Columns>
           <Column>
                   <Label title="Show Process Controls">
@@ -298,7 +298,7 @@ class NepiRobotControls extends Component {
 
             </Column>
             </Columns>
-
+*/}
         <div hidden={!this.state.show_process_controls}>
 
        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -337,6 +337,10 @@ class NepiRobotControls extends Component {
                 disabled value={this.state.process_last}
                 id="last_process"
               />
+            </Label>
+
+            <Label title={"Last Process Success"}>
+              <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
             </Label>
 
 
@@ -414,7 +418,7 @@ class NepiRobotControls extends Component {
             <div hidden={(this.state.selected_auto_control!=="Pose")}>
 
             <label style={{fontWeight: 'bold'}}>
-                {"GoTo Pose"}
+                {"GoTo Pose (Body)"}
               </label>
 
 
@@ -458,7 +462,7 @@ class NepiRobotControls extends Component {
 
             <div hidden={(this.state.selected_auto_control!=="Position")}>
             <label style={{fontWeight: 'bold'}}>
-                {"GoTo Position"}
+                {"GoTo Position (Body)"}
               </label>
       
 
@@ -472,7 +476,7 @@ class NepiRobotControls extends Component {
                 />
               </Label>
 
-            <Label title={"Right -> Y (m)"}>
+            <Label title={"Left -> Y (m)"}>
                 <Input
                   value={this.state.y_meters}
                   id="y_meters"
@@ -482,7 +486,7 @@ class NepiRobotControls extends Component {
                 />
               </Label>
 
-            <Label title={"Down -> Z (m)"}>
+            <Label title={"Up -> Z (m)"}>
                 <Input
                   value={this.state.z_meters}
                   id="z_meters"
@@ -513,7 +517,7 @@ class NepiRobotControls extends Component {
 
               <div hidden={(this.state.selected_auto_control!=="Location")}>
             <label style={{fontWeight: 'bold'}}>
-                {"GoTo Location"}
+                {"GoTo Location (Geo WSG84)"}
               </label>
 
               <ButtonMenu>
@@ -598,10 +602,6 @@ class NepiRobotControls extends Component {
 
             </Column>
             <Column>
-
-            <Label title={"CMD Success"}>
-              <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
-            </Label>
 
             <label>
                 {"Current Errors"}

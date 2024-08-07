@@ -175,29 +175,11 @@ class NepiRobotMessages extends Component {
   render() {
     const {  sendTriggerMsg } = this.props.ros
     return (
-      <Section title={"Messages"}>
+      <Section title={"System Informaion"}>
 
             <Columns>
             <Column>
-                  <Label title="Show Process Controls">
-                    <Toggle
-                      checked={this.state.show_messages===true}
-                      onClick={() => onChangeSwitchStateValue.bind(this)("show_messages",this.state.show_messages)}>
-                    </Toggle>
-                  </Label>
 
-            </Column>
-            <Column>
-
-            </Column>
-            </Columns>
-
-            <div hidden={!this.state.show_messages}>
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-            <Columns>
-            <Column>
-            
             <Label title={"Current Battery"}>
               <Input 
               disabled value={this.state.battery}
@@ -207,40 +189,10 @@ class NepiRobotMessages extends Component {
 
             </Column>
             <Column>
-            </Column>
-            </Columns>
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-            <Label title={"Last Command"} >
-          </Label>
-          <pre style={{ height: "25px", overflowY: "auto" }}>
-            {this.state.last_cmd_str}
-          </pre>
-
-          <Label title={"Last Error"} >
-          </Label>
-          <pre style={{ height: "25px", overflowY: "auto" }}>
-            {this.state.last_error_message}
-          </pre>
-
-
-{/*
-            <Columns>
-            <Column>
-
-            <Label title={"Message Queue Size"}>
-                <Input id="msg_queue_size" 
-                  value={this.state.msg_queue_size} 
-                  onChange={(event) => this.onUpdateMessagesInputBoxValue(event,"msg_queue_size")} 
-                  onKeyDown= {(event) => this.onEnterMessagesQueueVar(event)} />
-              </Label>
-              
-            </Column>
-            <Column>
 
             </Column>
             </Columns>
-*/}
+
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
             <label style={{fontWeight: 'bold'}}>
@@ -296,6 +248,58 @@ class NepiRobotMessages extends Component {
 
               </Column>
               </Columns>
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+            <Columns>
+            <Column>
+            
+            <Label title="Show System Messages">
+                    <Toggle
+                      checked={this.state.show_messages===true}
+                      onClick={() => onChangeSwitchStateValue.bind(this)("show_messages",this.state.show_messages)}>
+                    </Toggle>
+              </Label>
+
+            </Column>
+            <Column>
+            </Column>
+            </Columns>
+
+
+          <div hidden={!this.state.show_messages}>
+
+            <Label title={"Last Command"} >
+          </Label>
+          <pre style={{ height: "25px", overflowY: "auto" }}>
+            {this.state.last_cmd_str}
+          </pre>
+
+          <Label title={"Last Error"} >
+          </Label>
+          <pre style={{ height: "25px", overflowY: "auto" }}>
+            {this.state.last_error_message}
+          </pre>
+
+
+{/*
+            <Columns>
+            <Column>
+
+            <Label title={"Message Queue Size"}>
+                <Input id="msg_queue_size" 
+                  value={this.state.msg_queue_size} 
+                  onChange={(event) => this.onUpdateMessagesInputBoxValue(event,"msg_queue_size")} 
+                  onKeyDown= {(event) => this.onEnterMessagesQueueVar(event)} />
+              </Label>
+              
+            </Column>
+            <Column>
+
+            </Column>
+            </Columns>
+*/}
+
 
               </div>
       </Section>

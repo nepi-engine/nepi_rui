@@ -526,6 +526,9 @@ class NavPoseMgr extends Component {
       navPoseLocationLat,
       navPoseLocationLng,
       navPoseLocationAlt,
+      navPosePositionEnuX,
+      navPosePositionEnuY,
+      navPosePositionEnuZ, 
       navPoseOrientationYawAngle,
       navPoseOrientationYawRate,
       navPoseOrientationPitchAngle,
@@ -577,55 +580,37 @@ class NavPoseMgr extends Component {
                 value={round(navPoseDirectionHeadingDeg, 2)}
               />
             </Label>
+
           </Column>
           <Column>
             <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
               <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>
-              {"Orientation"}
+              {"Orientation Body Frame"}
               </label>
             </div>
-            <Label title={""}>
-            <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-              {"deg"}
-            </div>
-            <div style={{ display: "inline-block", width: "45%" }}>{"deg/s"}</div>
-            </Label>
-            <Label title={"Roll"}>
+            <Label title={"Roll Degs"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
                 value={round(navPoseOrientationYawAngle, 2)}
               />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(navPoseOrientationYawRate, 2)}
-              />
             </Label>
-            <Label title={"Pitch"}>
+            <Label title={"Pitch Degs"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
                 value={round(navPoseOrientationPitchAngle, 2)}
               />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(navPoseOrientationPitchRate, 2)}
-              />
+
             </Label>
-            <Label title={"Yaw"}>
+            <Label title={"Yaw Degs"}>
               <Input
                 disabled
                 style={{ width: "45%", float: "left" }}
                 value={round(navPoseOrientationRollAngle, 2)}
               />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(navPoseOrientationRollRate, 2)}
-              />
             </Label>
+{/*
             <Label title={"Ref. Frame"}>
               <Input
                 disabled
@@ -633,6 +618,37 @@ class NavPoseMgr extends Component {
                 value={navPoseOrientationFrame}
               />
             </Label>
+*/}
+            </Column>
+          <Column>
+            <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
+              <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>
+              {"Position ENU Frame"}
+              </label>
+            </div>
+            <Label title={"X (East) Meters"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(navPosePositionEnuX, 2)}
+              />
+            </Label>
+            <Label title={"Y (North) Meters"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(navPosePositionEnuY, 2)}
+              />
+            </Label>
+            <Label title={"Z (Up) Meters"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(navPosePositionEnuZ, 2)}
+              />
+            </Label>
+
+
           </Column>
         </Columns>
         <ButtonMenu>

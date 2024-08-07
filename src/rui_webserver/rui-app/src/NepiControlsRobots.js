@@ -232,7 +232,7 @@ class NepiControlsRobots extends Component {
 
     for (var i = 0; i < image_topics.length; i++) {
       const topic = image_topics[i]
-      if (topic.startsWith(RBXRobotNamespace) === true) {
+      if (topic.startsWith(RBXRobotNamespace) === true || topic.includes('zed_node') === true) {
         continue
       }
       img_topics.push(topic)
@@ -316,7 +316,206 @@ class NepiControlsRobots extends Component {
       })
     }
 
-  renderSensorSelection() {
+
+    renderSensorSelection() {
+      const { rbxRobots, sendTriggerMsg, sendStringMsg, sendBoolMsg, saveConfigTriggered, sendGeoPointMsg } = this.props.ros
+      const NoneOption = <Option>None</Option>
+      const robotSelected = (this.state.currentRBXNamespace != null)
+      const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null)? this.state.states_list[this.state.state_index] : "None"
+      const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null)? this.state.modes_list[this.state.mode_index] : "None"
+      const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
+  
+      return (
+        <React.Fragment>
+        <Section title={"Robot Slection and Configuration"}>
+          <Columns>
+            <Column>
+  
+              <Label title={"Robot"}>
+                    <Select
+                      onChange={this.onTopicRBXSelected}
+                      value={this.state.currentRBXNamespace}
+                    >
+                      {this.createTopicOptions(Object.keys(rbxRobots))}
+                    </Select>
+              </Label>
+  
+            </Column>
+            <Column>
+
+            <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
+                  <ButtonMenu>
+                    <Button onClick={() => saveConfigTriggered(this.state.currentRBXNamespace)}>{"Save Config"}</Button>
+                  </ButtonMenu>
+            </div>
+            
+            </Column>
+          </Columns>
+  
+  
+  
+          <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
+  
+  
+              <Columns>
+                <Column>
+                <div hidden={(has_fake_gps===false)}>
+                      <Label title="Enable Fake GPS">
+                        <Toggle
+                        checked={this.state.fake_gps_enabled===true}
+                        onClick={() => sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_fake_gps", this.state.fake_gps_enabled === false)}>
+                        </Toggle>
+                      </Label>
+                    </div>
+
+                <Label title={"Image_Source"}>
+                          <Select
+                            id="image_source"
+                            onChange={(event) => sendStringMsg(this.state.currentRBXNamespace + "/rbx/set_image_topic",event.target.value)}
+                            value={this.state.image_source}
+                            >
+                            {this.state.currentRBXNamespace
+                            ? this.createImageOptions(this.state.currentRBXNamespace)
+                            : NoneOption}
+                          </Select>
+                          </Label>
+  
+  
+
+  
+                  </Column>
+                  <Column>
+
+                          <ButtonMenu>
+                            <Button onClick={() => sendTriggerMsg(this.state.currentRBXNamespace + "/reset_factory")}>{"Factory Reset"}</Button>
+                          </ButtonMenu>
+
+                          <Label title="Image Status Overlay">
+                            <Toggle
+                            checked={this.state.image_status_overlay===true}
+                            onClick={() => sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_image_overlay", this.state.image_status_overlay === false)}>
+                            </Toggle>
+                          </Label>
+  
+                          
+
+  
+                          <Label title="">
+                          </Label>
+  
+
+                          
+                </Column>
+              </Columns>
+  
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+  
+              <label style={{fontWeight: 'bold'}}>
+                {"GoTo Error Bounds"}
+              </label>
+  
+                <Columns>
+                <Column>
+  
+                    <Label title={"Max (m)"}>
+                      <Input
+                        value={this.state.error_bound_m}
+                        id="error_m"
+                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_m")}
+                        onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_m")}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+  
+                  </Column>
+                  <Column>
+  
+                    <Label title={"Max deg"}>
+                      <Input
+                        value={this.state.error_bound_deg}
+                        id="error_deg"
+                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_deg")}
+                        onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_deg")}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+  
+                  </Column>
+                  <Column>
+  
+                    <Label title={"Stablize Time (s)"}>
+                      <Input
+                        value={this.state.error_stabilize_s}
+                        id="error_stablize"
+                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_stabilize_s")}
+                        onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_stabilize_s")}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+  
+                    </Column>
+                    </Columns>
+  
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                    <label style={{fontWeight: 'bold'}}>
+                      {"Home Location"}
+                    </label>
+  
+                    <Columns>
+                    <Column>
+  
+                    <Label title={"latitude"}>
+                      <Input
+                        value={this.state.home_lat}
+                        id="home_lat"
+                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_lat")}
+                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace +"home_lat")}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+  
+                    </Column>
+                    <Column>
+  
+                    <Label title={"longitude"}>
+                      <Input
+                        value={this.state.home_long}
+                        id="home_long"
+                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_long")}
+                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_long")}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+  
+                    </Column>
+                    <Column>
+  
+                    <Label title={"altitude"}>
+                      <Input
+                        value={this.state.home_alt}
+                        id="home_alt"
+                        onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_alt")}
+                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_alt")}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+  
+                    <ButtonMenu>
+                      <Button onClick={() => sendGeoPointMsg(this.state.currentRBXNamespace + "/rbx/set_home", this.state.home_lat, this.state.home_long, this.state.home_alt )}>{"Set Home"}</Button>
+                    </ButtonMenu>
+  
+                    </Column>
+                    </Columns>
+  
+  
+             </div>
+          </Section>
+  
+        </React.Fragment>
+      )
+    }
+
+  renderSetupControls() {
     const { rbxRobots, sendTriggerMsg, sendStringMsg, sendBoolMsg, saveConfigTriggered, sendGeoPointMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
     const robotSelected = (this.state.currentRBXNamespace != null)
@@ -326,48 +525,36 @@ class NepiControlsRobots extends Component {
 
     return (
       <React.Fragment>
-                    <Section title={"Setup Control"}>
-        <Columns>
-          <Column>
+      <Section title={"Setup Controls"}>
+ 
+          <Columns>
+            <Column>
+
+             <Label title={"Set Mode"}>
+             <Select
+               id="robot_mode"
+               onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_mode")}
+               value={current_mode}
+             >
+               {this.state.modes_list ? this.state.modes_menu : NoneOption}
+             </Select>
+             </Label>
 
 
-              <Columns>
-              <Column>
-                <Label title={"Robot"}>
-                  <Select
-                    onChange={this.onTopicRBXSelected}
-                    value={this.state.currentRBXNamespace}
-                  >
-                    {this.createTopicOptions(Object.keys(rbxRobots))}
-                  </Select>
-                </Label>
+             <Label title={"Set State"}>
+             <Select
+               id="robot_state"
+               onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_state")}
+               value={current_state}
+             >
+               {this.state.states_list ? this.state.states_menu : NoneOption}
+             </Select>
+             </Label>
 
-     <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
+            </Column>
+            <Column>
 
-
-                    <Label title={"Set Mode"}>
-                    <Select
-                      id="robot_mode"
-                      onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_mode")}
-                      value={current_mode}
-                    >
-                      {this.state.modes_list ? this.state.modes_menu : NoneOption}
-                    </Select>
-                    </Label>
-
-
-                    <Label title={"Set State"}>
-                    <Select
-                      id="robot_state"
-                      onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,this.state.currentRBXNamespace + "/rbx/set_state")}
-                      value={current_state}
-                    >
-                      {this.state.states_list ? this.state.states_menu : NoneOption}
-                    </Select>
-                    </Label>
-
-
-                    <Label title={"Setup Actions"}>
+             <Label title={"Setup Actions"}>
               <Select
                 id="action_select"
                 onChange={(event) => this.onDropdownSelectedAction(event)}
@@ -377,173 +564,14 @@ class NepiControlsRobots extends Component {
               </Select>
               </Label>
 
-                    <ButtonMenu>
-                      <Button onClick={() =>  this.sendSetupActionIndex()}>{"Send Action"}</Button>
-                    </ButtonMenu>
-                </div>
-
-              </Column>
-              <Column>
-                <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
-                    <ButtonMenu>
-                      <Button onClick={() => saveConfigTriggered(this.state.currentRBXNamespace)}>{"Save Config"}</Button>
-                    </ButtonMenu>
-                    <ButtonMenu>
-                      <Button onClick={() => sendTriggerMsg(this.state.currentRBXNamespace + "/reset_factory")}>{"Factory Reset"}</Button>
-                    </ButtonMenu>
-{/*
-                    <Label title="Standby">
-                      <Toggle
-                      checked={this.state.standby===true}
-                      onClick={this.onChangeBoolStandby}>
-                      </Toggle>
-                    </Label>
-*/}
-
-                    <Label title={"Image_Source"}>
-                    <Select
-                      id="image_source"
-                      onChange={(event) => sendStringMsg(event,this.state.currentRBXNamespace + "/rbx/set_image_topic")}
-                      value={this.state.image_source}
-                      >
-                      {this.state.currentRBXNamespace
-                      ? this.createImageOptions(this.state.currentRBXNamespace)
-                      : NoneOption}
-                    </Select>
-                    </Label>
-
-                    <Label title="Image Status Overlay">
-                      <Toggle
-                      checked={this.state.image_status_overlay===true}
-                      onClick={() => sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_image_overlay", this.state.image_status_overlay === false)}>
-                      </Toggle>
-                    </Label>
-
-
-              <div hidden={(has_fake_gps===false)}>
-                    <Label title="Enable Fake GPS">
-                <Toggle
-                checked={this.state.fake_gps_enabled===true}
-                onClick={() => sendBoolMsg(this.state.currentRBXNamespace + "/rbx/enable_fake_gps", this.state.fake_gps_enabled === false)}>
-                </Toggle>
-              </Label>
- 
-              </div>
-
-
-                </div>
-              </Column>
-            </Columns>
-
-
-
-          </Column>
-        </Columns>
-
-        <div align={"left"} textAlign={"left"} hidden={!robotSelected}>
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-        <label style={{fontWeight: 'bold'}}>
-          {"GoTo Error Bounds"}
-        </label>
-
-          <Columns>
-          <Column>
-
-              <Label title={"Max (m)"}>
-                <Input
-                  value={this.state.error_bound_m}
-                  id="error_m"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_m")}
-                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_m")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
+             <ButtonMenu>
+               <Button onClick={() =>  this.sendSetupActionIndex()}>{"Send Action"}</Button>
+             </ButtonMenu>
 
             </Column>
-            <Column>
+          </Columns>
 
-              <Label title={"Max deg"}>
-                <Input
-                  value={this.state.error_bound_deg}
-                  id="error_deg"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_deg")}
-                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_deg")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-            </Column>
-            <Column>
-
-              <Label title={"Stablize Time (s)"}>
-                <Input
-                  value={this.state.error_stabilize_s}
-                  id="error_stablize"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_stabilize_s")}
-                  onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_stabilize_s")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              </Column>
-              </Columns>
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-              <label style={{fontWeight: 'bold'}}>
-                {"Home Location"}
-              </label>
-
-              <Columns>
-              <Column>
-
-              <Label title={"latitude"}>
-                <Input
-                  value={this.state.home_lat}
-                  id="home_lat"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_lat")}
-                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace +"home_lat")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              </Column>
-              <Column>
-
-              <Label title={"longitude"}>
-                <Input
-                  value={this.state.home_long}
-                  id="home_long"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_long")}
-                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_long")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              </Column>
-              <Column>
-
-              <Label title={"altitude"}>
-                <Input
-                  value={this.state.home_alt}
-                  id="home_alt"
-                  onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_alt")}
-                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_alt")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
-
-              <ButtonMenu>
-                <Button onClick={() => sendGeoPointMsg(this.state.currentRBXNamespace + "/rbx/set_home", this.state.home_lat, this.state.home_long, this.state.home_alt )}>{"Set Home"}</Button>
-              </ButtonMenu>
-
-              </Column>
-              </Columns>
-
-
-
-              </div>
-              </Section>
+        </Section>
 
       </React.Fragment>
     )
@@ -606,6 +634,9 @@ class NepiControlsRobots extends Component {
         <Column>
           {this.renderSensorSelection()}
 
+          <div hidden={(!robotSelected && this.state.show_controls)}>
+          {this.renderSetupControls()}
+          </div>
 
           <div hidden={(!robotSelected && this.state.show_controls)}>
             <NepiRobotControls
@@ -613,9 +644,6 @@ class NepiControlsRobots extends Component {
                 title={"NepiRobotControls"}
             />
           </div>
-
-
-
 
           <div hidden={(!robotSelected && this.state.show_settings)}>
             <Nepi_IF_Settings

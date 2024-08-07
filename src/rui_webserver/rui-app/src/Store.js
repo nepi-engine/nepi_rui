@@ -1660,6 +1660,10 @@ class ROSConnectionStore {
       this.navSatFixStatus = this.navPose.fix.status.status
       this.navSatFixService = this.navPose.fix.status.service
 
+      this.navPosePositionEnuX = this.navPose.odom.pose.pose.position.x
+      this.navPosePositionEnuY = this.navPose.odom.pose.pose.position.y
+      this.navPosePositionEnuZ = this.navPose.odom.pose.pose.position.z
+
       // magnitude of linear_velocity?
       let { x, y, z } = this.navPose.odom.twist.twist.linear
       this.navPoseDirectionSpeedMpS = Math.sqrt(x * x + y * y + z * z)

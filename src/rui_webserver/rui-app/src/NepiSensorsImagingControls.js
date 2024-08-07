@@ -188,7 +188,7 @@ class NepiSensorsImagingControls extends Component {
                     unit={"%"}
                 />
               </div>
-            
+ {/*           
               <RadioButtonAdjustment
                   title={"Resolution"}
                   topic={this.props.idxSensorNamespace + '/idx/set_resolution_mode'}
@@ -205,6 +205,7 @@ class NepiSensorsImagingControls extends Component {
                   disabled={(capabilities && capabilities.adjustable_framerate && !this.state.disabled)? false : true}
                   entries={["Low", "Medium", "High", "Ultra"]}
               />
+    */}
             </div>
 
             <div hidden={!has_range_adjust || (imageName !== 'depth_image' && imageName !== 'depth_map' && imageName !== 'pointcloud_image')}>
