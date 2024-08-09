@@ -349,7 +349,15 @@ class NepiSystemOnvif extends Component {
                 disabled={(detectedDeviceUUIDsForListBox.includes(uuid_for_config_text_field))} 
               />
             </Label>
-            <Label title={"Username"}>
+            <Label title={"Device Name (User Defined)"}>
+              <Input
+                id={'node_base_name_texbox'} 
+                value={selectedDeviceConfigBasename} 
+                style={{width: '100%', color: config_text_color, fontWeight: config_text_weight}}
+                onChange={this.onChangeTextField}
+              />
+            </Label>
+            <Label title={"Login: Username"}>
               <Input
                 id={'onvif_username_textbox'} 
                 value={selectedDeviceConfigUsername} 
@@ -357,18 +365,10 @@ class NepiSystemOnvif extends Component {
                 onChange={this.onChangeTextField}
               />
             </Label>
-            <Label title={"Password"}>
+            <Label title={"Login: Password"}>
               <Input
                 id={'onvif_password_textbox'} 
                 value={selectedDeviceConfigPassword} 
-                style={{width: '100%', color: config_text_color, fontWeight: config_text_weight}}
-                onChange={this.onChangeTextField}
-              />
-            </Label>
-            <Label title={"Basename"}>
-              <Input
-                id={'node_base_name_texbox'} 
-                value={selectedDeviceConfigBasename} 
                 style={{width: '100%', color: config_text_color, fontWeight: config_text_weight}}
                 onChange={this.onChangeTextField}
               />
