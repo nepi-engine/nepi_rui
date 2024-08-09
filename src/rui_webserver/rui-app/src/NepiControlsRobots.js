@@ -249,8 +249,7 @@ class NepiControlsRobots extends Component {
     this.setState({
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No robot selected",
-      imageTopic_0: null,
-      imageText_0: null        
+      imageText_0: null,
     })
   }
 
@@ -263,6 +262,7 @@ class NepiControlsRobots extends Component {
     // Handle the "None" option -- always index 0
     if (rbx === 0) {
       this.clearTopicRBXSelection()
+      this.setstate()
       return
     }
 
@@ -644,14 +644,14 @@ class NepiControlsRobots extends Component {
                 title={"NepiRobotControls"}
             />
           </div>
-
+{/*
           <div hidden={(!robotSelected && this.state.show_settings)}>
             <Nepi_IF_Settings
               settingsNamespace={this.state.currentRBXNamespace}
               title={"Nepi_IF_Settings"}
             />
           </div>
-
+*/}
          </Column>
       </Columns>
     )

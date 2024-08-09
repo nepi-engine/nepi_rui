@@ -25,7 +25,9 @@ import ListBox from './ListBox';
 import './ListBox.css';
 
 
+
 import { onChangeSwitchStateValue} from "./Utilities"
+import {Queue} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -63,15 +65,24 @@ class NepiRobotMessages extends Component {
       last_cmd_str: null,
       last_error_message: null,
       msg_queue_size: 50,
+      status_msg: null,
 
       has_battery_feedback: null,
 
       MessagesStatusListener : null,
-
+      MessagesStatusMsgListener : null,
     }
 
+    this.msg_queue = new Queue()
+
     this.updateMessagesStatusListener = this.updateMessagesStatusListener.bind(this)
+    this.updateMessagesStatusMsgListener = this.updateMessagesStatusMsgListener.bind(this)
+
+
     this.MessagesStatusListener = this.MessagesStatusListener.bind(this)
+    this.MessagesStatusMsgListener = this.MessagesStatusMsgListener.bind(this)
+    this.convertMsgListToStr = this.convertMsgListToStr.bind(this)
+    
 
     this.onEnterMessagesQueueVar = this.onEnterMessagesQueueVar.bind(this)
     this.onUpdateMessagesInputBoxValue = this.onUpdateMessagesInputBoxValue.bind(this)
@@ -93,6 +104,7 @@ class NepiRobotMessages extends Component {
       process_last: message.process_last ,
       ready: message.ready ,
       battery: message.battery ,
+      status_message: message.s,
 
       errors_current: [message.errors_current.x_m ,message.errors_current.x_m, message.errors_current.x_m, message.errors_current.heading_deg, message.errors_current.roll_deg, message.errors_current.pitch_deg, message.errors_current.yaw_deg],
       errors_prev: [message.errors_prev.x_m ,message.errors_prev.x_m, message.errors_prev.x_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
@@ -107,7 +119,16 @@ class NepiRobotMessages extends Component {
   
   }
 
-
+  MessagesStatusMsgListener(message) {
+    const msg_str = message.data + "\n"
+    this.msg_queue.pushItem(msg_str)
+    if (this.msg_queue.getLength() > this.state.msg_queue_size){
+      this.msg_queue.pullItem()
+    }
+    const msg_list = this.msg_queue.getItemsReversed()
+    const msg_str_join = msg_list.join("")
+    this.setState({status_msg : msg_str_join})
+  }
 
   // Function for configuring and subscribing to Status
   updateMessagesStatusListener() {
@@ -121,7 +142,22 @@ class NepiRobotMessages extends Component {
           this.MessagesStatusListener
         )
     this.setState({ MessagesStatusListener : listener})
-  }
+      }
+
+
+    updateMessagesStatusMsgListener() {
+      const Namespace = this.props.rbxNamespace
+    if (this.state.MessagesStatusMsgListener ) {
+      this.state.MessagesStatusMsgListener .unsubscribe()
+    }
+    var msglistener = this.props.ros.setupStringListener(
+          Namespace + "/status_msg",
+          this.MessagesStatusMsgListener
+        )
+    this.setState({ MessagesStatusMsgListener : msglistener})
+     }
+    
+  
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
@@ -129,7 +165,9 @@ class NepiRobotMessages extends Component {
     const { rbxNamespace } = this.props
     if (prevProps.rbxNamespace !== rbxNamespace && rbxNamespace !== null) {
       if (rbxNamespace.indexOf('null') === -1){
+        this.updateMessagesStatusMsgListener()
         this.updateMessagesStatusListener()
+        this.msg_queue = new Queue()
         this.render()
       } 
     }
@@ -170,6 +208,11 @@ class NepiRobotMessages extends Component {
     }
   }
 
+  convertMsgListToStr(){
+    const msg_list = this.msg_queue.getItems()
+    const msg_str = msg_list.join("")
+    return msg_str
+  }
 
 
   render() {
@@ -207,24 +250,25 @@ class NepiRobotMessages extends Component {
                 disabled value={this.state.current_lat}
                 id="InitLatitude"
               />
-
             </Label>
+
             <Label title={"Longitude"}>
               <Input
                 disabled value={this.state.current_long}
                 id="InitLongitude"
               />
-
             </Label>
+
             <Label title={"Altitude (m)"}>
               <Input
                 disabled value={this.state.current_altitude}
                 id="InitAltitude"
               />
-
             </Label>
+
             </Column>
             <Column>
+
             <Label title={"Roll (deg)"}>
               <Input
                 disabled value={this.state.current_roll}
@@ -281,10 +325,8 @@ class NepiRobotMessages extends Component {
             {this.state.last_error_message}
           </pre>
 
-
-{/*
             <Columns>
-            <Column>
+            <Column>current_lat
 
             <Label title={"Message Queue Size"}>
                 <Input id="msg_queue_size" 
@@ -298,8 +340,12 @@ class NepiRobotMessages extends Component {
 
             </Column>
             </Columns>
-*/}
 
+            <Label title={"Node Messages"} >
+          </Label>
+          <pre style={{ height: "600px", overflowY: "auto" }}>
+            {this.state.status_msg}
+          </pre>
 
               </div>
       </Section>

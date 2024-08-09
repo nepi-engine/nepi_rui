@@ -55,6 +55,48 @@ export function filterStrList(inputList,filterList) {
   return outputList
 }
 
+
+export class Queue {
+  constructor() {
+      this.items = []
+      this.frontIndex = 0
+      this.backIndex = 0
+  }
+  pushItem(item) {
+      this.items[this.backIndex] = item
+      this.backIndex++
+      return item + ' inserted'
+  }
+  pullItem() {
+      const item = this.items[this.frontIndex]
+      delete this.items[this.frontIndex]
+      this.frontIndex++
+      return item
+  }
+  getItems(){
+    return this.items
+  }
+  getItemsReversed(){
+    var itemsReversed = []
+    const itemsLength = this.items.length
+    var rev_index = itemsLength - 1
+    for (var i = 0; i < this.items.length; i++) {
+      itemsReversed.push(this.items[rev_index])
+      rev_index = rev_index - 1
+    }
+    return itemsReversed
+  }
+  getLength(){
+    return this.items.length
+  }
+  peek() {
+      return this.items[this.frontIndex]
+  }
+  get printQueue() {
+      return this.items;
+  }
+}
+
 /////////////////////////////
 // TOGGLE FUNCTIONS
 
