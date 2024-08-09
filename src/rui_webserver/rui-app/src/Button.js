@@ -58,7 +58,7 @@ class Button extends Component {
     })
     if (this.props.buttonDownAction !== null)
     {
-      (this.props.buttonDownAction)
+      (this.props.buttonDownAction())
     }
   }
 
@@ -72,7 +72,7 @@ class Button extends Component {
     })
     if (this.props.buttonUpAction !== null)
     {
-      (this.props.buttonUpAction)
+      (this.props.buttonUpAction())
     }
   }
 
