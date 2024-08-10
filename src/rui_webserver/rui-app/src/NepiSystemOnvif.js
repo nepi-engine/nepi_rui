@@ -181,7 +181,14 @@ class NepiSystemOnvif extends Component {
     const { onvifIDXDeviceDrivers } = this.props.ros;
     var items = []
     for (var i = 0; i < onvifIDXDeviceDrivers.length; i++) {
-      items.push(<Option value={onvifIDXDeviceDrivers[i]}>{onvifIDXDeviceDrivers[i]}</Option>)
+      if (onvifIDXDeviceDrivers[i].indexOf("Generic") !== -1){
+        items.push(<Option value={onvifIDXDeviceDrivers[i]}>{onvifIDXDeviceDrivers[i]}</Option>)
+      }
+    }
+    for (var i = 0; i < onvifIDXDeviceDrivers.length; i++) {
+      if (onvifIDXDeviceDrivers[i].indexOf("Generic") === -1){
+        items.push(<Option value={onvifIDXDeviceDrivers[i]}>{onvifIDXDeviceDrivers[i]}</Option>)
+      }
     }
     return items
   }
@@ -190,7 +197,14 @@ class NepiSystemOnvif extends Component {
     const { onvifPTXDeviceDrivers } = this.props.ros;
     var items = []
     for (var i = 0; i < onvifPTXDeviceDrivers.length; i++) {
-      items.push(<Option value={onvifPTXDeviceDrivers[i]}>{onvifPTXDeviceDrivers[i]}</Option>)
+      if (onvifPTXDeviceDrivers[i].indexOf("Generic") !== -1){
+        items.push(<Option value={onvifPTXDeviceDrivers[i]}>{onvifPTXDeviceDrivers[i]}</Option>)
+      }
+    }
+    for (var i = 0; i < onvifPTXDeviceDrivers.length; i++) {
+      if (onvifPTXDeviceDrivers[i].indexOf("Generic") === -1){
+        items.push(<Option value={onvifPTXDeviceDrivers[i]}>{onvifPTXDeviceDrivers[i]}</Option>)
+      }
     }
     return items
   }
