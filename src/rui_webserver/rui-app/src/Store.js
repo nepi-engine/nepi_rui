@@ -41,7 +41,7 @@ const NODE_DISPLAY_NAMES = {
   sequential_image_mux: "Sequencer"
 }
 
-const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
+const CLASSIFIER_IMG_TOPIC_SUFFIX = '/app_ai_detector/detection_image'
 const TARG_LOCALIZER_IMG_TOPIC_SUFFIX = '/target_localizer/localization_image'
 
 const UPDATE_PERIOD = 100 // ms between sending updates
@@ -1551,7 +1551,7 @@ class ROSConnectionStore {
 
   async callImgClassifierListQueryService() {
     this.classifiers = await this.callService({
-      name: "img_classifier_list_query",
+      name: "ai_detector_mgr/img_classifier_list_query",
       messageType: "nepi_ros_interfaces/ImageClassifierListQuery",
       msgKey: "classifiers"
     })
@@ -1791,7 +1791,7 @@ class ROSConnectionStore {
   async startPollingImgClassifierStatusQueryService() {
     const _pollOnce = async () => {
       this.reportedClassifier = await this.callService({
-        name: "img_classifier_status_query",
+        name: "ai_detector_mgr/img_classifier_status_query",
         messageType: "nepi_ros_interfaces/ImageClassifierStatusQuery"
       })
 
@@ -2292,7 +2292,7 @@ class ROSConnectionStore {
   @action.bound
   startClassifier(selectedImageTopic, selectedClassifier, detectionThreshold) {
     this.publishMessage({
-      name: "start_classifier",
+      name: "ai_detector_mgr/start_classifier",
       messageType: "nepi_ros_interfaces/ClassifierSelection",
       data: {
         img_topic: selectedImageTopic,
@@ -2305,7 +2305,7 @@ class ROSConnectionStore {
   @action.bound
   stopClassifier() {
     this.publishMessage({
-      name: "stop_classifier",
+      name: "ai_detector_mgr/stop_classifier",
       messageType: "std_msgs/Empty",
       data: {}
     })
