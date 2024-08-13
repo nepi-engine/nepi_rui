@@ -59,7 +59,7 @@ class NepiAppAIDetector extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
-    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node'])
+    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node','detection_image','targeting_image'])
     var uniqueNames = createShortValuesFromNamespaces(imageTopicsFiltered)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
@@ -255,7 +255,7 @@ class NepiAppAIDetector extends Component {
               title={"Detection Threshold"}
               msgType={"std_msgs/Float32"}
               adjustment={thresholdVal}
-              topic={"nepi_darknet_ros/set_threshold"}
+              topic={"ai_detector_mgr/set_threshold"}
               scaled={0.01}
               min={0}
               max={100}
