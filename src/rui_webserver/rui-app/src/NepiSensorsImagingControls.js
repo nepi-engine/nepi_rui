@@ -118,7 +118,7 @@ class NepiSensorsImagingControls extends Component {
     const resetControlsNamespace = this.props.idxSensorNamespace + "/idx/reset_controls"
     const imageName = this.props.idxImageName 
     return (
-      <Section title={"Controls"}>
+      <Section title={"Post Process Controls"}>
           <Columns>
             <Column>
               <div align={"left"} textAlign={"left"}>

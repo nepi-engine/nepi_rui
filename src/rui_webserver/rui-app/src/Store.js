@@ -41,8 +41,8 @@ const NODE_DISPLAY_NAMES = {
   sequential_image_mux: "Sequencer"
 }
 
-const CLASSIFIER_IMG_TOPIC_SUFFIX = '/classifier/detection_image'
-const TARG_LOCALIZER_IMG_TOPIC_SUFFIX = '/target_localizer/localization_image'
+const CLASSIFIER_IMG_TOPIC_SUFFIX = '/ai_detector_mgr/detection_image'
+const TARG_LOCALIZER_IMG_TOPIC_SUFFIX = '/ai_targeting_app/targeting_image'
 
 const UPDATE_PERIOD = 100 // ms between sending updates
 
