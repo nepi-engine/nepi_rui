@@ -78,10 +78,10 @@ class App extends Component {
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
-                { path: "/ai", label: "AI Detector" }
+                { path: "/ai", label: "AI Detector" },
+                { path: "/automation", label: "Automation" }
               ]
             },
-            { path: "/automation", label: "Automation" },
             {
               path: "/system",
               label: "System",

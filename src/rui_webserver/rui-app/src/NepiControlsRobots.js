@@ -644,14 +644,14 @@ class NepiControlsRobots extends Component {
                 title={"NepiRobotControls"}
             />
           </div>
-{/*
+
           <div hidden={(!robotSelected && this.state.show_settings)}>
             <Nepi_IF_Settings
               settingsNamespace={this.state.currentRBXNamespace}
               title={"Nepi_IF_Settings"}
             />
           </div>
-*/}
+
          </Column>
       </Columns>
     )
