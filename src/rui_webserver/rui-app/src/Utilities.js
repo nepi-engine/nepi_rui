@@ -87,7 +87,7 @@ export class Queue {
     return itemsReversed
   }
   getLength(){
-    return this.items.length
+    return this.backIndex - this.frontIndex
   }
   peek() {
       return this.items[this.frontIndex]

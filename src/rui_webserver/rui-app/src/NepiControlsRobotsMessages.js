@@ -26,7 +26,7 @@ import './ListBox.css';
 
 
 
-import { onChangeSwitchStateValue} from "./Utilities"
+import { onChangeSwitchStateValue, convertStrToStrList} from "./Utilities"
 import {Queue} from "./Utilities"
 
 function round(value, decimals = 0) {
@@ -71,6 +71,9 @@ class NepiRobotMessages extends Component {
 
       MessagesStatusListener : null,
       MessagesStatusMsgListener : null,
+      MessagesStatusStrListener: null,
+
+      status_str_list: null
     }
 
     this.msg_queue = new Queue()
@@ -81,11 +84,14 @@ class NepiRobotMessages extends Component {
 
     this.MessagesStatusListener = this.MessagesStatusListener.bind(this)
     this.MessagesStatusMsgListener = this.MessagesStatusMsgListener.bind(this)
+    this.MessagesStatusStrListener = this.MessagesStatusStrListener.bind(this)
     this.convertMsgListToStr = this.convertMsgListToStr.bind(this)
+    this.convertStrListToJoinedStr = this.convertStrListToJoinedStr.bind(this)
     
 
     this.onEnterMessagesQueueVar = this.onEnterMessagesQueueVar.bind(this)
     this.onUpdateMessagesInputBoxValue = this.onUpdateMessagesInputBoxValue.bind(this)
+
   }
 
 
@@ -122,13 +128,22 @@ class NepiRobotMessages extends Component {
   MessagesStatusMsgListener(message) {
     const msg_str = message.data + "\n"
     this.msg_queue.pushItem(msg_str)
-    if (this.msg_queue.getLength() > this.state.msg_queue_size){
+    var q_len = this.msg_queue.getLength()
+    while (q_len > this.state.msg_queue_size){
+      q_len = this.msg_queue.getLength()
       this.msg_queue.pullItem()
     }
     const msg_list = this.msg_queue.getItemsReversed()
     const msg_str_join = msg_list.join("")
     this.setState({status_msg : msg_str_join})
   }
+
+  MessagesStatusStrListener(message) {
+    const status_str = message.data
+    const status_str_list = convertStrToStrList(status_str)
+    this.setState({status_str_list: status_str_list})
+  }
+  
 
   // Function for configuring and subscribing to Status
   updateMessagesStatusListener() {
@@ -157,6 +172,17 @@ class NepiRobotMessages extends Component {
     this.setState({ MessagesStatusMsgListener : msglistener})
      }
     
+     updateMessagesStatusStrListener() {
+      const Namespace = this.props.rbxNamespace
+    if (this.state.MessagesStatusStrListener ) {
+      this.state.MessagesStatusStrListener .unsubscribe()
+    }
+    var statuslistener = this.props.ros.setupStringListener(
+          Namespace + "/rbx/status_str",
+          this.MessagesStatusStrListener
+        )
+    this.setState({ MessagesStatusStrListener : statuslistener})
+     }
   
 
   // Lifecycle method called when compnent updates.
@@ -167,6 +193,7 @@ class NepiRobotMessages extends Component {
       if (rbxNamespace.indexOf('null') === -1){
         this.updateMessagesStatusMsgListener()
         this.updateMessagesStatusListener()
+        this.updateMessagesStatusStrListener()
         this.msg_queue = new Queue()
         this.render()
       } 
@@ -214,7 +241,17 @@ class NepiRobotMessages extends Component {
     return msg_str
   }
 
+  convertStrListToJoinedStr(str_list) {
+    var mod_str_list = []
+    for (var i = 0; i < str_list.length; ++i) {
+      mod_str_list.push(str_list[i]+"\n")
+    }
+    const joined_str = mod_str_list.join("")
+    return joined_str
 
+  }
+
+  
   render() {
     const {  sendTriggerMsg } = this.props.ros
     return (
@@ -326,7 +363,7 @@ class NepiRobotMessages extends Component {
           </pre>
 
             <Columns>
-            <Column>current_lat
+            <Column>
 
             <Label title={"Message Queue Size"}>
                 <Input id="msg_queue_size" 
@@ -341,11 +378,30 @@ class NepiRobotMessages extends Component {
             </Column>
             </Columns>
 
-            <Label title={"Node Messages"} >
-          </Label>
+
+            <Columns>
+            <Column>
+
+          <label style={{fontWeight: 'bold'}}>
+          {"Node Messages"}
+        </label>
           <pre style={{ height: "600px", overflowY: "auto" }}>
             {this.state.status_msg}
           </pre>
+
+            </Column>
+            <Column>
+
+            <div align={"left"} textAlign={"left"}> 
+        <label style={{fontWeight: 'bold'}}>
+          {"RBX Status"}
+        </label>
+          <pre style={{ height: "600px", overflowY: "auto" }}>
+            {this.state.status_str_list ? this.convertStrListToJoinedStr(this.state.status_str_list) : ""}
+          </pre>
+          </div>
+          </Column>
+          </Columns>
 
               </div>
       </Section>

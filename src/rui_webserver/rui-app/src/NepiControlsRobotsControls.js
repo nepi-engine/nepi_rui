@@ -188,7 +188,10 @@ class NepiRobotControls extends Component {
         })
       }
 
-      var controls_auto_list = ["None", "Action"]
+      var controls_auto_list = ["None"]
+      if (this.state.actions_list.length > 0){
+         controls_auto_list.push("Action")
+      }
       if (this.state.has_goto_pose){
         controls_auto_list.push("Pose")
       }
