@@ -71,15 +71,15 @@ class App extends Component {
               ]
             },
             { path: "/navPose", label: "NavPose" },
-            { path: "/ai", label: "AI Detection" },
-            { path: "/automation", label: "Automation" },
             {
               path: "/applications",
               label: "Applications",
               subItems: [
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
-                { path: "/pointcloud_app", label: "Pointcloud Viewer" }
+                { path: "/pointcloud_app", label: "Pointcloud Viewer" },
+                { path: "/ai", label: "AI Processing" },
+                { path: "/automation", label: "Automation" }
               ]
             },
             {
