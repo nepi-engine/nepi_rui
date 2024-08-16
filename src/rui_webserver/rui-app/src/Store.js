@@ -1349,7 +1349,7 @@ class ROSConnectionStore {
   updateSetting(settingsNamespace,nameStr,typeStr,valueStr) {
     this.publishMessage({
       name: settingsNamespace + "/update_setting",
-      messageType: "nepi_ros_interfaces/SettingUpdate",
+      messageType: "nepi_ros_interfaces/Setting",
       data: {type_str:typeStr,
         name_str:nameStr,
         value_str:valueStr

@@ -31,7 +31,8 @@ class NepiAppAIDetector extends Component {
     const classifier_running = ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
       true : false
     this.state = {
-      imageTopic: null,
+      last_reportedClassifier: null,
+      imageTopic: (this.props.ros.reportedClassifier) ? this.props.ros.reportedClassifier.selected_img_topic : "None",
       imageText: (classifier_running === true)?
         img[img.length-1] + ':' + this.props.ros.reportedClassifier.selected_classifier : 
         img? img[img.length-1] : null,
@@ -39,8 +40,8 @@ class NepiAppAIDetector extends Component {
       currentDisplayImgTopic: (classifier_running === true)? 
         this.props.ros.classifierImgTopic : 
         (this.props.ros.reportedClassifier? this.props.ros.reportedClassifier.selected_img_topic : null),
-      selectedClassifier: null,
-      detectionThreshold: (classifier_running === true)? +this.props.ros.reportedClassifier.detection_threshold.toFixed(2) : 0.3,
+      selectedClassifier: (this.props.ros.reportedClassifier) ? this.props.ros.reportedClassifier.selected_classifier : "None",
+      detectionThreshold: (this.props.ros.reportedClassifier)? this.props.ros.reportedClassifier.detection_threshold : 0.3,
       localizerOptionAvailable: false,
       localizerEnabled: false}
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
@@ -105,7 +106,7 @@ class NepiAppAIDetector extends Component {
   async onImageTopicSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[idx].text
-    var value = event.target.value === "None" ? null : event.target.value
+    var value = event.target.value
 
     // Check if the sensor associated with this image topic supports target localization (requires a published depth map)
     // TODO: This calculation is pretty limited -- only works for IDX sensors at this point that directly report their
@@ -186,14 +187,17 @@ class NepiAppAIDetector extends Component {
   }
 
   async onApplyButtonPressed() {
-    const { startClassifier } = this.props.ros
+    const { startClassifier, reportedClassifier } = this.props.ros
+    var threshold = reportedClassifier.detection_threshold
+    if (reportedClassifier){
+      threshold = reportedClassifier.detection_threshold
+    }
     const {
       imageTopic,
       selectedClassifier,
-      detectionThreshold
     } = this.state
 
-    startClassifier(imageTopic, selectedClassifier, detectionThreshold)
+    startClassifier(imageTopic, selectedClassifier, threshold)
   }
 
   onStopButtonPressed() {
@@ -212,6 +216,14 @@ class NepiAppAIDetector extends Component {
 
     const thresholdVal = reportedClassifier? reportedClassifier.detection_threshold : 0.3
     var status_text = reportedClassifier? reportedClassifier.classifier_state : "Unknown"
+    if (reportedClassifier !== null && reportedClassifier !== this.state.last_reportedClassifier && reportedClassifier.selected_classifier !== "None"){
+      this.setState({
+        selectedClassifier: reportedClassifier.selected_classifier,
+        detectionThreshold: reportedClassifier.detection_threshold,
+        last_reportedClassifier: reportedClassifier
+      })
+    }
+
     var status_color = indicator_colors.grey
     if (status_text === "Stopped") {
       status_color = indicator_colors.red
@@ -222,6 +234,8 @@ class NepiAppAIDetector extends Component {
     else if (status_text === "Running") {
       status_color = indicator_colors.green
     }   
+
+
     
     return (
       <Columns>
