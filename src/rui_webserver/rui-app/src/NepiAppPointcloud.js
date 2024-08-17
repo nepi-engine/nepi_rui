@@ -256,13 +256,13 @@ class PointcloudApp extends Component {
     const {sendFrame3DTransformUpdateMsg} = this.props.ros
     const namespace = this.state.appNamespace + "/update_transform"
     const transformNamespace = this.state.selectedTransformPointcloud
-    const TX = this.state.selectedTransformTX
-    const TY = this.state.selectedTransformTY
-    const TZ = this.state.selectedTransformTZ
-    const RX = this.state.selectedTransformRX
-    const RY = this.state.selectedTransformRY
-    const RZ = this.state.selectedTransformRZ
-    const HO = this.state.selectedTransformHO
+    const TX = parseFloat(this.state.selectedTransformTX)
+    const TY = parseFloat(this.state.selectedTransformTY)
+    const TZ = parseFloat(this.state.selectedTransformTZ)
+    const RX = parseFloat(this.state.selectedTransformRX)
+    const RY = parseFloat(this.state.selectedTransformRY)
+    const RZ = parseFloat(this.state.selectedTransformRZ)
+    const HO = parseFloat(this.state.selectedTransformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
     sendFrame3DTransformUpdateMsg(namespace,transformNamespace,transformList)
   }
@@ -285,14 +285,13 @@ class PointcloudApp extends Component {
       })
       const transform = transforms[tf_index]
       this.setState({
-        selectedTransformTX: transform[0],
-        selectedTransformTY: transform[1],
-        selectedTransformTZ: transform[2],
-        selectedTransformRX: transform[3],
-        selectedTransformRX: transform[4],
-        selectedTransformRY: transform[5],
-        selectedTransformRZ: transform[6],
-        selectedTransformHO: transform[7]
+        selectedTransformTX: round(transform[0]),
+        selectedTransformTY: round(transform[1]),
+        selectedTransformTZ: round(transform[2]),
+        selectedTransformRX: round(transform[3]),
+        selectedTransformRY: round(transform[4]),
+        selectedTransformRZ: round(transform[5]),
+        selectedTransformHO: round(transform[6])
       })
       
     }
@@ -370,14 +369,7 @@ class PointcloudApp extends Component {
 
                   <Label title={""}></Label>
                   <Label title={""}></Label>
-                  
-                  <Label title="Show 3D Transforms">
-                    <Toggle
-                      checked={this.state.showTransforms===true}
-                      onClick={this.onClickToggleShowTransforms}>
-                    </Toggle>
-                  </Label>
-
+        
               </Column>
               <Column>
 
@@ -396,6 +388,20 @@ class PointcloudApp extends Component {
                   <Label title={""}></Label>
                   <Label title={""}></Label>
 
+              </Column>
+            </Columns>
+
+
+            <Columns>
+              <Column>
+                                 
+                  <Label title="Show 3D Transforms">
+                    <Toggle
+                      checked={this.state.showTransforms===true}
+                      onClick={this.onClickToggleShowTransforms}>
+                    </Toggle>
+                  </Label>
+
                   <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
 
                   <Label title={"Select Transforms"}>
@@ -411,8 +417,16 @@ class PointcloudApp extends Component {
                   </Label>
 
                   </div>
+
+
+              </Column>
+              <Column>
+
+
               </Column>
             </Columns>
+
+
             <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
 
           <Columns>
@@ -421,7 +435,7 @@ class PointcloudApp extends Component {
 
               <Label title={"X (m)"}>
                 <Input
-                  value={round(this.state.selectedTransformTX, 2)}
+                  value={this.state.selectedTransformTX}
                   id="XTranslation"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
@@ -431,7 +445,7 @@ class PointcloudApp extends Component {
 
               <Label title={"Y (m)"}>
                 <Input
-                  value={round(this.state.selectedTransformTY, 2)}
+                  value={this.state.selectedTransformTY}
                   id="YTranslation"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
@@ -441,17 +455,17 @@ class PointcloudApp extends Component {
 
               <Label title={"Z (m)"}>
                 <Input
-                  value={round(this.state.selectedTransformTZ, 2)}
+                  value={this.state.selectedTransformTZ}
                   id="ZTranslation"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
                   style={{ width: "80%" }}
                 />
               </Label>
-
+{/*
               <Label title={"Heading Offset (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformHO, 2)}
+                  value={this.state.selectedTransformHO}
                   id="HeadingOffset"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformHO")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformHO")}
@@ -459,12 +473,18 @@ class PointcloudApp extends Component {
                 />
               </Label>
 
+*/}
+
+              <ButtonMenu>
+                <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+              </ButtonMenu>
+
             </Column>
             <Column>
 
               <Label title={"Roll (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformRX, 2)}
+                  value={this.state.selectedTransformRX}
                   id="XRotation"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
@@ -474,7 +494,7 @@ class PointcloudApp extends Component {
 
               <Label title={"Pitch (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformRY, 2)}
+                  value={this.state.selectedTransformRY}
                   id="YRotation"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
@@ -484,17 +504,13 @@ class PointcloudApp extends Component {
 
               <Label title={"Yaw (deg)"}>
                 <Input
-                  value={round(this.state.selectedTransformRZ, 2)}
+                  value={this.state.selectedTransformRZ}
                   id="ZRotation"
                   onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
                   onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
                   style={{ width: "80%" }}
                 />
               </Label>
-
-              <ButtonMenu>
-                <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
-              </ButtonMenu>
 
             </Column>
           </Columns>

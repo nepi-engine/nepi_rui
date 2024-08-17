@@ -162,7 +162,18 @@ export function createShortValuesFromNamespaces(inputList) {
   for (var i = 0; i < inputList.length; ++i) {
       tokenizedList = inputList[i].split("/")
       var tokens_len = tokenizedList.length
-      shortName = tokenizedList[tokens_len-3] + "/" + tokenizedList[tokens_len-1]
+      if(tokenizedList.length === 2){
+        shortName = tokenizedList[0] + "/" + tokenizedList[1]
+      }
+      else if(tokenizedList.length === 3){
+        shortName = tokenizedList[1] + "/" + tokenizedList[2]
+      }
+      else if(tokenizedList.length === 4){
+        shortName = tokenizedList[2] + "/" + tokenizedList[3]
+      }
+      else {
+        shortName = tokenizedList[tokens_len-3] + "/" + tokenizedList[tokens_len-1]
+      }
       outputList.push(shortName)
   }
   return outputList

@@ -15,7 +15,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
-import {createShortUniqueValues} from "./Utilities"
+import {createShortUniqueValues, createShortValuesFromNamespaces} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -40,7 +40,7 @@ class NepiAppImageViewer extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>) 
     const { imageTopics } = this.props.ros
-    var imageTopicShortnames = createShortUniqueValues(imageTopics)
+    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
       items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
     }
