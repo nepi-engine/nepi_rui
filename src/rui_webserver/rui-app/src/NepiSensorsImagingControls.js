@@ -264,11 +264,12 @@ class NepiSensorsImagingControls extends Component {
                       tooltip={"Tilt controls for pointcloud image rendering"}
                       unit={"%"}
                   />
-
+                          </div>
+                          </div>
               <Columns>
                 <Column>
                 <div align={"left"} textAlign={"left"}>
-                  <Label title={"Pointcloud Frame"}>
+                  <Label title={"Output Frame"}>
                   </Label>
                 </div>
                 </Column>
@@ -287,7 +288,7 @@ class NepiSensorsImagingControls extends Component {
                   </Label>
                   <Toggle 
                     checked={this.state.frame3D === "nepi_center_frame"} 
-                    disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
+                    disabled={(!this.state.disabled)? false : true}
                     onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"nepi_center_frame")}
                   />
                 </div>
@@ -298,7 +299,7 @@ class NepiSensorsImagingControls extends Component {
                   </Label>
                   <Toggle 
                     checked={this.state.frame3D === "sensor_frame"} 
-                    disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
+                    disabled={(!this.state.disabled)? false : true}
                     onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"sensor_frame")}
                   />
                 </div>
@@ -309,15 +310,15 @@ class NepiSensorsImagingControls extends Component {
                   </Label>
                   <Toggle 
                     checked={this.state.frame3D === "map"} 
-                    disabled={(capabilities && capabilities.has_pointcloud && !this.state.disabled)? false : true}
+                    disabled={(!this.state.disabled)? false : true}
                     onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"map")}
                   />
-                </div>
+                   </div>
+
                 </Column>
               </Columns>
-            </div>
             
-          </div>
+         
    
       </Section>
     )

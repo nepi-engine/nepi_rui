@@ -23,8 +23,7 @@ import Styles from "./Styles"
 
 
 import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
-  onUpdateSetStateValue, 
+  onDropdownSelectedSendStr, onDropdownSelectedSetState,  
   onEnterSendFloatValue, onEnterSetStateFloatValue,
   onEnterSendIntValue,
   onChangeSwitchStateValue, 
@@ -68,7 +67,8 @@ class NepiPointcloudRenderControls extends Component {
     this.updateRenderListener = this.updateRenderListener.bind(this)
     this.renderStatusListener = this.renderStatusListener.bind(this)
 
-
+    this.onUpdateSetStateValue = this.onUpdateSetStateValue.bind(this)
+    
     
   }
 
@@ -148,7 +148,15 @@ class NepiPointcloudRenderControls extends Component {
     }
   }
 
-
+  onUpdateSetStateValue(event,stateVarStr) {
+    var key = stateVarStr
+    var value = event.target.value
+    var obj  = {}
+    obj[key] = value
+    this.setState(obj)
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
+    this.render()
+  }
 
   render() {
     const {  sendTriggerMsg, setFrame3d } = this.props.ros
@@ -250,7 +258,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camViewX"
                       value={(this.state.camViewX)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camViewX")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camViewX")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
@@ -262,7 +270,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camViewY"
                       value={(this.state.camViewY)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camViewY")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camViewY")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
@@ -274,7 +282,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camViewZ"
                       value={(this.state.camViewZ)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camViewZ")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camViewZ")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_view"),this.state.camViewX,this.state.camViewY,this.state.camViewZ)}
                     />
                   </Label>
@@ -292,7 +300,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camPosX"
                       value={(this.state.camPosX)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camPosX")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camPosX")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
@@ -304,7 +312,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camPosY"
                       value={(this.state.camPosY)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camPosY")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camPosY")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
@@ -316,7 +324,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camPosZ"
                       value={(this.state.camPosZ)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camPosZ")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camPosZ")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_position"),this.state.camPosX,this.state.camPosY,this.state.camPosZ)}
                     />
                   </Label>
@@ -334,7 +342,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camRotX"
                       value={(this.state.camRotX)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camRotX")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camRotX")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
@@ -346,7 +354,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camRotY"
                       value={(this.state.camRotY)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camRotY")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camRotY")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
@@ -358,7 +366,7 @@ class NepiPointcloudRenderControls extends Component {
                     <Input
                       id="camRotZ"
                       value={(this.state.camRotZ)}
-                      onChange={(event) => onUpdateSetStateValue(event,"camRotZ")}
+                      onChange={(event) => this.onUpdateSetStateValue(event,"camRotZ")}
                       onKeyDown={(event) => this.onKeyCamText(event,(this.props.renderNamespace + "/set_camera_rotation"),this.state.camRotX,this.state.camRotY,this.state.camRotZ)}
                     />
                   </Label>
