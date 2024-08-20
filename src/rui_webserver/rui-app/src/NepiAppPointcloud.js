@@ -60,6 +60,8 @@ class PointcloudApp extends Component {
       selectedTransformHO: 0,
       age_filter_s: null,
       primary_pointcloud_topic: null,
+      pointcloud_img_topic: null,
+
 
       combineOption: null,
       combineOptionsList: [],
@@ -123,6 +125,15 @@ class PointcloudApp extends Component {
     primary_pointcloud_topic: message.primary_pointcloud_topic
     })
     this.setState({connected: true})
+    var image_topic = null
+    if (message.publishing_pointcloud_img === true){
+      image_topic = this.state.appNamespace + "/pointcloud_image"
+    }
+    else {
+      image_topic = ""
+    }
+    this.setState({pointcloud_img_topic: image_topic})
+    this.render()
   }
 
   // Function for configuring and subscribing to Status
@@ -427,7 +438,7 @@ class PointcloudApp extends Component {
             </Columns>
 
 
-            <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
+            <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false || this.setSelectedTransform !== "None"}>
 
           <Columns>
             <Column>
@@ -549,7 +560,7 @@ class PointcloudApp extends Component {
   }
 
   renderImageViewer() {
-    const img_topic = this.state.appNamespace + "/pointcloud_image"
+    const img_topic = this.state.pointcloud_img_topic
     return (
       <React.Fragment>
         <Columns>
@@ -575,14 +586,6 @@ class PointcloudApp extends Component {
 
           {this.renderImageViewer()}
 
-
-          <div hidden={!connected}>
-          <NepiPointcloudProcessControls
-                processNamespace={this.state.appNamespace + "/process"}
-                title={"NepiPointcloudProcessControls"}
-            />
-          </div>
-
           <div hidden={!connected}>
             <Nepi_IF_SaveData
                   saveNamespace={this.state.appNamespace}
@@ -603,6 +606,11 @@ class PointcloudApp extends Component {
           <NepiPointcloudRenderControls
                 renderNamespace={this.state.appNamespace + "/render"}
                 title={"NepiPointcloudRenderControls"}
+            />
+
+          <NepiPointcloudProcessControls
+                processNamespace={this.state.appNamespace + "/process"}
+                title={"NepiPointcloudProcessControls"}
             />
         </div>
 
