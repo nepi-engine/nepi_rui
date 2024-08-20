@@ -17,6 +17,8 @@ import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 import {ColoredTextIndicator, indicator_colors} from "./ColoredIndicator"
+import NepIAppAiTargeting from "./NepIAppAiTargeting"
+
 
 import { filterStrList, createShortValuesFromNamespaces } from "./Utilities"
 
@@ -43,7 +45,9 @@ class NepiAppAIDetector extends Component {
       selectedClassifier: (this.props.ros.reportedClassifier) ? this.props.ros.reportedClassifier.selected_classifier : "None",
       detectionThreshold: (this.props.ros.reportedClassifier)? this.props.ros.reportedClassifier.detection_threshold : 0.3,
       localizerOptionAvailable: false,
+      appName: "ai_detector_mgr",
       localizerEnabled: false}
+    this.getAppNamespace = this.getAppNamespace.bind(this)
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.checkForClassifierRunning = this.checkForClassifierRunning.bind(this)
@@ -54,6 +58,17 @@ class NepiAppAIDetector extends Component {
 
     this.checkForClassifierRunning()
   }
+
+  getAppNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var appNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      appNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
+    }
+
+    return appNamespace
+  }
+
   // Function for creating image topic options.
   createImageTopicsOptions() {
     const {imageFilterDetection} = this.props.ros
@@ -106,7 +121,7 @@ class NepiAppAIDetector extends Component {
   async onImageTopicSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[idx].text
-    var value = event.target.value
+    var value = event.target.value === "None" ? null : event.target.value
 
     // Check if the sensor associated with this image topic supports target localization (requires a published depth map)
     // TODO: This calculation is pretty limited -- only works for IDX sensors at this point that directly report their
@@ -209,13 +224,15 @@ class NepiAppAIDetector extends Component {
   }
 
 
-  render() {
+  renderAIManager() {
+    const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const {
       reportedClassifier
     } = this.props.ros
 
     const thresholdVal = reportedClassifier? reportedClassifier.detection_threshold : 0.3
     var status_text = reportedClassifier? reportedClassifier.classifier_state : "Unknown"
+    
     if (reportedClassifier !== null && reportedClassifier !== this.state.last_reportedClassifier && reportedClassifier.selected_classifier !== "None"){
       this.setState({
         selectedClassifier: reportedClassifier.selected_classifier,
@@ -223,7 +240,7 @@ class NepiAppAIDetector extends Component {
         last_reportedClassifier: reportedClassifier
       })
     }
-
+    
     var status_color = indicator_colors.grey
     if (status_text === "Stopped") {
       status_color = indicator_colors.red
@@ -235,36 +252,29 @@ class NepiAppAIDetector extends Component {
       status_color = indicator_colors.green
     }   
 
-
+    const namespace =  this.getAppNamespace()
     
     return (
-      <Columns>
-        <Column equalWidth={false}>
-          <CameraViewer
-            imageTopic={this.state.currentDisplayImgTopic}
-            title={this.state.imageText}
-            hideQualitySelector={false}
-          />
-        </Column>
-        <Column>
-          <Section title={"Settings"}>
+
+          <Section title={"AI Detector Settings"}>
+
             <Label title={"Image Topic"}>
               <Select id="ImgSelect" onChange={this.onImageTopicSelected} disabled={status_text !== "Stopped"}>
                 {this.createImageTopicsOptions()}
               </Select>
             </Label>
+
             <Label title={"Image Classifier"}>
               <Select id="ClassifierSelect" onChange={this.onClassifierSelected} disabled={status_text !== "Stopped"}>
                 {this.createImageClassifierOptions()}
               </Select>
             </Label>
-            {this.state.localizerOptionAvailable?
-            <Label title={"Enable Smart Targeting \u2122"}>
-              <Toggle id={"toggle_run_localizer"} onClick={this.onToggleRunLocalizer} />
-            </Label>
-            : null}
-          </Section>
-          <Section title={"Parameters"}>
+
+
+          <label style={{fontWeight: 'bold'}}>
+          {"Parameters"}
+        </label>
+
             <SliderAdjustment
               title={"Detection Threshold"}
               msgType={"std_msgs/Float32"}
@@ -277,8 +287,11 @@ class NepiAppAIDetector extends Component {
               tooltip={"Sets detection confidence threshold"}
               unit={"%"}
             />
-          </Section>
-          <Section title={"A/I Status"}>
+
+          <label style={{fontWeight: 'bold'}}>
+          {"A/I Status"}
+        </label>
+
             <Columns>
               <Column>
                 <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
@@ -286,19 +299,80 @@ class NepiAppAIDetector extends Component {
                   <progress value={reportedClassifier? reportedClassifier.loading_progress : 0.0} style={{width: '100%'}}/>
                   : null
                 }
+
               </Column>
               <Column>
+
                 <ButtonMenu style={{marginTop: "0px"}}>
                   <Button onClick={this.onApplyButtonPressed}>{"Start"}</Button>
                   <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
-                </ButtonMenu>
-              </Column>
-            </Columns>
-          </Section>
-        </Column>
-      </Columns>
-    )
-  }
+                </ButtonMenu>        
+          
+                </Column>
+                </Columns>
+
+                <Columns>
+                <Column>
+                
+              <ButtonMenu>
+                <Button onClick={() => sendTriggerMsg(namespace + "/save_config")}>{"Save Config"}</Button>
+              </ButtonMenu>
+
+            </Column>
+            <Column>
+            
+              <ButtonMenu>
+                <Button onClick={() => sendTriggerMsg(namespace + "/reset_config")}>{"Reset Config"}</Button>
+              </ButtonMenu>
+
+            </Column>
+          </Columns>
+
+
+      </Section>
+
+        )
+      }
+
+      render() {
+        const namespace = this.getAppNamespace()
+
+        return (
+          <Columns>
+          <Column equalWidth={false}>
+  
+          <CameraViewer
+            imageTopic={this.state.currentDisplayImgTopic}
+            title={this.state.imageText}
+            hideQualitySelector={false}
+          />
+
+
+          </Column>
+          <Column>
+
+
+          {this.renderAIManager()}    
+
+
+          <div hidden={namespace === null}>
+
+          <NepIAppAiTargeting
+          targetingNamespace={ namespace ? namespace.replace("ai_detector_mgr", "app_ai_targeting" ): namespace}
+          title={"NepIAppAiTargeting"}
+          />
+        
+        </div>   
+
+
+          </Column>
+          </Columns>
+
+
+
+          )
+        }
+
 }
 
 export default NepiAppAIDetector
