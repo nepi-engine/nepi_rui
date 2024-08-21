@@ -112,11 +112,14 @@ class PointcloudApp extends Component {
     var pointcloudsStrList = convertStrToStrList(pointcloudTopicsStr)
     const combineOptionsStr = message.combine_options
     const combineOptions = convertStrToStrList(combineOptionsStr)
+    const framesList = convertStrToStrList(message.available_3d_frames)
     const transformsTopicStr = message.transforms_topic_list
     const transformsStr = message.transforms_list
     this.updateTranformsList( transformsTopicStr,transformsStr)
     this.setState({
     selectedPointclouds:pointcloudsStrList,
+    frame_3d: message.output_3d_frame,
+    frames3dlist: framesList,
     age_filter_s: message.age_filter_s,
     combineOptionsList: combineOptions,
     combineOption: message.combine_option,
@@ -405,15 +408,16 @@ class PointcloudApp extends Component {
 
             <Columns>
               <Column>
-                                 
+
+ {/*                                
                   <Label title="Show 3D Transforms">
                     <Toggle
                       checked={this.state.showTransforms===true}
                       onClick={this.onClickToggleShowTransforms}>
                     </Toggle>
                   </Label>
+*/}
 
-                  <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false}>
 
                   <Label title={"Select Transforms"}>
                     <Select
@@ -427,7 +431,7 @@ class PointcloudApp extends Component {
                     </Select>
                   </Label>
 
-                  </div>
+
 
 
               </Column>
@@ -438,7 +442,7 @@ class PointcloudApp extends Component {
             </Columns>
 
 
-            <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false || this.state.selectedTransformPointcloud !== "None"}>
+            <div align={"left"} textAlign={"left"} hidden={this.state.selectedTransformPointcloud === "NONE"}>
 
           <Columns>
             <Column>
@@ -603,15 +607,17 @@ class PointcloudApp extends Component {
 
 
         <div hidden={!connected}>
+
+        <NepiPointcloudProcessControls
+                processNamespace={this.state.appNamespace + "/process"}
+                title={"NepiPointcloudProcessControls"}
+            />
+            
           <NepiPointcloudRenderControls
                 renderNamespace={this.state.appNamespace + "/render"}
                 title={"NepiPointcloudRenderControls"}
             />
 
-          <NepiPointcloudProcessControls
-                processNamespace={this.state.appNamespace + "/process"}
-                title={"NepiPointcloudProcessControls"}
-            />
         </div>
 
 

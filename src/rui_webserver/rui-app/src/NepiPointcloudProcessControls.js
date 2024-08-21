@@ -64,7 +64,7 @@ class NepiPointcloudProcessControls extends Component {
 
   // Callback for handling ROS Status messages
   processStatusListener(message) {
-    const framesList = convertStrToStrList(message.available_3d_frames)
+    
     this.setState({
       range_clip_enabled: message.range_clip_enabled,
       range_clip_min_m: message.range_clip_meters.start_range,
@@ -72,9 +72,7 @@ class NepiPointcloudProcessControls extends Component {
       clip_target_topic: message.clip_target_topic,
       voxel_downsample_size_m: message.voxel_downsample_size_m,
       uniform_downsample_points: message.uniform_downsample_points,
-      outlier_k_points: message.outlier_k_points,
-      frame_3d: message.frame_3d,
-      frames3dlist: framesList
+      outlier_k_points: message.outlier_k_points
     })
   }
 
