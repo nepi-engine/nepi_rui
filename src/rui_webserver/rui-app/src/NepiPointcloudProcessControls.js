@@ -229,7 +229,7 @@ class NepiPointcloudProcessControls extends Component {
                 <Input id="voxel_downsample_size_m" 
                   value={this.state.voxel_downsample_size_m} 
                   onChange={(event) => onUpdateSetStateValue.bind(this)(event,"voxel_downsample_size_m")} 
-                  onKeyDown= {(event) => onEnterSendFloatValue(event,this.props.processNamespace + "/set_voxel_downsample_size")} />
+                  onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.processNamespace + "/set_voxel_downsample_size")} />
               </Label>
 
             </Column>
