@@ -438,7 +438,7 @@ class PointcloudApp extends Component {
             </Columns>
 
 
-            <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false || this.setSelectedTransform !== "None"}>
+            <div align={"left"} textAlign={"left"} hidden={this.state.showTransforms === false || this.state.selectedTransformPointcloud !== "None"}>
 
           <Columns>
             <Column>
