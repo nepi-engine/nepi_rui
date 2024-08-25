@@ -49,7 +49,7 @@ class PointcloudApp extends Component {
       transforms_list: [],
       selectedTransformPointcloud: "",
       selectedTransformInd: 0,
-      selectedTransformPointcloud: null,
+      selectedTransformPointcloud: "NONE",
       selectedTransformData: null,
       selectedTransformTX: 0,
       selectedTransformTY: 0,
