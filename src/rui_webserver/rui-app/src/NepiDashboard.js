@@ -48,6 +48,7 @@ class NepiDashboard extends Component {
     this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(this)
     this.onKeySaveSettingFilePrefix = this.onKeySaveSettingFilePrefix.bind(this)
     this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
+    this.onToggleSaveData = this.onToggleSaveData.bind(this)
   }
 
   onUpdateSaveFreqText(e) {
@@ -212,12 +213,22 @@ class NepiDashboard extends Component {
     this.setState({ allowFileDeletion: e.target.checked})
   }
 
+  onToggleSaveData(e){
+    const {onChangeSaveFreqAll, onToggleSaveDataAll} = this.props.ros
+    const checked = e.target.checked
+    if(checked){
+     onChangeSaveFreqAll(this.state.saveFreq)
+    }
+    onToggleSaveDataAll(checked)
+
+  }
+
   renderSaveData() {
-    const { onToggleSaveData, systemStatusDiskRate, deleteAllData } = this.props.ros
+    const { systemStatusDiskRate, deleteAllData } = this.props.ros
     return (
       <Section title={"Save Data"}>
         <Label title={"Save All Data"}>
-          <Toggle id={"toggle_save_data"} onClick={onToggleSaveData} />
+          <Toggle id={"toggle_save_data"} onClick={this.onToggleSaveData} />
         </Label>
         <Label title={"Save Freq. (Hz)"}>
           <Input id="saveFreqInput" value={this.state.saveFreq} onChange={this.onUpdateSaveFreqText} onKeyDown= {this.onKeySaveFreqText} />

@@ -16,7 +16,7 @@ import CameraViewer from "./CameraViewer"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
-import {createShortUniqueValues} from "./Utilities"
+import {createShortUniqueValues, convertStrToStrList} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -40,11 +40,20 @@ class NepiControlsLights extends Component {
       lsxSerialNum: null,
       lsxHwVersion: null,
       lsxSwVersion: null,
+
+      lsxDeviceName: null,
       
-      lsxStandby: null,
-      lsxIntensity: null,
-      lsxStrobeEnable: null,
+      lsxStandbyState: null,
+      lsxOnOffState: null,
+      lsxIntensityRatio: null,
+      lsxBlinkState: null,
+      lsxBlinkInterval: null,
+      lsxColorStr: "None",
+      lsxKelvinVal: null,
+      lsxStrobeState: null,
       lsxTempC: null,
+      lsxPowerW: null,
+
 
       listener: null,
       disabled: true
@@ -96,10 +105,19 @@ class NepiControlsLights extends Component {
       lsxSerialNum: message.serial_num,
       lsxHwVersion: message.hw_version,
       lsxSwVersion: message.sw_version,
-      lsxStandby: message.standby,
-      lsxIntensity: message.intensity,
-      lsxStrobeEnable: message.strobe_enable,
-	  lsxTempC: message.temp_c,
+
+      lsxDeviceName: message.user_name ,
+      
+      lsxStandbyState: message.standby_state ,
+      lsxOnOffState: message.on_off_state ,
+      lsxIntensityRatio: message.intensity_ratio ,
+      lsxBlinkState: message.blink_state ,
+      lsxBlinkInterval: message.blink_interval ,
+      lsxKelvinVal: message.kelvin_setting ,
+      lsxStrobeState: message.strobe_state ,
+      lsxColorStr: message.color_setting,
+      lsxTempC: message.temp_c ,
+      lsxPowerW: message.power_w ,
     })
   }
 
@@ -170,16 +188,23 @@ class NepiControlsLights extends Component {
   
   renderControlPanel() {
     const { lsxNamespace, lsxSerialNum, lsxHwVersion, lsxSwVersion,
-            lsxIntensity, lsxTempC } = this.state
+            lsxIntensityRatio, lsxTempC } = this.state
     const { lsxUnits } = this.props.ros
     const lsx_id = lsxNamespace? lsxNamespace.split('/').slice(-1) : "No Light Selected"
 
     const lsx_caps = lsxUnits[lsxNamespace]
-    //const has_standby_mode = lsx_caps && (lsx_caps['has_standby_mode'] === true)
+    const has_standby_mode = lsx_caps && (lsx_caps['has_standby_mode'] === true)
+    const has_on_off_control = lsx_caps && (lsx_caps['has_on_off_control'] === true)
     const has_intensity_control = lsx_caps && (lsx_caps['has_intensity_control'] === true)
-    //const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
-    //const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)
-    //const reports_power = lsx_caps && (lsx_caps['reports_power'] === true)
+    const has_color_control = lsx_caps && (lsx_caps['has_color_control'] === true)
+    const color_options_list = lsx_caps ?  convertStrToStrList(lsx_caps['color_options_list']) : ["None"]
+    const has_kelvin_control = lsx_caps && (lsx_caps['has_kelvin_control'] === true)
+    const kelvin_min = lsx_caps ? lsx_caps['kelvin_min'] : 1000
+    const kelvin_max = lsx_caps ? lsx_caps['kelvin_max'] : 10000
+    const has_blink_control = lsx_caps && (lsx_caps['has_blink_control'] === true)
+    const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
+    const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)
+    const reports_power = lsx_caps && (lsx_caps['reports_power'] === true)
 
     
     return (
@@ -207,7 +232,7 @@ class NepiControlsLights extends Component {
           disabled={!has_intensity_control}
           title={"Intensity"}
           msgType={"std_msgs/Float32"}
-          adjustment={lsxIntensity}
+          adjustment={lsxIntensityRatio}
           topic={lsxNamespace + "/lsx/set_intensity"}
           scaled={0.01}
           min={0}

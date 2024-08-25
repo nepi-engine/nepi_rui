@@ -41,9 +41,6 @@ const NODE_DISPLAY_NAMES = {
   sequential_image_mux: "Sequencer"
 }
 
-const CLASSIFIER_IMG_TOPIC_SUFFIX = '/ai_detector_mgr/detection_image'
-const TARG_LOCALIZER_IMG_TOPIC_SUFFIX = '/ai_targeting_app/targeting_image'
-
 const UPDATE_PERIOD = 100 // ms between sending updates
 
 function displayNameFromNodeName(node_name) {
@@ -454,13 +451,6 @@ class ROSConnectionStore {
             this.rosLog(
               `Fetched device info ${this.namespacePrefix}/${this.deviceId}`
             )
-            // And update the (fixed) classifier image topic
-            this.classifierImgTopic = '/'
-            this.classifierImgTopic = this.classifierImgTopic.concat(this.namespacePrefix, '/', this.deviceId, CLASSIFIER_IMG_TOPIC_SUFFIX)
-
-            this.targLocalizerImgTopic = '/'
-            this.targLocalizerImgTopic = this.targLocalizerImgTopic.concat(this.namespacePrefix, '/', this.deviceId, TARG_LOCALIZER_IMG_TOPIC_SUFFIX)
-            break
           }
         }
       }
@@ -1176,6 +1166,30 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
+  sendFrame3DTransformMsg(namespace, transformFloatList) {
+    if (transformFloatList.length === 7){
+      this.publishMessage({
+        name: namespace,
+        messageType: "nepi_ros_interfaces/Frame3DTransform",
+        data: { 
+            translate_vector: {
+              x: transformFloatList[0],
+              y: transformFloatList[1],
+              z: transformFloatList[2]
+            },
+            rotate_vector: {
+              x: transformFloatList[3],
+              y: transformFloatList[4],
+              z: transformFloatList[5]
+            },
+            heading_offset: transformFloatList[6]
+
+        },
+        noPrefix: true
+      })
+    }
+  }
 
   @action.bound
   sendFloatVector3Msg(namespace, float1_str,float2_str,float3_str) {
@@ -2256,10 +2270,8 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onToggleSaveData(e) {
-    const checked = e.target.checked
-
-    this.publishMessage({
+  onToggleSaveDataAll(checked) {
+      this.publishMessage({
       name: "save_data",
       messageType: "nepi_ros_interfaces/SaveData",
       data: {
@@ -2270,7 +2282,7 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  onChangeSaveFreq(rate) {
+  onChangeSaveFreqAll(rate) {
     let freq = parseFloat(rate)
 
     if (isNaN(freq)) {

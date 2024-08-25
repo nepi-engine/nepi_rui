@@ -20,6 +20,7 @@ import { Column, Columns } from "./Columns"
 import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import BooleanIndicator from "./BooleanIndicator"
 
 import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
   onDropdownSelectedSendStr, onDropdownSelectedSetState, 
@@ -57,13 +58,20 @@ class NepIAppAiTargeting extends Component {
       target_box_reduction_percent: null,
       default_target_depth_m: null,
       target_min_points: null,
+      target_min_px_ratio: null,
+      target_min_dist_m: null,
       target_age_filter: null,
+
+      target_box_adjust_percent: null,
+      pc_clip_adjust_percent: null,
 
       current_targets_list: [],
       lost_targets_list: [],
+      
 
-      targeting_controls_enabled: false,
+      targeting_controls_running: false,
       targetingListener: null,
+      viewableTopics: false,
 
 
 
@@ -74,6 +82,8 @@ class NepIAppAiTargeting extends Component {
     this.updatetargetingListenerFunc = this.updatetargetingListenerFunc.bind(this)
     this.onToggleClassSelection = this.onToggleClassSelection.bind(this)
     this.getClassOptions = this.getClassOptions.bind(this)
+    this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
+
 
   }
 
@@ -81,7 +91,7 @@ class NepIAppAiTargeting extends Component {
   targetingListenerFunc(message) {
     this.setState({
 
-targeting_controls_enabled: message.targeting_enabled,
+targeting_controls_running: message.targeting_running,
 classifier_name: message.classifier_name,
 classifier_state: message.classifier_state,
 image_topic: message.image_topic,
@@ -93,7 +103,11 @@ image_fov_horz_degs: message.image_fov_horz_degs,
 target_box_reduction_percent: message.target_box_reduction_percent,
 default_target_depth_m: message.default_target_depth_m,
 target_min_points: message.target_min_points,
+target_min_px_ratio: message.target_min_px_ratio,
+target_min_dist_m: message.target_min_dist_m,
 target_age_filter: message.target_age_filter,
+target_box_adjust_percent: message.target_box_adjust_percent,
+pc_clip_adjust_percent: message.target_box_adjust_percent,
 
 available_classes_list: convertStrToStrList(message.available_classes_list),
 selected_classes_list: convertStrToStrList(message.selected_classes_list),
@@ -140,6 +154,11 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
         this.render()
       } 
     }
+  }
+
+  toggleViewableTopics() {
+    const set = !this.state.viewableTopics
+    this.setState({viewableTopics: set})
   }
 
   // Lifecycle method called just before the component umounts.
@@ -198,24 +217,25 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     const {  sendTriggerMsg, sendBoolMsg, setFrame3d } = this.props.ros
     const classOPtions = this.getClassOptions()
     const selectedClasses = this.state.selected_classes_list
+    const {viewableTopics} = this.state
+    const NoneOption = <Option>None</Option>
     return (
       <Section title={"Targeting Controls"}>
-
-      <Columns>
-      <Column>
-          
-          <Label title="Targeting Controls Enabled">
-                  <Toggle
-                  checked={this.state.targeting_controls_enabled===true}
-                  onClick={() => sendBoolMsg(this.props.targetingNamespace + "/targeting_enabled",!this.state.targeting_controls_enabled)}>
-                  </Toggle>
+        <Label title={"Targeting Controls Running"}>
+              <BooleanIndicator value={(this.state.targeting_controls_running !== null)? this.state.targeting_controls_running : false} />
             </Label>
 
-            <Label title="Select Target Classes">
+ 
+            <div hidden={!this.state.targeting_controls_running}>
+            <Label title="Select Target Classes"> </Label>
+            <Columns>
+            <Column>
+
+            <Label title="">
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
                     </div>
-                    <div hidden={false}>
+                    <div hidden={this.state.viewableTopics === false}>
                     {classOPtions.map((Class) =>
                     <div onClick={this.onToggleClassSelection}
                       style={{
@@ -229,98 +249,129 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                     </div>
                     )}
                     </div>
-            </Label>
+              </Label>
 
-      </Column>
+              </Column>
+              <Column>
+
+              <Label title={"Select Target"}>
+                <Select
+                  id="select_target"
+                  onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.props.targetingNamespace + "/select_target")}
+                  value={this.state.selected_target}
+                >
+                  {this.state.available_targets_list
+                    ? createMenuListFromStrList(this.state.available_targets_list, false, [],[],[])
+                    : NoneOption}
+                </Select>
+              </Label>
+              </Column>
+              </Columns>
+
+      <Columns>
       <Column>
+
+
+      <Label title={"Vertical Degrees"}>
+          <Input id="image_fov_vert_degs" 
+            value={this.state.image_fov_vert_degs} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"image_fov_vert_degs")} 
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_vert")} />
+        </Label>
+           
+        <Label title={"Horzontal Degrees"}>
+          <Input id="image_fov_horz_degs" 
+            value={this.state.image_fov_horz_degs} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"image_fov_vert_degs")} 
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_horz")} />
+        </Label>
+
+        <Label title={"Default Target Depth (m)"}>
+          <Input id="default_target_depth_m" 
+            value={this.state.default_target_depth_m} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"default_target_depth_m")} 
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_default_target_detpth")} />
+        </Label>
+
+        <Label title={"Target Min Points"}>
+          <Input id="target_min_points" 
+            value={this.state.target_min_points} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_min_points")} 
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_target_min_points")} />
+        </Label>
+
+        <Label title={"Target Min Dist (m)"}>
+          <Input id="target_min_dist_m" 
+            value={this.state.target_min_dist_m} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_min_dist_m")} 
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_vert")} />
+        </Label>
+
+        <Label title={"Target Age Filter"}>
+          <Input id="target_age_filter" 
+            value={this.state.target_age_filter} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_age_filter")} 
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_horz")} />
+        </Label>
+
+        <Label title={"Set Box Adjust %"}>
+          <Input id="target_box_adjust_percent" 
+            value={this.state.target_box_adjust_percent} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_box_adjust_percent")} 
+            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_box_adjust_percent")} />
+        </Label>
+
+
+        <Label title={"Pountcloud Clip Adjust %"}>
+          <Input id="pc_clip_adjust_percent" 
+            value={this.state.pc_clip_adjust_percent} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"pc_clip_adjust_percent")} 
+            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_pc_clip_adjust_percent")} />
+        </Label>
+
+        <SliderAdjustment
+          title={"Target Min Pixel Ratio"}
+          msgType={"std_msgs/float32"}
+          adjustment={this.state.target_min_px_ratio}
+          topic={this.props.targetingNamespace + "/set_target_min_px_ratio"}
+          scaled={0.01}
+          min={0}
+          max={100}
+          tooltip={""}
+          unit={"%"}
+      />
 
       </Column>
       </Columns>
 
+      <Columns>
+      <Column>
 
-      <div hidden={!this.state.targeting_controls_enabled}>
       <ButtonMenu>
             <Button onClick={() => sendTriggerMsg(this.props.targetingNamespace + "/save_config")}>{"Save Config"}</Button>
       </ButtonMenu>
 
+      </Column>
+      <Column>
+
       <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( this.props.targetingNamespace + "/reset_config")}>{"Reset Config"}</Button>
       </ButtonMenu>
+
+      </Column>
+      <Column>
+
+      <ButtonMenu>
+        <Button onClick={() => sendTriggerMsg(this.props.targetingNamespace + "/reset_app")}>{"Reset controls"}</Button>
+      </ButtonMenu>
+  
+
+       </Column>
+      </Columns>
       
       </div>
 
 
-{/*
-
-      <div hidden={!this.state.show_targeting_controls}>
-
-          <Columns>
-          <Column>
-            <Label title="Clip Range Enabled">
-                  <Toggle
-                  checked={this.state.range_clip_enabled===true}
-                  onClick={() => sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",!this.state.range_clip_enabled)}>
-                  </Toggle>
-            </Label>
-
-            <Label title={"Set Range Clip Ranges (m)"}>AiTargetingStatus
-
-           </Column>
-          </Columns>
-
-          <Columns>
-          <Column>
-
-
-          <Label title={"Set Range Clip Min"}>
-                    <Input id="set_range_clip_min" 
-                      value={this.state.range_clip_min_m} 
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event,"range_clip_min_m")} 
-                      onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","min")} />
-              </Label>
-            
-              </Column>
-              <Column>
-                  <Label title={"Set Range Clip Max"}>
-                    <Input id="set_range_clip_max" 
-                     value={this.state.range_clip_max_m} 
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event,"range_clip_max_m")} 
-                      onKeyDown= {(event) => this.onEnterSendInputBoxRangeWindowValue(event,"/set_range_clip_m","max")} />                      
-                  </Label>  
-
-           </Column>
-          </Columns>  
-
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>    
-
-
-          <Columns>
-            <Column>
-
-              <Label title={"Pointclud Filtering"}></Label>
-                      
-              <Label title={"Outlier Removal k Points"}>
-                <Input id="outlier_k_points" 
-                  value={this.state.outlier_k_points} 
-                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"outlier_k_points")} 
-                  onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.processNamespace + "/outlier_removal_num_neighbors")} />
-              </Label>
-
-              <Label title={"Voxel Downsample Size (m)"}>
-                <Input id="voxel_downsample_size_m" 
-                  value={this.state.voxel_downsample_size_m} 
-                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"voxel_downsample_size_m")} 
-                  onKeyDown= {(event) => onEnterSendFloatValue(event,this.props.processNamespace + "/set_voxel_downsample_size")} />
-              </Label>
-
-            </Column>
-            <Column>
-
-            </Column>
-          </Columns>  
-
-        </div>
-*/}
       </Section>
     )
   }
