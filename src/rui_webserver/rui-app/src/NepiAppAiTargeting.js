@@ -17,48 +17,54 @@ import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 import {ColoredTextIndicator, indicator_colors} from "./ColoredIndicator"
-import NepIAppAiTargeting from "./NepIAppAiTargeting"
+import NepiAppAiTargetingControls from "./NepiAppAiTargetingControls"
 
 
 import { filterStrList, createShortValuesFromNamespaces } from "./Utilities"
 
 import CameraViewer from "./CameraViewer"
 
+import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
+
 @inject("ros")
 @observer
-class NepiAppAIDetector extends Component {
+class NepiAppAiTargeting extends Component {
   constructor(props) {
     super(props)
-    var img = (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
-    const classifier_running = ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
+    var img = (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
+    const classifier_running = ((this.props.ros.reportedClassifier) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
       true : false
     const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/targeting_image'
-    const DETCLASSIFIER_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
-
+    const DETECTION_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
     this.state = {
-      selectedImgTopic: null,
+      selectedImg: 'Targeting',
+      selectedImgText: 'Targeting Image',
       last_reportedClassifier: null,
-      imageTopic: (this.props.ros.reportedClassifier) ? this.props.ros.reportedClassifier.selected_img_topic : "None",
+
+      imageTopic: (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_img_topic : "None",
+
       imageText: (classifier_running === true)?
         img[img.length-1] + ':' + this.props.ros.reportedClassifier.selected_classifier : 
         img? img[img.length-1] : null,
+
       // Only set currentDisplayImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
       currentDisplayImgTopic: (classifier_running === true)? 
-      DETCLASSIFIER_IMG_TOPIC: 
+      TARGETING_IMG_TOPIC: 
         (this.props.ros.reportedClassifier? this.props.ros.reportedClassifier.selected_img_topic : null),
-      selectedClassifier: (this.props.ros.reportedClassifier) ? this.props.ros.reportedClassifier.selected_classifier : "None",
-      detectionThreshold: (this.props.ros.reportedClassifier)? this.props.ros.reportedClassifier.detection_threshold : 0.3,
-      localizerOptionAvailable: false,
+
+      selectedClassifier: (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_classifier : "None",
+      detectionThreshold: (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.detection_threshold : 0.3,
       appName: "ai_detector_mgr",
-      localizerEnabled: false}
+    }
     this.getAppNamespace = this.getAppNamespace.bind(this)
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onClassifierSelected = this.onClassifierSelected.bind(this)
     this.checkForClassifierRunning = this.checkForClassifierRunning.bind(this)
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
-    this.onToggleRunLocalizer = this.onToggleRunLocalizer.bind(this)
+    this.getImageOptions = this.getImageOptions.bind(this)
     this.onImageSelect = this.onImageSelect.bind(this)
+    this.getSelectedImageTopic = this.getSelectedImageTopic.bind(this)
 
     
 
@@ -129,18 +135,10 @@ class NepiAppAIDetector extends Component {
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value === "None" ? null : event.target.value
 
-    // Check if the sensor associated with this image topic supports target localization (requires a published depth map)
-    // TODO: This calculation is pretty limited -- only works for IDX sensors at this point that directly report their
-    // capabilities (including "has_depth_map"). Anything more robust will probably require some backend support, though.
-    const { idxSensors } = this.props.ros
-    const sensorName = (value !== null)? value.split('/idx/')[0] : "None"
-    const hasDepthMap = (sensorName in idxSensors)? this.props.ros.idxSensors[sensorName].has_depth_map : false
-
     await this.setState({
       imageTopic: value,
       imageText: text === "None" ? null : text,
-      localizerOptionAvailable: hasDepthMap,
-      
+     
       // Experimental -- try showing plain camera imagery until classifier is loaded
       currentDisplayImgTopic: ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Running"))?
         value : null
@@ -155,66 +153,79 @@ class NepiAppAIDetector extends Component {
     })
   }
 
+
+
+  // Function for creating image topic options.
+  getImageOptions() {
+    const options = ["Targeting","Detection"]
+    var items = []
+    for (var i = 0; i < options.length; i++) {
+      if(options[i] === this.state.selectedImg) {
+        items.push(<Option selected="selected" value={options[i]}>{options[i]}</Option>)
+      }else {
+        items.push(<Option value={options[i]}>{options[i]}</Option>)
+      }
+    }
+    return items
+    }
+
+  onImageSelect(event){
+    const value = event.target.value
+
+    var image_name = ""
+    var image_text = ""
+    if (value === "Detection"){
+      image_name = "Detection"
+      image_text = "Detection Image"
+    }
+    else{
+      image_name = "Targeting"
+      image_text = "Targeting Image"
+    }
+    this.setState({selectedImg: image_name,
+      selectedImageText: image_text})
+  }
+
+  getSelectedImageTopic(){
+    const {namespacePrefix, deviceId} = this.props.ros
+    const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/targeting_image'
+    const DETECTION_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
+    const sel_img = this.state.selectedImg
+    if (sel_img === "Detection"){
+      return DETECTION_IMG_TOPIC
+    }
+    else{
+      return TARGETING_IMG_TOPIC
+    }
+
+  }
+
   async checkForClassifierRunning() {
     const {
       reportedClassifier,
       classifierImgTopic,
-      targLocalizerImgTopic
     } = this.props.ros
-
-    const { localizerEnabled } = this.state
-
-    // Delay the state transition until the classifier is actually running
-    // in order to avoid invoking CameraViewer's updateImageSource method (via
-    // componentDidUpdate()) until we can receive a real image with a valid size
+    const sel_img_text = this.state.selectedImgText
     if ((reportedClassifier === null) || (reportedClassifier.classifier_state !== "Running")) {
       if (this.state.currentDisplayImgTopic !== this.state.imageTopic) {
         await this.setState({
-          currentDisplayImgTopic: this.state.imageTopic,
+          currentDisplayImgTopic: this.getSelectedImageTopic(),
           imageText: (this.state.imageTopic !== null)? this.state.imageTopic.split('/').at(-1) : null
         })
       }
     }
     else {
-      if (this.state.selectedImgTopic === null){
-        const { namespacePrefix, deviceId} = this.props.ros
-        const TARGETING_IMG_TOPIC = "/" + namespacePrefix + "/" + deviceId + '/app_ai_targeting/targeting_image'
-        const DETCLASSIFIER_IMG_TOPIC = "/" + namespacePrefix + "/" + deviceId +  '/ai_detector_mgr/detection_image'
-
-        this.setState({selectedImgTopic: TARGETING_IMG_TOPIC,
-                        imageText: "Targeting Image"
-        })
-        currentDisplayImgTopic: DETCLASSIFIER_IMG_TOPIC
-      }
-      else{
         this.setState({
-        currentDisplayImgTopic: this.state.selectedImgTopic
+        currentDisplayImgTopic: this.getSelectedImageTopic(),
+        imageText: sel_img_text
         })
-      }
     }
 
     // Run this method periodically forever
     setTimeout(this.checkForClassifierRunning, 250)
   }
 
-  async onToggleRunLocalizer(e) {
-    const {
-      reportedClassifier,
-      classifierImgTopic,
-      targLocalizerImgTopic
-    } = this.props.ros
-
-    // Always update the local state
-    this.setState({localizerEnabled: e.target.checked})
-
-    // If classifier is already running, update the image topic directly
-    if (reportedClassifier.classifier_state === "Running")
-    {
-      await this.setState({currentDisplayImgTopic: (e.target.checked===false)? classifierImgTopic : targLocalizerImgTopic })
-    }
-  }
-
-  async onApplyButtonPressed() {
+   async onApplyButtonPressed() {
     const { startClassifier, reportedClassifier } = this.props.ros
     var threshold = reportedClassifier.detection_threshold
     if (reportedClassifier){
@@ -236,40 +247,11 @@ class NepiAppAIDetector extends Component {
     stopClassifier()
   }
 
-  // Function for creating image topic options.
-  getImageOptions() {
-    var items = []
-    items.push(<Option>{"Detection"}</Option>)
-    items.push(<Option>{"Targeting"}</Option>)
-    return items
-    }
 
-  onImageSelect(event){
-    const {namespacePrefix, deviceId} = this.props.ros
-    const value = event.target.value
-    const DETCLASSIFIER_IMG_TOPIC = "/" + namespacePrefix + "/" + deviceId + '/ai_detector_mgr/detection_image'
-    const TARGETING_IMG_TOPIC = "/" + namespacePrefix + "/" + deviceId + '/app_ai_targeting/targeting_image'
-    var image_topic = ""
-    var image_name = ""
-    if (value === "Detection"){
-      image_topic = DETCLASSIFIER_IMG_TOPIC
-      image_name = "Detection Image"
-    }
-    else{
-      image_topic = TARGETING_IMG_TOPIC
-      image_name = "Targeting Image"
-    }
-    this.setState({selectedImgTopic: image_topic,
-      imageText: image_name})
-  }
 
 
   renderAIManager() {
-    const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
-    const {
-      reportedClassifier
-    } = this.props.ros
-
+    const {reportedClassifier, saveConfigTriggered, sendTriggerMsg  } = this.props.ros
     const thresholdVal = reportedClassifier? reportedClassifier.detection_threshold : 0.3
     var status_text = reportedClassifier? reportedClassifier.classifier_state : "Unknown"
     
@@ -292,7 +274,7 @@ class NepiAppAIDetector extends Component {
       status_color = indicator_colors.green
     }   
 
-    const namespace = this.getAppNamespace()
+    const appNamespace = this.getAppNamespace()
     return (
 
           <Section title={"AI Detector Settings"}>
@@ -327,41 +309,57 @@ class NepiAppAIDetector extends Component {
               unit={"%"}
             />
 
-          <label style={{fontWeight: 'bold'}}>
-          {"A/I Status"}
-        </label>
 
-            <Columns>
+
+              <div align={"left"} textAlign={"left"}>
+              <Columns>
               <Column>
-                <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
+              <ButtonMenu style={{marginTop: "10px", marginBottom: "10px", align:"left"}}>
+                  <Button onClick={this.onApplyButtonPressed}>{"Start"}</Button>
+                </ButtonMenu>   
+
+                </Column>
+                <Column>
+
+                <ButtonMenu style={{marginTop: "10px", marginBottom: "10px", align:"left"}}>
+                  <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
+                </ButtonMenu>  
+
+                </Column>
+              </Columns>
+              </div>
+
+
+
+              <Columns>
+              <Column>
+
+              <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
                 {(status_text === "Loading")?
                   <progress value={reportedClassifier? reportedClassifier.loading_progress : 0.0} style={{width: '100%'}}/>
                   : null
                 }
 
-              </Column>
-              <Column>
-
-                <ButtonMenu style={{marginTop: "0px"}}>
-                  <Button onClick={this.onApplyButtonPressed}>{"Start"}</Button>
-                  <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
-                </ButtonMenu>        
-          
                 </Column>
-                </Columns>
+                <Column>
 
+                </Column>
+              </Columns>
+
+     
+          
                 <Columns>
                 <Column>
                 
-              <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg(namespace + "/save_config")}>{"Save Config"}</Button>
+              <ButtonMenu style={{marginTop: "10px"}}>
+                <Button onClick={() => sendTriggerMsg(appNamespace + "/save_config")}>{"Save Config"}</Button>
               </ButtonMenu>
 
             </Column>
             <Column>
             
-              <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg(namespace + "/reset_config")}>{"Reset Config"}</Button>
+              <ButtonMenu style={{marginTop: "10px"}}>
+                <Button onClick={() => sendTriggerMsg(appNamespace + "/reset_config")}>{"Reset Config"}</Button>
               </ButtonMenu>
 
             </Column>
@@ -374,22 +372,42 @@ class NepiAppAIDetector extends Component {
       }
 
       render() {
-        const namespace = this.getAppNamespace()
+        const appNamespace = this.getAppNamespace()
+        const targetingAppNamespace = appNamespace ? appNamespace.replace("ai_detector_mgr", "app_ai_targeting" ): appNamespace
         return (
           <Columns>
           <Column equalWidth={false}>
   
+          <Columns>
+          <Column >
+
           <Label title={"Image Select"}>
               <Select id="onImageSelect" onChange={this.onImageSelect}>
                 {this.getImageOptions()}
               </Select>
             </Label>
+
+            </Column>
+          <Column>
+
+          </Column>
+          <Column>
+
+          </Column>
+          </Columns>
+
           <CameraViewer
             imageTopic={this.state.currentDisplayImgTopic}
             title={this.state.imageText}
             hideQualitySelector={false}
           />
 
+          <div hidden={appNamespace === null}>
+            <Nepi_IF_SaveData
+                  saveNamespace={targetingAppNamespace}
+                  title={"Nepi_IF_SaveData"}
+              />
+          </div>
 
           </Column>
           <Column>
@@ -398,13 +416,14 @@ class NepiAppAIDetector extends Component {
           {this.renderAIManager()}    
 
 
-          <div hidden={namespace === null}>
+          <div hidden={appNamespace === null}>
 
-          <NepIAppAiTargeting
-          targetingNamespace={ namespace ? namespace.replace("ai_detector_mgr", "app_ai_targeting" ): namespace}
-          title={"NepIAppAiTargeting"}
+          <NepiAppAiTargetingControls
+          targetingNamespace = {targetingAppNamespace}
+          title={"NepiAppAiTargetingControls"}
           />
-        
+
+
         </div>   
 
 
@@ -418,4 +437,4 @@ class NepiAppAIDetector extends Component {
       
 }
 
-export default NepiAppAIDetector
+export default NepiAppAiTargeting

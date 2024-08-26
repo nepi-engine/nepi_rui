@@ -20,7 +20,8 @@ import Dashboard from "./NepiDashboard"
 import SensorIDX from "./NepiSensorsImaging"
 import PointcloudApp from "./NepiAppPointcloud"
 import NEPIConnect from "./NepiSystemConnect"
-import DetectionApp from "./NepiAppAIDetector"
+import AiManager from "./NepiSystemAiDetector"
+import AiTargetingApp from "./NepiAppAiTargeting"
 import MultiImageViewer from "./NepiAppImageViewer"
 import NavPoseMgr from "./NepiMgrNavPose"
 import Settings from "./NepiSystemDevice"
@@ -71,7 +72,7 @@ class App extends Component {
               ]
             },
             { path: "/navPose", label: "NavPose" },
-            { path: "/ai", label: " AI " },
+            
             {
               path: "/applications",
               label: "Applications",
@@ -79,6 +80,7 @@ class App extends Component {
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
+                { path: "/ai_targeting_app", label: " AI Targeting" },
                 { path: "/automation", label: "Automation" }
               ]
             },
@@ -89,6 +91,7 @@ class App extends Component {
                 { path: "/system_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
                 { path: "/onvif_mgr", label: "ONVIF"},
+                { path: "/ai_mgr", label: " AI Manager" },
                 { path: "/nepi_connect", label: "Connect" },
               ]
             },
@@ -110,12 +113,13 @@ class App extends Component {
           <Route path="/sensor_idx" component={SensorIDX} />
           <Route path="/pointcloud_app" component={PointcloudApp} />
           <Route path="/navPose" component={NavPoseMgr} />
-          <Route path="/ai" component={DetectionApp} />
+          <Route path="/ai_targeting_app" component={AiTargetingApp} />
           <Route path="/automation" component={Automation} />
           <Route path="/onvif_mgr" component={OnvifManager} />
           <Route path="/image_sequencer" component={ImageSequencer} />
           <Route path="/system_config" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
+          <Route path="/ai_mgr" component={AiManager} />
           <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/ptx" component={PTX} />
           <Route path="/rbx" component={RBX} />

@@ -32,7 +32,7 @@ import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenu
 @observer
 
 // Component that contains the  Pointcloud App Viewer Controls
-class NepIAppAiTargeting extends Component {
+class NepiAppAiTargetingControls extends Component {
   constructor(props) {
     super(props)
 
@@ -62,8 +62,8 @@ class NepIAppAiTargeting extends Component {
       target_min_dist_m: null,
       target_age_filter: null,
 
-      target_box_adjust_percent: null,
-      pc_clip_adjust_percent: null,
+      target_box_size_percent: null,
+      pc_box_size_percent: null,
 
       current_targets_list: [],
       lost_targets_list: [],
@@ -106,8 +106,8 @@ target_min_points: message.target_min_points,
 target_min_px_ratio: message.target_min_px_ratio,
 target_min_dist_m: message.target_min_dist_m,
 target_age_filter: message.target_age_filter,
-target_box_adjust_percent: message.target_box_adjust_percent,
-pc_clip_adjust_percent: message.target_box_adjust_percent,
+target_box_size_percent: message.target_box_size_percent,
+pc_box_size_percent: message.pointcloud_box_size_percent,
 
 available_classes_list: convertStrToStrList(message.available_classes_list),
 selected_classes_list: convertStrToStrList(message.selected_classes_list),
@@ -221,17 +221,16 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     const NoneOption = <Option>None</Option>
     return (
       <Section title={"Targeting Controls"}>
-        <Label title={"Targeting Controls Running"}>
+        <Label title={"Targeting System Running"}>
               <BooleanIndicator value={(this.state.targeting_controls_running !== null)? this.state.targeting_controls_running : false} />
             </Label>
 
- 
-            <div hidden={!this.state.targeting_controls_running}>
-            <Label title="Select Target Classes"> </Label>
+            
             <Columns>
             <Column>
 
-            <Label title="">
+            <Label title="Select Target Class Filter"> </Label>
+
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
                     </div>
@@ -249,12 +248,14 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                     </div>
                     )}
                     </div>
-              </Label>
 
               </Column>
               <Column>
 
-              <Label title={"Select Target"}>
+
+              <Label title="Select Target Filter"> </Label>
+
+
                 <Select
                   id="select_target"
                   onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.props.targetingNamespace + "/select_target")}
@@ -264,7 +265,7 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                     ? createMenuListFromStrList(this.state.available_targets_list, false, [],[],[])
                     : NoneOption}
                 </Select>
-              </Label>
+
               </Column>
               </Columns>
 
@@ -297,36 +298,36 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
           <Input id="target_min_points" 
             value={this.state.target_min_points} 
             onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_min_points")} 
-            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_target_min_points")} />
+            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_target_min_points")} />
         </Label>
 
         <Label title={"Target Min Dist (m)"}>
           <Input id="target_min_dist_m" 
             value={this.state.target_min_dist_m} 
             onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_min_dist_m")} 
-            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_vert")} />
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_target_min_dist_meters")} />
         </Label>
 
         <Label title={"Target Age Filter"}>
           <Input id="target_age_filter" 
             value={this.state.target_age_filter} 
             onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_age_filter")} 
-            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_horz")} />
+            onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_age_filter")} />
         </Label>
 
         <Label title={"Set Box Adjust %"}>
-          <Input id="target_box_adjust_percent" 
-            value={this.state.target_box_adjust_percent} 
-            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_box_adjust_percent")} 
-            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_box_adjust_percent")} />
+          <Input id="target_box_size_percent" 
+            value={this.state.target_box_size_percent} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"target_box_size_percent")} 
+            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_target_box_size_percent")} />
         </Label>
 
 
         <Label title={"Pountcloud Clip Adjust %"}>
-          <Input id="pc_clip_adjust_percent" 
-            value={this.state.pc_clip_adjust_percent} 
-            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"pc_clip_adjust_percent")} 
-            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_pc_clip_adjust_percent")} />
+          <Input id="pc_box_size_percent" 
+            value={this.state.pc_box_size_percent} 
+            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"pc_box_size_percent")} 
+            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_pointcloud_box_size_percent")} />
         </Label>
 
         <SliderAdjustment
@@ -361,15 +362,11 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
       </Column>
       <Column>
 
-      <ButtonMenu>
-        <Button onClick={() => sendTriggerMsg(this.props.targetingNamespace + "/reset_app")}>{"Reset controls"}</Button>
-      </ButtonMenu>
-  
+
 
        </Column>
       </Columns>
-      
-      </div>
+
 
 
       </Section>
@@ -377,4 +374,4 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
   }
 
 }
-export default NepIAppAiTargeting
+export default NepiAppAiTargetingControls
