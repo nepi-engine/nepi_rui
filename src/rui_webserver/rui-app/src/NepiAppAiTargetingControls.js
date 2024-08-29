@@ -221,11 +221,24 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     const NoneOption = <Option>None</Option>
     return (
       <Section title={"Targeting Controls"}>
+
+                    <Columns>
+                    <Column>
         <Label title={"Targeting System Running"}>
               <BooleanIndicator value={(this.state.targeting_controls_running !== null)? this.state.targeting_controls_running : false} />
             </Label>
 
-            
+
+          </Column>
+          <Column>
+
+          <ButtonMenu>
+            <Button onClick={() => sendTriggerMsg( this.props.targetingNamespace + "/reset_app")}>{"Reset App"}</Button>
+          </ButtonMenu>
+
+          </Column>
+          </Columns>
+      
             <Columns>
             <Column>
 
@@ -252,9 +265,11 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
               </Column>
               <Column>
 
+              <Label title=""> </Label>
+              <Label title=""> </Label>
+              <Label title=""> </Label>
 
-              <Label title="Select Target Filter"> </Label>
-
+              <Label title="Select Target Filter"> 
 
                 <Select
                   id="select_target"
@@ -265,6 +280,7 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                     ? createMenuListFromStrList(this.state.available_targets_list, false, [],[],[])
                     : NoneOption}
                 </Select>
+                </Label>
 
               </Column>
               </Columns>

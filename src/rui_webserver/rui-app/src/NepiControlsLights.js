@@ -16,7 +16,10 @@ import CameraViewer from "./CameraViewer"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
-import {createShortUniqueValues, convertStrToStrList} from "./Utilities"
+import NepiDeviceInfo from "./NepiDeviceInfo"
+import Toggle from "react-toggle"
+
+import {createShortUniqueValues, convertStrToStrList, onChangeSwitchStateValue, onEnterSendFloatValue, onEnterSendIntValue, onUpdateSetStateValue} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -37,26 +40,33 @@ class NepiControlsLights extends Component {
       imageTopic: null,
       imageText: null,
 
+      lxsIdentifier: null,
       lsxSerialNum: null,
       lsxHwVersion: null,
       lsxSwVersion: null,
-
       lsxDeviceName: null,
+
+      lxsUserName: null,
       
-      lsxStandbyState: null,
-      lsxOnOffState: null,
-      lsxIntensityRatio: null,
-      lsxBlinkState: null,
-      lsxBlinkInterval: null,
+      lsxStandbyState: false,
+      lsxOnOffState: false,
+      lsxBlinkState: false,
+      lsxStrobeState: false,
+
+
+      lsxBlinkInterval: 1,
+      lsxIntensityRatio: 0,
+
+
       lsxColorStr: "None",
       lsxKelvinVal: null,
-      lsxStrobeState: null,
       lsxTempC: null,
       lsxPowerW: null,
 
 
       listener: null,
-      disabled: true
+      disabled: true,
+
     }
 
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
@@ -115,9 +125,15 @@ class NepiControlsLights extends Component {
       lsxBlinkInterval: message.blink_interval ,
       lsxKelvinVal: message.kelvin_setting ,
       lsxStrobeState: message.strobe_state ,
+      lsxBlinkState: message.blink_state,
+
       lsxColorStr: message.color_setting,
       lsxTempC: message.temp_c ,
       lsxPowerW: message.power_w ,
+
+      lxsIdentifier: message.identifier,
+      lxsUserName: message.user_namenull,
+
     })
   }
 
@@ -209,39 +225,116 @@ class NepiControlsLights extends Component {
     
     return (
       <Section title={lsx_id} >
-        <Label title={"Serial Number"}>
-          <Input disabled={true} value={lsxSerialNum}/>
-        </Label>
-		
-        <Label title={"H/W Rev."}>
-          <Input disabled={true} value={lsxHwVersion}/>
-        </Label>
-		
-        <Label title={"S/W Rev."}>
-          <Input disabled={true} value={lsxSwVersion}/>
-        </Label>
-		
-        <Label title={"Temperature C"}>
-          <Input
-            disabled
-            style={{ width: "45%", float: "left" }}
-            value={round(lsxTempC, 1)}  />
-        </Label>
-        
-	<SliderAdjustment
-          disabled={!has_intensity_control}
-          title={"Intensity"}
-          msgType={"std_msgs/Float32"}
-          adjustment={lsxIntensityRatio}
-          topic={lsxNamespace + "/lsx/set_intensity"}
-          scaled={0.01}
-          min={0}
-          max={100}
-          tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-          unit={"%"}
-        />
-	
-      </Section>
+
+            <div hidden={!has_on_off_control}>    
+          <Label title="Set On_Off State">
+                  <Toggle
+                    checked={this.state.lsxOnOffState===true}
+                    onClick={() => this.props.ros.sendBoolMsg(this.state.lsxNamespace + "/lsx/turn_on_off",!this.state.lsxOnOffState)}>
+                  </Toggle>
+            </Label>
+            </div>
+
+            <div hidden={!this.state.lsxOnOffState}>  
+            <div hidden={!has_standby_mode}>      
+          <Label title="Set Standby State">
+                  <Toggle
+                    checked={this.state.lsxStandbyState===true}
+                    onClick={() => this.props.ros.sendBoolMsg(this.state.lsxNamespace + "/lsx/set_standby",!this.state.lsxStandbyState)}>
+                  </Toggle>
+            </Label>
+            </div>
+
+            <div hidden={!has_blink_control}>    
+            <Label title="Set Blink State">
+                  <Toggle
+                    checked={this.state.lsxBlinkState===true}
+                    onClick={() => this.props.ros.sendBoolMsg(this.state.lsxNamespace + "/lsx/blink_on_off",!this.state.lsxBlinkState)}>
+                  </Toggle>
+            </Label>
+
+            <SliderAdjustment
+                    title={"Blink Interval (s)"}
+                    msgType={"std_msgs/Float32"}
+                    adjustment={this.state.lsxBlinkInterval}
+                    topic={lsxNamespace + "/lsx/set_blink_interval"}
+                    scaled={1}
+                    min={1}
+                    max={10}
+                    tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                    unit={"s"}
+                  />
+            </div>
+
+            <div hidden={!has_hw_strobe}>    
+            <Label title="Set Strobe State">
+                  <Toggle
+                    checked={this.state.lsxStrobezState===true}
+                    onClick={() => this.props.ros.sendBoolMsg(this.state.lsxNamespace + "/lsx/set_strobe_enable",!this.state.lsxStrobezState)}>
+                  </Toggle>
+            </Label>
+            </div>
+
+
+{/*
+            <Label title={"Kelvin Setting"}>
+                  <Input id="blink_interval" 
+                    value={this.state.lsxKelvinVal} 
+                    onChange={(event) => onUpdateSetStateValue.bind(this)(event,"lsxKelvinVal")} 
+                    onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.state.lsxNamespace + "/lsx/set_kelvin")} />
+                </Label>
+
+                disabled={!has_intensity_control}
+*/}                
+            <div hidden={!has_kelvin_control}>    
+                  <SliderAdjustment
+                    title={"Kelvin Setting"}
+                    msgType={"std_msgs/Int32"}
+                    adjustment={this.state.lsxKelvinVal}
+                    topic={lsxNamespace + "/lsx/set_kelvin"}
+                    scaled={1}
+                    min={1000}
+                    max={10000}
+                    tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                    unit={"K"}
+                  />
+            </div>
+
+            <div hidden={!has_intensity_control}>    
+                <SliderAdjustment
+                    title={"Intensity ratio"}
+                    msgType={"std_msgs/Float32"}
+                    adjustment={this.state.lsxIntensityRatio}
+                    topic={lsxNamespace + "/lsx/set_intensity_ratio"}
+                    scaled={.01}
+                    min={0}
+                    max={100}
+                    tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                    unit={"%"}
+                  />
+            </div>
+
+            <div hidden={!reports_temperature}>    
+                  <Label title={"Temperature C"}>
+                    <Input
+                      disabled
+                      value={round(lsxTempC, 1)}  />
+                  </Label>
+                  </div>
+
+                  <div hidden={!reports_power}>    
+             <Label title={"Power"}>
+                    <Input
+                      disabled
+                      value={round(this.state.lsxPowerW, 1)}  />
+                  </Label>
+                  </div>
+
+
+
+                  </div>
+
+               </Section>
     )
   }
 
@@ -254,8 +347,19 @@ class NepiControlsLights extends Component {
     //const lsx_caps = lsxUnits[lsxNamespace]
     return (
       <React.Fragment>
+
         <Columns>
           <Column equalWidth = {false} >
+
+          <NepiDeviceInfo
+                  deviceNamespace={this.state.lsxNamespace}
+                  status_topic={"/lsx/status"}
+                  status_msg_type={"nepi_ros_interfaces/LSXStatus"}
+                  name_update_topic={"/lsx/update_device_name"}
+                  name_reset_topic={"/lsx/reset_device_name"}
+                  title={"NepiSensorsImagingInfo"}
+              />
+
                 <div id="lsxImageViewer">
                   <CameraViewer
                     id="lsxImageViewer"
@@ -267,6 +371,8 @@ class NepiControlsLights extends Component {
           </Column>
 
           <Column>
+          <Section title={"Selection"}>
+
             <Label title={"Lighting Device"}>
               <Select
                 onChange={this.onLSXUnitSelected}
@@ -284,12 +390,34 @@ class NepiControlsLights extends Component {
               {this.createImageTopicsOptions()}
               </Select>
             </Label>
+
+            <div hidden={this.state.lsxNamespace === null}>    
+
+            <Label title={"Serial Number"}>
+              <Input disabled={true} value={this.state.lsxSerialNum}/>
+            </Label>
+        
+            <Label title={"H/W Rev."}>
+              <Input disabled={true} value={this.state.lsxHwVersion}/>
+            </Label>
+        
+            <Label title={"S/W Rev."}>
+              <Input disabled={true} value={this.state.lsxSwVersion}/>
+            </Label>
+            </div>
+
+            </Section>
+
             { lsxNamespace?
               this.renderControlPanel()
               : null
             }
+
+
+
           </Column>
         </Columns>
+
       </React.Fragment>
     )
   }
