@@ -17,12 +17,10 @@ import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import CameraViewer from "./CameraViewer"
 import Input from "./Input"
-import Toggle from "react-toggle"
 
 import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
-  onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
-  doNothing} from "./Utilities"
+  onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
+  } from "./Utilities"
 
 import NepiPointcloudProcessControls from "./NepiPointcloudProcessControls"
 import NepiPointcloudRenderControls from "./NepiPointcloudRenderControls"
@@ -47,7 +45,6 @@ class PointcloudApp extends Component {
       showTransforms: false,
       transforms_topic_list: [],
       transforms_list: [],
-      selectedTransformPointcloud: "",
       selectedTransformInd: 0,
       selectedTransformPointcloud: "NONE",
       selectedTransformData: null,
@@ -582,7 +579,6 @@ class PointcloudApp extends Component {
 
 
   render() {
-    const { namespacePrefix, deviceId } = this.props.ros
     const connected = this.state.connected
     return (
       <Columns>

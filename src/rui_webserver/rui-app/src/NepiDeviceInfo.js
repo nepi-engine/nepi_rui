@@ -68,7 +68,7 @@ class NepiDeviceInfo extends Component {
   // Function for configuring and subscribing to Status
   updateListener() {
     const {setupStatusListener} = this.props.ros
-    const { deviceNamespace, status_topic, status_msg_type, title } = this.props
+    const { deviceNamespace, status_topic, status_msg_type } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }

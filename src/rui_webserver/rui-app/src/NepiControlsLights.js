@@ -19,7 +19,7 @@ import Input from "./Input"
 import NepiDeviceInfo from "./NepiDeviceInfo"
 import Toggle from "react-toggle"
 
-import {createShortUniqueValues, convertStrToStrList, onChangeSwitchStateValue, onEnterSendFloatValue, onEnterSendIntValue, onUpdateSetStateValue} from "./Utilities"
+import {createShortUniqueValues, convertStrToStrList, onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -125,7 +125,6 @@ class NepiControlsLights extends Component {
       lsxBlinkInterval: message.blink_interval ,
       lsxKelvinVal: message.kelvin_setting ,
       lsxStrobeState: message.strobe_state ,
-      lsxBlinkState: message.blink_state,
 
       lsxColorStr: message.color_setting,
       lsxTempC: message.temp_c ,
@@ -133,7 +132,6 @@ class NepiControlsLights extends Component {
 
       lxsIdentifier: message.identifier,
       lxsUserName: message.user_namenull,
-
     })
   }
 
@@ -203,8 +201,7 @@ class NepiControlsLights extends Component {
 
   
   renderControlPanel() {
-    const { lsxNamespace, lsxSerialNum, lsxHwVersion, lsxSwVersion,
-            lsxIntensityRatio, lsxTempC } = this.state
+    const { lsxNamespace, lsxTempC } = this.state
     const { lsxUnits } = this.props.ros
     const lsx_id = lsxNamespace? lsxNamespace.split('/').slice(-1) : "No Light Selected"
 
@@ -221,8 +218,10 @@ class NepiControlsLights extends Component {
     const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
     const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)
     const reports_power = lsx_caps && (lsx_caps['reports_power'] === true)
+    const NoneOption = <Option>None</Option>
 
-    
+
+
     return (
       <Section title={lsx_id} >
 
@@ -265,6 +264,21 @@ class NepiControlsLights extends Component {
                     unit={"s"}
                   />
             </div>
+            
+            <div hidden={!has_color_control}>    
+            <Label title={"Select Color"}>
+                    <Select
+                      id="select_color"
+                        onChange={(event) => onDropdownSelectedSendStr.bind(this)(event,"/set_color")}
+                        value={this.state.lsxColorStr}
+                      >
+                        {this.state.lsxColorStr
+                          ? createMenuListFromStrList(color_options_list, false, [],[],[])
+                          : NoneOption}
+                      </Select>
+                    </Label>
+                    </div>
+
 
             <div hidden={!has_hw_strobe}>    
             <Label title="Set Strobe State">
@@ -293,8 +307,8 @@ class NepiControlsLights extends Component {
                     adjustment={this.state.lsxKelvinVal}
                     topic={lsxNamespace + "/lsx/set_kelvin"}
                     scaled={1}
-                    min={1000}
-                    max={10000}
+                    min={kelvin_min}
+                    max={kelvin_max}
                     tooltip={"Speed as a percentage (0%=min, 100%=max)"}
                     unit={"K"}
                   />

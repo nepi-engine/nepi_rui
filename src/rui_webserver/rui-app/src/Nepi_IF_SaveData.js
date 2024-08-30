@@ -119,7 +119,7 @@ class Nepi_IF_SaveData extends Component {
 
   // Function for configuring and subscribing to Status
   updateSaveStatusListener() {
-    const { saveNamespace, title } = this.props
+    const { saveNamespace } = this.props
     if (this.state.saveStatusListener) {
       this.state.saveStatusListener.unsubscribe()
     }

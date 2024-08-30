@@ -530,12 +530,8 @@ class NavPoseMgr extends Component {
       navPosePositionEnuY,
       navPosePositionEnuZ, 
       navPoseOrientationYawAngle,
-      navPoseOrientationYawRate,
       navPoseOrientationPitchAngle,
-      navPoseOrientationPitchRate,
       navPoseOrientationRollAngle,
-      navPoseOrientationRollRate,
-      navPoseOrientationFrame,
       onReinitNavPoseSolution
     } = this.props.ros
     return (

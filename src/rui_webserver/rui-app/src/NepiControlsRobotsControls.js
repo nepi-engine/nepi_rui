@@ -12,9 +12,6 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
-import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
@@ -22,11 +19,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, onDropdownSelectedSendIndex8,
-  onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
-  onChangeSwitchStateValue,
-  doNothing} from "./Utilities"
+import {onEnterSetStateFloatValue, onvertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -56,7 +49,6 @@ class NepiRobotControls extends Component {
       cmd_success: null,
       manual_ready: null,
       autonomous_ready: null,
-      manual_ready:null,
       last_cmd_str: null,
       last_error_message: null,
 
@@ -144,12 +136,10 @@ class NepiRobotControls extends Component {
       cmd_success: message.cmd_success ,
       manual_ready: message.manual_motor_control_mode_ready ,
       autonomous_ready: message.autonomous_control_mode_ready ,
-      manual_ready: message.manual_motor_control_mode_ready,
 
       last_cmd_str: message.last_cmd_string ,
       last_error_message: message.last_error_message 
     })
-    const motorControlsStrList = message.current_motor_control_settings
     if (this.state.rbx_capabilities === null){
       const capabilities = rbxRobots[this.props.rbxNamespace]
       if (capabilities){

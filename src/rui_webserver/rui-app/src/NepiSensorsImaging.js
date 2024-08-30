@@ -14,7 +14,6 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
-import Toggle from "react-toggle"
 import CameraViewer from "./CameraViewer"
 
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"

@@ -12,9 +12,7 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
-import Toggle from "react-toggle"
+import {SliderAdjustment} from "./AdjustmentWidgets"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
@@ -22,11 +20,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
-  onUpdateSetStateValue, 
-  onEnterSendFloatValue, onEnterSetStateFloatValue,
-  onEnterSendIntValue, onChangeSwitchStateValue,} from "./Utilities"
+import { convertStrToStrList, createMenuListFromStrList, onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSendIntValue, onChangeSwitchStateValue,} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -214,10 +208,9 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
 
   render() {
     
-    const {  sendTriggerMsg, sendBoolMsg, setFrame3d } = this.props.ros
+    const {  sendTriggerMsg,} = this.props.ros
     const classOPtions = this.getClassOptions()
     const selectedClasses = this.state.selected_classes_list
-    const {viewableTopics} = this.state
     const NoneOption = <Option>None</Option>
     return (
       <Section title={"Targeting Controls"}>

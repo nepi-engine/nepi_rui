@@ -18,10 +18,7 @@ import Toggle from "react-toggle"
 import Label from "./Label"
 import Input from "./Input"
 import { Column, Columns } from "./Columns"
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, onUpdateSetStateValue, 
-  onEnterSendFloatValue, onEnterSetStateFloatValue, onEnterSendIntValue, onChangeSwitchStateValue, 
-  doNothing} from "./Utilities"
+import { round, onUpdateSetStateValue, onEnterSetStateFloatValue } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -54,7 +51,6 @@ class NepiSensorsImagingControls extends Component {
       transforms_list: [],
       selectedTransformPointcloud: "",
       selectedTransformInd: 0,
-      selectedTransformPointcloud: null,
       selectedTransformData: null,
       selectedTransformTX: 0,
       selectedTransformTY: 0,
@@ -64,8 +60,6 @@ class NepiSensorsImagingControls extends Component {
       selectedTransformRZ: 0,
       selectedTransformHO: 0,
       age_filter_s: null,
-      frame3D: null,
-      listener: null,
 
       listener: null,
 
@@ -100,7 +94,7 @@ class NepiSensorsImagingControls extends Component {
 
   // Function for configuring and subscribing to StatusIDX
   updateListener() {
-    const { idxSensorNamespace, title } = this.props
+    const { idxSensorNamespace } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }

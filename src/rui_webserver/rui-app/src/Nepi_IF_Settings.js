@@ -16,11 +16,11 @@ import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
-import Select, { Option } from "./Select"
+import Select from "./Select"
 import Input from "./Input"
 
 
-import { round, convertStrToStrList, createMenuListFromStrList, onChangeSwitchStateValue, onUpdateSetStateValue } from "./Utilities"
+import { convertStrToStrList, createMenuListFromStrList, onChangeSwitchStateValue } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -77,7 +77,7 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const { settingsNamespace, title } = this.props
+    const { settingsNamespace } = this.props
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
     }

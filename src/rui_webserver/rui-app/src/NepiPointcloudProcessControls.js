@@ -12,22 +12,13 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
-import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
-  onUpdateSetStateValue, 
-  onEnterSendFloatValue, onEnterSetStateFloatValue,
-  onEnterSendIntValue,
-  onChangeSwitchStateValue, 
-  doNothing} from "./Utilities"
+import { onUpdateSetStateValue, onEnterSendFloatValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -132,7 +123,7 @@ class NepiPointcloudProcessControls extends Component {
   }
 
   render() {
-    const {  sendTriggerMsg, sendBoolMsg, setFrame3d } = this.props.ros
+    const {  sendTriggerMsg, sendBoolMsg } = this.props.ros
     return (
       <Section title={"Process Controls"}>
 

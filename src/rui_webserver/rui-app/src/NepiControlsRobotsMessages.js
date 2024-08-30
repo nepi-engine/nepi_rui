@@ -11,28 +11,19 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
-import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
-import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import BooleanIndicator from "./BooleanIndicator"
-import ListBox from './ListBox';
-import './ListBox.css';
+
 
 
 
 import { onChangeSwitchStateValue, convertStrToStrList} from "./Utilities"
 import {Queue} from "./Utilities"
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
+
 
 @inject("ros")
 @observer
@@ -120,7 +111,6 @@ class NepiRobotMessages extends Component {
       last_cmd_str: message.last_cmd_string ,
       last_error_message: message.last_error_message 
     })
-    const motorControlsStrList = message.current_motor_control_settings
 
   
   }
@@ -253,7 +243,6 @@ class NepiRobotMessages extends Component {
 
   
   render() {
-    const {  sendTriggerMsg } = this.props.ros
     return (
       <Section title={"System Informaion"}>
 

@@ -13,21 +13,15 @@ import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
 import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
+import { SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
-import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState,  
-  onEnterSendFloatValue, onEnterSetStateFloatValue,
-  onEnterSendIntValue,
-  onChangeSwitchStateValue, 
-  doNothing} from "./Utilities"
+import { convertStrToStrList} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -159,7 +153,7 @@ class NepiPointcloudRenderControls extends Component {
   }
 
   render() {
-    const {  sendTriggerMsg, setFrame3d } = this.props.ros
+    const {  sendTriggerMsg } = this.props.ros
     return (
       <Section title={"Render Controls"}>
 

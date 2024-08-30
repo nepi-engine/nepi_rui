@@ -24,10 +24,8 @@ import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 import Input from "./Input"
 import Styles from "./Styles"
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, onDropdownSelectedSendIndex,
-  onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
-  doNothing} from "./Utilities"
+import {  convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList, onDropdownSelectedSendIndex,
+  onUpdateSetStateValue, onEnterSendFloatValue} from "./Utilities"
 
 
 @inject("ros")
@@ -68,9 +66,6 @@ class NepiControlsRobots extends Component {
       states_menu: null,
       modes_list: null,
       modes_menu: null,
-      home_lat: null,
-      home_long: null,
-      home_alt: null,
       image_topic: null,
 
       actions_list: null,
@@ -266,11 +261,6 @@ class NepiControlsRobots extends Component {
       return
     }
 
-    var autoSelectedImgTopic = null
-    var autoSelectedImgTopicText = null
-    autoSelectedImgTopic = value.concat("/rbx/image")
-    autoSelectedImgTopicText = createShortValuesFromNamespaces([autoSelectedImgTopic])[0]
-  
     this.setState({
       currentRBXNamespace: value,
       currentRBXNamespaceText: text,
@@ -321,8 +311,6 @@ class NepiControlsRobots extends Component {
       const { rbxRobots, sendTriggerMsg, sendStringMsg, sendBoolMsg, saveConfigTriggered, sendGeoPointMsg } = this.props.ros
       const NoneOption = <Option>None</Option>
       const robotSelected = (this.state.currentRBXNamespace != null)
-      const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null)? this.state.states_list[this.state.state_index] : "None"
-      const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null)? this.state.modes_list[this.state.mode_index] : "None"
       const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
   
       return (
@@ -516,13 +504,9 @@ class NepiControlsRobots extends Component {
     }
 
   renderSetupControls() {
-    const { rbxRobots, sendTriggerMsg, sendStringMsg, sendBoolMsg, saveConfigTriggered, sendGeoPointMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const robotSelected = (this.state.currentRBXNamespace != null)
     const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null)? this.state.states_list[this.state.state_index] : "None"
     const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null)? this.state.modes_list[this.state.mode_index] : "None"
-    const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
-
     return (
       <React.Fragment>
       <Section title={"Setup Controls"}>
@@ -596,7 +580,6 @@ class NepiControlsRobots extends Component {
 
   render() {
     const robotSelected = (this.state.currentRBXNamespace != null)
-    const ImageName = this.state.imageText_0
     
     return (
       <Columns>
