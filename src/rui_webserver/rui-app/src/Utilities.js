@@ -8,9 +8,8 @@
  */
 
 
-import React, { Component } from "react"
-import { observer, inject } from "mobx-react"
-import Select, { Option } from "./Select"
+import React from "react"
+import { Option } from "./Select"
 import Styles from "./Styles"
 
 

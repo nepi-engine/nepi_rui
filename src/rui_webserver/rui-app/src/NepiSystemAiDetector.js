@@ -7,7 +7,6 @@
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
 import React, { Component } from "react"
-import Toggle from "react-toggle"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
@@ -121,9 +120,6 @@ class NepiSystemAiDetector extends Component {
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value === "None" ? null : event.target.value
 
-    const { idxSensors } = this.props.ros
-    const sensorName = (value !== null)? value.split('/idx/')[0] : "None"
-    const hasDepthMap = (sensorName in idxSensors)? this.props.ros.idxSensors[sensorName].has_depth_map : false
 
     await this.setState({
       imageTopic: value,
@@ -146,7 +142,6 @@ class NepiSystemAiDetector extends Component {
   async checkForClassifierRunning() {
     const {
       reportedClassifier,
-      classifierImgTopic,
     } = this.props.ros
 
 
@@ -204,7 +199,7 @@ class NepiSystemAiDetector extends Component {
 
 
   renderAIManager() {
-    const { saveConfigTriggered, sendTriggerMsg  } = this.props.ros
+    const {sendTriggerMsg  } = this.props.ros
     const {
       reportedClassifier
     } = this.props.ros
@@ -315,7 +310,6 @@ class NepiSystemAiDetector extends Component {
       }
 
       render() {
-        const namespace = this.getAppNamespace()
         return (
           <Columns>
           <Column equalWidth={false}>

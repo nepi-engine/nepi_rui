@@ -19,7 +19,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import {onEnterSetStateFloatValue, onvertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
+import {onEnterSetStateFloatValue, convertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
 
 @inject("ros")
 @observer

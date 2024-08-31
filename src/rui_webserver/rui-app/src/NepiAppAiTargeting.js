@@ -7,7 +7,6 @@
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
 import React, { Component } from "react"
-import Toggle from "react-toggle"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
@@ -187,7 +186,7 @@ class NepiAppAiTargeting extends Component {
   }
 
   getSelectedImageTopic(){
-    const {namespacePrefix, deviceId} = this.props.ros
+    const {namespacePrefix} = this.props.ros
     const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/targeting_image'
     const DETECTION_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
     const sel_img = this.state.selectedImg
@@ -203,7 +202,6 @@ class NepiAppAiTargeting extends Component {
   async checkForClassifierRunning() {
     const {
       reportedClassifier,
-      classifierImgTopic,
     } = this.props.ros
     const sel_img_text = this.state.selectedImgText
     if ((reportedClassifier === null) || (reportedClassifier.classifier_state !== "Running")) {
@@ -251,7 +249,7 @@ class NepiAppAiTargeting extends Component {
 
 
   renderAIManager() {
-    const {reportedClassifier, saveConfigTriggered, sendTriggerMsg  } = this.props.ros
+    const {reportedClassifier, sendTriggerMsg  } = this.props.ros
     const thresholdVal = reportedClassifier? reportedClassifier.detection_threshold : 0.3
     var status_text = reportedClassifier? reportedClassifier.classifier_state : "Unknown"
     
