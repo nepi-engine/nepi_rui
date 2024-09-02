@@ -271,6 +271,7 @@ class ROSConnectionStore {
   @observable scriptForPolledStats = null
 
   @observable imgMuxSequences = null
+  @observable drivers_list_query
 
   @observable onvifDeviceStatuses = null
   @observable onvifDeviceConfigs = null
@@ -282,6 +283,8 @@ class ROSConnectionStore {
   @observable license_info = null
   @observable license_request_info = null
   @observable license_request_mode = false
+
+
 
   async checkLicense() {
     var retry_delay_ms = 3000
@@ -1903,6 +1906,24 @@ class ROSConnectionStore {
       
       if (this.connectedToROS && poll) {
         setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async callDriversListQuery(poll = true) {
+    const _pollOnce = async () => {
+      const resp = await this.callService({
+        name: "onvif_mgr/drivers_list_query",
+        messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
+      })
+
+      this.DriversListQuery = resp['drivers_list_query']
+      this.onvifDeviceConfigs = resp['device_cfgs']
+    
+      if (this.connectedToROS && poll) {
+        setTimeout(_pollOnce, 5000)
       }
     }
 

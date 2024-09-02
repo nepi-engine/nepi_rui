@@ -154,11 +154,11 @@ class NepiPointcloudProcessControls extends Component {
             <Label title="Clip Range Enabled">
                   <Toggle
                   checked={this.state.range_clip_enabled===true}
-                  onClick={() => sendBoolMsg(this.props.processNamespace + "/set_clip_range_enable",!this.state.range_clip_enabled)}>
+                  onClick={() => sendBoolMsg(this.props.processNamespace + "/set_clip_enable",!this.state.range_clip_enabled)}>
                   </Toggle>
             </Label>
 
-            <Label title={"Set Range Clip Ranges (m)"}>
+            <Label title={"Set Clip Ranges (m)"}>
             </Label>
 
            </Column>

@@ -19,7 +19,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import {convertStrToStrList, onEnterSetStateFloatValue, onvertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
+import {convertStrToStrList, onEnterSetStateFloatValue, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -203,7 +203,7 @@ class NepiRobotControls extends Component {
   updateControlsStatusListener() {
     const Namespace = this.props.rbxNamespace
     if (this.state.controlsStatusListener ) {
-      this.state.controlsStatusListener .unsubscribe()
+      this.state.controlsStatusListener.unsubscribe()
     }
     var listener = this.props.ros.setupStatusListener(
           Namespace + "/rbx/status",
@@ -229,7 +229,7 @@ class NepiRobotControls extends Component {
   // Used to unsubscribe to Status message
   componentWillUnmount() {
     if (this.state.controlsStatusListener ) {
-      this.state.controlsStatusListener .unsubscribe()
+      this.state.controlsStatusListener.unsubscribe()
     }
   }
 
@@ -323,7 +323,7 @@ class NepiRobotControls extends Component {
             </Label>
 
             <Label title={"Last Process Success"}>
-              <BooleanIndicator value={(this.state. cmd_success !== null)? this.state. cmd_success : false} />
+              <BooleanIndicator value={(this.state.cmd_success !== null)? this.state. cmd_success : false} />
             </Label>
 
 
