@@ -416,7 +416,7 @@ class PointcloudApp extends Component {
 */}
 
 
-                  <Label title={"Select Transforms"}>
+                  <Label title={"Select Data Transform"}>
                     <Select
                       id="select_transforms"
                       onChange={this.setSelectedTransform}
@@ -532,6 +532,9 @@ class PointcloudApp extends Component {
           <Columns>
             <Column>
             
+
+            </Column>
+            <Column>
               <Label title={""}></Label>
 
               <ButtonMenu>
