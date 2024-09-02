@@ -19,7 +19,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import {onEnterSetStateFloatValue, convertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
+import {convertStrToStrList, onEnterSetStateFloatValue, onvertStrToStrList, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -102,7 +102,6 @@ class NepiRobotControls extends Component {
     this.updateControlsStatusListener = this.updateControlsStatusListener.bind(this)
     this.controlsStatusListener = this.controlsStatusListener.bind(this)
 
-    this.SetLocationCurrent = this.SetLocationCurrent.bind(this)
     this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
     this.sendGoActionIndex = this.sendGoActionIndex.bind(this)
     this.setLocationToCurrent = this.setLocationToCurrent.bind(this)
@@ -247,15 +246,6 @@ class NepiRobotControls extends Component {
     this.setState({
       selected_go_action: event.target.value,
       selected_go_action_index: event.target.selectedIndex
-    })
-  }
-
-  SetLocationCurrent(event) {
-    this.setState({
-      location_lat: this.state.current_lat,
-      location_long: this.state.current_long,
-      altitude_meters: this.state.current_altitude,
-      yaw_deg_location: this.state.current_yaw,
     })
   }
 
