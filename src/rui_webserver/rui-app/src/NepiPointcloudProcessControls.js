@@ -17,8 +17,10 @@ import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
 import Styles from "./Styles"
+import Select, { Option } from "./Select"
 
-import { onUpdateSetStateValue, onEnterSendFloatValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
+
+import { onUpdateSetStateValue, onEnterSendFloatValue, onEnterSendIntValue, onChangeSwitchStateValue, convertStrToStrList, createMenuListFromStrList, onDropdownSelectedSendStr } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -32,15 +34,16 @@ class NepiPointcloudProcessControls extends Component {
     this.state = {
       show_process_controls: false,
       range_clip_enabled: false,
+      clip_target_topic: null,
       range_clip_min_m: null,
       range_clip_max_m: null,
-      clip_target_topic: null,
       voxel_downsample_size_m: null,
       uniform_downsample_points: null,
       outlier_k_points: null,
       framesList: ['nepi_center_frame','sensor_frame','map'],
       frame_3d: null,
-      
+      clip_options: [],
+      clip_selection: null,
 
       processListener: null,
 
@@ -57,13 +60,16 @@ class NepiPointcloudProcessControls extends Component {
   processStatusListener(message) {
     
     this.setState({
-      range_clip_enabled: message.range_clip_enabled,
-      range_clip_min_m: message.range_clip_meters.start_range,
-      range_clip_max_m: message.range_clip_meters.stop_range,
+      range_clip_enabled: message.clip_enabled,
+      range_clip_min_m: message.clip_meters.start_range,
+      range_clip_max_m: message.clip_meters.stop_range,
       clip_target_topic: message.clip_target_topic,
       voxel_downsample_size_m: message.voxel_downsample_size_m,
       uniform_downsample_points: message.uniform_downsample_points,
-      outlier_k_points: message.outlier_k_points
+      outlier_k_points: message.outlier_k_points,
+      clip_options: message.clip_options,
+      clip_selection: message.clip_selection
+
     })
   }
 
@@ -123,6 +129,7 @@ class NepiPointcloudProcessControls extends Component {
   }
 
   render() {
+    const NoneOption = <Option>None</Option>
     const {  sendTriggerMsg, sendBoolMsg } = this.props.ros
     return (
       <Section title={"Process Controls"}>
@@ -157,19 +164,34 @@ class NepiPointcloudProcessControls extends Component {
                   onClick={() => sendBoolMsg(this.props.processNamespace + "/set_clip_enable",!this.state.range_clip_enabled)}>
                   </Toggle>
             </Label>
+          
 
+            <div hidden={!this.state.range_clip_enabled}>
             <div hidden={!this.state.show_process_controls}>
             <Label title={"Set Clip Ranges (m)"}>
             </Label>
             </div>
+            </div>
+
 
            </Column>
            <Column>
+           <Label title={"Clip Selection"}>
+                    <Select
+                      id="clip_selection"
+                        onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.props.processNamespace + "/set_clip_selection")}
+                        value={this.state.clip_selection}
+                      >
+                        {this.state.clip_options
+                          ? createMenuListFromStrList(this.state.clip_options, false, [],[],[])
+                          : NoneOption}
+                      </Select>
+                    </Label>
 
 
            </Column>
           </Columns>
-
+          <div hidden={!this.state.range_clip_enabled}>
           <div hidden={!this.state.show_process_controls}>
           <Columns>
           <Column>
@@ -192,6 +214,7 @@ class NepiPointcloudProcessControls extends Component {
 
            </Column>
           </Columns>  
+          </div>
           </div>
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>    

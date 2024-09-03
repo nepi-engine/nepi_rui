@@ -281,7 +281,7 @@ class PointcloudApp extends Component {
   }
 
   sendClearTransformUpdateMessage(){
-    this.setState({
+     this.setState({
       selectedTransformTX: 0,
       selectedTransformTY: 0,
       selectedTransformTZ: 0,
@@ -290,19 +290,16 @@ class PointcloudApp extends Component {
       selectedTransformRZ: 0,
       selectedTransformHO: 0,      
     })
-    const {sendFrame3DTransformMsg} = this.props.ros
-    const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
-    const TX = parseFloat(this.state.selectedTransformTX)
-    const TY = parseFloat(this.state.selectedTransformTY)
-    const TZ = parseFloat(this.state.selectedTransformTZ)
-    const RX = parseFloat(this.state.selectedTransformRX)
-    const RY = parseFloat(this.state.selectedTransformRY)
-    const RZ = parseFloat(this.state.selectedTransformRZ)
-    const HO = parseFloat(this.state.selectedTransformHO)
-    const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
-    sendFrame3DTransformMsg(namespace,transformList)
+    const {sendFrame3DTransformUpdateMsg} = this.props.ros
+    const namespace = this.state.appNamespace + "/update_transform"
+    const transformNamespace = this.state.selectedTransformPointcloud
+    const transformList = [0,0,0,0,0,0,0]
+    sendFrame3DTransformUpdateMsg(namespace,transformNamespace,transformList)
   }
 
+
+  
+  
   onClickToggleShowTransforms(){
     const currentVal = this.state.showTransforms 
     this.setState({showTransforms: !currentVal})
@@ -504,6 +501,7 @@ class PointcloudApp extends Component {
               <ButtonMenu>
                 <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
               </ButtonMenu>
+
 
             </Column>
             <Column>
