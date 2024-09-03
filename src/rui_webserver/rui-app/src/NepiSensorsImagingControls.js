@@ -13,7 +13,6 @@ import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
 import RangeAdjustment from "./RangeAdjustment"
-import Styles from "./Styles"
 import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
@@ -67,10 +66,13 @@ class NepiSensorsImagingControls extends Component {
       disabled: false,
     }
 
-
-    this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
     this.updateListener = this.updateListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
+    
+    this.sendClearTransformUpdateMessage = this.sendClearTransformUpdateMessage.bind(this)
+
+
+    
     
   }
 
@@ -172,6 +174,29 @@ class NepiSensorsImagingControls extends Component {
     sendFrame3DTransformMsg(namespace,transformList)
   }
 
+  sendClearTransformUpdateMessage(){
+    this.setState({
+      selectedTransformTX: 0,
+      selectedTransformTY: 0,
+      selectedTransformTZ: 0,
+      selectedTransformRX: 0,
+      selectedTransformRY: 0,
+      selectedTransformRZ: 0,
+      selectedTransformHO: 0,      
+    })
+    const {sendFrame3DTransformMsg} = this.props.ros
+    const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
+    const TX = parseFloat(this.state.selectedTransformTX)
+    const TY = parseFloat(this.state.selectedTransformTY)
+    const TZ = parseFloat(this.state.selectedTransformTZ)
+    const RX = parseFloat(this.state.selectedTransformRX)
+    const RY = parseFloat(this.state.selectedTransformRY)
+    const RZ = parseFloat(this.state.selectedTransformRZ)
+    const HO = parseFloat(this.state.selectedTransformHO)
+    const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
+    sendFrame3DTransformMsg(namespace,transformList)
+  }
+  
   render() {
     const { idxSensors, sendTriggerMsg, setIdxControlsEnable, setIdxAutoAdjust, setFrame3D } = this.props.ros
     const capabilities = idxSensors[this.props.idxSensorNamespace]
@@ -329,24 +354,101 @@ class NepiSensorsImagingControls extends Component {
                           </div>
                           </div>
 
-
-    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
   <Columns>
     <Column>
-    <Label title="Show Data Transform Settings">
+    <Label title="Show 3D Transforms">
                     <Toggle
                       checked={this.state.showTransforms===true}
                       onClick={this.onClickToggleShowTransforms}>
                     </Toggle>
                   </Label>
 
+
+
                   </Column>
                   <Column>
                   </Column>
                   </Columns>
 
+    <Columns>
+    <Column>
 
-       <div hidden={ this.state.showTransforms === false}>
+
+
+    <Label title={"X (m)"}>
+      <Input
+        value={this.state.selectedTransformTX}
+        id="XTranslation"
+        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
+        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
+        style={{ width: "80%" }}
+      />
+    </Label>
+
+    <Label title={"Y (m)"}>
+      <Input
+        value={this.state.selectedTransformTY}
+        id="YTranslation"
+        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
+        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
+        style={{ width: "80%" }}
+      />
+    </Label>
+
+    <Label title={"Z (m)"}>
+      <Input
+        value={this.state.selectedTransformTZ}
+        id="ZTranslation"
+        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
+        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
+        style={{ width: "80%" }}
+      />
+    </Label>
+
+
+    <ButtonMenu>
+      <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
+    </ButtonMenu>
+
+  </Column>
+  <Column>
+
+    <Label title={"Roll (deg)"}>
+      <Input
+        value={this.state.selectedTransformRX}
+        id="XRotation"
+        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
+        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
+        style={{ width: "80%" }}
+      />
+    </Label>
+
+    <Label title={"Pitch (deg)"}>
+      <Input
+        value={this.state.selectedTransformRY}
+        id="YRotation"
+        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
+        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
+        style={{ width: "80%" }}
+      />
+    </Label>
+
+        <Label title={"Yaw (deg)"}>
+          <Input
+            value={this.state.selectedTransformRZ}
+            id="ZRotation"
+            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
+            onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
+            style={{ width: "80%" }}
+          />
+        </Label>
+
+        <ButtonMenu>
+      <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+    </ButtonMenu>
+
+      </Column>
+    </Columns>
 
                          
               <Columns>
@@ -358,14 +460,12 @@ class NepiSensorsImagingControls extends Component {
                 </Column>
                 <Column>
                   <div align={"left"} textAlign={"left"}>
-                    <Label title={"Set Output Frame"}>
+                    <Label title={"Current Frame"}>
                     <Input value = {this.state.frame3D} />
                     </Label>
                   </div>
                 </Column>
               </Columns>
-
-
               <Columns>
                 <Column>
                 <div align={"center"} textAlign={"center"}>
@@ -378,21 +478,6 @@ class NepiSensorsImagingControls extends Component {
                   />
                 </div>
      
-
-                </Column>
-                <Column>
-
-                <div align={"center"} textAlign={"center"}>
-                  <Label title={"SENSOR"} align={"center"}>
-                  </Label>
-                  <Toggle 
-                    checked={this.state.frame3D === "sensor_frame"} 
-                    disabled={(!this.state.disabled)? false : true}
-                    onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"sensor_frame")}
-                  />
-                </div>
-     
-
                 </Column>
                 <Column>
                 <div align={"center"} textAlign={"center"}>
@@ -403,96 +488,10 @@ class NepiSensorsImagingControls extends Component {
                     disabled={(!this.state.disabled)? false : true}
                     onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"map")}
                   />
-               </div>
+                   </div>
 
                 </Column>
               </Columns>
-
-
-        <div hidden={ this.state.frame3D  === "sensor_frame"}>
-
-              <Label title={"Nepi center frame tranform"}>
-            </Label>
-
-        <Columns>
-        <Column>
-
-          <Label title={"X (m)"}>
-            <Input
-              value={this.state.selectedTransformTX}
-              id="XTranslation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
-              style={{ width: "80%" }}
-            />
-          </Label>
-
-          <Label title={"Y (m)"}>
-            <Input
-              value={this.state.selectedTransformTY}
-              id="YTranslation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
-              style={{ width: "80%" }}
-            />
-          </Label>
-
-          <Label title={"Z (m)"}>
-            <Input
-              value={this.state.selectedTransformTZ}
-              id="ZTranslation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
-              style={{ width: "80%" }}
-            />
-          </Label>
-
-
-          <ButtonMenu>
-            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
-          </ButtonMenu>
-
-        </Column>
-        <Column>
-
-          <Label title={"Roll (deg)"}>
-            <Input
-              value={this.state.selectedTransformRX}
-              id="XRotation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
-              style={{ width: "80%" }}
-            />
-          </Label>
-
-          <Label title={"Pitch (deg)"}>
-            <Input
-              value={this.state.selectedTransformRY}
-              id="YRotation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
-              style={{ width: "80%" }}
-            />
-          </Label>
-
-        <Label title={"Yaw (deg)"}>
-          <Input
-            value={this.state.selectedTransformRZ}
-            id="ZRotation"
-            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
-            onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
-            style={{ width: "80%" }}
-          />
-        </Label>
-
-            </Column>
-          </Columns>
-
-          </div>
-
-
-
-        </div>
       </Section>
     )
   }

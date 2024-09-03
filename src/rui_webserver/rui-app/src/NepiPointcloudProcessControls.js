@@ -158,8 +158,10 @@ class NepiPointcloudProcessControls extends Component {
                   </Toggle>
             </Label>
 
+            <div hidden={!this.state.show_process_controls}>
             <Label title={"Set Clip Ranges (m)"}>
             </Label>
+            </div>
 
            </Column>
            <Column>
@@ -168,9 +170,9 @@ class NepiPointcloudProcessControls extends Component {
            </Column>
           </Columns>
 
+          <div hidden={!this.state.show_process_controls}>
           <Columns>
           <Column>
-
 
           <Label title={"Set Range Clip Min"}>
                     <Input id="set_range_clip_min" 
@@ -190,6 +192,7 @@ class NepiPointcloudProcessControls extends Component {
 
            </Column>
           </Columns>  
+          </div>
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>    
 

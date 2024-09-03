@@ -88,6 +88,8 @@ class PointcloudApp extends Component {
     this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
     
     this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
+    this.sendClearTransformUpdateMessage = this.sendClearTransformUpdateMessage.bind(this)
+
     this.setSelectedTransform = this.setSelectedTransform.bind(this)
 
 
@@ -276,6 +278,29 @@ class PointcloudApp extends Component {
     const HO = parseFloat(this.state.selectedTransformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
     sendFrame3DTransformUpdateMsg(namespace,transformNamespace,transformList)
+  }
+
+  sendClearTransformUpdateMessage(){
+    this.setState({
+      selectedTransformTX: 0,
+      selectedTransformTY: 0,
+      selectedTransformTZ: 0,
+      selectedTransformRX: 0,
+      selectedTransformRY: 0,
+      selectedTransformRZ: 0,
+      selectedTransformHO: 0,      
+    })
+    const {sendFrame3DTransformMsg} = this.props.ros
+    const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
+    const TX = parseFloat(this.state.selectedTransformTX)
+    const TY = parseFloat(this.state.selectedTransformTY)
+    const TZ = parseFloat(this.state.selectedTransformTZ)
+    const RX = parseFloat(this.state.selectedTransformRX)
+    const RY = parseFloat(this.state.selectedTransformRY)
+    const RZ = parseFloat(this.state.selectedTransformRZ)
+    const HO = parseFloat(this.state.selectedTransformHO)
+    const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
+    sendFrame3DTransformMsg(namespace,transformList)
   }
 
   onClickToggleShowTransforms(){
@@ -474,21 +499,10 @@ class PointcloudApp extends Component {
                   style={{ width: "80%" }}
                 />
               </Label>
-{/*
-              <Label title={"Heading Offset (deg)"}>
-                <Input
-                  value={this.state.selectedTransformHO}
-                  id="HeadingOffset"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformHO")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformHO")}
-                  style={{ width: "80%" }}
-                />
-              </Label>
 
-*/}
 
               <ButtonMenu>
-                <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+                <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
               </ButtonMenu>
 
             </Column>
@@ -523,6 +537,10 @@ class PointcloudApp extends Component {
                   style={{ width: "80%" }}
                 />
               </Label>
+
+              <ButtonMenu>
+                <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+              </ButtonMenu>
 
             </Column>
           </Columns>
