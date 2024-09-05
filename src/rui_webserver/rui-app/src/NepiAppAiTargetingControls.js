@@ -212,14 +212,12 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     const classOPtions = this.getClassOptions()
     const selectedClasses = this.state.selected_classes_list
     const NoneOption = <Option>None</Option>
+    const targeting_running = (this.state.targeting_controls_running !== null)? this.state.targeting_controls_running : false
     return (
       <Section title={"Targeting Controls"}>
 
-                    <Columns>
-                    <Column>
-        <Label title={"Targeting System Running"}>
-              <BooleanIndicator value={(this.state.targeting_controls_running !== null)? this.state.targeting_controls_running : false} />
-            </Label>
+            <Columns>
+            <Column>
 
 
           </Column>
@@ -331,13 +329,6 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
             onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_target_box_size_percent")} />
         </Label>
 
-
-        <Label title={"Pountcloud Clip Adjust %"}>
-          <Input id="pc_box_size_percent" 
-            value={this.state.pc_box_size_percent} 
-            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"pc_box_size_percent")} 
-            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,this.props.targetingNamespace + "/set_pointcloud_box_size_percent")} />
-        </Label>
 
         <SliderAdjustment
           title={"Target Min Pixel Ratio"}
