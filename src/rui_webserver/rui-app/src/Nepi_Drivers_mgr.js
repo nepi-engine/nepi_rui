@@ -30,9 +30,13 @@ class NepiDriversMgr extends Component {
     super(props)
 
     this.state = {
-      mgrName: "driver_mgr",
+      mgrName: "drivers_mgr",
+      
       MgrNamespace: null,
-      driver_mgr: null,
+      MgrNamespace: null,
+      listenerDriver: null,
+      listener: null,
+
       mgr_reset_sub: null,
 
       drivers_path: null,
@@ -41,6 +45,7 @@ class NepiDriversMgr extends Component {
       drivers_active_list: null,
       drivers_install_path: null,
       drivers_install_list: null,
+      selected_driver: null,
 
       driver_name: null,
       active_state: null,
@@ -59,13 +64,13 @@ class NepiDriversMgr extends Component {
       order: null,
 
       driver_options_menu: null,
-      driverListener: null,
 
-      listener: null
     }
 
     this.statusListener = this.statusListener.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
+    this.statusDriverListener = this.statusDriverListener.bind(this)
+    this.updateStatusDriverListener = this.updateStatusDriverListener.bind(this)
 
     this.getNamespace = this.getNamespace.bind(this)
 
@@ -88,12 +93,14 @@ class NepiDriversMgr extends Component {
       drivers_active_path: message.drivers_active_path,
       drivers_active_list: message.drivers_active_list,
       drivers_install_path: message.drivers_install_path,
-      drivers_install_list: message.drivers_install_list
+      drivers_install_list: message.drivers_install_list,
+      selected_driver: message.selected_driver
     })
   }
 
-      /*
-
+  statusDriverListener(message) {
+    this.setState({
+  
       driver_name: message.driver_name,
       active_state: message.active_state,
       group: message.group,
@@ -108,16 +115,18 @@ class NepiDriversMgr extends Component {
       discovery_name: message.discovery_name,
       discovery_method: message.discovery_method,
       other_users_list: message.other_users_list,
-      order: message.order,
+      order: message.order
 
 
  
-
+/*
     const driver_options_menu = createMenuListFromStrList(this.state.driver_options,false,[],[],[])
     this.setState({
       driver_options_menu: driver_options_menu
+      })
+      */
     })
-  */
+  }
 
 
 
@@ -134,8 +143,18 @@ class NepiDriversMgr extends Component {
     this.setState({ listener: listener})
   }
 
-  
-
+    // Function for configuring and subscribing to Status
+    updateStatusDriverListener() {
+      const statusNamespace = this.MgrNamespace + '/status_driver'
+      if (this.state.listenerDriver) {
+        this.state.listenerDriver.unsubscribe()
+      }
+      var listenerDriver = this.props.ros.setupDriverStatusListener(
+            statusNamespace,
+            this.statusDriverListener
+          )
+      this.setState({ listenerDriver: listenerDriver})
+    }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getNamespace()
@@ -143,116 +162,20 @@ class NepiDriversMgr extends Component {
       if (namespace.indexOf('null') === -1) {
         this.setState({MgrNamespace: namespace})
         this.updateStatusListener()
+        this.updateStatusDriverListener()
       } 
     }
   }
 
   componentWillUnmount() {
     if (this.state.listener) {
-      this.state.listener.unsubscribe()
+      this.state.listener.unsubscribe() 
+    }
+    if (this.state.listenerDriver) {
+      this.state.listenerDriver.unsubscribe()
     }
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status message
-  componentWillUnmount() {
-    if (this.state.driverListener) {
-      this.state.driverListener.unsubscribe()
-    }
-  }
-
-
-
-/*
-
-
-
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    const {DriversStatusQuery} = this.props.ros
-    const {DriversListQuery} = this.props.ros
-    
-    for (let i = 0; i < DriversStatusQuery.length; ++i) {
-      if (DriversStatusQuery[i]['sequence_id'] === selectedSequenceObj['sequence_id']) {
-        // Check all entries item-by-item to see if there is a change... this avoids the dreaded "Maximum depth exceeded" runtime error
-        if ((DriversStatusQuery[i]['driver_name'] !== selectedSequenceObj['driver_name']) ||
-            (DriversStatusQuery[i]['group'] !== selectedSequenceObj['group']) ||
-            (DriversStatusQuery[i]['group_id'] !== selectedSequenceObj['group_id']) ||
-            (DriversStatusQuery[i]['node_file_name'] !== selectedSequenceObj['node_file_name']) ||
-            (DriversStatusQuery[i]['node_file_path'] !== selectedSequenceObj['node_file_path']) ||
-            (DriversStatusQuery[i]['node_module_name'] !== selectedSequenceObj['node_module_name']) ||
-            (DriversStatusQuery[i]['node_class_name'] !== selectedSequenceObj['node_class_name']) ||
-            (DriversStatusQuery[i]['driver_name'] !== selectedSequenceObj['driver_name']) ||
-            (DriversStatusQuery[i]['driver_interfaces'] !== selectedSequenceObj['driver_interfaces']) ||
-            (DriversStatusQuery[i]['driver_option'] !== selectedSequenceObj['driver_option']) ||
-            (DriversStatusQuery[i]['discovery_name'] !== selectedSequenceObj['discovery_name']) ||
-            (DriversStatusQuery[i]['discovery_method'] !== selectedSequenceObj['discovery_method']) ||
-            (DriversStatusQuery[i]['active_state'] !== selectedSequenceObj['active_state']) ||
-            (DriversStatusQuery[i]['order'] !== selectedSequenceObj['order']) ||
-            (DriversStatusQuery[i]['inputs'].length !== selectedSequenceObj['inputs'].length)) {
-          this.setState({ selectedSequenceObj: DriversStatusQuery[i] })
-          break
-        }
-        for (let j = 0; j < DriversStatusQuery[i]['inputs'].length; ++j) {
-          if ((DriversStatusQuery[i]['inputs'][j]['driver_options'] !== selectedSequenceObj['inputs'][j]['driver_options']) ||
-              (DriversStatusQuery[i]['inputs'][j]['other_users_list'] !== selectedSequenceObj['inputs'][j]['other_users_list'])) {
-            this.setState({ selectedSequenceObj: DriversStatusQuery[i] })
-            // We're in a nested loop, so set the exit condition of the outer loop
-            i = DriversStatusQuery.length
-            break // And break from the inner loop
-          }
-        }
-      }
-    }
-
-    for (let i = 0; i < DriversListQuery.length; ++i) {
-      if (DriversStatusQuery[i]['sequence_id'] === selectedSequenceObj['sequence_id']) {
-        // Check all entries item-by-item to see if there is a change... this avoids the dreaded "Maximum depth exceeded" runtime error
-        if ((DriversListQuery[i]['drivers_path'] !== selectedSequenceObj['drivers_path']) ||
-            (DriversListQuery[i]['drivers_install_path'] !== selectedSequenceObj['drivers_install_path']) ||
-            (DriversListQuery[i]['inputs'].length !== selectedSequenceObj['inputs'].length)) {
-          this.setState({ selectedSequenceObj: DriversListQuery[i] })
-          break
-        }
-        for (let j = 0; j < DriversListQuery[i]['inputs'].length; ++j) {
-          if ((DriversListQuery[i]['inputs'][j]['drivers_ordered_list'] !== selectedSequenceObj['inputs'][j]['drivers_ordered_list']) ||
-              (DriversListQuery[i]['inputs'][j]['drivers_active_list'] !== selectedSequenceObj['inputs'][j]['drivers_active_list']) ||
-              (DriversListQuery[i]['inputs'][j]['drivers_install_path'] !== selectedSequenceObj['inputs'][j]['drivers_install_path']) ||
-              (DriversListQuery[i]['inputs'][j]['drivers_install_list'] !== selectedSequenceObj['inputs'][j]['drivers_install_list'])) {
-            this.setState({ selectedSequenceObj: DriversListQuery[i] })
-            // We're in a nested loop, so set the exit condition of the outer loop
-            i = DriversListQuery.length
-            break // And break from the inner loop
-          }
-        }
-      }
-    }
-
-
-
-    if (prevProps.settingsNamespace !== settingsNamespace && settingsNamespace != null) {
-      this.updateSettingsListener()
-    }
-  }
-*/
 
   render() {
     const NoneOption = <Option>None</Option>
@@ -319,7 +242,15 @@ class NepiDriversMgr extends Component {
         <Input disabled value={this.state.active_state} />
       </Label>
 
-
+      <Label title={"Select Driver"}>
+        <Select
+          id="select_driver"
+          onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"driver_option")}
+          value={this.state.driver_option}
+        >
+          {this.state.driver_options ? this.state.driver_options_menu : NoneOption}
+        </Select>
+      </Label>
               
       <Label title={"Drivers Path"}>
         <Input disabled value={this.state.drivers_path} />
@@ -331,15 +262,6 @@ class NepiDriversMgr extends Component {
 
 */}
 
-<Label title={"Select Driver"}>
-        <Select
-          id="select_driver"
-          onChange={(event) => onDropdownSelectedSetState.bind(this)(event,"driver_option")}
-          value={this.state.driver_option}
-        >
-          {this.state.driver_options ? this.state.driver_options_menu : NoneOption}
-        </Select>
-      </Label>
 
       </Section>
     )
