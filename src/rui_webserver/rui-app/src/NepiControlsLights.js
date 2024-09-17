@@ -234,7 +234,7 @@ class NepiControlsLights extends Component {
             </Label>
             </div>
 
-            <div hidden={!this.state.lsxOnOffState}>  
+ 
             <div hidden={!has_standby_mode}>      
           <Label title="Set Standby State">
                   <Toggle
@@ -243,6 +243,22 @@ class NepiControlsLights extends Component {
                   </Toggle>
             </Label>
             </div>
+
+
+            <div hidden={false}> 
+            <div hidden={!has_color_control}>    
+            <Label title={"Select Color"}>
+                    <Select
+                      id="select_color"
+                        onChange={(event) => onDropdownSelectedSendStr.bind(this)(event,this.state.lsxNamespace + "/lsx/set_color")}
+                        value={this.state.lsxColorStr}
+                      >
+                        {this.state.lsxColorStr
+                          ? createMenuListFromStrList(color_options_list, false, [],[],[])
+                          : NoneOption}
+                      </Select>
+                    </Label>
+                    </div>
 
             <div hidden={!has_blink_control}>    
             <Label title="Set Blink State">
@@ -265,30 +281,6 @@ class NepiControlsLights extends Component {
                   />
             </div>
             
-            <div hidden={!has_color_control}>    
-            <Label title={"Select Color"}>
-                    <Select
-                      id="select_color"
-                        onChange={(event) => onDropdownSelectedSendStr.bind(this)(event,"/set_color")}
-                        value={this.state.lsxColorStr}
-                      >
-                        {this.state.lsxColorStr
-                          ? createMenuListFromStrList(color_options_list, false, [],[],[])
-                          : NoneOption}
-                      </Select>
-                    </Label>
-                    </div>
-
-
-            <div hidden={!has_hw_strobe}>    
-            <Label title="Set Strobe State">
-                  <Toggle
-                    checked={this.state.lsxStrobezState===true}
-                    onClick={() => this.props.ros.sendBoolMsg(this.state.lsxNamespace + "/lsx/set_strobe_enable",!this.state.lsxStrobezState)}>
-                  </Toggle>
-            </Label>
-            </div>
-
 
 {/*
             <Label title={"Kelvin Setting"}>
@@ -344,9 +336,16 @@ class NepiControlsLights extends Component {
                   </Label>
                   </div>
 
+          </div>
 
-
-                  </div>
+          <div hidden={!has_hw_strobe}>    
+            <Label title="Set Strobe State">
+                  <Toggle
+                    checked={this.state.lsxStrobezState===true}
+                    onClick={() => this.props.ros.sendBoolMsg(this.state.lsxNamespace + "/lsx/set_strobe_enable",!this.state.lsxStrobezState)}>
+                  </Toggle>
+            </Label>
+            </div>
 
                </Section>
     )

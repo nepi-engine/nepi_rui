@@ -66,6 +66,9 @@ class NepiSensorsImagingControls extends Component {
       disabled: false,
     }
 
+
+    this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
+    
     this.updateListener = this.updateListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
 
@@ -128,8 +131,8 @@ class NepiSensorsImagingControls extends Component {
   }
 
   onClickToggleShowTransforms(){
-    const currentVal = this.state.showTransforms 
-    this.setState({showTransforms: !currentVal})
+    const newVal = this.state.showTransforms === false
+    this.setState({showTransforms: newVal})
     this.render()
   }
 
@@ -349,98 +352,99 @@ class NepiSensorsImagingControls extends Component {
     <Column>
     <Label title="Show 3D Transforms">
                     <Toggle
-                      checked={this.state.showTransforms===true}
+                      checked={this.state.showTransforms}
                       onClick={this.onClickToggleShowTransforms}>
                     </Toggle>
                   </Label>
 
-
-
-                  </Column>
-                  <Column>
-                  </Column>
-                  </Columns>
-
-    <Columns>
+    </Column>
     <Column>
-
-
-
-    <Label title={"X (m)"}>
-      <Input
-        value={this.state.selectedTransformTX}
-        id="XTranslation"
-        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
-        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
-        style={{ width: "80%" }}
-      />
-    </Label>
-
-    <Label title={"Y (m)"}>
-      <Input
-        value={this.state.selectedTransformTY}
-        id="YTranslation"
-        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
-        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
-        style={{ width: "80%" }}
-      />
-    </Label>
-
-    <Label title={"Z (m)"}>
-      <Input
-        value={this.state.selectedTransformTZ}
-        id="ZTranslation"
-        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
-        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
-        style={{ width: "80%" }}
-      />
-    </Label>
-
-
-    <ButtonMenu>
-      <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
-    </ButtonMenu>
-
-  </Column>
-  <Column>
-
-    <Label title={"Roll (deg)"}>
-      <Input
-        value={this.state.selectedTransformRX}
-        id="XRotation"
-        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
-        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
-        style={{ width: "80%" }}
-      />
-    </Label>
-
-    <Label title={"Pitch (deg)"}>
-      <Input
-        value={this.state.selectedTransformRY}
-        id="YRotation"
-        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
-        onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
-        style={{ width: "80%" }}
-      />
-    </Label>
-
-        <Label title={"Yaw (deg)"}>
-          <Input
-            value={this.state.selectedTransformRZ}
-            id="ZRotation"
-            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
-            onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
-            style={{ width: "80%" }}
-          />
-        </Label>
-
-        <ButtonMenu>
-      <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
-    </ButtonMenu>
-
-      </Column>
+    </Column>
     </Columns>
 
+
+
+    <div hidden={ this.state.showTransforms === false}>
+
+          <Columns>
+          <Column>
+
+          <Label title={"X (m)"}>
+            <Input
+              value={this.state.selectedTransformTX}
+              id="XTranslation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+          <Label title={"Y (m)"}>
+            <Input
+              value={this.state.selectedTransformTY}
+              id="YTranslation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+          <Label title={"Z (m)"}>
+            <Input
+              value={this.state.selectedTransformTZ}
+              id="ZTranslation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+
+          <ButtonMenu>
+            <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
+          </ButtonMenu>
+
+        </Column>
+        <Column>
+
+          <Label title={"Roll (deg)"}>
+            <Input
+              value={this.state.selectedTransformRX}
+              id="XRotation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+          <Label title={"Pitch (deg)"}>
+            <Input
+              value={this.state.selectedTransformRY}
+              id="YRotation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+              <Label title={"Yaw (deg)"}>
+                <Input
+                  value={this.state.selectedTransformRZ}
+                  id="ZRotation"
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <ButtonMenu>
+            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+          </ButtonMenu>
+
+            </Column>
+          </Columns>
+
+ 
                          
               <Columns>
                 <Column>
@@ -483,6 +487,8 @@ class NepiSensorsImagingControls extends Component {
 
                 </Column>
               </Columns>
+        </div>
+
       </Section>
     )
   }

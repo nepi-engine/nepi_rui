@@ -471,7 +471,7 @@ class NepiControlsPanTilt extends Component {
   }
 
   render() {
-    const { ptxUnits, onPTXJogYaw, onPTXJogPitch, onPTXStop } = this.props.ros
+    const { ptxUnits, onPTXJogYaw, onPTXJogPitch, onPTXStop,saveConfigTriggered } = this.props.ros
     const { ptxNamespace, yawRatioAdjustment, pitchRatioAdjustment} = this.state
 
     const ptxImageViewerElement = document.getElementById("ptxImageViewer")
@@ -566,6 +566,16 @@ class NepiControlsPanTilt extends Component {
               {this.createImageTopicsOptions()}
               </Select>
             </Label>
+
+
+            <div align={"left"} textAlign={"left"} hidden={this.state.ptxNamespace === null}>
+                    <ButtonMenu>
+                      <Button onClick={() => saveConfigTriggered(this.state.ptxNamespace)}>{"Save Config"}</Button>
+            </ButtonMenu>
+
+
+          </div>
+
             { ptxNamespace?
               this.renderControlPanel()
               : null

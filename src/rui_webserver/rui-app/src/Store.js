@@ -1141,6 +1141,46 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  driverUpdateOptionMsg(namespace, driver_name, option_str) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_ros_interfaces/DriverUpdateOption",
+
+        data: {
+        driver_name: driver_name,
+        option_str: option_str
+      },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  driverUpdateOrderMsg(namespace, driver_name, move_cmd) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_ros_interfaces/DriverUpdateOrder",
+      data: {    
+        driver_name: driver_name,
+        move_cmd: move_cmd
+      },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  sendActiveStateBoolMsg(namespace, driver_name, active_state) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_ros_interfaces/DriverUpdateState",
+      data: {
+        driver_name: driver_name,
+        active_state: active_state
+      },
+      noPrefix: true
+    })
+    
+  }
 
   @action.bound
   sendFrame3DTransformUpdateMsg(namespace, transformNamespace, transformFloatList) {

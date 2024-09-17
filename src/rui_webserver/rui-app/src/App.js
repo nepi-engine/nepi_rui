@@ -26,11 +26,11 @@ import MultiImageViewer from "./NepiAppImageViewer"
 import NavPoseMgr from "./NepiMgrNavPose"
 import Settings from "./NepiSystemDevice"
 import SoftwareUpdate from "./NepiSystemSoftware"
-import NepiDriversmgr from "./Nepi_Drivers_mgr"
 import Automation from "./NepiAppAutomation"
 import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"
 import OnvifManager from "./NepiSystemOnvif"
+import DriversMgr from "./NepiSystemDrivers"
 import LSX from "./NepiControlsLights"
 import RBX from "./NepiControlsRobots"
 
@@ -73,7 +73,6 @@ class App extends Component {
               ]
             },
             { path: "/navPose", label: "NavPose" },
-            
             {
               path: "/applications",
               label: "Applications",
@@ -91,10 +90,9 @@ class App extends Component {
               subItems: [
                 { path: "/system_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
-                { path: "/Nepi_Drivers_mgr", label: "Driver Manager"},
-
+                { path: "/drivers_mgr", label: "Drivers"},
                 { path: "/onvif_mgr", label: "ONVIF"},
-                { path: "/ai_mgr", label: " AI Manager" },
+                { path: "/ai_mgr", label: " AI" },
                 { path: "/nepi_connect", label: "Connect" },
               ]
             },
@@ -124,7 +122,7 @@ class App extends Component {
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/ai_mgr" component={AiManager} />
           <Route path="/nepi_connect" component={NEPIConnect} />
-          <Route path="/Nepi_Drivers_mgr" component={NepiDriversmgr} />
+          <Route path="/drivers_mgr" component={DriversMgr} />
           <Route path="/ptx" component={PTX} />
           <Route path="/rbx" component={RBX} />
           <Route path='/docs' component={() => {
