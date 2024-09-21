@@ -67,6 +67,8 @@ class NepiAppAiTargetingControls extends Component {
       targetingListener: null,
       viewableTopics: false,
 
+      output_image_options_list: [],
+      selected_output_image: 'targeting_image'
 
 
 
@@ -102,6 +104,9 @@ target_min_dist_m: message.target_min_dist_m,
 target_age_filter: message.target_age_filter,
 target_box_size_percent: message.target_box_size_percent,
 pc_box_size_percent: message.pointcloud_box_size_percent,
+
+output_image_options_list: convertStrToStrList(message.output_image_options_list),
+selected_output_image: message.selected_output_image,
 
 available_classes_list: convertStrToStrList(message.available_classes_list),
 selected_classes_list: convertStrToStrList(message.selected_classes_list),
@@ -182,7 +187,7 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
 
 
   onToggleClassSelection(event){
-    const {sendTriggeredMsg, sendStringMsg} = this.props.ros
+    const {sendTriggerMsg, sendStringMsg} = this.props.ros
     const classSelection = event.target.value
     const selectedClassesList = this.state.selected_classes_list
     const addAllNamespace = this.props.targetingNamespace + "/add_all_target_classes"
@@ -190,11 +195,11 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     const addNamespace = this.props.targetingNamespace + "/add_target_class"
     const removeNamespace = this.props.targetingNamespace + "/remove_target_class"
     if (this.props.targetingNamespace){
-      if (classSelection === "NONE"){
-          sendTriggeredMsg(removeNamespace,"None")
+      if (classSelection === "None"){
+          sendTriggerMsg(removeAllNamespace)
       }
       else if (classSelection === "All"){
-        sendTriggeredMsg(addAllNamespace,"All")
+        sendTriggerMsg(addAllNamespace)
     }
       else if (selectedClassesList.indexOf(classSelection) !== -1){
         sendStringMsg(removeNamespace,classSelection)
@@ -216,8 +221,8 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     return (
       <Section title={"Targeting Controls"}>
 
-            <Columns>
-            <Column>
+      <Columns>
+        <Column>
 
 
           </Column>
@@ -229,11 +234,32 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
 
           </Column>
           </Columns>
+
+
+        <Columns>
+        <Column>
+            <Label title="Select Output Image"> 
+              <Select
+                id="select_output_image"
+                onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.props.targetingNamespace + "/set_output_image")}
+                value={this.state.selected_output_image}
+              >
+                {this.state.output_image_options_list
+                  ? createMenuListFromStrList(this.state.output_image_options_list, false, [],[],[])
+                  : NoneOption}
+              </Select>
+            </Label>
+
+          </Column>
+          <Column>
+
+          </Column>
+          </Columns>
       
             <Columns>
             <Column>
 
-            <Label title="Select Target Class Filter"> </Label>
+            <Label title="Select Class Filter"> </Label>
 
                     <div onClick={this.toggleViewableTopics} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
@@ -256,11 +282,7 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
               </Column>
               <Column>
 
-              <Label title=""> </Label>
-              <Label title=""> </Label>
-              <Label title=""> </Label>
-
-              <Label title="Select Target Filter"> 
+              <Label title="Select Target Filter"> </Label>
 
                 <Select
                   id="select_target"
@@ -271,7 +293,6 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                     ? createMenuListFromStrList(this.state.available_targets_list, false, [],[],[])
                     : NoneOption}
                 </Select>
-                </Label>
 
               </Column>
               </Columns>

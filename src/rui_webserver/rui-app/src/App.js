@@ -19,7 +19,6 @@ import HorizontalDivider from "./HorizontalDivider"
 import Dashboard from "./NepiDashboard"
 import SensorIDX from "./NepiSensorsImaging"
 import PointcloudApp from "./NepiAppPointcloud"
-import NEPIConnect from "./NepiSystemConnect"
 import AiManager from "./NepiSystemAiDetector"
 import AiTargetingApp from "./NepiAppAiTargeting"
 import MultiImageViewer from "./NepiAppImageViewer"
@@ -92,8 +91,7 @@ class App extends Component {
                 { path: "/software_update", label: "Software"},
                 { path: "/drivers_mgr", label: "Drivers"},
                 { path: "/onvif_mgr", label: "ONVIF"},
-                { path: "/ai_mgr", label: " AI" },
-                { path: "/nepi_connect", label: "Connect" },
+                { path: "/ai_mgr", label: " AI" }
               ]
             },
             {
@@ -121,7 +119,6 @@ class App extends Component {
           <Route path="/system_config" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/ai_mgr" component={AiManager} />
-          <Route path="/nepi_connect" component={NEPIConnect} />
           <Route path="/drivers_mgr" component={DriversMgr} />
           <Route path="/ptx" component={PTX} />
           <Route path="/rbx" component={RBX} />

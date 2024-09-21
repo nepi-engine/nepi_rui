@@ -33,8 +33,7 @@ class NepiAppAiTargeting extends Component {
     var img = (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
     const classifier_running = ((this.props.ros.reportedClassifier) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
       true : false
-    const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/targeting_image'
-    const DETECTION_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
+    const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/image'
     this.state = {
       selectedImg: 'Targeting',
       selectedImgText: 'Targeting Image',
@@ -62,10 +61,7 @@ class NepiAppAiTargeting extends Component {
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
     this.getImageOptions = this.getImageOptions.bind(this)
-    this.onImageSelect = this.onImageSelect.bind(this)
-    this.getSelectedImageTopic = this.getSelectedImageTopic.bind(this)
-
-    
+   
 
     this.checkForClassifierRunning()
   }
@@ -86,7 +82,7 @@ class NepiAppAiTargeting extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
-    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node','detection_image','targeting_image'])
+    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node','app_ai_targeting'])
     var uniqueNames = createShortValuesFromNamespaces(imageTopicsFiltered)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
@@ -168,38 +164,8 @@ class NepiAppAiTargeting extends Component {
     return items
     }
 
-  onImageSelect(event){
-    const value = event.target.value
-
-    var image_name = ""
-    var image_text = ""
-    if (value === "Detection"){
-      image_name = "Detection"
-      image_text = "Detection Image"
-    }
-    else{
-      image_name = "Targeting"
-      image_text = "Targeting Image"
-    }
-    this.setState({selectedImg: image_name,
-      selectedImageText: image_text})
-  }
-
-  getSelectedImageTopic(){
-    const {namespacePrefix} = this.props.ros
-    const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/targeting_image'
-    const DETECTION_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
-    const sel_img = this.state.selectedImg
-    if (sel_img === "Detection"){
-      return DETECTION_IMG_TOPIC
-    }
-    else{
-      return TARGETING_IMG_TOPIC
-    }
-
-  }
-
   async checkForClassifierRunning() {
+    const TARGETING_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/app_ai_targeting/image'
     const {
       reportedClassifier,
     } = this.props.ros
@@ -207,15 +173,15 @@ class NepiAppAiTargeting extends Component {
     if ((reportedClassifier === null) || (reportedClassifier.classifier_state !== "Running")) {
       if (this.state.currentDisplayImgTopic !== this.state.imageTopic) {
         await this.setState({
-          currentDisplayImgTopic: this.getSelectedImageTopic(),
+          currentDisplayImgTopic: this.state.imageTopic,
           imageText: (this.state.imageTopic !== null)? this.state.imageTopic.split('/').at(-1) : null
         })
       }
     }
     else {
         this.setState({
-        currentDisplayImgTopic: this.getSelectedImageTopic(),
-        imageText: sel_img_text
+        currentDisplayImgTopic: TARGETING_IMG_TOPIC,
+        imageText: 'Targeting Image'
         })
     }
 
@@ -373,9 +339,12 @@ class NepiAppAiTargeting extends Component {
         const appNamespace = this.getAppNamespace()
         const targetingAppNamespace = appNamespace ? appNamespace.replace("ai_detector_mgr", "app_ai_targeting" ): appNamespace
         return (
+
+
+
           <Columns>
           <Column equalWidth={false}>
-  
+ {/* 
           <Columns>
           <Column >
 
@@ -393,10 +362,12 @@ class NepiAppAiTargeting extends Component {
 
           </Column>
           </Columns>
+*/}
+
 
           <CameraViewer
             imageTopic={this.state.currentDisplayImgTopic}
-            title={this.state.imageText}
+            title={""}
             hideQualitySelector={false}
           />
 

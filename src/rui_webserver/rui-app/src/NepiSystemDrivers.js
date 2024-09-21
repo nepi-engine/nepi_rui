@@ -17,9 +17,11 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
+import BooleanIndicator from "./BooleanIndicator"
+
 
 import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSwitchStateValue,createMenuListFromStrList,
-  onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue, onDropdownSelectedSetState
+  onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue, onDropdownSelectedSetState, onDropdownSelectedSendDriverOption
   } from "./Utilities"
 
 @inject("ros")
@@ -49,19 +51,25 @@ class DriversMgr extends Component {
       group: null,
       group_id: null,
       drivers_interfaces: null, 
-      driver_options_1: [],
+      options_1_name: null, 
+      options_1: [],
       set_option_1: null,
-      driver_option_2: [],
+      options_2_name: null, 
+      options_2: [],
       set_option_2: null,
       discovery: null,
       other_users_list: null,
       driver_options_menu: null,
       active_state: null,
 
+      backup_removed_drivers: true,
+
       connected: false,
 
       driversListener: null,
       driverListener: null,
+
+
 
       driver_install_ready: null
     }
@@ -79,6 +87,9 @@ class DriversMgr extends Component {
 
     this.updateDriverStatusListener = this.updateDriverStatusListener.bind(this)
     this.statusDriverListener = this.statusDriverListener.bind(this)
+    /*}
+    this.onDropdownSelectedSendDriverOption = this.onDropdownSelectedSendDriverOption.bind(this)
+    */
   
   }
 
@@ -99,7 +110,9 @@ class DriversMgr extends Component {
       drivers_active_list: convertStrToStrList(message.drivers_active_list),
       drivers_install_path: message.drivers_install_path,
       drivers_install_list: convertStrToStrList(message.drivers_install_list),
+      backup_removed_drivers: message.backup_removed_drivers,
       selected_driver: message.selected_driver
+
     })    
   }
 
@@ -127,12 +140,14 @@ class DriversMgr extends Component {
       group: message.group,
       group_id: message.group_id,
       drivers_interfaces: message.interfaces,
-      driver_options_1: message.driver_options_1,
+      options_1_name: message.options_1_name,
+      options_1: convertStrToStrList(message.options_1),
       set_option_1: message.set_option_1,
-      driver_options_2: message.driver_options_2,
-      set_option_2: message.set_option_1,
+      options_2_name: message.options_2_name,
+      options_2: convertStrToStrList(message.options_2),
+      set_option_2: message.set_option_2,
       discovery: message.discovery,
-      other_users_list: message.other_users_list,
+      other_users_list: convertStrToStrList(message.other_users_list),
       active_state: message.active_state,
       order: message.order,
       msg_str: message.msg_str
@@ -215,7 +230,8 @@ class DriversMgr extends Component {
     driverUpdateOrderMsg(namespace,driver_name,move_cmd)
   }
 
-  onDropdownSelectedSendOption(event) {
+/*}
+  onDropdownSelectedSendDriverOption(event) {
     const {driverUpdateOptionMsg} = this.props.ros
     const {sendStringMsg} = this.props.ros
     const namespace = this.state.mgrNamespace
@@ -224,9 +240,10 @@ class DriversMgr extends Component {
 
     driverUpdateOptionMsg(namespace, driver_name, option_str)
   }
+*/
 
   renderDriverConfigure() {
-    const {  sendTriggerMsg,sendBoolMsg, driverUpdateOrderMsg, sendActiveStateBoolMsg, driverUpdateOptionMsg} = this.props.ros
+    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, driverUpdateOrderMsg, sendActiveStateBoolMsg, driverUpdateOptionMsg} = this.props.ros
     const {drivers_ordered_list, drivers_active_list} = this.state
     const connected = this.state.connected
     const selected_driver = this.state.selected_driver
@@ -236,16 +253,20 @@ class DriversMgr extends Component {
     const hide_settings = selected_driver === "None"
     const NoneOption = <Option>None</Option>
 
-
-
-
     return (
       <React.Fragment>
 
-        <Section title={"Configure Drivers"}>
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggergMsg(this.state.mgrNamespace + "/refresh_drivers")}>{"Refresh"}</Button>
+      </ButtonMenu>
 
-        <Columns>
+        <Section title={"Configure Driver"}>
+
+        <Columns equalWidth={true}>
         <Column>
+
+          </Column>
+          <Column>
 
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Selected Driver: "}
@@ -254,12 +275,23 @@ class DriversMgr extends Component {
           {this.state.driver_name}
         </label>
 
+        <pre style={{ height: "20Spx", overflowY: "auto" }}>
+        {this.state.driver_description}
+      </pre>
+
+        </Column>
+        <Column>
+
+        <Label title={"Driver Active"}>
+          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
+        </Label>
+       
         </Column>
         </Columns>
 
-
-            <Columns>
+        <Columns equalWidth={true}>
               <Column>
+  
   
                   <Label title="Select Driver">
                     <div onClick={this.toggleViewableDrivers} style={{backgroundColor: Styles.vars.colors.grey0}}>
@@ -283,92 +315,11 @@ class DriversMgr extends Component {
                     </div>
                   </Label>
 
-
-                  <Label title="Active State"></Label>
-                    <Toggle
-                    checked={this.state.active_state===true}
-                    onClick={() => sendActiveStateBoolMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
-                    </Toggle>
-
              </Column>
              <Column>
 
-             <Label title="Option 1"> 
-        <Select
-          id="select_target"
-          onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.state.mgrNamespace + "/update_option_1")}
-          value={this.state.set_option_1}
-        >
-          {this.state.driver_options_1
-            ? createMenuListFromStrList(this.state.driver_options_1, false, [],[],[])
-            : NoneOption}
-        </Select>
-        </Label>
-
-        <Label title={""}></Label>
-
-      <div hidden={!hide_settings}>
-             </div>
-
-      </Column>
-      <Column>
-      <label style={{fontWeight: 'bold'}}>
-                {""}
-              </label>
-
-      <Label title="Option 2"> 
-        <Select
-          id="select_target"
-          onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.state.mgrNamespace + "/update_option_2")}
-          value={this.state.set_option_2}
-        >
-          {this.state.driver_options_2
-            ? createMenuListFromStrList(this.state.driver_options_2, false, [],[],[])
-            : NoneOption}
-        </Select>
-        </Label>
-{/*
-        <Label title={""}></Label>
-
-        <ButtonMenu>
-        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "top")}>{"Move to Top"}</Button>
-        </ButtonMenu>
-
-        <ButtonMenu>
-        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "up")}>{"Move Up"}</Button>
-        </ButtonMenu>
-
-        <ButtonMenu>
-          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "down")}>{"Move Down"}</Button>
-        </ButtonMenu>
-
-        <ButtonMenu>
-          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "bottom")}>{"Move to Bottom"}</Button>
-        </ButtonMenu>
-*/}
-              </Column>
-            </Columns>
-
-        </Section>
-        
-      </React.Fragment>
-    )
-  }
-
-  renderDriverInfo() {
-    const {sendStringMsg} = this.props.ros
-
-    return (
-    <React.Fragment>
-      <Section title={"Driver Info"}>
-      <Columns>
-      <Column>
-
-      <Label title={"Driver Name"}>
+      <Label title={"Name"}>
         <Input disabled value={this.state.driver_name} />
-      </Label>
-      <Label title={" Description"}>
-        <Input disabled value={this.state.driver_description} />
       </Label>
       <Label title={"group"}>
         <Input disabled value={this.state.group} />
@@ -377,8 +328,30 @@ class DriversMgr extends Component {
         <Input disabled value={this.state.group_id} />
       </Label>
 
+      <div hidden={!this.state.options_2_name==="None"}>
+      <Label title={this.state.options_1_name}> 
+        <Select
+          id="select_target"
+          onChange={(event) =>onDropdownSelectedSendDriverOption.bind(this)(event, this.state.mgrNamespace + "/update_option_1")}
+          value={this.state.set_option_1}
+        >
+          {this.state.options_1
+            ? createMenuListFromStrList(this.state.options_1, false, [],[],[])
+            : NoneOption}
+        </Select>
+        </Label>
+        </div>
+
+        <Label title="Show Remove Driver">
+                <Toggle
+                checked={this.state.show_delete_driver===true}
+                onClick={() => onChangeSwitchStateValue.bind(this)("show_delete_driver",this.state.show_delete_driver)}>
+                </Toggle>
+          </Label>
+
       </Column>
       <Column>
+
       <Label title={"Interfaces"}>
         <Input disabled value={this.state.interfaces} />
       </Label>
@@ -389,25 +362,75 @@ class DriversMgr extends Component {
         <Input disabled value={this.state.other_users_list} />
       </Label>
 
-      <Label title="Show Remove Driver">
-                <Toggle
-                checked={this.state.show_delete_driver===true}
-                onClick={() => onChangeSwitchStateValue.bind(this)("show_delete_driver",this.state.show_delete_driver)}>
-                </Toggle>
-          </Label>
+      <div hidden={!this.state.options_2_name==="None"}>
+      <Label title={this.state.options_2_name}> 
+        <Select
+          id="select_target"
+          onChange={(event) => onDropdownSelectedSendDriverOption.bind(this)(event, this.state.mgrNamespace + "/update_option_2")}
+          value={this.state.set_option_2}
+        >
+          {this.state.options_2
+            ? createMenuListFromStrList(this.state.options_2, false, [],[],[])
+            : NoneOption}
+        </Select>
+        </Label>
+        </div>
 
-          <div hidden={!this.state.show_delete_driver}>
+        <div hidden={!this.state.show_delete_driver}>
+
+        <Label title="Backup on Remove">
+                <Toggle
+                checked={this.state.backup_removed_drivers===true}
+                onClick={() => this.props.ros.sendBoolMsg(this.state.mgrNamespace + "/backup_on_remeove", this.state.backup_removed_drivers===false)}>
+                </Toggle>
+        </Label>
+
       <ButtonMenu>
         <Button onClick={() => sendStringMsg(this.state.mgrNamespace + "/remove_driver", this.state.selected_driver)}>{"Remove Driver"}</Button>
       </ButtonMenu>
       </div>
 
       </Column>
-      </Columns>
-     </Section>      
-    </React.Fragment>
-  )
-}
+      <Column>
+
+      <Label title="Active State">
+          <Toggle
+            checked={this.state.active_state===true}
+            onClick={() => sendActiveStateBoolMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
+          </Toggle>
+          </Label>
+
+
+        <Label title={"order"}>
+          <Input disabled value={this.state.order} />
+        </Label>
+
+
+        <ButtonMenu>
+        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "top")}>{"Move to Top"}</Button>
+        </ButtonMenu>
+
+        <ButtonMenu>
+        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "up")}>{"Move    Up"}</Button>
+        </ButtonMenu>
+
+        <ButtonMenu>
+          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "down")}>{"Move Down"}</Button>
+        </ButtonMenu>
+
+        <ButtonMenu>
+          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "bottom")}>{"Move to Bottom"}</Button>
+        </ButtonMenu>
+        </Column>
+        </Columns>
+
+        </Section>
+        
+      </React.Fragment>
+    )
+  }
+
+  
 
   renderDriverInstall() {
     const connected = this.state.connected 
@@ -457,71 +480,7 @@ class DriversMgr extends Component {
     )
   }
 
-  renderDriverOrder() {
-    const connected = this.state.connected 
-    const NoneOption = <Option>None</Option>
-    const {driverUpdateOrderMsg} = this.props.ros
-    return (
-      <React.Fragment>
-
-        <Section title={"Driver Order"}>
-{/*}
-        <Columns>
-        <Column>
-        </Column>
-        <Column>
-
-        <Label title={"order"}>
-          <Input disabled value={this.state.order} />
-        </Label>
-
-        </Column>
-        <Column>  
-        </Column>
-        </Columns>
-*/}
-        <Columns>
-        <Column>
-
-        <ButtonMenu>
-        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "top")}>{"Move to Top"}</Button>
-        </ButtonMenu>
-
-        </Column>
-        <Column>
-
-        <ButtonMenu>
-        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "up")}>{"Move    Up"}</Button>
-        </ButtonMenu>
-
-        </Column>
-        <Column>
-
-        <Label title={"order"}>
-          <Input disabled value={this.state.order} />
-        </Label>
-
-        </Column>
-        <Column>
-
-        <ButtonMenu>
-          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "down")}>{"Move Down"}</Button>
-        </ButtonMenu>
-
-        </Column>
-        <Column>
-
-        <ButtonMenu>
-          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "bottom")}>{"Move to Bottom"}</Button>
-        </ButtonMenu>
-
-        </Column>
-        </Columns>
-        </Section>
-        
-      </React.Fragment>
-    )
-  }
+  
 
   render() {
     const connected = this.state.connected
@@ -534,12 +493,9 @@ class DriversMgr extends Component {
 
       {this.renderDriverConfigure()}
 
-      {this.renderDriverOrder()}
-
       </Column>
       <Column>
 
-      {this.renderDriverInfo()}
 
       {this.renderDriverInstall()}
 
