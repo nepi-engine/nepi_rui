@@ -28,7 +28,7 @@ function bytesToKBString(bytes) {
 
 @inject("ros")
 @observer
-class NepiAppAutomation extends Component {
+class NepiSystemAutomation extends Component {
   constructor(props) {
     super(props);
 
@@ -245,4 +245,4 @@ class NepiAppAutomation extends Component {
   }
 };
 
-export default NepiAppAutomation
+export default NepiSystemAutomation

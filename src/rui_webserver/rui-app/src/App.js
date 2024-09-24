@@ -25,7 +25,7 @@ import MultiImageViewer from "./NepiAppImageViewer"
 import NavPoseMgr from "./NepiMgrNavPose"
 import Settings from "./NepiSystemDevice"
 import SoftwareUpdate from "./NepiSystemSoftware"
-import Automation from "./NepiAppAutomation"
+import AutomationMgr from "./NepiSystemAutomation"
 import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"
 import OnvifManager from "./NepiSystemOnvif"
@@ -71,7 +71,7 @@ class App extends Component {
                 { path: "/rbx", label: "Robots" }
               ]
             },
-            { path: "/navPose", label: "NavPose" },
+            
             {
               path: "/applications",
               label: "Applications",
@@ -79,8 +79,7 @@ class App extends Component {
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
-                { path: "/ai_targeting_app", label: " AI Targeting" },
-                { path: "/automation", label: "Automation" }
+                { path: "/ai_targeting_app", label: " AI Targeting" }
               ]
             },
             {
@@ -89,9 +88,11 @@ class App extends Component {
               subItems: [
                 { path: "/system_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
+                { path: "/navPose", label: "NavPose" },
                 { path: "/drivers_mgr", label: "Drivers"},
                 { path: "/onvif_mgr", label: "ONVIF"},
-                { path: "/ai_mgr", label: " AI" }
+                { path: "/ai_mgr", label: " AI" },
+                { path: "/automation", label: "Automation" }
               ]
             },
             {
@@ -113,7 +114,7 @@ class App extends Component {
           <Route path="/pointcloud_app" component={PointcloudApp} />
           <Route path="/navPose" component={NavPoseMgr} />
           <Route path="/ai_targeting_app" component={AiTargetingApp} />
-          <Route path="/automation" component={Automation} />
+          <Route path="/automation" component={AutomationMgr} />
           <Route path="/onvif_mgr" component={OnvifManager} />
           <Route path="/image_sequencer" component={ImageSequencer} />
           <Route path="/system_config" component={Settings} />

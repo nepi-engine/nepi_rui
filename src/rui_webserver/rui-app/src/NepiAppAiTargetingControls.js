@@ -64,7 +64,7 @@ class NepiAppAiTargetingControls extends Component {
       current_targets_list: [],
       lost_targets_list: [],
       
-
+      
       targeting_controls_running: false,
       targetingListener: null,
       viewableTopics: false,
@@ -72,7 +72,6 @@ class NepiAppAiTargetingControls extends Component {
       output_image_options_list: [],
       selected_output_image: 'targeting_image',
 
-      showTransforms: false,
       transforms_topic_list: [],
       transforms_list: [],
       transformTX: 0,
@@ -82,7 +81,8 @@ class NepiAppAiTargetingControls extends Component {
       transformRY: 0,
       transformRZ: 0,
       transformHO: 0,
-      showTransforms: false
+      showTransforms: false,
+      update_transform: false
 
     }
   
@@ -93,6 +93,7 @@ class NepiAppAiTargetingControls extends Component {
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
     this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
     this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
+    this.sendClearTransformUpdateMessage = this.sendClearTransformUpdateMessage.bind(this)
 
 
 
@@ -102,41 +103,48 @@ class NepiAppAiTargetingControls extends Component {
   targetingListenerFunc(message) {
     this.setState({
 
-targeting_controls_running: message.targeting_running,
-classifier_name: message.classifier_name,
-classifier_state: message.classifier_state,
-image_topic: message.image_topic,
-depth_map_topic: message.depth_map_topic,
-pointcloud_topic: message.pointcloud_topic,
-selected_target: message.selected_target,
-image_fov_vert_degs: message.image_fov_vert_degs,
-image_fov_horz_degs: message.image_fov_horz_degs,
-target_box_reduction_percent: message.target_box_reduction_percent,
-default_target_depth_m: message.default_target_depth_m,
-target_min_points: message.target_min_points,
-target_min_px_ratio: message.target_min_px_ratio,
-target_min_dist_m: message.target_min_dist_m,
-target_age_filter: message.target_age_filter,
-target_box_size_percent: message.target_box_size_percent,
-pc_box_size_percent: message.pointcloud_box_size_percent,
+    targeting_controls_running: message.targeting_running,
+    classifier_name: message.classifier_name,
+    classifier_state: message.classifier_state,
+    image_topic: message.image_topic,
+    depth_map_topic: message.depth_map_topic,
+    pointcloud_topic: message.pointcloud_topic,
+    selected_target: message.selected_target,
+    image_fov_vert_degs: message.image_fov_vert_degs,
+    image_fov_horz_degs: message.image_fov_horz_degs,
+    target_box_reduction_percent: message.target_box_reduction_percent,
+    default_target_depth_m: message.default_target_depth_m,
+    target_min_points: message.target_min_points,
+    target_min_px_ratio: message.target_min_px_ratio,
+    target_min_dist_m: message.target_min_dist_m,
+    target_age_filter: message.target_age_filter,
+    target_box_size_percent: message.target_box_size_percent,
+    pc_box_size_percent: message.pointcloud_box_size_percent,
 
-transformTX: message.frame_3d_transform.translate_vector.x,
-transformTY: message.frame_3d_transform.translate_vector.y,
-transformTZ: message.frame_3d_transform.translate_vector.z,
-transformRX: message.frame_3d_transform.rotate_vector.x,
-transformRY: message.frame_3d_transform.rotate_vector.y,
-transformRZ: message.frame_3d_transform.rotate_vector.z,
-transformHO: message.frame_3d_transform.heading_offset,
+    output_image_options_list: convertStrToStrList(message.output_image_options_list),
+    selected_output_image: message.selected_output_image,
 
-output_image_options_list: convertStrToStrList(message.output_image_options_list),
-selected_output_image: message.selected_output_image,
+    available_classes_list: convertStrToStrList(message.available_classes_list),
+    selected_classes_list: convertStrToStrList(message.selected_classes_list),
+    selected_classes_depth_list: convertStrToStrList(message.selected_classes_depth_list),
+    available_targets_list: convertStrToStrList(message.available_targets_list),
+    current_targets_list: convertStrToStrList(message.current_targets_list),
+    lost_targets_list: convertStrToStrList(message.lost_targets_list),
+        })
 
-available_classes_list: convertStrToStrList(message.available_classes_list),
-selected_classes_list: convertStrToStrList(message.selected_classes_list),
-selected_classes_depth_list: convertStrToStrList(message.selected_classes_depth_list),
-available_targets_list: convertStrToStrList(message.available_targets_list),
-current_targets_list: convertStrToStrList(message.current_targets_list),
-lost_targets_list: convertStrToStrList(message.lost_targets_list),
+    if (this.state.update_transform === true){
+        this.setState({
+          transformTX: message.frame_3d_transform.translate_vector.x,
+          transformTY: message.frame_3d_transform.translate_vector.y,
+          transformTZ: message.frame_3d_transform.translate_vector.z,
+          transformRX: message.frame_3d_transform.rotate_vector.x,
+          transformRY: message.frame_3d_transform.rotate_vector.y,
+          transformRZ: message.frame_3d_transform.rotate_vector.z,
+          transformHO: message.frame_3d_transform.heading_offset,
+      })
+    }
+    this.setState({
+      update_transform: false
     })
   }
 
@@ -188,22 +196,19 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     const HO = parseFloat(this.state.transformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
     sendFrame3DTransformMsg(namespace,transformList)
+    this.setState({
+      update_transform: true
+    })
   }
 
   sendClearTransformUpdateMessage(){
-    this.setState({
-      transformTX: 0,
-      transformTY: 0,
-      transformTZ: 0,
-      transformRX: 0,
-      transformRY: 0,
-      transformRZ: 0,
-      transformHO: 0,      
-    })
     const {sendClearFrame3DTransformMsg} = this.props.ros
-    const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
+    const namespace = this.props.idxSensorNamespace + "/set_frame_3d_transform"
     const transformList = [0,0,0,0,0,0,0]
     sendClearFrame3DTransformMsg(namespace,transformList)
+    this.setState({
+      update_transform: true
+    })
   }
 
   // Function for configuring and subscribing to Status
@@ -307,15 +312,19 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
         <Column>
 
 
-          </Column>
-          <Column>
+        </Column>
+        <Column>
 
           <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( this.props.targetingNamespace + "/reset_app")}>{"Reset App"}</Button>
           </ButtonMenu>
 
-          </Column>
-          </Columns>
+        </Column>
+        </Columns>
+
+
+
+
 
 
         <Columns>
@@ -338,6 +347,13 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
           </Column>
           </Columns>
       
+
+
+
+
+
+
+
             <Columns>
             <Column>
 
@@ -361,36 +377,38 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                     )}
                     </div>
 
+
+
+                    <Label title="Select Target Filter"> </Label>
+
+                    <Select
+                      id="select_target"
+                      onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.props.targetingNamespace + "/select_target")}
+                      value={this.state.selected_target}
+                    >
+                      {this.state.available_targets_list
+                        ? createMenuListFromStrList(this.state.available_targets_list, false, [],[],[])
+                        : NoneOption}
+                    </Select>
+
+
               </Column>
               <Column>
 
-              <Label title="Select Target Filter"> </Label>
-
-                <Select
-                  id="select_target"
-                  onChange={(event) => onDropdownSelectedSendStr.bind(this)(event, this.props.targetingNamespace + "/select_target")}
-                  value={this.state.selected_target}
-                >
-                  {this.state.available_targets_list
-                    ? createMenuListFromStrList(this.state.available_targets_list, false, [],[],[])
-                    : NoneOption}
-                </Select>
 
               </Column>
               </Columns>
 
-      <Columns>
-      <Column>
 
 
-      <Label title={"Vertical Degrees"}>
+      <Label title={"Sensor Vertical Degrees"}>
           <Input id="image_fov_vert_degs" 
             value={this.state.image_fov_vert_degs} 
             onChange={(event) => onUpdateSetStateValue.bind(this)(event,"image_fov_vert_degs")} 
             onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,this.props.targetingNamespace + "/set_image_fov_vert")} />
         </Label>
            
-        <Label title={"Horzontal Degrees"}>
+        <Label title={"Sensor Horzontal Degrees"}>
           <Input id="image_fov_horz_degs" 
             value={this.state.image_fov_horz_degs} 
             onChange={(event) => onUpdateSetStateValue.bind(this)(event,"image_fov_vert_degs")} 
@@ -445,19 +463,31 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
           unit={"%"}
       />
 
-      </Column>
-      </Columns>
 
-      <Columns>
+
+
+
+
+    <Columns>
     <Column>
+
     <Label title="Show 3D Transforms">
     <Toggle
       checked={this.state.showTransforms}
       onClick={this.onClickToggleShowTransforms}>
     </Toggle>
   </Label>
+
+    </Column>
+    <Column>
+
     </Column>
     </Columns>
+
+
+
+
+
 
     <div hidden={ this.state.showTransforms === false}>
 
@@ -496,8 +526,9 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
 
 
           <ButtonMenu>
-            <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
+            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
           </ButtonMenu>
+
 
         </Column>
         <Column>
@@ -532,13 +563,18 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
                 />
               </Label>
 
+
               <ButtonMenu>
-            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+            <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
           </ButtonMenu>
 
-          </Column>
+
+
+      </Column>
       </Columns>
+
       </div>
+
 
       <Columns>
       <Column>
@@ -557,9 +593,9 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
        </Column>
       </Columns>
 
-
-
       </Section>
+
+    
     )
   }
 

@@ -214,15 +214,7 @@ class NepiSensorsImagingControls extends Component {
           <Columns>
             <Column>
 
-            <Label title={"Current Process"}>
-      <Input
-        disabled value={this.state.frame_status
-        }
-        id="frame_3d"
-      />
-    </Label>
-
-    
+   
               <div align={"left"} textAlign={"left"}>
                 <Label title={"Enable Controls"}>
                   <Toggle
@@ -422,8 +414,11 @@ class NepiSensorsImagingControls extends Component {
 
 
           <ButtonMenu>
-            <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
+            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
           </ButtonMenu>
+
+
+
 
         </Column>
         <Column>
@@ -458,9 +453,11 @@ class NepiSensorsImagingControls extends Component {
                 />
               </Label>
 
+
               <ButtonMenu>
-            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+            <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
           </ButtonMenu>
+
 
             </Column>
           </Columns>
@@ -477,7 +474,7 @@ class NepiSensorsImagingControls extends Component {
                 <Column>
                   <div align={"left"} textAlign={"left"}>
                     <Label title={"Current Frame"}>
-                    <Input value = {this.state.frame3D} />
+                    <Input value = {this.state.frame_3d} />
                     </Label>
                   </div>
                 </Column>
@@ -488,7 +485,7 @@ class NepiSensorsImagingControls extends Component {
                   <Label title={"NEPI"} align={"center"}>
                   </Label>
                   <Toggle 
-                    checked={this.state.frame3D === "nepi_center_frame"} 
+                    checked={this.state.frame_3d === "nepi_center_frame"} 
                     disabled={(!this.state.disabled)? false : true}
                     onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"nepi_center_frame")}
                   />
@@ -500,7 +497,7 @@ class NepiSensorsImagingControls extends Component {
                   <Label title={"Earth"} align={"center"}>
                   </Label>
                   <Toggle 
-                    checked={this.state.frame3D === "map"} 
+                    checked={this.state.frame_3d === "map"} 
                     disabled={(!this.state.disabled)? false : true}
                     onClick={() => setFrame3D(this.props.idxSensorNamespace + '/idx',"map")}
                   />
