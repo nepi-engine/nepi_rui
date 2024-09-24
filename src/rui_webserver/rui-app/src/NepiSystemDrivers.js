@@ -87,6 +87,10 @@ class DriversMgr extends Component {
 
     this.updateDriverStatusListener = this.updateDriverStatusListener.bind(this)
     this.statusDriverListener = this.statusDriverListener.bind(this)
+    this.statusDriverListener = this.statusDriverListener.bind(this)
+    this.convertDriverStrInstallToStrList = this.convertDriverStrInstallToStrList.bind(this)
+
+    
     /*}
     this.onDropdownSelectedSendDriverOption = this.onDropdownSelectedSendDriverOption.bind(this)
     */
@@ -109,7 +113,7 @@ class DriversMgr extends Component {
       drivers_list: convertStrToStrList(message.drivers_ordered_list),
       drivers_active_list: convertStrToStrList(message.drivers_active_list),
       drivers_install_path: message.drivers_install_path,
-      drivers_install_list: convertStrToStrList(message.drivers_install_list),
+      drivers_install_list: this.convertDriverStrInstallToStrList(message.drivers_install_list),
       backup_removed_drivers: message.backup_removed_drivers,
       selected_driver: message.selected_driver
 
@@ -228,6 +232,21 @@ class DriversMgr extends Component {
     var driver_name = this.state.driver_name
     var move_cmd = this.state.move_cmd
     driverUpdateOrderMsg(namespace,driver_name,move_cmd)
+  }
+  convertDriverStrInstallToStrList(inputStr) {
+    var strList = []
+    if (inputStr != null){
+
+
+      inputStr = inputStr.replaceAll("[","")
+      inputStr = inputStr.replaceAll("]","")
+      inputStr = inputStr.replaceAll(" '","")
+      inputStr = inputStr.replaceAll("'","")
+      inputStr = inputStr.replaceAll("zip", ".zip")
+      strList = inputStr.split(",")
+      
+    }
+    return strList
   }
 
 /*}
@@ -444,7 +463,7 @@ class DriversMgr extends Component {
         <Label title="Install"> 
         <Select
           id="select_target"
-          onChange={(event) => onDropdownSelectedSetState.bind(this)(event, this.state.driver_install_ready)}
+          onChange={(event) => onDropdownSelectedSetState.bind(this)(event, "driver_install_ready")}
           value={this.state.driver_install_ready}
           >
           {this.state.drivers_install_list
@@ -462,7 +481,7 @@ class DriversMgr extends Component {
 
           <div hidden={!this.state.show_install_driver}>
       <ButtonMenu>
-        <Button onClick={() => sendStringMsg(this.state.mgrNamespace + "install_driver_pkg", this.state.driver_install_ready)}>{"Install Driver"}</Button>
+        <Button onClick={() => sendStringMsg(this.state.mgrNamespace + "/install_driver_pkg", this.state.driver_install_ready)}>{"Install Driver"}</Button>
       </ButtonMenu>
       </div>
 

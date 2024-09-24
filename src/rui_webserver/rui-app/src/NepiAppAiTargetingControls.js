@@ -19,8 +19,10 @@ import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
+import Toggle from "react-toggle"
 
-import { convertStrToStrList, createMenuListFromStrList, onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSendIntValue} from "./Utilities"
+
+import {round, convertStrToStrList, createMenuListFromStrList, onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSendIntValue, onEnterSetStateFloatValue} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -68,9 +70,19 @@ class NepiAppAiTargetingControls extends Component {
       viewableTopics: false,
 
       output_image_options_list: [],
-      selected_output_image: 'targeting_image'
+      selected_output_image: 'targeting_image',
 
-
+      showTransforms: false,
+      transforms_topic_list: [],
+      transforms_list: [],
+      transformTX: 0,
+      transformTY: 0,
+      transformTZ: 0,
+      transformRX: 0,
+      transformRY: 0,
+      transformRZ: 0,
+      transformHO: 0,
+      showTransforms: false
 
     }
   
@@ -79,6 +91,9 @@ class NepiAppAiTargetingControls extends Component {
     this.onToggleClassSelection = this.onToggleClassSelection.bind(this)
     this.getClassOptions = this.getClassOptions.bind(this)
     this.toggleViewableTopics = this.toggleViewableTopics.bind(this)
+    this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
+    this.onClickToggleShowTransforms = this.onClickToggleShowTransforms.bind(this)
+
 
 
   }
@@ -105,6 +120,14 @@ target_age_filter: message.target_age_filter,
 target_box_size_percent: message.target_box_size_percent,
 pc_box_size_percent: message.pointcloud_box_size_percent,
 
+transformTX: message.frame_3d_transform.translate_vector.x,
+transformTY: message.frame_3d_transform.translate_vector.y,
+transformTZ: message.frame_3d_transform.translate_vector.z,
+transformRX: message.frame_3d_transform.rotate_vector.x,
+transformRY: message.frame_3d_transform.rotate_vector.y,
+transformRZ: message.frame_3d_transform.rotate_vector.z,
+transformHO: message.frame_3d_transform.heading_offset,
+
 output_image_options_list: convertStrToStrList(message.output_image_options_list),
 selected_output_image: message.selected_output_image,
 
@@ -127,6 +150,60 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
         manageListener: false
       })
     }
+  }
+
+  settransform(event){
+    const pointcloud = event.target.value
+    const pointclouds = this.state.transforms_topic_list
+    const transforms = this.state.transforms_list
+    const tf_index = pointclouds.indexOf(pointcloud)
+    if (tf_index !== -1){
+      this.setState({
+        transformPointcloud: pointcloud,
+        transformInd: tf_index
+      })
+      const transform = transforms[tf_index]
+      this.setState({
+        transformTX: round(transform[0]),
+        transformTY: round(transform[1]),
+        transformTZ: round(transform[2]),
+        transformRX: round(transform[3]),
+        transformRY: round(transform[4]),
+        transformRZ: round(transform[5]),
+        transformHO: round(transform[6])
+      })
+      
+    }
+  }
+
+  sendTransformUpdateMessage(){
+    const {sendFrame3DTransformMsg} = this.props.ros
+    const namespace = this.props.targetingNamespace + "/set_frame_3d_transform"
+    const TX = parseFloat(this.state.transformTX)
+    const TY = parseFloat(this.state.transformTY)
+    const TZ = parseFloat(this.state.transformTZ)
+    const RX = parseFloat(this.state.transformRX)
+    const RY = parseFloat(this.state.transformRY)
+    const RZ = parseFloat(this.state.transformRZ)
+    const HO = parseFloat(this.state.transformHO)
+    const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
+    sendFrame3DTransformMsg(namespace,transformList)
+  }
+
+  sendClearTransformUpdateMessage(){
+    this.setState({
+      transformTX: 0,
+      transformTY: 0,
+      transformTZ: 0,
+      transformRX: 0,
+      transformRY: 0,
+      transformRZ: 0,
+      transformHO: 0,      
+    })
+    const {sendClearFrame3DTransformMsg} = this.props.ros
+    const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
+    const transformList = [0,0,0,0,0,0,0]
+    sendClearFrame3DTransformMsg(namespace,transformList)
   }
 
   // Function for configuring and subscribing to Status
@@ -210,6 +287,11 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
     }
   }
 
+  onClickToggleShowTransforms(){
+    const newVal = this.state.showTransforms === false
+    this.setState({showTransforms: newVal})
+    this.render()
+  }
 
   render() {
     
@@ -367,6 +449,98 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
       </Columns>
 
       <Columns>
+    <Column>
+    <Label title="Show 3D Transforms">
+    <Toggle
+      checked={this.state.showTransforms}
+      onClick={this.onClickToggleShowTransforms}>
+    </Toggle>
+  </Label>
+    </Column>
+    </Columns>
+
+    <div hidden={ this.state.showTransforms === false}>
+
+      <Columns>
+      <Column>
+
+      <Label title={"X (m)"}>
+            <Input
+              value={this.state.transformTX}
+              id="XTranslation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformTX")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformTX")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+          <Label title={"Y (m)"}>
+            <Input
+              value={this.state.transformTY}
+              id="YTranslation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformTY")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformTY")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+          <Label title={"Z (m)"}>
+            <Input
+              value={this.state.transformTZ}
+              id="ZTranslation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformTZ")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformTZ")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+
+          <ButtonMenu>
+            <Button onClick={() => this.sendClearTransformUpdateMessage()}>{"Clear Transform"}</Button>
+          </ButtonMenu>
+
+        </Column>
+        <Column>
+
+          <Label title={"Roll (deg)"}>
+            <Input
+              value={this.state.transformRX}
+              id="XRotation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformRX")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformRX")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+          <Label title={"Pitch (deg)"}>
+            <Input
+              value={this.state.transformRY}
+              id="YRotation"
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformRY")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformRY")}
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+              <Label title={"Yaw (deg)"}>
+                <Input
+                  value={this.state.transformRZ}
+                  id="ZRotation"
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformRZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformRZ")}
+                  style={{ width: "80%" }}
+                />
+              </Label>
+
+              <ButtonMenu>
+            <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
+          </ButtonMenu>
+
+          </Column>
+      </Columns>
+      </div>
+
+      <Columns>
       <Column>
 
       <ButtonMenu>
@@ -379,11 +553,6 @@ lost_targets_list: convertStrToStrList(message.lost_targets_list),
       <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( this.props.targetingNamespace + "/reset_config")}>{"Reset Config"}</Button>
       </ButtonMenu>
-
-      </Column>
-      <Column>
-
-
 
        </Column>
       </Columns>

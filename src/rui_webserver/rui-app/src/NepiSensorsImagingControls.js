@@ -18,7 +18,7 @@ import Toggle from "react-toggle"
 import Label from "./Label"
 import Input from "./Input"
 import { Column, Columns } from "./Columns"
-import { round, onUpdateSetStateValue, onEnterSetStateFloatValue } from "./Utilities"
+import { round, onUpdateSetStateValue, onEnterSetStateFloatValue,  } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -49,21 +49,20 @@ class NepiSensorsImagingControls extends Component {
       showTransforms: false,
       transforms_topic_list: [],
       transforms_list: [],
-      selectedTransformPointcloud: "",
-      selectedTransformInd: 0,
-      selectedTransformData: null,
-      selectedTransformTX: 0,
-      selectedTransformTY: 0,
-      selectedTransformTZ: 0,
-      selectedTransformRX: 0,
-      selectedTransformRY: 0,
-      selectedTransformRZ: 0,
-      selectedTransformHO: 0,
+      transformTX: 0,
+      transformTY: 0,
+      transformTZ: 0,
+      transformRX: 0,
+      transformRY: 0,
+      transformRZ: 0,
+      transformHO: 0,
       age_filter_s: null,
 
       listener: null,
 
       disabled: false,
+      frame_3d: null,
+      frame_status: null
     }
 
 
@@ -71,6 +70,8 @@ class NepiSensorsImagingControls extends Component {
     
     this.updateListener = this.updateListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
+    this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
+    
 
     
     
@@ -93,7 +94,15 @@ class NepiSensorsImagingControls extends Component {
       zoomAdjustment: message.zoom,
       rotateAdjustment: message.rotate,
       tiltAdjustment: message.tilt,
-      frame3D: message.frame_3d
+      frame_3d: message.frame_3d,
+      transformTX: message.frame_3d_transform.translate_vector.x,
+      transformTY: message.frame_3d_transform.translate_vector.y,
+      transformTZ: message.frame_3d_transform.translate_vector.z,
+      transformRX: message.frame_3d_transform.rotate_vector.x,
+      transformRY: message.frame_3d_transform.rotate_vector.y,
+      transformRZ: message.frame_3d_transform.rotate_vector.z,
+      transformHO: message.frame_3d_transform.heading_offset
+
     })
   }
 
@@ -136,25 +145,25 @@ class NepiSensorsImagingControls extends Component {
     this.render()
   }
 
-  setSelectedTransform(event){
+  settransform(event){
     const pointcloud = event.target.value
     const pointclouds = this.state.transforms_topic_list
     const transforms = this.state.transforms_list
     const tf_index = pointclouds.indexOf(pointcloud)
     if (tf_index !== -1){
       this.setState({
-        selectedTransformPointcloud: pointcloud,
-        selectedTransformInd: tf_index
+        transformPointcloud: pointcloud,
+        transformInd: tf_index
       })
       const transform = transforms[tf_index]
       this.setState({
-        selectedTransformTX: round(transform[0]),
-        selectedTransformTY: round(transform[1]),
-        selectedTransformTZ: round(transform[2]),
-        selectedTransformRX: round(transform[3]),
-        selectedTransformRY: round(transform[4]),
-        selectedTransformRZ: round(transform[5]),
-        selectedTransformHO: round(transform[6])
+        transformTX: round(transform[0]),
+        transformTY: round(transform[1]),
+        transformTZ: round(transform[2]),
+        transformRX: round(transform[3]),
+        transformRY: round(transform[4]),
+        transformRZ: round(transform[5]),
+        transformHO: round(transform[6])
       })
       
     }
@@ -163,13 +172,13 @@ class NepiSensorsImagingControls extends Component {
   sendTransformUpdateMessage(){
     const {sendFrame3DTransformMsg} = this.props.ros
     const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
-    const TX = parseFloat(this.state.selectedTransformTX)
-    const TY = parseFloat(this.state.selectedTransformTY)
-    const TZ = parseFloat(this.state.selectedTransformTZ)
-    const RX = parseFloat(this.state.selectedTransformRX)
-    const RY = parseFloat(this.state.selectedTransformRY)
-    const RZ = parseFloat(this.state.selectedTransformRZ)
-    const HO = parseFloat(this.state.selectedTransformHO)
+    const TX = parseFloat(this.state.transformTX)
+    const TY = parseFloat(this.state.transformTY)
+    const TZ = parseFloat(this.state.transformTZ)
+    const RX = parseFloat(this.state.transformRX)
+    const RY = parseFloat(this.state.transformRY)
+    const RZ = parseFloat(this.state.transformRZ)
+    const HO = parseFloat(this.state.transformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
     sendFrame3DTransformMsg(namespace,transformList)
   }
@@ -177,13 +186,13 @@ class NepiSensorsImagingControls extends Component {
 
   sendClearTransformUpdateMessage(){
     this.setState({
-      selectedTransformTX: 0,
-      selectedTransformTY: 0,
-      selectedTransformTZ: 0,
-      selectedTransformRX: 0,
-      selectedTransformRY: 0,
-      selectedTransformRZ: 0,
-      selectedTransformHO: 0,      
+      transformTX: 0,
+      transformTY: 0,
+      transformTZ: 0,
+      transformRX: 0,
+      transformRY: 0,
+      transformRZ: 0,
+      transformHO: 0,      
     })
     const {sendClearFrame3DTransformMsg} = this.props.ros
     const namespace = this.props.idxSensorNamespace + "/idx/set_frame_3d_transform"
@@ -199,9 +208,21 @@ class NepiSensorsImagingControls extends Component {
     const resetControlsNamespace = this.props.idxSensorNamespace + "/idx/reset_controls"
     const imageName = this.props.idxImageName 
     return (
+
+
       <Section title={"Post Process Controls"}>
           <Columns>
             <Column>
+
+            <Label title={"Current Process"}>
+      <Input
+        disabled value={this.state.frame_status
+        }
+        id="frame_3d"
+      />
+    </Label>
+
+    
               <div align={"left"} textAlign={"left"}>
                 <Label title={"Enable Controls"}>
                   <Toggle
@@ -371,30 +392,30 @@ class NepiSensorsImagingControls extends Component {
 
           <Label title={"X (m)"}>
             <Input
-              value={this.state.selectedTransformTX}
+              value={this.state.transformTX}
               id="XTranslation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTX")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTX")}
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformTX")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformTX")}
               style={{ width: "80%" }}
             />
           </Label>
 
           <Label title={"Y (m)"}>
             <Input
-              value={this.state.selectedTransformTY}
+              value={this.state.transformTY}
               id="YTranslation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTY")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTY")}
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformTY")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformTY")}
               style={{ width: "80%" }}
             />
           </Label>
 
           <Label title={"Z (m)"}>
             <Input
-              value={this.state.selectedTransformTZ}
+              value={this.state.transformTZ}
               id="ZTranslation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformTZ")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformTZ")}
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformTZ")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformTZ")}
               style={{ width: "80%" }}
             />
           </Label>
@@ -409,30 +430,30 @@ class NepiSensorsImagingControls extends Component {
 
           <Label title={"Roll (deg)"}>
             <Input
-              value={this.state.selectedTransformRX}
+              value={this.state.transformRX}
               id="XRotation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRX")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRX")}
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformRX")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformRX")}
               style={{ width: "80%" }}
             />
           </Label>
 
           <Label title={"Pitch (deg)"}>
             <Input
-              value={this.state.selectedTransformRY}
+              value={this.state.transformRY}
               id="YRotation"
-              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRY")}
-              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRY")}
+              onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformRY")}
+              onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformRY")}
               style={{ width: "80%" }}
             />
           </Label>
 
               <Label title={"Yaw (deg)"}>
                 <Input
-                  value={this.state.selectedTransformRZ}
+                  value={this.state.transformRZ}
                   id="ZRotation"
-                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"selectedTransformRZ")}
-                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"selectedTransformRZ")}
+                  onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"transformRZ")}
+                  onKeyDown= {(event) => onEnterSetStateFloatValue.bind(this)(event,"transformRZ")}
                   style={{ width: "80%" }}
                 />
               </Label>
