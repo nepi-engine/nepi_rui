@@ -985,7 +985,7 @@ class ROSConnectionStore {
     if (namespace) {
       return this.addListener({
         name: namespace,
-        messageType: "nepi_ros_interfaces/PointcloudSelectionStatus",
+        messageType: "nepi_app_pointcloud/PointcloudSelectionStatus",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -999,7 +999,7 @@ class ROSConnectionStore {
     if (namespace) {
       return this.addListener({
         name: namespace,
-        messageType: "nepi_ros_interfaces/PointcloudProcessStatus",
+        messageType: "nepi_app_pointcloud/PointcloudProcessStatus",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -1012,7 +1012,7 @@ class ROSConnectionStore {
     if (namespace) {
       return this.addListener({
         name: namespace,
-        messageType: "nepi_ros_interfaces/PointcloudRenderStatus",
+        messageType: "nepi_app_pointcloud/PointcloudRenderStatus",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -1142,13 +1142,13 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  driverUpdateOptionMsg(namespace, driver_name, option_str) {
+  sendUpdateOptionMsg(namespace, comp_name, option_str) {
     this.publishMessage({
       name: namespace,
-      messageType: "nepi_ros_interfaces/DriverUpdateOption",
+      messageType: "nepi_ros_interfaces/UpdateOption",
 
         data: {
-        driver_name: driver_name,
+        name: comp_name,
         option_str: option_str
       },
       noPrefix: true
@@ -1156,12 +1156,12 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  driverUpdateOrderMsg(namespace, driver_name, move_cmd) {
+  sendUpdateOrderMsg(namespace, comp_name, move_cmd) {
     this.publishMessage({
       name: namespace,
-      messageType: "nepi_ros_interfaces/DriverUpdateOrder",
+      messageType: "nepi_ros_interfaces/UpdateOrder",
       data: {    
-        driver_name: driver_name,
+        name: comp_name,
         move_cmd: move_cmd
       },
       noPrefix: true
@@ -1169,12 +1169,12 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  sendActiveStateBoolMsg(namespace, driver_name, active_state) {
+  sendUpdateActiveStateMsg(namespace, comp_name, active_state) {
     this.publishMessage({
       name: namespace,
-      messageType: "nepi_ros_interfaces/DriverUpdateState",
+      messageType: "nepi_ros_interfaces/UpdateState",
       data: {
-        driver_name: driver_name,
+        name: comp_name,
         active_state: active_state
       },
       noPrefix: true
@@ -1965,7 +1965,7 @@ class ROSConnectionStore {
     const _pollOnce = async () => {
       this.imgMuxSequences = await this.callService({
         name: "sequential_image_mux/mux_sequence_query",
-        messageType: "nepi_ros_interfaces/ImageMuxSequenceQuery",
+        messageType: "nepi_app_image_sequencer/ImageMuxSequenceQuery",
         msgKey: "img_mux_sequences"
       })
       
@@ -1980,8 +1980,8 @@ class ROSConnectionStore {
   async callDriversListQuery(poll = true) {
     const _pollOnce = async () => {
       const resp = await this.callService({
-        name: "onvif_mgr/drivers_list_query",
-        messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
+        name: "app_onvif/drivers_list_query",
+        messageType: "nepi_app_onvif/OnvifDeviceListQuery",
       })
 
       this.DriversListQuery = resp['drivers_list_query']
@@ -1998,8 +1998,8 @@ class ROSConnectionStore {
   async callOnvifDeviceListQueryService(poll = true) {
     const _pollOnce = async () => {
       const resp = await this.callService({
-        name: "onvif_mgr/device_list_query",
-        messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
+        name: "app_onvif/device_list_query",
+        messageType: "nepi_app_onvif/OnvifDeviceListQuery",
       })
 
       this.onvifDeviceStatuses = resp['device_statuses']
@@ -2016,8 +2016,8 @@ class ROSConnectionStore {
   async callOnvifDeviceDriverListQueryService(poll = true) {
     const _pollOnce = async () => {
       const resp = await this.callService({
-        name: "onvif_mgr/device_driver_list_query",
-        messageType: "nepi_ros_interfaces/OnvifDeviceDriverListQuery"
+        name: "app_onvif/device_driver_list_query",
+        messageType: "nepi_app_onvif/OnvifDeviceDriverListQuery"
       })
 
       this.onvifIDXDeviceDrivers = resp['idx_drivers']
@@ -2715,7 +2715,7 @@ class ROSConnectionStore {
   onConfigureMuxSequence(updated_sequence_dict) {
     this.publishMessage({
       name: "sequential_image_mux/configure_mux_sequence",
-      messageType: "nepi_ros_interfaces/ImageMuxSequence",
+      messageType: "nepi_app_image_sequencer/ImageMuxSequence",
       data: updated_sequence_dict
     })
   }
@@ -2868,8 +2868,8 @@ class ROSConnectionStore {
   @action.bound
   async onOnvifDeviceCfgUpdate(updatedDeviceCfg) {
     await this.callService({
-      name: "onvif_mgr/set_device_cfg",
-      messageType: "nepi_ros_interfaces/OnvifDeviceCfgUpdate",
+      name: "app_onvif/set_device_cfg",
+      messageType: "nepi_app_onvif/OnvifDeviceCfgUpdate",
       args: {cfg : updatedDeviceCfg}
     })
   }
@@ -2877,8 +2877,8 @@ class ROSConnectionStore {
   @action.bound
   async onOnvifDeviceCfgDelete(uuid) {
     await this.callService({
-      name: "onvif_mgr/delete_device_cfg",
-      messageType: "nepi_ros_interfaces/OnvifDeviceCfgDelete",
+      name: "app_onvif/delete_device_cfg",
+      messageType: "nepi_app_onvif/OnvifDeviceCfgDelete",
       args: {device_uuid : uuid}
     })
   }

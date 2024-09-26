@@ -24,22 +24,23 @@ import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSw
   onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue, onDropdownSelectedSetState, onDropdownSelectedSendDriverOption
   } from "./Utilities"
 
-@inject("ros")
-@observer
-
-// Pointcloud Application page
-class DriversMgr extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      show_delete_driver: false,
-      mgrName: "drivers_mgr",
-      mgrNamespace: null,
+  @inject("ros")
+  @observer
+  
+  // Pointcloud Application page
+  class DriversMgr extends Component {
+    constructor(props) {
+      super(props)
+  
+      this.state = {
+        show_delete_driver: false,
+        mgrName: "drivers_mgr",
+        mgrNamespace: null,
 
       viewableDrivers: false,
 
       drivers_list: [],
+      last_drivers_list: [],
       drivers_active_list: [],
       drivers_install_path: null,
       drivers_install_list: [],
@@ -91,6 +92,10 @@ class DriversMgr extends Component {
     this.statusDriverListener = this.statusDriverListener.bind(this)
     this.convertDriverStrInstallToStrList = this.convertDriverStrInstallToStrList.bind(this)
 
+    this.getDisabledStr = this.getDisabledStr.bind(this)
+    this.getActiveStr = this.getActiveStr.bind(this)
+    this.getReadyStr = this.getReadyStr.bind(this)
+
     
     /*}
     this.onDropdownSelectedSendDriverOption = this.onDropdownSelectedSendDriverOption.bind(this)
@@ -109,16 +114,24 @@ class DriversMgr extends Component {
 
   // Callback for handling ROS Status messages
   driversStatusListener(message) {
+    const drivers_str_list = convertStrToStrList(message.drivers_ordered_list)
     this.setState({
       drivers_path: message.drivers_path,
-      drivers_list: convertStrToStrList(message.drivers_ordered_list),
+      drivers_list: drivers_str_list,
       drivers_active_list: convertStrToStrList(message.drivers_active_list),
       drivers_install_path: message.drivers_install_path,
       drivers_install_list: this.convertDriverStrInstallToStrList(message.drivers_install_list),
       backup_removed_drivers: message.backup_removed_drivers,
       selected_driver: message.selected_driver
-
     })    
+
+    const last_drivers_list = this.state.drivers_list
+    this.setState({
+      last_drivers_list: drivers_str_list
+    })
+    if (last_drivers_list !== drivers_str_list){
+      this.render()
+    }
   }
 
   // Function for configuring and subscribing to Status
@@ -230,11 +243,11 @@ class DriversMgr extends Component {
 
 
   sendDriverUpdateOrder(){
-    const {driverUpdateOrderMsg} = this.props.ros
+    const {sendUpdateOrderMsg} = this.props.ros
     var namespace = this.state.mgrNamespace
     var driver_name = this.state.driver_name
     var move_cmd = this.state.move_cmd
-    driverUpdateOrderMsg(namespace,driver_name,move_cmd)
+    sendUpdateOrderMsg(namespace,driver_name,move_cmd)
   }
   convertDriverStrInstallToStrList(inputStr) {
     var strList = []
@@ -264,18 +277,18 @@ class DriversMgr extends Component {
 
 /*}
   onDropdownSelectedSendDriverOption(event) {
-    const {driverUpdateOptionMsg} = this.props.ros
+    const {sendUpdateOptionMsg} = this.props.ros
     const {sendStringMsg} = this.props.ros
     const namespace = this.state.mgrNamespace
     const driver_name = this.state.driver_name
     const option_str = event.target.value
 
-    driverUpdateOptionMsg(namespace, driver_name, option_str)
+    sendUpdateOptionMsg(namespace, driver_name, option_str)
   }
 */
 
   renderDriverConfigure() {
-    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, driverUpdateOrderMsg, sendActiveStateBoolMsg, driverUpdateOptionMsg} = this.props.ros
+    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg, sendUpdateOptionMsg} = this.props.ros
     const {drivers_ordered_list, drivers_active_list} = this.state
     const connected = this.state.connected
     const selected_driver = this.state.selected_driver
@@ -290,7 +303,7 @@ class DriversMgr extends Component {
 
         <Section title={"Configure Driver"}>
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Selected Driver: "}
+          {"Selected Driver:   "}
           </label>
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             {this.state.driver_name}
@@ -365,7 +378,7 @@ class DriversMgr extends Component {
       <Label title="Turn Driver On/Off">
           <Toggle
             checked={this.state.active_state===true}
-            onClick={() => sendActiveStateBoolMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
+            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
           </Toggle>
           </Label>
 
@@ -379,19 +392,19 @@ class DriversMgr extends Component {
 
 
         <ButtonMenu>
-        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "top")}>{"Move to Top"}</Button>
+        <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "top")}>{"Move to Top"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-        <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "up")}>{"Move    Up"}</Button>
+        <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "up")}>{"Move    Up"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "down")}>{"Move Down"}</Button>
+          <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "down")}>{"Move Down"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-          <Button onClick={() => driverUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "bottom")}>{"Move to Bottom"}</Button>
+          <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.driver_name, "bottom")}>{"Move to Bottom"}</Button>
         </ButtonMenu>
         </Column>
         </Columns>
@@ -421,11 +434,6 @@ class DriversMgr extends Component {
 
         </Column>
         </Columns>
-
-
-
-
-
 
 
       <div hidden={!this.state.show_delete_driver}>
@@ -459,48 +467,7 @@ class DriversMgr extends Component {
 
 
         </Section>
-
-        <Columns equalWidth={true}>
-        <Column>
-
-        <Label title="Select Driver">
-                    <div onClick={this.toggleViewableDrivers} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={!viewableDrivers}>
-                    {driver_options.map((driver) =>
-                    <div onClick={this.onToggleDriverSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (driver.props.value === selected_driver) ?
-                          Styles.vars.colors.green :
-                          (active_driver_list.includes(driver.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body driver-topic ={driver} style={{color: Styles.vars.colors.black}}>{driver}</body>
-                    </div>
-                    )}
-                    </div>
-                  </Label>
-      </Column>
-      <Column>
-
-        <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_drivers")}>{"Refresh"}</Button>
-      </ButtonMenu>
-
-      </Column>
-      <Column>
-
-        <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
-      </ButtonMenu>
-
-        </Column>
-      </Columns>
-        
+      
       </React.Fragment>
     )
   }
@@ -556,10 +523,56 @@ class DriversMgr extends Component {
     )
   }
 
+
+
+  getActiveStr(){
+    const active =  this.state.drivers_active_list
+    var config_str_list = []
+    for (var i = 0; i < active.length; i++) {
+      config_str_list.push(active[i])
+      config_str_list.push("\n")
+    }
+    const config_str =config_str_list.join("")
+    return config_str
+  }
+
   
+  getDisabledStr(){
+    const installed = this.state.drivers_list
+    const active =  this.state.drivers_active_list
+    var config_str_list = []
+    for (var i = 0; i < installed.length; i++) {
+      if (active.indexOf(installed[i]) === -1){
+        config_str_list.push(installed[i])
+        config_str_list.push("\n")
+      }
+    }
+    const config_str =config_str_list.join("")
+    return config_str
+  }
+
+
+  getReadyStr(){
+    const ready = this.state.drivers_install_list
+    var config_str_list = []
+    for (var i = 0; i < ready.length; i++) {
+      config_str_list.push(ready[i])
+      config_str_list.push("\n")
+    }
+    const config_str =config_str_list.join("")
+    return config_str
+  }
+
+
 
   render() {
+    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg, sendUpdateOptionMsg} = this.props.ros
+    const {drivers_ordered_list, drivers_active_list} = this.state
     const connected = this.state.connected
+    const selected_driver = this.state.selected_driver
+    const viewableDrivers = this.state.viewableDrivers
+    const driver_options = this.getDriverOptions()
+    const active_driver_list = this.state.drivers_active_list
 
     return (
 
@@ -567,11 +580,74 @@ class DriversMgr extends Component {
     <Columns>
       <Column>
 
-      {this.renderDriverConfigure()}
+
+      <Columns equalWidth={true}>
+        <Column>
+
+        <Label title="Select Driver">
+                    <div onClick={this.toggleViewableDrivers} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                      <Select style={{width: "10px"}}/>
+                    </div>
+                    <div hidden={!viewableDrivers}>
+                    {driver_options.map((driver) =>
+                    <div onClick={this.onToggleDriverSelection}
+                      style={{
+                        textAlign: "center",
+                        padding: `${Styles.vars.spacing.xs}`,
+                        color: Styles.vars.colors.black,
+                        backgroundColor: (driver.props.value === selected_driver) ?
+                          Styles.vars.colors.green :
+                          (active_driver_list.includes(driver.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                        cursor: "pointer",
+                        }}>
+                        <body driver-topic ={driver} style={{color: Styles.vars.colors.black}}>{driver}</body>
+                    </div>
+                    )}
+                    </div>
+                  </Label>
+      </Column>
+      <Column>
+
+      
+    
+      <Label style={{fontWeight: 'bold'}} > {"Active Drivers List"} </Label>
+
+      <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
+        {this.getActiveStr()}
+        </pre>
+
+        <Label style={{fontWeight: 'bold'}} > {"Disabled Drivers List"} </Label>
+
+        <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
+        {this.getDisabledStr()}
+        </pre>
+
+        <Label style={{fontWeight: 'bold'}} > {"Install Drivers List"} </Label>
+
+        <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
+        {this.getReadyStr()}
+        </pre>
+
 
       </Column>
       <Column>
 
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_drivers")}>{"Refresh"}</Button>
+      </ButtonMenu>
+
+        <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
+      </ButtonMenu>
+
+        </Column>
+      </Columns>
+
+
+      </Column>
+      <Column>
+
+      {this.renderDriverConfigure()}
 
       {this.renderDriverInstall()}
 

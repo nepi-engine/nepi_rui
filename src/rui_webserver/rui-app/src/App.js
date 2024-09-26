@@ -21,15 +21,16 @@ import SensorIDX from "./NepiSensorsImaging"
 import PointcloudApp from "./NepiAppPointcloud"
 import AiManager from "./NepiSystemAiDetector"
 import AiTargetingApp from "./NepiAppAiTargeting"
-import MultiImageViewer from "./NepiAppImageViewer"
+import ImageViewerApp from "./NepiAppImageViewer"
 import NavPoseMgr from "./NepiMgrNavPose"
 import Settings from "./NepiSystemDevice"
 import SoftwareUpdate from "./NepiSystemSoftware"
 import AutomationMgr from "./NepiSystemAutomation"
 import ImageSequencer from "./NepiAppImageSequencer"
 import PTX from "./NepiControlsPanTilt"
-import OnvifManager from "./NepiSystemOnvif"
+import OnvifApp from "./NepiAppOnvif"
 import DriversMgr from "./NepiSystemDrivers"
+import AppsMgr from "./NepiSystemApps"
 import LSX from "./NepiControlsLights"
 import RBX from "./NepiControlsRobots"
 
@@ -47,9 +48,9 @@ class App extends Component {
   render() {
     const { commercial_licensed, license_server } = this.props.ros
     const unlicensed = (license_server !== null) && 
-                               (license_server.readyState === 1) && 
-                               (commercial_licensed === false) 
-    return (
+      (license_server.readyState === 1) && 
+      (commercial_licensed === false) 
+      return (
       <Page>
         <Nav
           unlicensed={unlicensed}
@@ -66,18 +67,18 @@ class App extends Component {
               path: "/controls",
               label: "Controls",
               subItems: [
-			          { path: "/lsx", label: "Lights" },
+                { path: "/lsx", label: "Lights" },
                 { path: "/ptx", label: "Pan&Tilts" },
                 { path: "/rbx", label: "Robots" }
               ]
             },
-            
             {
               path: "/applications",
               label: "Applications",
               subItems: [
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
+                { path: "/onvif_app", label: "ONVIF"},
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
                 { path: "/ai_targeting_app", label: " AI Targeting" }
               ]
@@ -90,7 +91,7 @@ class App extends Component {
                 { path: "/software_update", label: "Software"},
                 { path: "/navPose", label: "NavPose" },
                 { path: "/drivers_mgr", label: "Drivers"},
-                { path: "/onvif_mgr", label: "ONVIF"},
+                { path: "/apps_mgr", label: "Apps"},
                 { path: "/ai_mgr", label: " AI" },
                 { path: "/automation", label: "Automation" }
               ]
@@ -109,18 +110,19 @@ class App extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-          <Route path="/imagery" component={MultiImageViewer} />
+          <Route path="/imagery" component={ImageViewerApp} />
           <Route path="/sensor_idx" component={SensorIDX} />
           <Route path="/pointcloud_app" component={PointcloudApp} />
           <Route path="/navPose" component={NavPoseMgr} />
           <Route path="/ai_targeting_app" component={AiTargetingApp} />
           <Route path="/automation" component={AutomationMgr} />
-          <Route path="/onvif_mgr" component={OnvifManager} />
+          <Route path="/onvif_app" component={OnvifApp} />
           <Route path="/image_sequencer" component={ImageSequencer} />
           <Route path="/system_config" component={Settings} />
           <Route path="/software_update" component={SoftwareUpdate} />
           <Route path="/ai_mgr" component={AiManager} />
           <Route path="/drivers_mgr" component={DriversMgr} />
+          <Route path="/apps_mgr" component={AppsMgr} />
           <Route path="/ptx" component={PTX} />
           <Route path="/rbx" component={RBX} />
           <Route path='/docs' component={() => {
