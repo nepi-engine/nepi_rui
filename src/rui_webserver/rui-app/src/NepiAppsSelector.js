@@ -279,9 +279,7 @@ class AppsSelector extends Component {
       <Label title={"Name"}>
         <Input disabled value={this.state.app_name} />
       </Label>
- 
-        </Column>
-        </Columns>
+
 
         </Section>
 
