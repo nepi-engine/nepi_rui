@@ -19,6 +19,14 @@ import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
+import PointcloudApp from "./NepiAppPointcloud"
+import AiTargetingApp from "./NepiAppAiTargeting"
+import ImageViewerApp from "./NepiAppImageViewer"
+import ImageSequencer from "./NepiAppImageSequencer"
+import OnvifApp from "./NepiAppOnvif"
+
+
+
 
 import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSwitchStateValue,createMenuListFromStrList,
   onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue, onDropdownSelectedSetState, onDropdownSelectedSendAppOption
@@ -58,6 +66,8 @@ class AppsSelector extends Component {
 
       appsListener: null,
       appListener: null,
+
+      app_selected: null,
 
 
 
@@ -259,85 +269,9 @@ class AppsSelector extends Component {
     appUpdateOptionMsg(namespace, app_name, option_str)
   }
 */
-
-  renderAppConfigure() {
-    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
-    const {apps_ordered_list, apps_active_list} = this.state
-    const connected = this.state.connected
-    const selected_app = this.state.selected_app
-    const viewableApps = this.state.viewableApps
-    const app_options = this.getAppOptions()
-    const active_app_list = this.state.apps_active_list
-    const hide_settings = selected_app === "None"
-    const NoneOption = <Option>None</Option>
-
-    return (
-      <React.Fragment>
-
-        <Section title={"Name"}>
-     
-      <Label title={"Name"}>
-        <Input disabled value={this.state.app_name} />
-      </Label>
-
-
-        </Section>
-
-        
-      </React.Fragment>
-    )
-  }
-
   
  
-  renderAppInstall() {
-    const connected = this.state.connected 
-    const NoneOption = <Option>None</Option>
-    const selected_install_pkg = this.state.selected_app_install_pkg ? this.state.selected_app_install_pkg : "None"
-    const install_options = this.getInstallOptions()
-    const {sendStringMsg} = this.props.ros
-    return (
-      <React.Fragment>
 
-        <Section title={"Install/Update Apps"}>
-
-        <Label title="Install"> 
-        <Select
-          id="select_target"
-          onChange={(event) => onDropdownSelectedSetState.bind(this)(event, "selected_app_install_pkg")}
-          value={this.state.selected_app_install_pkg}
-          >
-          {install_options}
-        </Select>
-        </Label>
-
-        <Label title="Show Install App">
-                <Toggle
-                checked={this.state.show_install_app===true}
-                onClick={() => onChangeSwitchStateValue.bind(this)("show_install_app",this.state.show_install_app)}>
-                </Toggle>
-          </Label>
-
-          <div hidden={!this.state.show_install_app}>
-      <ButtonMenu>
-        <Button onClick={() => sendStringMsg(this.state.mgrNamespace + "/install_app_pkg", selected_install_pkg)}>{"Install App"}</Button>
-      </ButtonMenu>
-      </div>
-
-          <Label title={"Install Folder"} >
-          </Label>
-
-          <pre style={{ height: "20Spx", overflowY: "auto" }}>
-            {this.state.apps_install_path}
-          </pre>
-
-
-
-        </Section>
-        
-      </React.Fragment>
-    )
-  }
 
   getActiveStr(){
     const active =  this.state.apps_active_list
@@ -377,6 +311,78 @@ class AppsSelector extends Component {
     return config_str
   }
 
+  renderAiTargetingApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <AiTargetingApp
+         title={"AiTargetingApp"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+  renderImageSequencerApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <ImageSequencer
+         title={"ImageSequencer"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+  renderImageViewerApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <ImageViewerApp
+         title={"ImageViewerApp"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+  renderOnvifApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <OnvifApp
+         title={"OnvifApp"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+  renderPointcloudApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <PointcloudApp
+         title={"PointcloudApp"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+
+
   render() {
     const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
     const {apps_ordered_list, apps_active_list} = this.state
@@ -385,17 +391,25 @@ class AppsSelector extends Component {
     const viewableApps = this.state.viewableApps
     const app_options = this.getAppOptions()
     const active_app_list = this.state.apps_active_list
+    const NoneOption = <Option>None</Option>
 
     return (
-
-       
-    <Columns>
-      <Column>
-
-
-      <Columns equalWidth={true}>
+      <Columns>
         <Column>
 
+        <Label title={"Combine Options"}>
+                    <Select
+                      id="combine_options"
+                      onChange={(event) => onUpdateSetStateValue.bind(this)(event,"app_selected")}
+                      value={this.state.app_selected}
+                    >
+                      {this.state.apps_active_list
+                        ? createMenuListFromStrList(this.state.apps_active_list, false, [],[],[])
+                        : NoneOption}
+                    </Select>
+                  </Label>
+
+                  {/*}
         <Label title="Select App">
                     <div onClick={this.toggleViewableApps} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
@@ -417,28 +431,32 @@ class AppsSelector extends Component {
                     )}
                     </div>
                   </Label>
-      </Column>
-      <Column>
-        </Column>
-      </Columns>
-
-
-
-
-      </Column>
-      <Column>
-
-      {this.renderAppConfigure()}
-
-{/*
-      {this.renderAppInstall()}
 */}
 
-       </Column>
-     </Columns>
-         
-       
-          
+                  <div hidden={this.state.app_selected !== "AI_Targeting"}>
+                  {this.renderAiTargetingApp()}    
+                  </div>
+
+                  <div hidden={this.state.app_selected !== "Image_Sequencer"}>
+                  {this.renderImageSequencerApp()}    
+                  </div>
+
+                  <div hidden={this.state.app_selected !== "Image_Viewer"}>
+                  {this.renderImageViewerApp()}    
+                  </div>
+
+
+                  <div hidden={this.state.app_selected !== "ONVIF"}>
+                  {this.renderOnvifApp()}    
+                  </div>
+
+                  <div hidden={this.state.app_selected !== "Pointcloud"}>
+                  {this.renderPointcloudApp()}    
+                  </div>
+
+      </Column>
+      </Columns>
+
 
     )
   }
