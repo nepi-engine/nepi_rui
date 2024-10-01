@@ -124,10 +124,12 @@ class NepiSensorsImagingControls extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { idxSensorNamespace } = this.props
-    if (prevProps.idxSensorNamespace !== idxSensorNamespace && idxSensorNamespace != null) {
-      this.updateListener()
-    } else if (idxSensorNamespace == null){
-      this.setState({ disabled: true })
+    if (prevProps.idxSensorNamespace !== idxSensorNamespace){
+      if (idxSensorNamespace != null) {
+        this.updateListener()
+      } else if (idxSensorNamespace == null){
+        this.setState({ disabled: true })
+      }
     }
   }
 

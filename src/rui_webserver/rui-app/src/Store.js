@@ -212,7 +212,7 @@ class ROSConnectionStore {
   @observable imageTopics = []
   @observable pointcloudTopics = []
   @observable idxSensors = {}
-  @observable settingsCaps = {}
+  @observable settingCaps = {}
   @observable ptxUnits = {}
   @observable lsxUnits = {}
   @observable rbxRobots = {}
@@ -514,8 +514,8 @@ class ROSConnectionStore {
           this.callIDXCapabilitiesQueryService(idx_sensor_namespace) // Testing
           this.callSettingsCapabilitiesQueryService(idx_sensor_namespace)
           const idxSensor = this.idxSensors[idx_sensor_namespace]
-          const settingsCaps = this.settingsCaps[idx_sensor_namespace]
-          if (idxSensor && settingsCaps) { // Testing
+          const settingCaps = this.settingCaps[idx_sensor_namespace]
+          if (idxSensor && settingCaps) { // Testing
             sensors_detected.push(idx_sensor_namespace)
           }
           idx_sensors_changed = true // Testing -- always declare changed
@@ -543,7 +543,10 @@ class ROSConnectionStore {
         const ptx_unit_namespace = this.topicNames[i].split("/ptx")[0]
         if (!(ptx_units_detected.includes(ptx_unit_namespace))) {
           this.callPTXCapabilitiesQueryService(ptx_unit_namespace)
-          if (this.ptxUnits[ptx_unit_namespace])
+          this.callSettingsCapabilitiesQueryService(ptx_unit_namespace)
+          const ptxUnit = this.ptxUnits[ptx_unit_namespace]
+          const settingCaps = this.settingCaps[ptx_unit_namespace]
+          if (ptxUnit && settingCaps)
           {
             ptx_units_detected.push(ptx_unit_namespace)
           }
@@ -572,7 +575,10 @@ class ROSConnectionStore {
         const lsx_unit_namespace = this.topicNames[i].split("/lsx")[0]
         if (!(lsx_units_detected.includes(lsx_unit_namespace))) {
           this.callLSXCapabilitiesQueryService(lsx_unit_namespace)
-          if (this.lsxUnits[lsx_unit_namespace])
+          this.callSettingsCapabilitiesQueryService(lsx_unit_namespace)
+          const lsxUnits = this.lsxUnits[lsx_unit_namespace]
+          const settingCaps = this.settingCaps[lsx_unit_namespace]
+          if (lsxUnits && settingCaps)
           {
             lsx_units_detected.push(lsx_unit_namespace)
           }
@@ -603,8 +609,8 @@ class ROSConnectionStore {
           this.callRBXCapabilitiesQueryService(rbx_robot_namespace)
           this.callSettingsCapabilitiesQueryService(rbx_robot_namespace)
           const rbxRobot = this.rbxRobots[rbx_robot_namespace]
-          const settingsCaps = this.settingsCaps[rbx_robot_namespace]
-          if (rbxRobot && settingsCaps) { // Testing
+          const settingCaps = this.settingCaps[rbx_robot_namespace]
+          if (rbxRobot && settingCaps) { // Testing
             robots_detected.push(rbx_robot_namespace)
           }
           rbx_robots_changed = true // Testing -- always declare changed
@@ -1039,7 +1045,7 @@ class ROSConnectionStore {
     if (settingsNamespace) {
       return this.addListener({
         name: settingsNamespace + "/settings_status",
-        messageType: "std_msgs/String",
+        messageType: "nepi_ros_interfaces/Settings",
         noPrefix: true,
         callback: callback,
         manageListener: false
@@ -1551,6 +1557,16 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  async callSettingsCapabilitiesQueryService(namespace) {
+    const capabilities = await this.callService({
+      name: namespace + "/settings_capabilities_query",
+      messageType: "nepi_ros_interfaces/SettingsCapabilitiesQuery",  
+    })
+    this.settingCaps[namespace] = capabilities
+  }
+
+
+  @action.bound
   async callIDXCapabilitiesQueryService(idxSensorNamespace) {
     const capabilities = await this.callService({
       name: idxSensorNamespace + "/idx/capabilities_query",
@@ -1559,14 +1575,6 @@ class ROSConnectionStore {
     this.idxSensors[idxSensorNamespace] = capabilities
   }
 
-  @action.bound
-  async callSettingsCapabilitiesQueryService(idxSensorNamespace) {
-    const capabilities = await this.callService({
-      name: idxSensorNamespace + "/settings_capabilities_query",
-      messageType: "nepi_ros_interfaces/SettingsCapabilitiesQuery",  
-    })
-    this.settingsCaps[idxSensorNamespace] = capabilities
-  }
 
   @action.bound
   async callPTXCapabilitiesQueryService(ptxUnitNamespace) {

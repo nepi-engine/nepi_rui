@@ -114,24 +114,15 @@ import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSw
 
   // Callback for handling ROS Status messages
   driversStatusListener(message) {
-    const drivers_str_list = convertStrToStrList(message.drivers_ordered_list)
     this.setState({
       drivers_path: message.drivers_path,
-      drivers_list: drivers_str_list,
-      drivers_active_list: convertStrToStrList(message.drivers_active_list),
+      drivers_list: message.drivers_ordered_list,
+      drivers_active_list: message.drivers_active_list,
       drivers_install_path: message.drivers_install_path,
-      drivers_install_list: this.convertDriverStrInstallToStrList(message.drivers_install_list),
+      drivers_install_list: message.drivers_install_list,
       backup_removed_drivers: message.backup_removed_drivers,
       selected_driver: message.selected_driver
     })    
-
-    const last_drivers_list = this.state.drivers_list
-    this.setState({
-      last_drivers_list: drivers_str_list
-    })
-    if (last_drivers_list !== drivers_str_list){
-      this.render()
-    }
   }
 
   // Function for configuring and subscribing to Status
@@ -159,13 +150,13 @@ import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSw
       group_id: message.group_id,
       drivers_interfaces: message.interfaces,
       options_1_name: message.options_1_name,
-      options_1: convertStrToStrList(message.options_1),
+      options_1: message.options_1,
       set_option_1: message.set_option_1,
       options_2_name: message.options_2_name,
-      options_2: convertStrToStrList(message.options_2),
+      options_2: message.options_2,
       set_option_2: message.set_option_2,
       discovery: message.discovery,
-      other_users_list: convertStrToStrList(message.other_users_list),
+      other_users_list: message.other_users_list,
       active_state: message.active_state,
       order: message.order,
       msg_str: message.msg_str
@@ -610,19 +601,29 @@ import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSw
 
       
     
-      <Label style={{fontWeight: 'bold'}} > {"Active Drivers List"} </Label>
+
+      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Active Drivers List "}
+          </label>
+
 
       <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getActiveStr()}
         </pre>
 
-        <Label style={{fontWeight: 'bold'}} > {"Disabled Drivers List"} </Label>
+
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Disabled Drivers List "}
+          </label>
+
 
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getDisabledStr()}
         </pre>
 
-        <Label style={{fontWeight: 'bold'}} > {"Install Drivers List"} </Label>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Install Drivers List "}
+          </label>
 
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getReadyStr()}
@@ -631,6 +632,15 @@ import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSw
 
       </Column>
       <Column>
+
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/enable_all_drivers")}>{"Enable All"}</Button>
+      </ButtonMenu>
+
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/disable_all_drivers")}>{"Disable All"}</Button>
+      </ButtonMenu>
+
 
       <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_drivers")}>{"Refresh"}</Button>
