@@ -33,6 +33,7 @@ import DriversMgr from "./NepiSystemDrivers"
 import AppsMgr from "./NepiSystemApps"
 import LSX from "./NepiControlsLights"
 import RBX from "./NepiControlsRobots"
+import AppsSelector from "./NepiAppsSelector"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -76,6 +77,7 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
+                { path: "/apps_selector", label: "Applications"},
                 { path: "/imagery", label: "Image Viewer" },
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/onvif_app", label: "ONVIF"},
@@ -123,6 +125,7 @@ class App extends Component {
           <Route path="/ai_mgr" component={AiManager} />
           <Route path="/drivers_mgr" component={DriversMgr} />
           <Route path="/apps_mgr" component={AppsMgr} />
+          <Route path="/apps_selector" component={AppsSelector} />
           <Route path="/ptx" component={PTX} />
           <Route path="/rbx" component={RBX} />
           <Route path='/docs' component={() => {
