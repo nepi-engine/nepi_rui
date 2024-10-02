@@ -30,7 +30,7 @@ const NODE_DISPLAY_NAMES = {
   config_mgr: "Config Manager",
   nav_pose_mgr: "Nav./Pose/GPS",
   network_mgr: "Network",
-  nepi_darknet_ros_mgr: "Classifier",
+  ai_detector_mgr: "Classifier",
   system_mgr: "System",
   time_sync_mgr: "Time Sync",
   trigger_mgr: "Triggering",
@@ -38,7 +38,7 @@ const NODE_DISPLAY_NAMES = {
   gpsd_ros_client: "GPSD Client",
   illumination_mgr: "Illumination",
   automation_mgr: "Automation",
-  sequential_image_mux: "Sequencer"
+  image_sequencer_app: "Sequencer"
 }
 
 const UPDATE_PERIOD = 100 // ms between sending updates
@@ -1972,7 +1972,7 @@ class ROSConnectionStore {
   async callMuxSequenceQuery(poll = false) {
     const _pollOnce = async () => {
       this.imgMuxSequences = await this.callService({
-        name: "sequential_image_mux/mux_sequence_query",
+        name: "image_sequencer_app/mux_sequence_query",
         messageType: "nepi_app_image_sequencer/ImageMuxSequenceQuery",
         msgKey: "img_mux_sequences"
       })
@@ -2722,7 +2722,7 @@ class ROSConnectionStore {
   @action.bound
   onConfigureMuxSequence(updated_sequence_dict) {
     this.publishMessage({
-      name: "sequential_image_mux/configure_mux_sequence",
+      name: "image_sequencer_app/configure_mux_sequence",
       messageType: "nepi_app_image_sequencer/ImageMuxSequence",
       data: updated_sequence_dict
     })
@@ -2731,7 +2731,7 @@ class ROSConnectionStore {
   @action.bound
   onDeleteMuxSequence(sequence_id) {
     this.publishMessage({
-      name: "sequential_image_mux/delete_mux_sequence",
+      name: "image_sequencer_app/delete_mux_sequence",
       messageType: "std_msgs/String",
       data: { data: sequence_id }
     })
