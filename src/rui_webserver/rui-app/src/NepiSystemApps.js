@@ -99,24 +99,16 @@ class AppsMgr extends Component {
 
   // Callback for handling ROS Status messages
   appsStatusListener(message) {
-    const apps_str_list = convertStrToStrList(message.apps_ordered_list)
     this.setState({
       apps_path: message.apps_path,
-      apps_list: apps_str_list,
-      apps_active_list: convertStrToStrList(message.apps_active_list),
+      apps_list: message.apps_ordered_list,
+      apps_active_list: message.apps_active_list,
       apps_install_path: message.apps_install_path,
-      apps_install_list: this.convertAppStrInstallToStrList(message.apps_install_list),
+      apps_install_list: message.apps_install_list,
       backup_removed_apps: message.backup_removed_apps,
       selected_app: message.selected_app
     })    
 
-    const last_apps_list = this.state.apps_list
-    this.setState({
-      last_apps_list: apps_str_list
-    })
-    if (last_apps_list !== apps_str_list){
-      this.render()
-    }
   }
 
   // Function for configuring and subscribing to Status
@@ -540,19 +532,25 @@ class AppsMgr extends Component {
       <Column>
 
 
-      <Label style={{fontWeight: 'bold'}} > {"Active Apps List"} </Label>
+      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Active Apps List "}
+          </label>
 
       <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getActiveStr()}
         </pre>
 
-        <Label style={{fontWeight: 'bold'}} > {"Disabled Apps List"} </Label>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Disabled Apps List "}
+          </label>
 
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getDisabledStr()}
         </pre>
 
-        <Label style={{fontWeight: 'bold'}} > {"Install Apps List"} </Label>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Install Apps List "}
+          </label>
 
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getReadyStr()}
@@ -560,6 +558,14 @@ class AppsMgr extends Component {
 
       </Column>
       <Column>
+
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/enable_all_apps")}>{"Enable All"}</Button>
+      </ButtonMenu>
+
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/disable_all_apps")}>{"Disable All"}</Button>
+      </ButtonMenu>
 
 
       <ButtonMenu>
