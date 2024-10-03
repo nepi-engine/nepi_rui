@@ -20,6 +20,7 @@ import Input from "./Input"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import {createShortUniqueValues, setElementStyleModified, clearElementStyleModified} from "./Utilities"
+import {createShortValuesFromNamespaces} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -158,18 +159,14 @@ class NepiControlsPanTilt extends Component {
     }
   }
 
+
   // Function for creating image topic options.
   createImageTopicsOptions() {
     var items = []
-    items.push(<Option>{""}</Option>) // Blank at the top serves as the "Cancel" operation
-    const { imageTopics, imageFilterPTX } = this.props.ros
-    var imageTopicShortnames = createShortUniqueValues(imageTopics)
+    items.push(<Option>{"None"}</Option>) 
+    const { imageTopics } = this.props.ros
+    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
-      // Run the filter
-      if (imageFilterPTX && !(imageFilterPTX.test(imageTopics[i]))) {
-        continue
-      }
-
       items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
     }
     return items

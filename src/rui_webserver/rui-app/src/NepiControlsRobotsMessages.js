@@ -211,7 +211,7 @@ class NepiRobotMessages extends Component {
 
   onEnterMessagesQueueVar(event) {
     if(event.key === 'Enter'){
-      var value = parseInt(event.target.value)
+      var value = parseInt(event.target.value, 10)
       if (!isNaN(value)){
         if (value <10){
           value=10

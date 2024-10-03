@@ -1093,7 +1093,7 @@ class ROSConnectionStore {
 
   @action.bound
   sendIntMsg(namespace, int_str) {
-    let intVal = parseInt(int_str)
+    let intVal = parseInt(int_str, 10)
     if (!isNaN(intVal)) {
       this.publishMessage({
         name: namespace,
@@ -1106,7 +1106,7 @@ class ROSConnectionStore {
 
   @action.bound
   sendInt8Msg(namespace, int_str) {
-    let intVal = parseInt(int_str)
+    let intVal = parseInt(int_str, 10)
     if (!isNaN(intVal)) {
       this.publishMessage({
         name: namespace,

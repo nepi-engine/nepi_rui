@@ -185,7 +185,6 @@ export function createShortValuesFromNamespaces(inputList) {
 export function createMenuListFromStrList(optionsStrList, useShortNames, filterOut, prefixOptionsStrList, appendOptionsStrList) {
   var filteredTopics = []
   var i
-  var filteredTopics = []
   if (filterOut) {
     for (i = 0; i < optionsStrList.length; i++) {
         if (filterOut.includes(optionsStrList[i]) === false){
@@ -253,10 +252,8 @@ export function onDropdownSelectedSendIndex8(event, namespace) {
 
 export function onDropdownSelectedSendDriverOption(event, namespace) {
   const {driverUpdateOptionMsg} = this.props.ros
-  const {sendStringMsg} = this.props.ros
   const driver_name = this.state.driver_name
   const option_str = event.target.value
-
   driverUpdateOptionMsg(namespace, driver_name, option_str)
 }
 
@@ -278,7 +275,7 @@ export function onUpdateSetStateValue(event,stateVarStr) {
 export function onEnterSendIntValue(event, namespace) {
   const {sendIntMsg} = this.props.ros
   if(event.key === 'Enter'){
-    const value = parseInt(event.target.value)
+    const value = parseInt(event.target.value, 10)
     if (!isNaN(value)){
       sendIntMsg(namespace,value)
     }

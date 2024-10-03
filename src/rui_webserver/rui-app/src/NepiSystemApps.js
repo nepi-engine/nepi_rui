@@ -20,8 +20,7 @@ import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSwitchStateValue,createMenuListFromStrList,
-  onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue, onDropdownSelectedSetState, onDropdownSelectedSendAppOption
+import { onChangeSwitchStateValue, onDropdownSelectedSetState
   } from "./Utilities"
 
 @inject("ros")
@@ -180,8 +179,9 @@ class AppsMgr extends Component {
   }
 
   toggleViewableApps() {
-    const set = !this.state.viewableApps
-    this.setState({viewableApps: set})
+    //const set = !this.state.viewableApps
+    //this.setState({viewableApps: set})
+    this.setState({viewableApps: true})
   }
 
   // Function for creating image topic options.
@@ -253,58 +253,62 @@ class AppsMgr extends Component {
 */
 
   renderAppConfigure() {
-    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
-    const {apps_ordered_list, apps_active_list} = this.state
-    const connected = this.state.connected
-    const selected_app = this.state.selected_app
-    const viewableApps = this.state.viewableApps
-    const app_options = this.getAppOptions()
-    const active_app_list = this.state.apps_active_list
-    const hide_settings = selected_app === "None"
-    const NoneOption = <Option>None</Option>
+    const { sendStringMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
 
     return (
       <React.Fragment>
 
         <Section title={"Configure App *** REBOOT AFTER MAKING CHANGES ***"}>
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Selected App: "}
-          </label>
+
+        <Label title={"Turn off unused apps for faster startup times"}> </Label>
+
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             {this.state.app_name}
           </label>
   
-          <Label title={"App Description"}> </Label>
-
           <pre style={{ height: "20Spx", overflowY: "auto" }}>
           {this.state.app_description}
           </pre>
+
+      <Columns equalWidth={true}>
+      <Column>
+
+      <Label title={"App Enabled"}>
+          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
+        </Label>
+
+      </Column>
+      <Column>
+
+      <Label title="Enable/Disable App"> </Label>
+          <Toggle
+            checked={this.state.active_state===true}
+            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.app_name, !this.state.active_state)}>
+          </Toggle>
+
+      </Column>
+      <Column>
+
+      </Column>
+      </Columns>
 
         <Columns equalWidth={true}>
           <Column>
 
 
-      <Label title={"Name"}>
+      <Label title={"Application Name"}>
         <Input disabled value={this.state.app_name} />
       </Label>
  
+
+
+   
+
       </Column>
       <Column>
 
-
-      </Column>
-      <Column>
-
-      <Label title="Turn App On/Off">
-          <Toggle
-            checked={this.state.active_state===true}
-            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.app_name, !this.state.active_state)}>
-          </Toggle>
-          </Label>
-
-        <Label title={"App Active"}>
-          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
-        </Label>
 
         <Label title={"Start Order"}>
           <Input disabled value={this.state.order} />
@@ -357,11 +361,6 @@ class AppsMgr extends Component {
         </Columns>
 
 
-
-
-
-
-
       <div hidden={true}>
 
         <Columns equalWidth={true}>
@@ -402,8 +401,6 @@ class AppsMgr extends Component {
   
  
   renderAppInstall() {
-    const connected = this.state.connected 
-    const NoneOption = <Option>None</Option>
     const selected_install_pkg = this.state.selected_app_install_pkg ? this.state.selected_app_install_pkg : "None"
     const install_options = this.getInstallOptions()
     const {sendStringMsg} = this.props.ros
@@ -489,9 +486,6 @@ class AppsMgr extends Component {
   }
 
   render() {
-    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
-    const {apps_ordered_list, apps_active_list} = this.state
-    const connected = this.state.connected
     const selected_app = this.state.selected_app
     const viewableApps = this.state.viewableApps
     const app_options = this.getAppOptions()
@@ -531,7 +525,7 @@ class AppsMgr extends Component {
       </Column>
       <Column>
 
-
+      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
       <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Active Apps List "}
           </label>
@@ -540,6 +534,7 @@ class AppsMgr extends Component {
         {this.getActiveStr()}
         </pre>
 
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Disabled Apps List "}
           </label>
@@ -548,6 +543,7 @@ class AppsMgr extends Component {
         {this.getDisabledStr()}
         </pre>
 
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>  
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Install Apps List "}
           </label>
@@ -555,6 +551,8 @@ class AppsMgr extends Component {
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getReadyStr()}
         </pre>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
 
       </Column>
       <Column>

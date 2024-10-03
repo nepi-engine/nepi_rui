@@ -20,6 +20,7 @@ import NepiDeviceInfo from "./NepiDeviceInfo"
 import Toggle from "react-toggle"
 
 import {createShortUniqueValues, convertStrToStrList, onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
+import {createShortValuesFromNamespaces} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -77,18 +78,13 @@ class NepiControlsLights extends Component {
     this.createLSXOptions = this.createLSXOptions.bind(this)
   }
 
-  // Function for creating image topic Options.
+  // Function for creating image topic options.
   createImageTopicsOptions() {
     var items = []
-    items.push(<Option>{""}</Option>) // Blank at the top serves as the "Cancel" operation
-    const { imageTopics, imageFilterLSX } = this.props.ros
-    var imageTopicShortnames = createShortUniqueValues(imageTopics)
+    items.push(<Option>{"None"}</Option>) 
+    const { imageTopics } = this.props.ros
+    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
     for (var i = 0; i < imageTopics.length; i++) {
-      // Run the filter
-      if (imageFilterLSX && !(imageFilterLSX.test(imageTopics[i]))) {
-        continue
-      }
-
       items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
     }
     return items

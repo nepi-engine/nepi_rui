@@ -20,7 +20,7 @@ import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
 
-import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedSetState, onDropdownSelectedSendDriverOption
+import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedSetState, onDropdownSelectedSendDriverOption
   } from "./Utilities"
 
   @inject("ros")
@@ -113,24 +113,16 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
 
   // Callback for handling ROS Status messages
   driversStatusListener(message) {
-    const drivers_str_list = convertStrToStrList(message.drivers_ordered_list)
     this.setState({
       drivers_path: message.drivers_path,
-      drivers_list: drivers_str_list,
-      drivers_active_list: convertStrToStrList(message.drivers_active_list),
+      drivers_list: message.drivers_ordered_list,
+      drivers_active_list: message.drivers_active_list,
       drivers_install_path: message.drivers_install_path,
-      drivers_install_list: this.convertDriverStrInstallToStrList(message.drivers_install_list),
+      drivers_install_list: message.drivers_install_list,
       backup_removed_drivers: message.backup_removed_drivers,
       selected_driver: message.selected_driver
     })    
 
-    const last_drivers_list = this.state.drivers_list
-    this.setState({
-      last_drivers_list: drivers_str_list
-    })
-    if (last_drivers_list !== drivers_str_list){
-      this.render()
-    }
   }
 
   // Function for configuring and subscribing to Status
@@ -156,15 +148,15 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
       drivers_path: message.path,
       group: message.group,
       group_id: message.group_id,
-      drivers_interfaces: message.interfaces,
+      drivers_interfaces: message.interfaces.join(','),
       options_1_name: message.options_1_name,
-      options_1: convertStrToStrList(message.options_1),
+      options_1: message.options_1,
       set_option_1: message.set_option_1,
       options_2_name: message.options_2_name,
-      options_2: convertStrToStrList(message.options_2),
+      options_2: message.options_2,
       set_option_2: message.set_option_2,
       discovery: message.discovery,
-      other_users_list: convertStrToStrList(message.other_users_list),
+      other_users_list: message.other_users_list.join(','),
       active_state: message.active_state,
       order: message.order,
       msg_str: message.msg_str
@@ -214,8 +206,9 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
   }
 
   toggleViewableDrivers() {
-    const set = !this.state.viewableDrivers
-    this.setState({viewableDrivers: set})
+    //const set = !this.state.viewableDrivers
+    //this.setState({viewableDrivers: set})
+    this.setState({viewableDrivers: true})
   }
 
   // Function for creating image topic options.
@@ -294,18 +287,42 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
       <React.Fragment>
 
         <Section title={"Configure Driver"}>
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Selected Driver:   "}
-          </label>
+        <Label title={"Turn off unused drivers for faster startup times"}> </Label>
+
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             {this.state.driver_name}
           </label>
-  
-          <Label title={"Driver Description"}> </Label>
+    
 
           <pre style={{ height: "20Spx", overflowY: "auto" }}>
           {this.state.driver_description}
           </pre>
+
+
+      <Columns equalWidth={true}>
+      <Column>
+
+      <Label title={"Driver Enabled"}>
+          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
+        </Label>
+
+      </Column>
+      <Column>
+
+      <Label title="Enable/Disable Driver">
+          <Toggle
+            checked={this.state.active_state===true}
+            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
+          </Toggle>
+          </Label>
+
+      </Column>
+      <Column>
+
+      </Column>
+      </Columns>
 
         <Columns equalWidth={true}>
           <Column>
@@ -314,6 +331,8 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
       <Label title={"Name"}>
         <Input disabled value={this.state.driver_name} />
       </Label>
+
+
       <Label title={"group"}>
         <Input disabled value={this.state.group} />
       </Label>
@@ -367,18 +386,8 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
       </Column>
       <Column>
 
-      <Label title="Turn Driver On/Off">
-          <Toggle
-            checked={this.state.active_state===true}
-            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
-          </Toggle>
-          </Label>
 
-        <Label title={"Driver Active"}>
-          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
-        </Label>
-
-        <Label title={"order"}>
+        <Label title={"Driver Start Order"}>
           <Input disabled value={this.state.order} />
         </Label>
 
@@ -596,25 +605,34 @@ import {  convertStrToStrList,  onChangeSwitchStateValue,createMenuListFromStrLi
       <Column>
 
       
-    
-      <Label style={{fontWeight: 'bold'}} > {"Active Drivers List"} </Label>
+      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Active Drivers List "}
+          </label>
 
       <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getActiveStr()}
         </pre>
 
-        <Label style={{fontWeight: 'bold'}} > {"Disabled Drivers List"} </Label>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Disabled Drivers List "}
+          </label>
 
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getDisabledStr()}
         </pre>
 
-        <Label style={{fontWeight: 'bold'}} > {"Install Drivers List"} </Label>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Install Drivers List "}
+          </label>
 
         <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getReadyStr()}
         </pre>
 
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
       </Column>
       <Column>

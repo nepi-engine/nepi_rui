@@ -58,19 +58,14 @@ class App extends Component {
           pages={[
             { path: "/", label: "Dashboard" },
             {
-              path: "/sensors",
-              label: "Sensors",
+              path: "/devices",
+              label: "Devices",
               subItems: [
-                { path: "/sensor_idx", label: "Imaging"}
-              ]
-            },
-            {
-              path: "/controls",
-              label: "Controls",
-              subItems: [
+                { path: "/sensor_idx", label: "Imaging"},
                 { path: "/lsx", label: "Lights" },
                 { path: "/ptx", label: "Pan&Tilts" },
-                { path: "/rbx", label: "Robots" }
+                { path: "/rbx", label: "Robots" },
+                { path: "/drivers_mgr", label: "Driver Mgr"},
               ]
             },
             {
@@ -81,7 +76,8 @@ class App extends Component {
                 { path: "/image_sequencer", label: "Imgage Sequencer" },
                 { path: "/onvif_app", label: "ONVIF"},
                 { path: "/pointcloud_app", label: "Pointcloud Viewer" },
-                { path: "/ai_targeting_app", label: " AI Targeting" }
+                { path: "/ai_targeting_app", label: " AI Targeting" },
+                { path: "/apps_mgr", label: "App Mgr"},
               ]
             },
             {
