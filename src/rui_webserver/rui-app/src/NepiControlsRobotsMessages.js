@@ -139,7 +139,7 @@ class NepiRobotMessages extends Component {
   updateMessagesStatusListener() {
     const Namespace = this.props.rbxNamespace
     if (this.state.MessagesStatusListener ) {
-      this.state.MessagesStatusListener .unsubscribe()
+      this.state.MessagesStatusListener.unsubscribe()
     }
     var listener = this.props.ros.setupStatusListener(
           Namespace + "/rbx/status",
@@ -153,7 +153,7 @@ class NepiRobotMessages extends Component {
     updateMessagesStatusMsgListener() {
       const Namespace = this.props.rbxNamespace
     if (this.state.MessagesStatusMsgListener ) {
-      this.state.MessagesStatusMsgListener .unsubscribe()
+      this.state.MessagesStatusMsgListener.unsubscribe()
     }
     var msglistener = this.props.ros.setupStringListener(
           Namespace + "/status_msg",
@@ -165,7 +165,7 @@ class NepiRobotMessages extends Component {
      updateMessagesStatusStrListener() {
       const Namespace = this.props.rbxNamespace
     if (this.state.MessagesStatusStrListener ) {
-      this.state.MessagesStatusStrListener .unsubscribe()
+      this.state.MessagesStatusStrListener.unsubscribe()
     }
     var statuslistener = this.props.ros.setupStringListener(
           Namespace + "/rbx/status_str",
@@ -194,7 +194,7 @@ class NepiRobotMessages extends Component {
   // Used to unsubscribe to Status message
   componentWillUnmount() {
     if (this.state.MessagesStatusListener ) {
-      this.state.MessagesStatusListener .unsubscribe()
+      this.state.MessagesStatusListener.unsubscribe()
     }
   }
 

@@ -40,7 +40,7 @@ class NepiSystemAiDetector extends Component {
         img[img.length-1] + ':' + this.props.ros.reportedClassifier.selected_classifier : 
         img? img[img.length-1] : null,
       // Only set currentDisplayImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
-      currentDisplayImgTopic: (classifier_running == true)? 
+      currentDisplayImgTopic: (classifier_running === true)? 
       DETECTION_IMG_TOPIC: 
         (this.props.ros.reportedClassifier? this.props.ros.reportedClassifier.selected_img_topic : null),
       selectedClassifier: (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_classifier : "None",
@@ -76,17 +76,17 @@ class NepiSystemAiDetector extends Component {
     var uniqueNames = createShortValuesFromNamespaces(imageTopicsFiltered)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
-    for (var i = 0; i < imageTopicsFiltered .length; i++) {
+    for (var i = 0; i < imageTopicsFiltered.length; i++) {
       // Run the filter
-      if (imageFilterDetection && !(imageFilterDetection.test(imageTopicsFiltered [i]))) {
+      if (imageFilterDetection && !(imageFilterDetection.test(imageTopicsFiltered[i]))) {
         continue
       }
       if (classifier_not_stopped) {
         if (imageTopicsFiltered[i] === this.props.ros.reportedClassifier.selected_img_topic) {
-          items.push(<Option selected="selected" value={imageTopicsFiltered [i]}>{uniqueNames[i]}</Option>)
+          items.push(<Option selected="selected" value={imageTopicsFiltered[i]}>{uniqueNames[i]}</Option>)
         }
         else {
-          items.push(<Option value={imageTopicsFiltered [i]}>{uniqueNames[i]}</Option>)
+          items.push(<Option value={imageTopicsFiltered[i]}>{uniqueNames[i]}</Option>)
         }
       }
       else if (imageTopicsFiltered[i] === this.state.imageTopic) {
@@ -161,7 +161,6 @@ class NepiSystemAiDetector extends Component {
         this.setState({selectedImgTopic: DETECTION_IMG_TOPIC,
                         imageText: "Detection Image"
         })
-        currentDisplayImgTopic: DETECTION_IMG_TOPIC
       }
       else{
         this.setState({

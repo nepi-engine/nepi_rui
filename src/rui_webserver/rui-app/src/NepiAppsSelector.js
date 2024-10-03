@@ -12,11 +12,7 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Toggle from "react-toggle"
 import Select, { Option } from "./Select"
-import Styles from "./Styles"
-import Button, { ButtonMenu } from "./Button"
-import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
 import PointcloudApp from "./NepiAppPointcloud"
@@ -28,9 +24,7 @@ import OnvifApp from "./NepiAppOnvif"
 
 
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, onChangeSwitchStateValue,createMenuListFromStrList,
-  onDropdownSelectedSendStr, onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue, onDropdownSelectedSetState, onDropdownSelectedSendAppOption
-  } from "./Utilities"
+import { createMenuListFromStrList,onUpdateSetStateValue} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -54,7 +48,7 @@ class AppsSelector extends Component {
       apps_install_list: [],
       selected_app: null,
 
-      rui_active_list: [],
+      apps_rui_list: [],
 
       app_name: 'NONE',
       app_description: null,
@@ -106,7 +100,7 @@ class AppsSelector extends Component {
       apps_install_path: message.apps_install_path,
       apps_install_list: message.apps_install_list,
       backup_removed_apps: message.backup_removed_apps,
-      rui_active_list: message.rui_active_list,
+      apps_rui_list: message.apps_rui_list,
       selected_app: message.selected_app
     })    
 
@@ -253,10 +247,6 @@ class AppsSelector extends Component {
   }
 
   renderSelection() {
-    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
-    const {apps_ordered_list, apps_active_list} = this.state
-    const connected = this.state.connected
-    const viewableApps = this.state.viewableApps
     const NoneOption = <Option>None</Option>
 
     return (
@@ -272,8 +262,8 @@ class AppsSelector extends Component {
                       onChange={(event) => onUpdateSetStateValue.bind(this)(event,"app_selected")}
                       value={this.state.app_selected}
                     >
-                      {this.state.apps_active_list
-                        ? createMenuListFromStrList(this.state.rui_active_list, false, [],[],[])
+                      {this.state.apps_rui_list
+                        ? createMenuListFromStrList(this.state.apps_rui_list, false, [],[],[])
                         : NoneOption}
                     </Select>
                   </Label>
@@ -294,12 +284,6 @@ class AppsSelector extends Component {
   }
 
   render() {
-    const { sendStringMsg, sendTriggerMsg,sendBoolMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
-    const {apps_ordered_list, apps_active_list} = this.state
-    const connected = this.state.connected
-    const viewableApps = this.state.viewableApps
-    const NoneOption = <Option>None</Option>
-
     return (
 
 

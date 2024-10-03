@@ -19,8 +19,8 @@ import CameraViewer from "./CameraViewer"
 import NepiSensorsImagingControls from "./NepiSensorsImagingControls"
 
 import NepiDeviceInfo from "./NepiDeviceInfo"
-import Nepi_IF_Settings from "./Nepi_IF_Settings"
-import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
+import NepiIFSettings from "./Nepi_IF_Settings"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 import {createShortUniqueValues} from "./Utilities"
 
@@ -292,7 +292,7 @@ class NepiSensorsImaging extends Component {
 
       
           <div hidden={!SensorSelected}>
-            <Nepi_IF_SaveData
+            <NepiIFSaveData
                 saveNamespace={this.state.currentIDXNamespace}
                 title={"Nepi_IF_SaveData"}
             />
@@ -314,7 +314,7 @@ class NepiSensorsImaging extends Component {
 
 
           <div hidden={(!SensorSelected && this.state.show_settings)}>
-            <Nepi_IF_Settings
+            <NepiIFSettings
               settingsNamespace={this.state.currentIDXNamespace}
               title={"Nepi_IF_Settings"}
             />
