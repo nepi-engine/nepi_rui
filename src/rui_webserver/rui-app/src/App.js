@@ -72,12 +72,8 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
-                { path: "/imagery", label: "Image Viewer" },
-                { path: "/image_sequencer", label: "Imgage Sequencer" },
-                { path: "/onvif_app", label: "ONVIF"},
-                { path: "/pointcloud_app", label: "Pointcloud Viewer" },
-                { path: "/ai_targeting_app", label: " AI Targeting" },
                 { path: "/apps_mgr", label: "App Mgr"},
+                { path: "/apps_selector", label: "Applications"},
               ]
             },
             {
@@ -89,8 +85,6 @@ class App extends Component {
                 { path: "/navPose", label: "NavPose" },
                 { path: "/drivers_mgr", label: "Drivers"},
                 { path: "/apps_mgr", label: "Apps"},
-                { path: "/ai_mgr", label: " AI" },
-                { path: "/apps_selector", label: "Applications"},
                 { path: "/automation", label: "Automation" }
               ]
             },
