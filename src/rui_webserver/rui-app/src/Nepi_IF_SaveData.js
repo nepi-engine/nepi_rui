@@ -29,7 +29,7 @@ function roundWithSuffix(value, decimals, suffix) {
 @observer
 
 // Component that contains the Save Data Controls
-class Nepi_IF_SaveData extends Component {
+class NepiIFSaveData extends Component {
   constructor(props) {
     super(props)
 
@@ -441,7 +441,7 @@ class Nepi_IF_SaveData extends Component {
   }
 
   render() {
-    const { resetSaveDataTriggered, onSnapshotEventTriggered} = this.props.ros
+    const { resetSaveDataTriggered} = this.props.ros
     const saveDataEnabled = this.getSaveDataValue()
     const saveNavDataEnabled = this.getSaveNavDataValue()
     const dataProdcutSources = this.getSaveNamesList()
@@ -566,4 +566,4 @@ class Nepi_IF_SaveData extends Component {
   }
 
 }
-export default Nepi_IF_SaveData
+export default NepiIFSaveData

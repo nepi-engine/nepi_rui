@@ -26,7 +26,7 @@ import { convertStrToStrList, createMenuListFromStrList, onChangeSwitchStateValu
 @observer
 
 // Component that contains the Settings controls
-class Nepi_IF_Settings extends Component {
+class NepiIFSettings extends Component {
   constructor(props) {
     super(props)
 
@@ -36,10 +36,6 @@ class Nepi_IF_Settings extends Component {
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
       capSettingsTypesList: [],
-      capSettingsOptionsLists: [],
-      settingsNamesList: [],
-      settingsTypesList: [],
-      settingsValuesList: [],
       settings: null,
       selectedSettingInd: 0,
       selectedSettingName: "",
@@ -57,6 +53,7 @@ class Nepi_IF_Settings extends Component {
     this.settingsStatusListener = this.settingsStatusListener.bind(this)
 
     this.updateCapSettingsLists = this.updateCapSettingsLists.bind(this)
+    this.getCapSettingOptions = this.getCapSettingOptions.bind(this)
 
     this.getSettingsAsString = this.getSettingsAsString.bind(this)
     this.getSettingValue = this.getSettingValue.bind(this)
@@ -68,26 +65,14 @@ class Nepi_IF_Settings extends Component {
 
     this.updateSelectedSettingInfo = this.updateSelectedSettingInfo.bind(this)
     this.getSelectedSettingInfo = this.getSelectedSettingInfo.bind(this)
-    this.getSortedStrList = this.getSortedStrList.bind(this)
 
   }
 
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
-    const settings = message.settings_list
-    var namesList = []
-    var typesList = []
-    var valuesList = []
-    for (let ind = 0; ind < settings.length; ind++){
-      namesList.push(settings[ind].name_str)
-      typesList.push(settings[ind].type_str)
-      valuesList.push(settings[ind].value_str)
-    }
-    this.setState({settingsNamesList:namesList})      
-    this.setState({settingsTypesList:typesList})
-    this.setState({settingsValuesList:valuesList})
-
-    this.updateCapSettingsLists() 
+    this.setState({
+      settings: message.data,
+    })
   }
 
   // Function for configuring and subscribing to Settings Status
@@ -102,7 +87,6 @@ class Nepi_IF_Settings extends Component {
     )
     this.setState({ settingsListener: settingsListener})
   }
-
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
@@ -124,75 +108,115 @@ class Nepi_IF_Settings extends Component {
 
   // Function for creating settings options list from capabilities
   updateCapSettingsLists() {
-    const {settingCaps} = this.props.ros
-    const namespace = this.props.settingsNamespace
-    var namesList = []
-    var typesList = []
-    var optionsLists = []
-    namesList.push("None")
-    typesList.push("None")
-    if (settingCaps && namespace){
-      if (settingCaps[this.props.settingsNamespace]){
-        const capabilities = settingCaps[this.props.settingsNamespace]
-        const cap_settings = capabilities.setting_caps_list
-        if (capabilities !== undefined){
-          namesList = []
-          typesList = []
-          for (let ind = 0; ind < cap_settings.length; ind++){
-            namesList.push(cap_settings[ind].name_str)
-            typesList.push(cap_settings[ind].type_str)
-            optionsLists.push(cap_settings[ind].options_list)
+    const {settingsCaps} = this.props.ros
+    if (settingsCaps){
+      const capabilities = settingsCaps[this.props.settingsNamespace]
+      var typesList = []
+      var namesList = []
+      if (capabilities !== undefined){
+        const capSettingsMsg = capabilities.settings_options
+        const capSettingsValid = (capSettingsMsg !== undefined)
+        const capSettingsEmpty = (this.state.capSettingsNamesList.length === 0)
+        if (capSettingsValid && capSettingsEmpty){
+          const capSettingsStrList = convertStrToStrList(capSettingsMsg)
+          var new_setting = false
+          var entry = ''
+          typesList.push("None")
+          namesList.push("None")
+          for (let ind = 0; ind < capSettingsStrList.length; ind++){
+            entry = capSettingsStrList[ind]
+            if (this.state.capSettingsTypes.indexOf(entry) !== -1){
+              typesList.push(entry)
+              new_setting = true
+            } else if (new_setting && entry !== 'None'){
+              namesList.push(entry)
+              new_setting = false
+            }
           }
+          this.setState({capSettingsTypesList:typesList})
+          this.setState({capSettingsNamesList:namesList})
         }
       }
     }
-    this.setState({capSettingsNamesList:namesList})      
-    this.setState({capSettingsTypesList:typesList})
-    this.setState({capSettingsOptionsLists:optionsLists})
   }
   
+
+  getCapSettingOptions(capSettingName){
+    const {settingsCaps} = this.props.ros
+    const capabilities = settingsCaps[this.props.settingsNamespace]
+    var capSettingOptions = []
+    if (capabilities !== undefined){
+      const capSettingsMsg = capabilities.settings_options
+      const capSettingsStrList = convertStrToStrList(capSettingsMsg)
+      var capInd = -1
+      var lastEntry = 'None'
+      var entry = 'None'
+      for (let ind = 0; ind < capSettingsStrList.length; ind++){
+        entry = capSettingsStrList[ind]
+        if (entry === capSettingName && this.state.capSettingsTypes.indexOf(lastEntry) !== -1){
+          capInd = ind
+          break; 
+        }
+        lastEntry = entry
+      }
+      if (capInd !== -1 && capSettingsStrList.length > (capInd + 1) ){
+        var optionsInd = capInd + 1
+        while ((optionsInd) < capSettingsStrList.length){
+          if (this.state.capSettingsTypes.indexOf(capSettingsStrList[optionsInd]) === -1){
+            capSettingOptions.push(capSettingsStrList[optionsInd])
+          } else {
+            return capSettingOptions
+          }
+          optionsInd++
+        }
+      }
+    } 
+    return capSettingOptions
+  }
+
   getSettingValue(settingName) {
-    const namesList = this.state.settingsNamesList
-    const valuesList = this.state.settingsValuesList
-    const ind = namesList.indexOf(settingName)
-    var value = -1
-    if (ind !== -1){
-      value = valuesList[ind]
+    const settings = this.state.settings
+    const settingsStrList = convertStrToStrList(settings)
+    var setInd = -1
+    var lastEntry = 'None'
+    var entry = 'None'
+    for (let ind = 0; ind < settingsStrList.length; ind++){
+      entry = settingsStrList[ind]
+      if (entry === settingName && this.state.capSettingsTypes.indexOf(lastEntry) !== -1){
+        setInd = ind
+        break; 
+      }
+      lastEntry = entry
     }
+    setInd++
+    var value = settingsStrList[setInd]
     return value
   }
 
   updateSelectedSettingInfo(event){
-    const name_ind = event.nativeEvent.target.selectedIndex
-    const name = event.nativeEvent.target[name_ind].text
-    const ind = this.state.capSettingsNamesList.indexOf(name)
-    if (ind !== -1){
-      this.setState({selectedSettingInd : ind })
-      this.setState({selectedSettingName  :  name })
-      const type = this.state.capSettingsTypesList[ind]
-      this.setState({selectedSettingType  :  type }) 
-      const value = this.getSettingValue(name) 
-      this.setState({selectedSettingValue  : value })
-      const options = this.state.capSettingsOptionsLists[ind]
-      this.setState({selectedSettingOptions  :  options })
-      if (type === "Int" || type === "Float" ) {
-        this.setState({selectedSettingLowerLimit  :  options.length > 0 ? options[0] : "" })
-        this.setState({selectedSettingUpperLimit  :  options.length > 1 ? options[1] : "" })
-      } else {
-        this.setState({selectedSettingLowerLimit  :  "" })
-        this.setState({selectedSettingUpperLimit  :  "" })
-      }
-      this.setState({selectedSettingInput  :  value })
-      this.render()
+    const ind = event.nativeEvent.target.selectedIndex
+    const name = event.nativeEvent.target[ind].text
+    this.setState({selectedSettingInd : ind })
+    this.setState({selectedSettingName  :  name })
+    const type = this.state.capSettingsTypesList[ind]
+    this.setState({selectedSettingType  :  type }) 
+    const value = this.getSettingValue(name) 
+    this.setState({selectedSettingValue  : value })
+    const options = this.getCapSettingOptions(name)
+    this.setState({selectedSettingOptions  :  options })
+    if (type === "Int" || type === "Float" ) {
+      this.setState({selectedSettingLowerLimit  :  options.length > 0 ? options[0] : "" })
+      this.setState({selectedSettingUpperLimit  :  options.length > 1 ? options[1] : "" })
+    } else {
+      this.setState({selectedSettingLowerLimit  :  "" })
+      this.setState({selectedSettingUpperLimit  :  "" })
     }
-
+    this.setState({selectedSettingInput  :  value })
+    this.render()
   }
 
   getSelectedSettingInfo(){
-    const info = [this.state.selectedSettingInd, this.state.selectedSettingType , this.state.selectedSettingName ,
-       this.state.selectedSettingValue , this.state.selectedSettingLowerLimit , this.state.selectedSettingUpperLimit,
-       this.state.selectedSettingOptions
-       ]
+    const info = [this.state.selectedSettingInd, this.state.selectedSettingType , this.state.selectedSettingName , this.state.selectedSettingValue , this.state.selectedSettingLowerLimit , this.state.selectedSettingUpperLimit ]
     return info
   }
 
@@ -233,51 +257,36 @@ class Nepi_IF_Settings extends Component {
 
 
   getSettingsAsString() {
-    var settingsStr = ""
-    const namesList = this.state.settingsNamesList
-    const valuesList = this.state.settingsValuesList
-    var settingsStrList = []
-    var sortedStrList = ["None"]
-    var settingStr = ""
-    for (let ind = 0; ind < namesList.length; ind++){
-      settingStr = namesList[ind] + ": " +  valuesList[ind]
-      settingsStrList.push(settingStr)
-    }
+    var settingsStr = "None"
+    const settings = this.state.settings
+    const settingsStrList = convertStrToStrList(settings)
+    var settingsStrList2 = []
+    var counter = 0
     if (settingsStrList.length > 0){
-      sortedStrList = settingsStrList.sort()
-    }
-    for (let ind = 0; ind < sortedStrList.length; ind++){
-      const current_str = sortedStrList[ind]
-      sortedStrList[ind] = current_str + "\n"
-    }
-    settingsStr =sortedStrList.join("")
+      for(let ind = 0; ind < settingsStrList.length; ind++) {
+        if (counter === 0){
+          counter = 1
+        } else if (counter === 1) {
+          settingsStrList2.push(settingsStrList[ind])
+          settingsStrList2.push(": ")
+          counter = 2
+        } else {
+          settingsStrList2.push(settingsStrList[ind])
+          settingsStrList2.push("\n")
+          counter = 0
+        }
+      }
+      settingsStr =settingsStrList2.join("")
+    } 
     return settingsStr
   }
 
-  getSortedStrList(strList){
-    var copiedStrList = []
-    var sortedStrList = []
-    for (let ind = 0; ind < strList.length; ind++){
-      copiedStrList.push(strList[ind])
-    }
-    if (copiedStrList.length > 0){
-      sortedStrList = copiedStrList.sort()
-    }
-    return sortedStrList
-  }
 
   render() {
-    const { sendTriggerMsg} = this.props.ros
+    const { sendTriggeredMsg} = this.props.ros
+    this.updateCapSettingsLists()
     const selSetInfo = this.getSelectedSettingInfo()
-    const selSetInd = selSetInfo[0]
-    const selSetType = selSetInfo[1]
-    const selSetName = selSetInfo[2]
-    const selSetValue = selSetInfo[3]
-    const selSetMin = selSetInfo[4]
-    const selSetMax = selSetInfo[5]
-    const selSetOptions= selSetInfo[6]
-    const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
-    const test = "Test"
+
     return (
       <Section title={"Device Settings"}>
 
@@ -306,16 +315,16 @@ class Nepi_IF_Settings extends Component {
               <Select
                 id="selectedSettingName"
                 onChange={this.updateSelectedSettingInfo}
-                value={this.state.selectedSettingName}
+                value={this.state.capSettingsNamesList[this.state.selectedSettingInd]}
               >
-                {createMenuListFromStrList(capSettingNamesOrdered,false,[],[],[])}
+                {createMenuListFromStrList(this.state.capSettingsNamesList,false,[],[],[])}
               </Select>
             </Label>
 
-            <div align={"left"} textAlign={"right"} hidden={selSetType !== "Bool" }>
-              <Label title={selSetName}>
+            <div align={"left"} textAlign={"right"} hidden={selSetInfo[1] !== "Bool" }>
+              <Label title={selSetInfo[2]}>
                 <Toggle
-                  checked={ (this.getSettingValue(selSetName) === "True")}
+                  checked={ (this.getSettingValue(selSetInfo[2]) === "True")}
                   onClick={() => {this.onChangeBoolSettingValue()}}
                 />
               </Label>
@@ -323,37 +332,37 @@ class Nepi_IF_Settings extends Component {
 
               
 
-              <div align={"left"} textAlign={"right"} hidden={selSetType !== "Menu" && selSetType !== "Discrete" }>
-              <Label title={selSetName}>
+              <div align={"left"} textAlign={"right"} hidden={selSetInfo[1] !== "Menu" && selSetInfo[1] !== "Discrete" }>
+              <Label title={selSetInfo[2]}>
                 <Select
                   id="descreteSetting"
                   onChange={this.onChangeDescreteSettingValue}
-                  value={this.getSettingValue(selSetName)}
+                  value={this.getSettingValue(selSetInfo[2])}
                 >
-                  {createMenuListFromStrList(selSetOptions,false,[],[],[])}
+                  {createMenuListFromStrList(this.state.selectedSettingOptions,false,[],[],[])}
                 </Select>
               </Label>
               </div>
 
             <div align={"left"} textAlign={"right"} 
-              hidden={!(selSetType === "String" ||
-              selSetType === "Int" ||
-              selSetType === "Float")}
+              hidden={!(selSetInfo[1] === "String" ||
+              selSetInfo[1] === "Int" ||
+              selSetInfo[1] === "Float")}
             >
 
-                <div align={"left"} textAlign={"right"} hidden={selSetMin === ""}>
+                <div align={"left"} textAlign={"right"} hidden={selSetInfo[4] === ""}>
                     <Label title={"Lower Input Limit"}>
-                      <Input disabled value={selSetMin} />
+                      <Input disabled value={selSetInfo[4]} />
                     </Label>
                 </div>
 
-                <div align={"left"} textAlign={"right"} hidden={selSetMax === ""}>
+                <div align={"left"} textAlign={"right"} hidden={selSetInfo[5] === ""}>
                     <Label title={"Upper Input Limit"}>
-                      <Input disabled value={selSetMax} />
+                      <Input disabled value={selSetInfo[5]} />
                     </Label>
                 </div>
 
-                <Label title={selSetName}>
+                <Label title={selSetInfo[2]}>
                   <Input id="input_setting" 
                     value={this.state.selectedSettingInput} 
                     onChange={this.onUpdateInputSettingValue} 
@@ -367,7 +376,7 @@ class Nepi_IF_Settings extends Component {
           <Column>
           <div align={"left"} textAlign={"left"} >
               <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg(this.props.settingsNamespace + '/reset_settings')}>{"Reset Settings"}</Button>
+                <Button onClick={() => sendTriggeredMsg(this.props.settingsNamespace + '/reset_settings')}>{"Reset Settings"}</Button>
               </ButtonMenu>
             </div>
           </Column>
@@ -381,10 +390,9 @@ class Nepi_IF_Settings extends Component {
           </pre>
 
         </div>
- 
       </Section>
     )
   }
 
 }
-export default Nepi_IF_Settings
+export default NepiIFSettings

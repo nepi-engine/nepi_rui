@@ -323,7 +323,7 @@ class NepiRobotControls extends Component {
             </Label>
 
             <Label title={"Last Process Success"}>
-              <BooleanIndicator value={(this.state.cmd_success !== null)? this.state. cmd_success : false} />
+              <BooleanIndicator value={(this.state.cmd_success !== null)? this.state.cmd_success : false} />
             </Label>
 
 

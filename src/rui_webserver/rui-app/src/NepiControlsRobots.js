@@ -19,8 +19,8 @@ import CameraViewer from "./CameraViewer"
 import NepiRobotControls from "./NepiControlsRobotsControls"
 import NepiRobotMessages from "./NepiControlsRobotsMessages"
 import NepiDeviceInfo from "./NepiDeviceInfo"
-import Nepi_IF_Settings from "./Nepi_IF_Settings"
-import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
+import NepiIFSettings from "./Nepi_IF_Settings"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
 import Input from "./Input"
 import Styles from "./Styles"
 
@@ -600,7 +600,7 @@ class NepiControlsRobots extends Component {
 
       
           <div hidden={!robotSelected}>
-            <Nepi_IF_SaveData
+            <NepiIFSaveData
                 saveNamespace={this.state.currentRBXNamespace}
                 title={"Nepi_IF_SaveData"}
             />
@@ -629,7 +629,7 @@ class NepiControlsRobots extends Component {
           </div>
 
           <div hidden={(!robotSelected && this.state.show_settings)}>
-            <Nepi_IF_Settings
+            <NepiIFSettings
               settingsNamespace={this.state.currentRBXNamespace}
               title={"Nepi_IF_Settings"}
             />
