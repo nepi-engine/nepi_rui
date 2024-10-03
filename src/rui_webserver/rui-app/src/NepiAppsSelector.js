@@ -13,7 +13,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
-import BooleanIndicator from "./BooleanIndicator"
+import Styles from "./Styles"
 
 import PointcloudApp from "./NepiAppPointcloud"
 import AiTargetingApp from "./NepiAppAiTargeting"
@@ -24,7 +24,7 @@ import OnvifApp from "./NepiAppOnvif"
 
 
 
-import { createMenuListFromStrList,onUpdateSetStateValue} from "./Utilities"
+import { createMenuListFromStrList} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -63,9 +63,7 @@ class AppsSelector extends Component {
       appsListener: null,
       appListener: null,
 
-      app_selected: null,
-
-
+      viewableApps: false,
 
       selected_app_install_pkg: null
     }
@@ -76,10 +74,10 @@ class AppsSelector extends Component {
     this.updateAppsStatusListener = this.updateAppsStatusListener.bind(this)
     this.appsStatusListener = this.appsStatusListener.bind(this)
 
-    this.updateAppStatusListener = this.updateAppStatusListener.bind(this)
-    this.statusAppListener = this.statusAppListener.bind(this)  
+    this.toggleViewableApps = this.toggleViewableApps.bind(this)  
+    this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
-  
+    
   }
 
   getMgrNamespace(){
@@ -101,7 +99,6 @@ class AppsSelector extends Component {
       apps_install_list: message.apps_install_list,
       backup_removed_apps: message.backup_removed_apps,
       apps_rui_list: message.apps_rui_list,
-      selected_app: message.selected_app
     })    
 
   }
@@ -121,32 +118,6 @@ class AppsSelector extends Component {
   }
 
 
-  statusAppListener(message) {
-    this.setState({
-  
-      app_name: message.name,
-      app_description: message.description,
-      active_state: message.active_state,
-      order: message.order,
-      msg_str: message.msg_str
-
-    })
-  }
-
-    // Function for configuring and subscribing to Status
-    updateAppStatusListener() {
-      const namespace = this.getMgrNamespace()
-      const statusNamespace = namespace + '/status_app'
-      if (this.state.appListener) {
-        this.state.appListener.unsubscribe()
-      }
-      var appListener = this.props.ros.setupStatusListener(
-            statusNamespace,
-            "nepi_ros_interfaces/AppStatus",
-            this.statusAppListener
-          )
-      this.setState({ appListener: appListener})
-    }
 
 
   // Lifecycle method called when compnent updates.
@@ -160,7 +131,6 @@ class AppsSelector extends Component {
           connected: true
         })
         this.updateAppsStatusListener()
-        this.updateAppStatusListener()
       } 
     }
   }
@@ -246,8 +216,34 @@ class AppsSelector extends Component {
     )
   }
 
+
+  toggleViewableApps() {
+    this.setState({viewableApps: true})
+  }
+
+  onToggleAppSelection(event){
+    const app_name = event.target.value
+    this.setState({selected_app: app_name})
+    this.toggleViewableApps()
+  }
+
+
+  // Function for creating image topic options.
+  getAppOptions() {
+    const appsList = this.state.apps_rui_list 
+    var items = []
+    items.push(<Option>{"NONE"}</Option>) 
+    if (appsList.length > 0){
+      for (var i = 0; i < appsList.length; i++) {
+          items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
+     }
+    }
+    return items
+  }
+
   renderSelection() {
-    const NoneOption = <Option>None</Option>
+    const viewableApps = this.state.viewableApps
+    const app_options = this.getAppOptions()
 
     return (
       <React.Fragment>
@@ -256,6 +252,7 @@ class AppsSelector extends Component {
       <Columns>
         <Column>
 
+{/*
         <Label title={"Select Application"}>
                     <Select
                       id="app_selection"
@@ -266,6 +263,29 @@ class AppsSelector extends Component {
                         ? createMenuListFromStrList(this.state.apps_rui_list, false, [],[],[])
                         : NoneOption}
                     </Select>
+                  </Label>
+*/}
+
+                  <Label title="Select Application">
+                    <div onClick={this.toggleViewableApps} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                      <Select style={{width: "10px"}}/>
+                    </div>
+                    <div hidden={!viewableApps}>
+                    {app_options.map((app) =>
+                    <div onClick={this.onToggleAppSelection}
+                      style={{
+                        textAlign: "center",
+                        padding: `${Styles.vars.spacing.xs}`,
+                        color: Styles.vars.colors.black,
+                        backgroundColor: (app.props.value === this.state.selected_app) ?
+                          Styles.vars.colors.green :
+                          (app.props.value === this.state.selected_app) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                        cursor: "pointer",
+                        }}>
+                        <body app-topic ={app} style={{color: Styles.vars.colors.black}}>{app}</body>
+                    </div>
+                    )}
+                    </div>
                   </Label>
 
       </Column>
@@ -291,24 +311,24 @@ class AppsSelector extends Component {
       <Column>
                   {this.renderSelection()}
 
-                  <div hidden={this.state.app_selected !== "AI_Targeting"}>
+                  <div hidden={this.state.selected_app !== "AI_Targeting"}>
                   {this.renderAiTargetingApp()}    
                   </div>
 
-                  <div hidden={this.state.app_selected !== "Image_Sequencer"}>
+                  <div hidden={this.state.selected_app !== "Image_Sequencer"}>
                   {this.renderImageSequencerApp()}    
                   </div>
 
-                  <div hidden={this.state.app_selected !== "Image_Viewer"}>
+                  <div hidden={this.state.selected_app !== "Image_Viewer"}>
                   {this.renderImageViewerApp()}    
                   </div>
 
 
-                  <div hidden={this.state.app_selected !== "ONVIF"}>
+                  <div hidden={this.state.selected_app !== "ONVIF"}>
                   {this.renderOnvifApp()}    
                   </div>
 
-                  <div hidden={this.state.app_selected !== "Pointcloud"}>
+                  <div hidden={this.state.selected_app !== "Pointcloud"}>
                   {this.renderPointcloudApp()}    
                   </div>
 
