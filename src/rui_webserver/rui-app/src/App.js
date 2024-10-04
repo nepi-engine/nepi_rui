@@ -72,13 +72,8 @@ class App extends Component {
               path: "/applications",
               label: "Applications",
               subItems: [
-<<<<<<< HEAD
-                { path: "/apps_mgr", label: "App Mgr"},
-                { path: "/apps_selector", label: "Applications"},
-=======
                 { path: "/apps_selector", label: "Applications"},
                 { path: "/apps_mgr", label: "App Mgr"}
->>>>>>> 4f5d8a2
               ]
             },
             {
@@ -90,10 +85,7 @@ class App extends Component {
                 { path: "/navPose", label: "NavPose" },
                 { path: "/drivers_mgr", label: "Drivers"},
                 { path: "/apps_mgr", label: "Apps"},
-<<<<<<< HEAD
-=======
                 { path: "/ai_mgr", label: " AI" },
->>>>>>> 4f5d8a2
                 { path: "/automation", label: "Automation" }
               ]
             },
