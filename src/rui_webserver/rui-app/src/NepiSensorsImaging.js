@@ -172,6 +172,7 @@ class NepiSensorsImaging extends Component {
 
               <Columns>
               <Column>
+              
                 <Label title={"Sensor"}>
                   <Select
                     onChange={this.onTopicIDXSelected}
