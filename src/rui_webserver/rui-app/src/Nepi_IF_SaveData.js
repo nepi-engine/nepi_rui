@@ -150,29 +150,26 @@ class NepiIFSaveData extends Component {
 
   // Function for creating configs options list from capabilities
   updateSaveLists() {
-    var saveRatesStr = this.state.saveRatesMsg
-    saveRatesStr = saveRatesStr.replaceAll("[","")
-    saveRatesStr = saveRatesStr.replaceAll("]","")
-    const saveRatesStrList = saveRatesStr.split(",")
+    var saveRatesMsg = this.state.saveRatesMsg
     var NamesList = []
     var RatesList = []
-    var new_config = true
-    var entry = ""
-    for (let ind = 0; ind < saveRatesStrList.length; ind++){
-      entry = saveRatesStrList[ind]
-      if (new_config === true){
-        NamesList.push(entry)
-        new_config = false
-      } else {
-        RatesList.push(entry)
-        new_config = true
-      }
-    }
+    var name = ""
+    var rate_int = 0
+    var rate_str = ""
+    var saveRateMsg = null
     // add None and All options to lists
     NamesList.push("NONE")
     RatesList.push("0.0")
     NamesList.push("ALL")
     RatesList.push(this.state.saveDataRate)
+    for (let ind = 0; ind < saveRatesMsg.length; ind++){
+        saveRateMsg =saveRatesMsg[ind]
+        name = saveRateMsg.data_product
+        rate_int = saveRateMsg.save_rate_hz
+        rate_str = rate_int.toFixed(2)
+        NamesList.push(name)
+        RatesList.push(rate_str)
+    }
     this.setState({saveNamesList:NamesList})
     this.setState({saveRatesList:RatesList})
   }

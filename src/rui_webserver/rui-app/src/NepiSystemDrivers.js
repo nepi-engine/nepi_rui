@@ -638,6 +638,14 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       <Column>
 
       <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/enable_all_drivers")}>{"Enable All"}</Button>
+      </ButtonMenu>
+
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/disable_all_drivers")}>{"Disable All"}</Button>
+      </ButtonMenu>
+
+      <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_drivers")}>{"Refresh"}</Button>
       </ButtonMenu>
 
