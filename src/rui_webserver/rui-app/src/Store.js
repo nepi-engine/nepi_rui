@@ -227,7 +227,7 @@ class ROSConnectionStore {
   
   @observable lastUpdate = new Date()
 
-  @observable classifiers = []
+  @observable classifierLists = null
   @observable classifierImgTopic = null
   @observable targLocalizerImgTopic = null
 
@@ -1640,10 +1640,9 @@ class ROSConnectionStore {
   }  
 
   async callImgClassifierListQueryService() {
-    this.classifiers = await this.callService({
+    this.classifierLists = await this.callService({
       name: "ai_detector_mgr/img_classifier_list_query",
       messageType: "nepi_ros_interfaces/ImageClassifierListQuery",
-      msgKey: "classifiers"
     })
   }
 
