@@ -41,7 +41,7 @@ class AppsSelector extends Component {
 
       viewableApps: false,
 
-      apps_list: [],
+      apps_list: ['NONE'],
       last_apps_list: [],
       apps_active_list: [],
       apps_install_path: null,
@@ -99,6 +99,7 @@ class AppsSelector extends Component {
       apps_install_list: message.apps_install_list,
       backup_removed_apps: message.backup_removed_apps,
       apps_rui_list: message.apps_rui_list,
+      connected: true
     })    
 
   }
@@ -128,7 +129,6 @@ class AppsSelector extends Component {
       if (namespace.indexOf('null') === -1) {
         this.setState({
           mgrNamespace: namespace,
-          connected: true
         })
         this.updateAppsStatusListener()
       } 
@@ -225,16 +225,15 @@ class AppsSelector extends Component {
 
   
 
-
   toggleViewableApps() {
     const viewable = !this.state.viewableApps
     this.setState({viewableApps: viewable})
   }
 
+
   onToggleAppSelection(event){
     const app_name = event.target.innerText
     this.setState({selected_app: app_name})
-    this.toggleViewableApps()
   }
 
 
@@ -243,30 +242,23 @@ class AppsSelector extends Component {
     const appsList = this.state.apps_rui_list 
     var items = []
     if (appsList.length > 0){
-      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
       for (var i = 0; i < appsList.length; i++) {
           items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
      }
     }
-    return items
-  }
-
-  // Function for creating image topic options.
-  getAppOptionsOld() {
-    const appsList = this.state.apps_rui_list 
-    var items = []
-    items.push(<Option value={'NONE'}>{'NONE'}</Option>)
-    if (appsList.length > 0){
-      for (var i = 0; i < appsList.length; i++) {
-          items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
-      }
+    else{
+      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     }
     return items
   }
 
+
   renderSelection() {
     const app_options = this.getAppOptions()
     const sel_app = this.state.selected_app
+    const hide_app_list = !this.state.viewableApps && !this.state.connected
 
     return (
       <React.Fragment>
@@ -274,11 +266,15 @@ class AppsSelector extends Component {
       <Columns>
         <Column>
 
-        <Label title="Select Application">
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Select Application"}
+         </label>
+         
+
           <div onClick={this.toggleViewableApps} style={{backgroundColor: Styles.vars.colors.grey0}}>
             <Select style={{width: "10px"}}/>
           </div>
-          <div hidden={this.state.viewableApps}>
+          <div hidden={hide_app_list}>
           {app_options.map((app) =>
           <div onClick={this.onToggleAppSelection}
             style={{
@@ -292,19 +288,7 @@ class AppsSelector extends Component {
           </div>
           )}
           </div>
-        </Label>
 
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {this.state.selected_app}
-          </label>
-
-      </Column>
-      <Column>
-
-
-
-      </Column>
-      <Column>
 
       </Column>
       </Columns>
@@ -313,43 +297,73 @@ class AppsSelector extends Component {
     )
   }
 
-  render() {
-    const sel_app = this.state.selected_app
-    return (
 
+  renderApplication() {
+    const sel_app = this.state.selected_app
+
+    return (
+      <React.Fragment>
 
       <Columns>
-      <Column>
-                  {this.renderSelection()}
+        <Column>
 
-                  <div hidden={sel_app !== "NONE"}>
-                  {this.renderNoneApp()}    
-                  </div>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {this.state.selected_app}
+         </label>
 
-                  <div hidden={sel_app !== "AI_Targeting"}>
-                  {this.renderAiTargetingApp()}    
-                  </div>
+            <div hidden={sel_app !== "NONE"}>
+            {this.renderNoneApp()}    
+            </div>
 
-                  <div hidden={sel_app !== "Image_Sequencer"}>
-                  {this.renderImageSequencerApp()}    
-                  </div>
+            <div hidden={sel_app !== "AI_Targeting"}>
+            {this.renderAiTargetingApp()}    
+            </div>
 
-                  <div hidden={sel_app !== "Image_Viewer"}>
-                  {this.renderImageViewerApp()}    
-                  </div>
+            <div hidden={sel_app !== "Image_Sequencer"}>
+            {this.renderImageSequencerApp()}    
+            </div>
+
+            <div hidden={sel_app !== "Image_Viewer"}>
+            {this.renderImageViewerApp()}    
+            </div>
 
 
-                  <div hidden={sel_app !== "ONVIF"}>
-                  {this.renderOnvifApp()}    
-                  </div>
+            <div hidden={sel_app !== "ONVIF"}>
+            {this.renderOnvifApp()}    
+            </div>
 
-                  <div hidden={sel_app !== "Pointcloud"}>
-                  {this.renderPointcloudApp()}    
-                  </div>
+            <div hidden={sel_app !== "Pointcloud"}>
+            {this.renderPointcloudApp()}    
+            </div>  
 
       </Column>
       </Columns>
 
+      </React.Fragment>
+    )
+  }
+
+
+
+  render() {
+    const app_options = this.getAppOptions()
+    const sel_app = this.state.selected_app
+    return (
+
+
+      <div style={{ display: 'flex' }}>
+        <div style={{ width: '10%' }}>
+          {this.renderSelection()}
+        </div>
+
+        <div style={{ width: '5%' }}>
+          {}
+        </div>
+
+        <div style={{ width: '85%' }}>
+          {this.renderApplication()}
+        </div>
+      </div>
 
     )
   }

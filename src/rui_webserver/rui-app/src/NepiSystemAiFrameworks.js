@@ -35,7 +35,7 @@ class AiFrameworksMgr extends Component {
       mgrName: "ai_detector_mgr",
       mgrNamespace: null,
 
-      viewableAis: false,
+      viewableFws: false,
 
       ais_list: [],
       last_ais_list: [],
@@ -60,7 +60,7 @@ class AiFrameworksMgr extends Component {
     this.getMgrNamespace = this.getMgrNamespace.bind(this)
 
     this.sendAiUpdateOrder = this.sendAiUpdateOrder.bind(this)
-    this.toggleViewableAis = this.toggleViewableAis.bind(this)
+    this.toggleviewableFws = this.toggleviewableFws.bind(this)
     this.getAiOptions = this.getAiOptions.bind(this)
     this.onToggleAiSelection = this.onToggleAiSelection.bind(this)
 
@@ -88,7 +88,8 @@ class AiFrameworksMgr extends Component {
       ais_list: message.ai_frameworks,
       ais_active_list: active_ai_frameworks,
       models_list: message.ai_models,
-      selected_ai: message.active_ai_models
+      selected_ai: message.active_ai_models,
+      connected: true
     })    
 
   }
@@ -117,8 +118,7 @@ class AiFrameworksMgr extends Component {
     if (prevState.mgrNamespace !== namespace && namespace !== null) {
       if (namespace.indexOf('null') === -1) {
         this.setState({
-          mgrNamespace: namespace,
-          connected: true
+          mgrNamespace: namespace
         })
         this.updateAisStatusListener()
       } 
@@ -134,10 +134,9 @@ class AiFrameworksMgr extends Component {
     }
   }
 
-  toggleViewableAis() {
-    //const set = !this.state.viewableAis
-    //this.setState({viewableAis: set})
-    this.setState({viewableAis: true})
+  toggleviewableFws() {
+    const set = !this.state.viewableFws
+    this.setState({viewableFws: set})
   }
 
   // Function for creating image topic options.
@@ -150,6 +149,11 @@ class AiFrameworksMgr extends Component {
           items.push(<Option value={aisList[i]}>{aisList[i]}</Option>)
      }
     }
+    else{
+      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+    }
     return items
   }
 
@@ -157,7 +161,6 @@ class AiFrameworksMgr extends Component {
   onToggleAiSelection(event){
     const ai_name = event.target.value
     this.setState({selected_ai: ai_name})
-    this.toggleViewableAis()
   }
 
 
@@ -251,7 +254,7 @@ class AiFrameworksMgr extends Component {
 
   render() {
     const selected_ai = this.state.selected_ai
-    const viewableAis = this.state.viewableAis
+    const viewableFws = this.state.viewableFws
     const ai_options = this.getAiOptions()
     const active_ai_list = this.state.ais_active_list
 
@@ -266,10 +269,10 @@ class AiFrameworksMgr extends Component {
         <Column>
 
         <Label title="Select Ai">
-                    <div onClick={this.toggleViewableAis} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                    <div onClick={this.toggleviewableFws} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
                     </div>
-                    <div hidden={!viewableAis}>
+                    <div hidden={!viewableFws}>
                     {ai_options.map((ai) =>
                     <div onClick={this.onToggleAiSelection}
                       style={{
@@ -367,9 +370,10 @@ class AiFrameworksMgr extends Component {
 
 renderFrameworkConfig() {
     const selected_ai = this.state.selected_ai
-    const viewableAis = this.state.viewableAis
+    const viewableFws = this.state.viewableFws
     const ai_options = this.getAiOptions()
     const active_ai_list = this.state.ais_active_list
+    const hide_fw_list = !this.state.viewableApps && !this.state.connected
 
     return (
 
@@ -382,10 +386,10 @@ renderFrameworkConfig() {
         <Column>
 
         <Label title="Select Ai">
-                    <div onClick={this.toggleViewableAis} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                    <div onClick={this.toggleviewableFws} style={{backgroundColor: Styles.vars.colors.grey0}}>
                       <Select style={{width: "10px"}}/>
                     </div>
-                    <div hidden={!viewableAis}>
+                    <div hidden={hide_fw_list}>
                     {ai_options.map((ai) =>
                     <div onClick={this.onToggleAiSelection}
                       style={{

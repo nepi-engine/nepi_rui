@@ -105,7 +105,8 @@ class AppsMgr extends Component {
       apps_install_path: message.apps_install_path,
       apps_install_list: message.apps_install_list,
       backup_removed_apps: message.backup_removed_apps,
-      selected_app: message.selected_app
+      selected_app: message.selected_app,
+      connected: true
     })    
 
   }
@@ -160,8 +161,7 @@ class AppsMgr extends Component {
     if (prevState.mgrNamespace !== namespace && namespace !== null) {
       if (namespace.indexOf('null') === -1) {
         this.setState({
-          mgrNamespace: namespace,
-          connected: true
+          mgrNamespace: namespace
         })
         this.updateAppsStatusListener()
         this.updateAppStatusListener()
@@ -179,20 +179,23 @@ class AppsMgr extends Component {
   }
 
   toggleViewableApps() {
-    //const set = !this.state.viewableApps
-    //this.setState({viewableApps: set})
-    this.setState({viewableApps: true})
+    const set = !this.state.viewableApps
+    this.setState({viewableApps: set})
   }
 
   // Function for creating image topic options.
   getAppOptions() {
     const appsList = this.state.apps_list  
     var items = []
-    items.push(<Option>{"NONE"}</Option>) 
     if (appsList.length > 0){
       for (var i = 0; i < appsList.length; i++) {
           items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
      }
+    }
+    else{
+      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     }
     return items
   }
@@ -203,7 +206,6 @@ class AppsMgr extends Component {
     const app_name = event.target.value
     const selectNamespace = this.state.mgrNamespace + "/select_app"
     sendStringMsg(selectNamespace,app_name)
-    this.toggleViewableApps()
   }
 
 
@@ -231,11 +233,15 @@ class AppsMgr extends Component {
   getInstallOptions() {
     const appsList = this.state.apps_install_list
     var items = []
-    items.push(<Option>{"NONE"}</Option>) 
     if (appsList.length > 0){
       for (var i = 0; i < appsList.length; i++) {
           items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
       }
+    }
+    else{
+      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     }
     return items
   }option
@@ -263,6 +269,8 @@ class AppsMgr extends Component {
         <Label title={"Turn off unused apps for faster startup times"}> </Label>
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+        <div hidden={(this.state.app_name === 'NONE')}>
 
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             {this.state.app_name}
@@ -390,6 +398,7 @@ class AppsMgr extends Component {
 
         </div>
 
+        </div>
 
         </Section>
 
@@ -490,6 +499,7 @@ class AppsMgr extends Component {
     const viewableApps = this.state.viewableApps
     const app_options = this.getAppOptions()
     const active_app_list = this.state.apps_active_list
+    const hide_app_list = !this.state.viewableApps && !this.state.connected
 
     return (
 
@@ -501,27 +511,31 @@ class AppsMgr extends Component {
       <Columns equalWidth={true}>
         <Column>
 
-        <Label title="Select App">
-                    <div onClick={this.toggleViewableApps} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={!viewableApps}>
-                    {app_options.map((app) =>
-                    <div onClick={this.onToggleAppSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (app.props.value === selected_app) ?
-                          Styles.vars.colors.green :
-                          (active_app_list.includes(app.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body app-topic ={app} style={{color: Styles.vars.colors.black}}>{app}</body>
-                    </div>
-                    )}
-                    </div>
-                  </Label>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Select App"}
+         </label>
+
+
+        <div onClick={this.toggleViewableApps} style={{backgroundColor: Styles.vars.colors.grey0}}>
+          <Select style={{width: "10px"}}/>
+        </div>
+        <div hidden={hide_app_list}>
+        {app_options.map((app) =>
+        <div onClick={this.onToggleAppSelection}
+          style={{
+            textAlign: "center",
+            padding: `${Styles.vars.spacing.xs}`,
+            color: Styles.vars.colors.black,
+            backgroundColor: (app.props.value === selected_app) ?
+              Styles.vars.colors.green :
+              (active_app_list.includes(app.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+            cursor: "pointer",
+            }}>
+            <body app-topic ={app} style={{color: Styles.vars.colors.black}}>{app}</body>
+        </div>
+        )}
+        </div>
+
       </Column>
       <Column>
 

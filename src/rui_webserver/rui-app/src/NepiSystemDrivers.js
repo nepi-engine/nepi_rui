@@ -120,7 +120,8 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       drivers_install_path: message.drivers_install_path,
       drivers_install_list: message.drivers_install_list,
       backup_removed_drivers: message.backup_removed_drivers,
-      selected_driver: message.selected_driver
+      selected_driver: message.selected_driver,
+      connected: true
     })    
 
   }
@@ -187,8 +188,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
     if (prevState.mgrNamespace !== namespace && namespace !== null) {
       if (namespace.indexOf('null') === -1) {
         this.setState({
-          mgrNamespace: namespace,
-          connected: true
+          mgrNamespace: namespace
         })
         this.updateDriversStatusListener()
         this.updateDriverStatusListener()
@@ -206,20 +206,23 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   }
 
   toggleViewableDrivers() {
-    //const set = !this.state.viewableDrivers
-    //this.setState({viewableDrivers: set})
-    this.setState({viewableDrivers: true})
+    const set = !this.state.viewableDrivers
+    this.setState({viewableDrivers: set})
   }
 
   // Function for creating image topic options.
   getDriverOptions() {
     const driversList = this.state.drivers_list  
     var items = []
-    items.push(<Option>{"NONE"}</Option>) 
     if (driversList.length > 0){
       for (var i = 0; i < driversList.length; i++) {
           items.push(<Option value={driversList[i]}>{driversList[i]}</Option>)
      }
+    }
+    else{
+      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     }
     return items
   }
@@ -230,7 +233,6 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
     const driver_name = event.target.value
     const selectNamespace = this.state.mgrNamespace + "/select_driver"
     sendStringMsg(selectNamespace,driver_name)
-    this.toggleViewableDrivers()
   }
 
 
@@ -258,11 +260,15 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   getInstallOptions() {
     const driversList = this.state.drivers_install_list
     var items = []
-    items.push(<Option>{"NONE"}</Option>) 
     if (driversList.length > 0){
       for (var i = 0; i < driversList.length; i++) {
           items.push(<Option value={driversList[i]}>{driversList[i]}</Option>)
       }
+    }
+    else{
+      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     }
     return items
   }
@@ -290,6 +296,8 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
         <Label title={"Turn off unused drivers for faster startup times"}> </Label>
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+        <div hidden={(this.state.driver_name === 'NONE')}>
 
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             {this.state.driver_name}
@@ -466,6 +474,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
 
         </div>
 
+        </div>
 
         </Section>
       
@@ -569,6 +578,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
     const viewableDrivers = this.state.viewableDrivers
     const driver_options = this.getDriverOptions()
     const active_driver_list = this.state.drivers_active_list
+    const hide_driver_list = !this.state.viewableDrivers && !this.state.connected
 
     return (
 
@@ -580,27 +590,30 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       <Columns equalWidth={true}>
         <Column>
 
-        <Label title="Select Driver">
-                    <div onClick={this.toggleViewableDrivers} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={!viewableDrivers}>
-                    {driver_options.map((driver) =>
-                    <div onClick={this.onToggleDriverSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (driver.props.value === selected_driver) ?
-                          Styles.vars.colors.green :
-                          (active_driver_list.includes(driver.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body driver-topic ={driver} style={{color: Styles.vars.colors.black}}>{driver}</body>
-                    </div>
-                    )}
-                    </div>
-                  </Label>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Select Driver"}
+         </label>
+
+          <div onClick={this.toggleViewableDrivers} style={{backgroundColor: Styles.vars.colors.grey0}}>
+            <Select style={{width: "10px"}}/>
+          </div>
+          <div hidden={hide_driver_list}>
+          {driver_options.map((driver) =>
+          <div onClick={this.onToggleDriverSelection}
+            style={{
+              textAlign: "center",
+              padding: `${Styles.vars.spacing.xs}`,
+              color: Styles.vars.colors.black,
+              backgroundColor: (driver.props.value === selected_driver) ?
+                Styles.vars.colors.green :
+                (active_driver_list.includes(driver.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+              cursor: "pointer",
+              }}>
+              <body driver-topic ={driver} style={{color: Styles.vars.colors.black}}>{driver}</body>
+          </div>
+          )}
+          </div>
+
       </Column>
       <Column>
 
