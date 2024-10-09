@@ -202,173 +202,10 @@ class AiFrameworksMgr extends Component {
     return config_str
   }
 
-
-  renderAiConfigure() {
-    const { sendStringMsg, sendUpdateOrderMsg, sendUpdateActiveStateMsg} = this.props.ros
-
-    return (
-      <React.Fragment>
-
-        <Section title={"Configure AI Frameworks"}>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {this.state.ai_name}
-          </label>
-  
-          <pre style={{ height: "20Spx", overflowY: "auto" }}>
-          {this.state.ai_description}
-          </pre>
-
-      <Columns equalWidth={true}>
-      <Column>
-
-      <Label title={"Ai Enabled"}>
-          <BooleanIndicator value={(this.state.ai_active_state !== null)? this.state.ai_active_state : false} />
-        </Label>
-
-      </Column>
-      <Column>
-
-      <Label title="Enable/Disable Ai"> </Label>
-          <Toggle
-            checked={this.state.ai_active_state===true}
-            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.ai_name, !this.state.ai_active_state)}>
-          </Toggle>
+ 
 
 
-      </Column>
-      </Columns>
-
-
-        </Section>
-
-        
-      </React.Fragment>
-    )
-  }
-
-  
-
-
-  render() {
-    const selected_ai = this.state.selected_ai
-    const viewableFws = this.state.viewableFws
-    const ai_options = this.getAiOptions()
-    const active_ai_list = this.state.ais_active_list
-
-    return (
-
-       
-    <Columns>
-      <Column>
-
-
-      <Columns equalWidth={true}>
-        <Column>
-
-        <Label title="Select Ai">
-                    <div onClick={this.toggleviewableFws} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={!viewableFws}>
-                    {ai_options.map((ai) =>
-                    <div onClick={this.onToggleAiSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (ai.props.value === selected_ai) ?
-                          Styles.vars.colors.green :
-                          (active_ai_list.includes(ai.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body ai-topic ={ai} style={{color: Styles.vars.colors.black}}>{ai}</body>
-                    </div>
-                    )}
-                    </div>
-                  </Label>
-      </Column>
-      <Column>
-
-      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Active Ais List "}
-          </label>
-
-      <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
-        {this.getActiveAiStr()}
-        </pre>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Disabled Ais List "}
-          </label>
-
-        <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
-        {this.getDisabledAiStr()}
-        </pre>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>  
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Install Ais List "}
-          </label>
-
-        <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
-        {this.getReadyStr()}
-        </pre>
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-      </Column>
-      <Column>
-
-      <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/enable_all_ais")}>{"Enable All"}</Button>
-      </ButtonMenu>
-
-      <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/disable_all_ais")}>{"Disable All"}</Button>
-      </ButtonMenu>
-
-
-      <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_ais")}>{"Refresh"}</Button>
-      </ButtonMenu>
-
-        <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
-      </ButtonMenu>
-
-        </Column>
-      </Columns>
-
-
-
-
-      </Column>
-      <Column>
-
-      {this.renderAiConfigure()}
-
-{/*
-      {this.renderAiInstall()}
-*/}
-
-       </Column>
-     </Columns>
-         
-       
-          
-
-    )
-  }
-
-}
-
-
-renderFrameworkConfig() {
+  renderFrameworkConfig() {
     const selected_ai = this.state.selected_ai
     const viewableFws = this.state.viewableFws
     const ai_options = this.getAiOptions()
@@ -377,44 +214,43 @@ renderFrameworkConfig() {
 
     return (
 
-       
-    <Columns>
+      <Columns equalWidth={true}>
       <Column>
 
+      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Select AI Framework"}
+         </label>
 
-      <Columns equalWidth={true}>
+          <div onClick={this.toggleviewableFws} style={{backgroundColor: Styles.vars.colors.grey0}}>
+            <Select style={{width: "10px"}}/>
+          </div>
+          <div hidden={!viewableFws}>
+          {ai_options.map((ai) =>
+          <div onClick={this.onToggleAiSelection}
+            style={{
+              textAlign: "center",
+              padding: `${Styles.vars.spacing.xs}`,
+              color: Styles.vars.colors.black,
+              backgroundColor: (ai.props.value === selected_ai) ?
+                Styles.vars.colors.green :
+                (active_ai_list.includes(ai.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+              cursor: "pointer",
+              }}>
+              <body ai-topic ={ai} style={{color: Styles.vars.colors.black}}>{ai}</body>
+          </div>
+          )}
+          </div>
+
+
+        </Column>
         <Column>
 
-        <Label title="Select Ai">
-                    <div onClick={this.toggleviewableFws} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={hide_fw_list}>
-                    {ai_options.map((ai) =>
-                    <div onClick={this.onToggleAiSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (ai.props.value === selected_ai) ?
-                          Styles.vars.colors.green :
-                          (active_ai_list.includes(ai.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body ai-topic ={ai} style={{color: Styles.vars.colors.black}}>{ai}</body>
-                    </div>
-                    )}
-                    </div>
-                  </Label>
-      </Column>
-      <Column>
-
-      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Active Ais List "}
           </label>
 
-      <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
+        <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
         {this.getActiveAiStr()}
         </pre>
 
@@ -438,45 +274,70 @@ renderFrameworkConfig() {
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-      </Column>
-      <Column>
+        </Column>
+        <Column>
 
-      <ButtonMenu>
+
+        <div hidden={(this.state.ai_name === "NONE")}>
+
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {this.state.ai_name}
+          </label>
+
+        <Label title="Enable"> </Label>
+          <Toggle
+            checked={this.state.ai_active_state===true}
+            onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.ai_name, !this.state.ai_active_state)}>
+        </Toggle>
+
+        </div>
+
+        <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/enable_all_ais")}>{"Enable All"}</Button>
-      </ButtonMenu>
+        </ButtonMenu>
 
-      <ButtonMenu>
+        <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/disable_all_ais")}>{"Disable All"}</Button>
-      </ButtonMenu>
+        </ButtonMenu>
 
 
-      <ButtonMenu>
+        <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_ais")}>{"Refresh"}</Button>
-      </ButtonMenu>
+        </ButtonMenu>
 
         <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
-      </ButtonMenu>
+        </ButtonMenu>
 
         </Column>
-      </Columns>
+        </Columns> 
+
+    )
+  }
 
 
 
 
-      </Column>
+render() {
+
+    return (
+
+    <Section title={"AI Framework and Model Settings"}>
+       
+    <Columns>
       <Column>
 
-      {this.renderAiConfigure()}
+
+      {this.renderFrameworkConfig()}
 
 {/*
-      {this.renderAiInstall()}
+      {this.renderModelConfig()}
 */}
 
        </Column>
      </Columns>
          
-       
+    </Section>
           
 
     )
