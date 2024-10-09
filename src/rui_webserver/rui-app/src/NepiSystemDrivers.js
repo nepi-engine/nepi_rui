@@ -312,20 +312,20 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       <Columns equalWidth={true}>
       <Column>
 
-      <Label title={"Driver Enabled"}>
-          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
-        </Label>
-
-      </Column>
-      <Column>
-
-      <Label title="Enable/Disable Driver">
+        <Label title="Enable/Disable Driver">
           <Toggle
             checked={this.state.active_state===true}
             onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.driver_name, !this.state.active_state)}>
           </Toggle>
           </Label>
 
+
+      </Column>
+      <Column>
+
+      <Label title={"Driver Enabled"}>
+          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
+        </Label>
       </Column>
       <Column>
 

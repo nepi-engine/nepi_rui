@@ -283,18 +283,21 @@ class AppsMgr extends Component {
       <Columns equalWidth={true}>
       <Column>
 
-      <Label title={"App Enabled"}>
-          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
-        </Label>
 
-      </Column>
-      <Column>
-
-      <Label title="Enable/Disable App"> </Label>
+        <Label title="Enable/Disable App"> 
           <Toggle
             checked={this.state.active_state===true}
             onClick={() => sendUpdateActiveStateMsg(this.state.mgrNamespace + "/update_state", this.state.app_name, !this.state.active_state)}>
           </Toggle>
+      </Label>
+
+
+      </Column>
+      <Column>
+
+      <Label title={"App Enabled"}>
+          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
+        </Label>
 
       </Column>
       <Column>
