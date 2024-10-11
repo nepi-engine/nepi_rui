@@ -289,7 +289,6 @@ class AppsSelector extends Component {
           )}
           </div>
 
-
       </Column>
       </Columns>
 

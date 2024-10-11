@@ -351,6 +351,35 @@ class NepiRobotMessages extends Component {
             {this.state.last_error_message}
           </pre>
 
+            <Columns>
+            <Column>
+
+            <Label title={"Message Queue Size"}>
+                <Input id="msg_queue_size" 
+                  value={this.state.msg_queue_size} 
+                  onChange={(event) => this.onUpdateMessagesInputBoxValue(event,"msg_queue_size")} 
+                  onKeyDown= {(event) => this.onEnterMessagesQueueVar(event)} />
+              </Label>
+              
+            </Column>
+            <Column>
+
+            </Column>
+            </Columns>
+
+
+            <Columns>
+            <Column>
+
+          <label style={{fontWeight: 'bold'}}>
+          {"Node Messages"}
+        </label>
+          <pre style={{ height: "600px", overflowY: "auto" }}>
+            {this.state.status_msg}
+          </pre>
+
+            </Column>
+            <Column>
 
             <div align={"left"} textAlign={"left"}> 
         <label style={{fontWeight: 'bold'}}>
@@ -360,7 +389,8 @@ class NepiRobotMessages extends Component {
             {this.state.status_str_list ? this.convertStrListToJoinedStr(this.state.status_str_list) : ""}
           </pre>
           </div>
-
+          </Column>
+          </Columns>
 
               </div>
       </Section>

@@ -220,6 +220,7 @@ class ROSConnectionStore {
   @observable navSatFixTopics = []
   @observable orientationTopics = []
   @observable headingTopics = []
+  @observable messageTopics = []
 
   @observable imageFilterDetection = null
   @observable imageFilterSequencer = null
@@ -409,6 +410,7 @@ class ROSConnectionStore {
         var newPrefix = this.updatePrefix()
         var newResettables = this.updateResetTopics()
         var newImageTopics = this.updateImageTopics()
+        var newMessageTopics = this.updateMessageTopics()
         var newPointcloudTopics = this.updatePointcloudTopics()
                 
         this.updateIDXSensorList()
@@ -417,7 +419,7 @@ class ROSConnectionStore {
         this.updateRBXRobotsList()
         this.updateNavPoseSourceTopics()
 
-        if (newPrefix || newResettables || newImageTopics || newPointcloudTopics) {
+        if (newPrefix || newResettables || newMessageTopics || newImageTopics || newPointcloudTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -462,6 +464,28 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  updateMessageTopics() {
+    // Function for updating image topics list
+    var newMessageTopics = []
+    for (var i = 0; i < this.topicNames.length; i++) {
+      if (this.topicTypes[i] === "std_msgs/String") {
+        newMessageTopics.push(this.topicNames[i])
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newMessageTopics.sort()
+
+    if (!this.messageTopics.equals(newMessageTopics)) {
+      this.messageTopics = newMessageTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+
+  @action.bound
   updateImageTopics() {
     // Function for updating image topics list
     var newImageTopics = []
@@ -481,6 +505,7 @@ class ROSConnectionStore {
       return false
     }
   }
+
 
   @action.bound
   updatePointcloudTopics() {

@@ -185,6 +185,10 @@ class Nepi_IF_Settings extends Component {
       this.setState({selectedSettingInput  :  value })
       this.render()
     }
+    else{
+    this.setState({selectedSettingName  :  "NONE" }) 
+    this.setState({selectedSettingType  :  "NONE" }) 
+    }
 
   }
 
@@ -308,7 +312,7 @@ class Nepi_IF_Settings extends Component {
                 onChange={this.updateSelectedSettingInfo}
                 value={this.state.selectedSettingName}
               >
-                {createMenuListFromStrList(capSettingNamesOrdered,false,[],[],[])}
+                {createMenuListFromStrList(capSettingNamesOrdered,false,[],['NONE'],[])}
               </Select>
             </Label>
 
