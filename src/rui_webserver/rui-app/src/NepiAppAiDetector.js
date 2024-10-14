@@ -22,30 +22,34 @@ import { filterStrList, createShortValuesFromNamespaces } from "./Utilities"
 
 import CameraViewer from "./CameraViewer"
 
+import NepiIFSaveData from "./Nepi_IF_SaveData"
+
 @inject("ros")
 @observer
-class NepiSystemAiDetector extends Component {
+class AiDetectorApp extends Component {
   constructor(props) {
     super(props)
     var img = (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_img_topic.split("/") : null
     const classifier_running = ((this.props.ros.reportedClassifier) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
       true : false
-    const DETECTION_IMG_TOPIC = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId  + '/ai_detector_mgr/detection_image'
-
+    const detection_img_topic = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/ai_detector_mgr/detection_image'
     this.state = {
-      selectedImgTopic: null,
       last_reportedClassifier: null,
+
       imageTopic: (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_img_topic : "None",
+
       imageText: (classifier_running === true)?
         img[img.length-1] + ':' + this.props.ros.reportedClassifier.selected_classifier : 
         img? img[img.length-1] : null,
+
       // Only set currentDisplayImgTopic when classifier is running -- this state transition is required for the CameraViewer to work properly
-      currentDisplayImgTopic: (classifier_running === true)? 
-      DETECTION_IMG_TOPIC: 
+    currentDisplayImgTopic: (classifier_running === true)? 
+     detection_img_topic: 
         (this.props.ros.reportedClassifier? this.props.ros.reportedClassifier.selected_img_topic : null),
+
       selectedClassifier: (this.props.ros.reportedClassifier !== null) ? this.props.ros.reportedClassifier.selected_classifier : "None",
       detectionThreshold: (this.props.ros.reportedClassifier !== null)? this.props.ros.reportedClassifier.detection_threshold : 0.3,
-      appName: "ai_detector_mgr"
+      appName: "ai_detector_mgr",
     }
     this.getAppNamespace = this.getAppNamespace.bind(this)
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
@@ -53,6 +57,8 @@ class NepiSystemAiDetector extends Component {
     this.checkForClassifierRunning = this.checkForClassifierRunning.bind(this)
     this.onApplyButtonPressed = this.onApplyButtonPressed.bind(this)
     this.onStopButtonPressed = this.onStopButtonPressed.bind(this)
+   
+
     this.checkForClassifierRunning()
   }
 
@@ -72,7 +78,7 @@ class NepiSystemAiDetector extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
-    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node','app_ai_targeting','ai_detector_manager'])
+    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node','app_ai_targeting','ai_detector_mgr'])
     var uniqueNames = createShortValuesFromNamespaces(imageTopicsFiltered)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
@@ -123,7 +129,6 @@ class NepiSystemAiDetector extends Component {
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value === "None" ? null : event.target.value
 
-
     await this.setState({
       imageTopic: value,
       imageText: text === "None" ? null : text,
@@ -142,12 +147,11 @@ class NepiSystemAiDetector extends Component {
     })
   }
 
+
   async checkForClassifierRunning() {
     const {
       reportedClassifier,
     } = this.props.ros
-
-
     if ((reportedClassifier === null) || (reportedClassifier.classifier_state !== "Running")) {
       if (this.state.currentDisplayImgTopic !== this.state.imageTopic) {
         await this.setState({
@@ -157,26 +161,18 @@ class NepiSystemAiDetector extends Component {
       }
     }
     else {
-      if (this.state.selectedImgTopic === null){
-        const { namespacePrefix, deviceId} = this.props.ros
-        const DETECTION_IMG_TOPIC = "/" + namespacePrefix + "/" + deviceId +  '/ai_detector_mgr/detection_image'
-
-        this.setState({selectedImgTopic: DETECTION_IMG_TOPIC,
-                        imageText: "Detection Image"
-        })
-      }
-      else{
+        const detection_img_topic = "/" + this.props.ros.namespacePrefix + "/" + this.props.ros.deviceId + '/ai_detector_mgr/detection_image'
         this.setState({
-        currentDisplayImgTopic: this.state.selectedImgTopic
+        currentDisplayImgTopic: detection_img_topic,
+        imageText: 'Detection Image'
         })
-      }
     }
 
     // Run this method periodically forever
     setTimeout(this.checkForClassifierRunning, 250)
   }
 
-  async onApplyButtonPressed() {
+   async onApplyButtonPressed() {
     const { startClassifier, reportedClassifier } = this.props.ros
     var threshold = reportedClassifier.detection_threshold
     if (reportedClassifier){
@@ -200,12 +196,9 @@ class NepiSystemAiDetector extends Component {
 
 
 
-  renderAIManager() {
-    const {sendTriggerMsg  } = this.props.ros
-    const {
-      reportedClassifier
-    } = this.props.ros
 
+  renderAIManager() {
+    const {reportedClassifier, sendTriggerMsg  } = this.props.ros
     const thresholdVal = reportedClassifier? reportedClassifier.detection_threshold : 0.3
     var status_text = reportedClassifier? reportedClassifier.classifier_state : "Unknown"
     
@@ -228,7 +221,7 @@ class NepiSystemAiDetector extends Component {
       status_color = indicator_colors.green
     }   
 
-    const namespace = this.getAppNamespace()
+    const appNamespace = this.getAppNamespace()
     return (
 
           <Section title={"AI Detector Settings"}>
@@ -264,42 +257,56 @@ class NepiSystemAiDetector extends Component {
             />
 
 
-                <ButtonMenu style={{marginTop: "0px"}}>
-                  <Button onClick={this.onApplyButtonPressed}>{"Start"}</Button>
-                  <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
-                </ButtonMenu> 
 
-          <label style={{fontWeight: 'bold'}}>
-          {"A/I Status"}
-        </label>
-
-            <Columns>
+              <div align={"left"} textAlign={"left"}>
+              <Columns>
               <Column>
-                <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
+              <ButtonMenu style={{marginTop: "10px", marginBottom: "10px", align:"left"}}>
+                  <Button onClick={this.onApplyButtonPressed}>{"Start"}</Button>
+                </ButtonMenu>   
+
+                </Column>
+                <Column>
+
+                <ButtonMenu style={{marginTop: "10px", marginBottom: "10px", align:"left"}}>
+                  <Button onClick={this.onStopButtonPressed}>{"Stop"}</Button>
+                </ButtonMenu>  
+
+                </Column>
+              </Columns>
+              </div>
+
+
+
+              <Columns>
+              <Column>
+
+              <ColoredTextIndicator indicator_color={status_color} text={status_text} style={{width:"100%", fontWeight:"bold"}}/>
                 {(status_text === "Loading")?
                   <progress value={reportedClassifier? reportedClassifier.loading_progress : 0.0} style={{width: '100%'}}/>
                   : null
                 }
 
-              </Column>
-              <Column>
-       
-          
                 </Column>
-                </Columns>
+                <Column>
 
+                </Column>
+              </Columns>
+
+     
+          
                 <Columns>
                 <Column>
                 
-              <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg(namespace + "/save_config")}>{"Save Config"}</Button>
+              <ButtonMenu style={{marginTop: "10px"}}>
+                <Button onClick={() => sendTriggerMsg(appNamespace + "/save_config")}>{"Save Config"}</Button>
               </ButtonMenu>
 
             </Column>
             <Column>
             
-              <ButtonMenu>
-                <Button onClick={() => sendTriggerMsg(namespace + "/reset_config")}>{"Reset Config"}</Button>
+              <ButtonMenu style={{marginTop: "10px"}}>
+                <Button onClick={() => sendTriggerMsg(appNamespace + "/reset_config")}>{"Reset Config"}</Button>
               </ButtonMenu>
 
             </Column>
@@ -312,16 +319,29 @@ class NepiSystemAiDetector extends Component {
       }
 
       render() {
+        const appNamespace = this.getAppNamespace()
+        const classifier_running = ((this.props.ros.reportedClassifier) && (this.props.ros.reportedClassifier.classifier_state === "Running"))?
+        true : false
         return (
+
+
+
           <Columns>
           <Column equalWidth={false}>
-  
+
+
           <CameraViewer
             imageTopic={this.state.currentDisplayImgTopic}
-            title={this.state.imageText}
+            title={""}
             hideQualitySelector={false}
           />
 
+          <div hidden={appNamespace === null}>
+            <NepiIFSaveData
+                  saveNamespace={appNamespace}
+                  title={"Nepi_IF_SaveData"}
+              />
+          </div>
 
           </Column>
           <Column>
@@ -340,4 +360,4 @@ class NepiSystemAiDetector extends Component {
       
 }
 
-export default NepiSystemAiDetector
+export default AiDetectorApp

@@ -19,6 +19,8 @@ import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
+import OnvifMgr from "./NepiMgrOnvif"
+
 
 import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedSetState, onDropdownSelectedSendDriverOption
   } from "./Utilities"
@@ -32,6 +34,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       super(props)
   
       this.state = {
+        show_onvif_mgr: false,
         show_delete_driver: false,
         mgrName: "drivers_mgr",
         mgrNamespace: null,
@@ -68,10 +71,9 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
 
       driversListener: null,
       driverListener: null,
+      selected_driver_install_pkg: null,
 
-
-
-      selected_driver_install_pkg: null
+      needs_update: true
     }
 
 
@@ -137,7 +139,10 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
           "nepi_ros_interfaces/DriversStatus",
           this.driversStatusListener
         )
-    this.setState({ driversListener: driversListener})
+    this.setState({ driversListener: driversListener,
+      needs_update: false
+
+    })
   }
 
 
@@ -185,8 +190,10 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getMgrNamespace()
-    if (prevState.mgrNamespace !== namespace && namespace !== null) {
-      if (namespace.indexOf('null') === -1) {
+    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
+    const needs_update = (this.state.needs_update && namespace !== null)
+    if (namespace_updated || needs_update) {
+      if (namespace.indexOf('null') === -1){
         this.setState({
           mgrNamespace: namespace
         })
@@ -572,6 +579,45 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   }
 
 
+  renderOnvifMgr() {
+    const drv_mgr_n = this.state.mgrName
+    const drv_mgr_ns = this.state.mgrNamespace
+    const show_mgr = this.state.show_onvif_mgr
+    return (
+
+
+      <Columns>
+        <Column>
+
+        <div style={{align: "left"}}>
+
+        <label style={{fontWeight: 'bold', align:"left" , marginBottom: Styles.vars.spacing.xs}} >
+          {"Show Onvif Device Manager"}
+         </label>
+
+          <Toggle
+            checked={show_mgr}
+            onClick={() => onChangeSwitchStateValue.bind(this)("show_onvif_mgr",show_mgr)}>
+          </Toggle>
+
+        </div>
+
+
+       <div hidden={!show_mgr}>
+
+        <OnvifMgr
+         title={"OnvifMgr"}
+         />
+
+        </div>
+
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+      </Column>
+      </Columns>
+    )
+  }
+
+
 
   render() {
     const selected_driver = this.state.selected_driver
@@ -582,7 +628,11 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
 
     return (
 
-       
+      <Columns>
+      <Column>
+
+      {this.renderOnvifMgr()}
+
     <Columns>
       <Column>
 
@@ -672,6 +722,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
 
       </Column>
       <Column>
+      
 
       {this.renderDriverConfigure()}
 
@@ -681,7 +732,8 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
        </Column>
      </Columns>
          
-       
+     </Column>
+     </Columns> 
           
 
     )

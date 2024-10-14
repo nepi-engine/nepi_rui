@@ -15,12 +15,8 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-import PointcloudApp from "./NepiAppPointcloud"
+import AiDetectorApp from "./NepiAppAiDetector"
 import AiTargetingApp from "./NepiAppAiTargeting"
-import ImageViewerApp from "./NepiAppImageViewer"
-import ImageSequencer from "./NepiAppImageSequencer"
-
-
 
 
 import { createMenuListFromStrList} from "./Utilities"
@@ -29,7 +25,7 @@ import { createMenuListFromStrList} from "./Utilities"
 @observer
 
 // Pointcloud Application page
-class AppsSelector extends Component {
+class AppsAiSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -159,13 +155,13 @@ class AppsSelector extends Component {
   }
 
 
-  renderImageSequencerApp() {
+  renderAiDetectorApp() {
     return (
       <Columns>
         <Column>
 
-        <ImageSequencer
-         title={"ImageSequencer"}
+        <AiDetectorApp
+         title={"AiDetectorApp"}
          />
 
       </Column>
@@ -173,35 +169,19 @@ class AppsSelector extends Component {
     )
   }
 
-  renderImageViewerApp() {
+  renderAiTargetingApp() {
     return (
       <Columns>
         <Column>
 
-        <ImageViewerApp
-         title={"ImageViewerApp"}
+        <AiTargetingApp
+         title={"AiTargetingApp"}
          />
 
       </Column>
       </Columns>
     )
   }
-
-
-  renderPointcloudApp() {
-    return (
-      <Columns>
-        <Column>
-
-        <PointcloudApp
-         title={"PointcloudApp"}
-         />
-
-      </Column>
-      </Columns>
-    )
-  }
-
   
 
   toggleViewableApps() {
@@ -221,17 +201,13 @@ class AppsSelector extends Component {
     const appsList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
     var items = []
+    items.push(<Option value={'AI_Detector'}>{'AI_Detector'}</Option>)
     if (appsList.length > 0){
       for (var i = 0; i < appsList.length; i++) {
-          if (groupList[i] !== "AI"){
+          if (groupList[i] === "AI"){
             items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
           }
      }
-    }
-    else{
-      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
-      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     }
     return items
   }
@@ -296,18 +272,13 @@ class AppsSelector extends Component {
             {this.renderNoneApp()}    
             </div>
 
-
-            <div hidden={sel_app !== "Image_Viewer"}>
-            {this.renderImageViewerApp()}    
+            <div hidden={sel_app !== "AI_Detector"}>
+            {this.renderAiDetectorApp()}    
             </div>
 
-            <div hidden={sel_app !== "Image_Sequencer"}>
-            {this.renderImageSequencerApp()}    
+            <div hidden={sel_app !== "AI_Targeting"}>
+            {this.renderAiTargetingApp()}    
             </div>
-
-            <div hidden={sel_app !== "Pointcloud"}>
-            {this.renderPointcloudApp()}    
-            </div>  
 
       </Column>
       </Columns>
@@ -343,4 +314,4 @@ class AppsSelector extends Component {
 
 }
 
-export default AppsSelector
+export default AppsAiSelector

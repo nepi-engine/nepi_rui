@@ -17,23 +17,23 @@ import HorizontalDivider from "./HorizontalDivider"
 
 
 import Dashboard from "./NepiDashboard"
-import SensorIDX from "./NepiSensorsImaging"
-import PointcloudApp from "./NepiAppPointcloud"
-import AiManager from "./NepiSystemAiDetector"
-import AiTargetingApp from "./NepiAppAiTargeting"
-import ImageViewerApp from "./NepiAppImageViewer"
-import NavPoseMgr from "./NepiMgrNavPose"
-import Settings from "./NepiSystemDevice"
-import SoftwareUpdate from "./NepiSystemSoftware"
-import AutomationMgr from "./NepiSystemAutomation"
-import ImageSequencer from "./NepiAppImageSequencer"
+import IDX from "./NepiSensorsImaging"
 import PTX from "./NepiControlsPanTilt"
-import OnvifApp from "./NepiAppOnvif"
-import DriversMgr from "./NepiSystemDrivers"
-import AppsMgr from "./NepiSystemApps"
 import LSX from "./NepiControlsLights"
 import RBX from "./NepiControlsRobots"
+
 import AppsSelector from "./NepiAppsSelector"
+import AppsAiSelector from "./NepiAppsAiSelector"
+
+
+import DeviceMgr from "./NepiSystemDevice"
+import NavPoseMgr from "./NepiMgrNavPose"
+import SoftwareMgr from "./NepiSystemSoftware"
+import AutomationMgr from "./NepiSystemAutomation"
+import DriversMgr from "./NepiSystemDrivers"
+import AisMgr from "./NepiSystemAis"
+import AppsMgr from "./NepiSystemApps"
+
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -61,11 +61,19 @@ class App extends Component {
               path: "/devices",
               label: "Devices",
               subItems: [
-                { path: "/sensor_idx", label: "Imaging"},
+                { path: "/idx", label: "Imaging"},
                 { path: "/lsx", label: "Lights" },
                 { path: "/ptx", label: "Pan&Tilts" },
                 { path: "/rbx", label: "Robots" },
-                { path: "/drivers_mgr", label: "Driver Mgr"},
+                { path: "/drivers_mgr", label: "Driver Mgr"}
+              ]
+            },
+            {
+              path: "/ai_system",
+              label: "AI System",
+              subItems: [
+                { path: "/apps_ai_selector", label: "AI Tools"},
+                { path: "/ais_mgr", label: "AI Mgr"}
               ]
             },
             {
@@ -80,12 +88,12 @@ class App extends Component {
               path: "/system",
               label: "System",
               subItems: [
-                { path: "/system_config", label: "Device" },
+                { path: "/device_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
                 { path: "/navPose", label: "NavPose" },
                 { path: "/drivers_mgr", label: "Drivers"},
                 { path: "/apps_mgr", label: "Apps"},
-                { path: "/ai_mgr", label: " AI" },
+                { path: "/ais_mgr", label: "AI Models"},
                 { path: "/automation", label: "Automation" }
               ]
             },
@@ -103,22 +111,25 @@ class App extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-          <Route path="/imagery" component={ImageViewerApp} />
-          <Route path="/sensor_idx" component={SensorIDX} />
-          <Route path="/pointcloud_app" component={PointcloudApp} />
-          <Route path="/navPose" component={NavPoseMgr} />
-          <Route path="/ai_targeting_app" component={AiTargetingApp} />
-          <Route path="/automation" component={AutomationMgr} />
-          <Route path="/onvif_app" component={OnvifApp} />
-          <Route path="/image_sequencer" component={ImageSequencer} />
-          <Route path="/system_config" component={Settings} />
-          <Route path="/software_update" component={SoftwareUpdate} />
-          <Route path="/ai_mgr" component={AiManager} />
-          <Route path="/drivers_mgr" component={DriversMgr} />
-          <Route path="/apps_mgr" component={AppsMgr} />
-          <Route path="/apps_selector" component={AppsSelector} />
+
+          <Route path="/idx" component={IDX} />
           <Route path="/ptx" component={PTX} />
           <Route path="/rbx" component={RBX} />
+          <Route path="/lsx" component={LSX} />
+
+          <Route path="/apps_selector" component={AppsSelector} />
+          <Route path="/apps_ai_selector" component={AppsAiSelector} />
+
+          <Route path="/navPose" component={NavPoseMgr} />
+          <Route path="/automation" component={AutomationMgr} />
+          <Route path="/device_config" component={DeviceMgr} />
+          <Route path="/software_update" component={SoftwareMgr} />
+          <Route path="/drivers_mgr" component={DriversMgr} />
+          <Route path="/apps_mgr" component={AppsMgr} />
+          <Route path="/ais_mgr" component={AisMgr} />
+
+
+
           <Route path='/docs' component={() => {
              window.location.href = 'https://nepi.com/documentation/';
              return null;
@@ -131,7 +142,7 @@ class App extends Component {
              window.location.href = 'https://nepi.com/videos/';
              return null;
             }}/>
-          <Route path="/lsx" component={LSX} />
+          
         </Switch>
       </Page>
     )

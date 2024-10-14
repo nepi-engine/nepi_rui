@@ -60,7 +60,8 @@ class AppsMgr extends Component {
 
 
 
-      selected_app_install_pkg: null
+      selected_app_install_pkg: null,
+      needs_update: true
     }
 
 
@@ -122,7 +123,8 @@ class AppsMgr extends Component {
           "nepi_ros_interfaces/AppsStatus",
           this.appsStatusListener
         )
-    this.setState({ appsListener: appsListener})
+    this.setState({ appsListener: appsListener,
+      needs_update: false})
   }
 
 
@@ -158,8 +160,10 @@ class AppsMgr extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getMgrNamespace()
-    if (prevState.mgrNamespace !== namespace && namespace !== null) {
-      if (namespace.indexOf('null') === -1) {
+    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
+    const needs_update = (this.state.needs_update && namespace !== null)
+    if (namespace_updated || needs_update) {
+      if (namespace.indexOf('null') === -1){
         this.setState({
           mgrNamespace: namespace
         })
