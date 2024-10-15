@@ -596,15 +596,11 @@ class NepiControlsRobots extends Component {
               />
           </div>
 
+
           {this.renderImageViewer()}
 
       
-          <div hidden={!robotSelected}>
-            <NepiIFSaveData
-                saveNamespace={this.state.currentRBXNamespace}
-                title={"Nepi_IF_SaveData"}
-            />
-          </div>
+
 
           <div hidden={(!robotSelected && this.state.show_controls)}>
             <NepiRobotMessages
@@ -632,6 +628,13 @@ class NepiControlsRobots extends Component {
             <NepiIFSettings
               settingsNamespace={this.state.currentRBXNamespace}
               title={"Nepi_IF_Settings"}
+            />
+          </div>
+
+          <div hidden={!robotSelected}>
+            <NepiIFSaveData
+                saveNamespace={this.state.currentRBXNamespace}
+                title={"Nepi_IF_SaveData"}
             />
           </div>
 

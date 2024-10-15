@@ -291,13 +291,7 @@ class NepiSensorsImaging extends Component {
 
           {this.renderImageViewer()}
 
-      
-          <div hidden={!SensorSelected}>
-            <NepiIFSaveData
-                saveNamespace={this.state.currentIDXNamespace}
-                title={"Nepi_IF_SaveData"}
-            />
-          </div>
+    
 
 
         </Column>
@@ -318,6 +312,13 @@ class NepiSensorsImaging extends Component {
             <NepiIFSettings
               settingsNamespace={this.state.currentIDXNamespace}
               title={"Nepi_IF_Settings"}
+            />
+          </div>
+
+          <div hidden={!SensorSelected}>
+            <NepiIFSaveData
+                saveNamespace={this.state.currentIDXNamespace}
+                title={"Nepi_IF_SaveData"}
             />
           </div>
 
