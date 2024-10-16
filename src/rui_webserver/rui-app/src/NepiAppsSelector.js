@@ -47,7 +47,7 @@ class AppsSelector extends Component {
       apps_install_list: [],
       selected_app: 'NONE',
 
-      apps_rui_list: [],
+      apps_rui_list: null,
       apps_group_list: [],
 
       app_name: 'NONE',
@@ -221,12 +221,17 @@ class AppsSelector extends Component {
     const appsList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
     var items = []
-    if (appsList.length > 0){
-      for (var i = 0; i < appsList.length; i++) {
-          if (groupList[i] !== "AI"){
-            items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
-          }
-     }
+    if (appsList) {
+      if (appsList.length > 0){
+        for (var i = 0; i < appsList.length; i++) {
+            if (groupList[i] !== "AI"){
+              items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
+            }
+        }
+      }
+      else{
+        items.push(<Option value={'None'}>{'None'}</Option>)
+      }
     }
     else{
       items.push(<Option value={'NONE'}>{'NONE'}</Option>)

@@ -124,25 +124,24 @@ class AiDetectorApp extends Component {
   }
 
   // Handler for when the image topic selection changes
-  async onImageTopicSelected(event) {
+  onImageTopicSelected(event) {
     var idx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[idx].text
     var value = event.target.value === "None" ? null : event.target.value
 
-    await this.setState({
+    this.setState({
       imageTopic: value,
       imageText: text === "None" ? null : text,
-     
-      // Experimental -- try showing plain camera imagery until classifier is loaded
+      // try showing plain camera imagery until classifier is loaded
       currentDisplayImgTopic: ((this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Running"))?
         value : null
     })
   }
 
-  async onClassifierSelected(event) {
+  onClassifierSelected(event) {
     var value = event.target.value === "None" ? null : event.target.value
 
-    await this.setState({
+    this.setState({
       selectedClassifier: value
     })
   }
@@ -174,16 +173,11 @@ class AiDetectorApp extends Component {
 
    async onApplyButtonPressed() {
     const { startClassifier, reportedClassifier } = this.props.ros
-    var threshold = reportedClassifier.detection_threshold
-    if (reportedClassifier){
-      threshold = reportedClassifier.detection_threshold
-    }
-    const {
-      imageTopic,
-      selectedClassifier,
-    } = this.state
+    const classifier = this.state.selectedClassifier
+    const imageTopic = this.state.imageTopic
+    const threshold = reportedClassifier.detection_threshold
 
-    startClassifier(imageTopic, selectedClassifier, threshold)
+    startClassifier(imageTopic, classifier, threshold)
   }
 
   onStopButtonPressed() {
@@ -203,11 +197,13 @@ class AiDetectorApp extends Component {
     var status_text = reportedClassifier? reportedClassifier.classifier_state : "Unknown"
     
     if (reportedClassifier !== null && reportedClassifier !== this.state.last_reportedClassifier && reportedClassifier.selected_classifier !== "None"){
-      this.setState({
-        selectedClassifier: reportedClassifier.selected_classifier,
-        detectionThreshold: reportedClassifier.detection_threshold,
-        last_reportedClassifier: reportedClassifier
-      })
+      if (reportedClassifier.classifier_state === "Running") {
+        this.setState({
+          selectedClassifier: reportedClassifier.selected_classifier,
+          detectionThreshold: reportedClassifier.detection_threshold,
+          last_reportedClassifier: reportedClassifier
+        })
+      }
     }
     
     var status_color = indicator_colors.grey
