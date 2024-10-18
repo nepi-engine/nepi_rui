@@ -48,6 +48,7 @@ class NepiIFSaveData extends Component {
       selectedDataProducts: [],
       showSaveData: false,
 
+      needs_update: true,
       saveStatusListener: null,
     }
 
@@ -127,15 +128,21 @@ class NepiIFSaveData extends Component {
           saveNamespace,
           this.saveStatusListener
         )
-    this.setState({ saveStatusListener: saveStatusListener})
+    this.setState({ saveStatusListener: saveStatusListener,
+      needs_update: false})
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { saveNamespace } = this.props
-    if (prevProps.saveNamespace !== saveNamespace && saveNamespace != null) {
-      this.updateSaveStatusListener()
+    const namespace = this.props.saveNamespace
+    const namespace_updated = (prevState.saveNamespace !== namespace && namespace !== null)
+    const needs_update = (this.state.needs_update && namespace !== null)
+    if (namespace_updated || needs_update) {
+      if (namespace.indexOf('null') === -1){
+        this.setState({saveNamespace: namespace})
+        this.updateSaveStatusListener()
+      }
     }
   }
 

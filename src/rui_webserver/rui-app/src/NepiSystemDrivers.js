@@ -19,8 +19,6 @@ import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
-import OnvifMgr from "./NepiMgrOnvif"
-
 
 import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedSetState, onDropdownSelectedSendDriverOption
   } from "./Utilities"
@@ -28,13 +26,12 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   @inject("ros")
   @observer
   
-  // Pointcloud Application page
+
   class DriversMgr extends Component {
     constructor(props) {
       super(props)
   
       this.state = {
-        show_onvif_mgr: false,
         show_delete_driver: false,
         mgrName: "drivers_mgr",
         mgrNamespace: null,
@@ -579,45 +576,6 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   }
 
 
-  renderOnvifMgr() {
-    const drv_mgr_n = this.state.mgrName
-    const drv_mgr_ns = this.state.mgrNamespace
-    const show_mgr = this.state.show_onvif_mgr
-    return (
-
-
-      <Columns>
-        <Column>
-
-        <div style={{align: "left"}}>
-
-        <label style={{fontWeight: 'bold', align:"left" , marginBottom: Styles.vars.spacing.xs}} >
-          {"Show Onvif Device Manager"}
-         </label>
-
-          <Toggle
-            checked={show_mgr}
-            onClick={() => onChangeSwitchStateValue.bind(this)("show_onvif_mgr",show_mgr)}>
-          </Toggle>
-
-        </div>
-
-
-       <div hidden={!show_mgr}>
-
-        <OnvifMgr
-         title={"OnvifMgr"}
-         />
-
-        </div>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-      </Column>
-      </Columns>
-    )
-  }
-
-
 
   render() {
     const selected_driver = this.state.selected_driver
@@ -628,10 +586,6 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
 
     return (
 
-      <Columns>
-      <Column>
-
-      {this.renderOnvifMgr()}
 
     <Columns>
       <Column>
@@ -732,8 +686,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
        </Column>
      </Columns>
          
-     </Column>
-     </Columns> 
+
           
 
     )

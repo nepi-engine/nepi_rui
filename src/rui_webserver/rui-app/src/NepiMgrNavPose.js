@@ -69,6 +69,7 @@ class NavPoseMgr extends Component {
     super(props)
 
     this.state = {
+      mgrName: 'nav_pose_mgr',
       initRollEdited: null,
       initPitchEdited: null,
       initYawEdited: null,
@@ -95,6 +96,18 @@ class NavPoseMgr extends Component {
     this.onNavSatFixTopicSelected = this.onNavSatFixTopicSelected.bind(this)
     this.onOrientationTopicSelected = this.onOrientationTopicSelected.bind(this)
     this.onHeadingTopicSelected = this.onHeadingTopicSelected.bind(this)
+
+    this.getMgrNamespace = this.getMgrNamespace.bind(this)
+  }
+
+
+  getMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var mgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
+    }
+    return mgrNamespace
   }
 
   onUpdateText(e) {
@@ -715,12 +728,36 @@ class NavPoseMgr extends Component {
     )
   }
 
+
+
+
+
   render() {
+    const {sendTriggerMsg, sendStringMsg} = this.props.ros
+    const namespace = this.getMgrNamespace()
     return (
       <Columns>
         <Column>
           {this.renderCurrentNavPose()}
           {this.renderNavPoseStatus()}
+        <Columns>
+        <Column>
+
+          <ButtonMenu>
+          <Button onClick={() => sendTriggerMsg(namespace + "/reset_config")}>{"Reset Config"}</Button>
+          </ButtonMenu>
+
+        </Column>
+        <Column>
+
+          <ButtonMenu>
+          <Button onClick={() => sendTriggerMsg(namespace + "/save_config")}>{"Save Config"}</Button>
+          </ButtonMenu>
+
+        </Column>
+        </Columns>
+
+
         </Column>
         <Column>
           {this.renderNavPoseSetup()}

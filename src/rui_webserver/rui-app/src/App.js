@@ -26,13 +26,13 @@ import AppsSelector from "./NepiAppsSelector"
 import AppsDataSelector from "./NepiAppsDataSelector"
 import AppsNavPoseSelector from "./NepiAppsNavPoseSelector"
 import AppsAiSelector from "./NepiAppsAiSelector"
+import AppsDriversSelector from "./NepiAppsDriversSelector"
 
 
 import DeviceMgr from "./NepiSystemDevice"
 import NavPoseMgr from "./NepiMgrNavPose"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AutomationMgr from "./NepiSystemAutomation"
-import DriversMgr from "./NepiSystemDrivers"
 import AisMgr from "./NepiSystemAis"
 import AppsMgr from "./NepiSystemApps"
 
@@ -81,7 +81,7 @@ class App extends Component {
                 { path: "/device_config", label: "Device" },
                 { path: "/software_update", label: "Software"},
                 { path: "/navPose", label: "NavPose" },
-                { path: "/drivers_mgr", label: "Drivers"},
+                { path: "/apps_drivers_selector", label: "Drivers"},
                 { path: "/apps_mgr", label: "Apps"},
                 { path: "/ais_mgr", label: "AI Models"},
                 { path: "/automation", label: "Automation" }
@@ -111,12 +111,12 @@ class App extends Component {
           <Route path="/apps_data_selector" component={AppsDataSelector} />
           <Route path="/apps_navpose_selector" component={AppsNavPoseSelector} />
           <Route path="/apps_ai_selector" component={AppsAiSelector} />
+          <Route path="/apps_drivers_selector" component={AppsDriversSelector} />
 
           <Route path="/navPose" component={NavPoseMgr} />
           <Route path="/automation" component={AutomationMgr} />
           <Route path="/device_config" component={DeviceMgr} />
           <Route path="/software_update" component={SoftwareMgr} />
-          <Route path="/drivers_mgr" component={DriversMgr} />
           <Route path="/apps_mgr" component={AppsMgr} />
           <Route path="/ais_mgr" component={AisMgr} />
 

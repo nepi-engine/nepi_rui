@@ -15,15 +15,8 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-import AutomationMgr from "./NepiSystemAutomation"
-
-import PointcloudApp from "./NepiAppPointcloud"
-import AiTargetingApp from "./NepiAppAiTargeting"
-import ImageViewerApp from "./NepiAppImageViewer"
-import ImageSequencer from "./NepiAppImageSequencer"
-
-
-
+import DriversMgr from "./NepiSystemDrivers"
+import OnvifMgr from "./NepiAppOnvifMgr"
 
 
 import { createMenuListFromStrList} from "./Utilities"
@@ -32,7 +25,7 @@ import { createMenuListFromStrList} from "./Utilities"
 @observer
 
 // Pointcloud Application page
-class AppsSelector extends Component {
+class AppsDriversSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -40,7 +33,6 @@ class AppsSelector extends Component {
       show_delete_app: false,
       mgrName: "apps_mgr",
       mgrNamespace: null,
-      exclude_groups: ['AI','DATA','NAVPOSE','DRIVER'],
 
       viewableApps: false,
 
@@ -51,7 +43,7 @@ class AppsSelector extends Component {
       apps_install_list: [],
       selected_app: 'NONE',
 
-      apps_rui_list: null,
+      apps_rui_list: [],
       apps_group_list: [],
 
       app_name: 'NONE',
@@ -163,14 +155,13 @@ class AppsSelector extends Component {
   }
 
 
-  
-  renderAutomationMgr() {
+  renderDriversMgr() {
     return (
       <Columns>
         <Column>
 
-        <AutomationMgr
-         title={"AutomationMgr"}
+        <DriversMgr
+         title={"Drivers Mgr"}
          />
 
       </Column>
@@ -179,52 +170,19 @@ class AppsSelector extends Component {
   }
 
 
-  renderImageSequencerApp() {
+  renderOnvifMgr() {
     return (
       <Columns>
         <Column>
 
-        <ImageSequencer
-         title={"ImageSequencer"}
+        <OnvifMgr
+         title={"ONVIF_MGR"}
          />
 
       </Column>
       </Columns>
     )
   }
-
-  renderImageViewerApp() {
-    return (
-      <Columns>
-        <Column>
-
-        <ImageViewerApp
-         title={"ImageViewerApp"}
-         />
-
-      </Column>
-      </Columns>
-    )
-  }
-
-
-  renderPointcloudApp() {
-    return (
-      <Columns>
-        <Column>
-
-        <PointcloudApp
-         title={"PointcloudApp"}
-         />
-
-      </Column>
-      </Columns>
-    )
-  }
-
-
-
-  
 
   toggleViewableApps() {
     const viewable = !this.state.viewableApps
@@ -243,26 +201,21 @@ class AppsSelector extends Component {
     const appsList = this.state.apps_list
     const ruiList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
-    const exclude = this.state.exclude_groups
     var ruiInd = 0
     var items = []
-    items.push(<Option value={"Automation Mgr"}>{"Automation Mgr"}</Option>)
-    if (appsList) {
-      if (appsList.length > 0){
-        for (var i = 0; i < appsList.length; i++) {
-          if (ruiList){
-            ruiInd = ruiList.indexOf(appsList[i])
-            if (ruiInd !== -1){
-              if (exclude.indexOf(groupList[i]) === -1){
-                items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
-              }
+    items.push(<Option value={'Drivers Mgr'}>{'Drivers Mgr'}</Option>)
+    if (appsList.length > 0){
+      for (var i = 0; i < appsList.length; i++) {
+        if (ruiList){
+          ruiInd = ruiList.indexOf(appsList[i])
+          if (ruiInd !== -1){
+            if (groupList[i] === "DRIVER"){
+              items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
             }
           }
         }
       }
     }
-    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     return items
   }
 
@@ -326,23 +279,13 @@ class AppsSelector extends Component {
             {this.renderNoneApp()}    
             </div>
 
-
-            <div hidden={sel_app !== "Automation Mgr"}>
-            {this.renderAutomationMgr()}    
+            <div hidden={sel_app !== "Drivers Mgr"}>
+            {this.renderDriversMgr()}    
             </div>
 
-            <div hidden={sel_app !== "Image_Viewer"}>
-            {this.renderImageViewerApp()}    
-            </div>
-
-            <div hidden={sel_app !== "Image_Sequencer"}>
-            {this.renderImageSequencerApp()}    
-            </div>
-
-            <div hidden={sel_app !== "Pointcloud"}>
-            {this.renderPointcloudApp()}    
+            <div hidden={sel_app !== "ONVIF_MGR"}>
+            {this.renderOnvifMgr()}    
             </div>  
-
 
       </Column>
       </Columns>
@@ -378,4 +321,4 @@ class AppsSelector extends Component {
 
 }
 
-export default AppsSelector
+export default AppsDriversSelector

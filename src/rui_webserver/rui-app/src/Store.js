@@ -2048,8 +2048,8 @@ class ROSConnectionStore {
   async callDriversListQuery(poll = true) {
     const _pollOnce = async () => {
       const resp = await this.callService({
-        name: "onvif_mgr/drivers_list_query",
-        messageType: "nepi__onvif/OnvifDeviceListQuery",
+        name: "app_app_onvif_mgr/drivers_list_query",
+        messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
       })
 
       this.DriversListQuery = resp['drivers_list_query']
@@ -2066,7 +2066,7 @@ class ROSConnectionStore {
   async callOnvifDeviceListQueryService(poll = true) {
     const _pollOnce = async () => {
       const resp = await this.callService({
-        name: "onvif_mgr/device_list_query",
+        name: "app_onvif_mgr/device_list_query",
         messageType: "nepi_ros_interfaces/OnvifDeviceListQuery",
       })
 
@@ -2084,7 +2084,7 @@ class ROSConnectionStore {
   async callOnvifDeviceDriverListQueryService(poll = true) {
     const _pollOnce = async () => {
       const resp = await this.callService({
-        name: "onvif_mgr/device_driver_list_query",
+        name: "app_onvif_mgr/device_driver_list_query",
         messageType: "nepi_ros_interfaces/OnvifDeviceDriverListQuery"
       })
 
@@ -2936,7 +2936,7 @@ class ROSConnectionStore {
   @action.bound
   async onOnvifDeviceCfgUpdate(updatedDeviceCfg) {
     await this.callService({
-      name: "onvif_mgr/set_device_cfg",
+      name: "app_onvif_mgr/set_device_cfg",
       messageType: "nepi_ros_interfaces/OnvifDeviceCfgUpdate",
       args: {cfg : updatedDeviceCfg}
     })
@@ -2945,7 +2945,7 @@ class ROSConnectionStore {
   @action.bound
   async onOnvifDeviceCfgDelete(uuid) {
     await this.callService({
-      name: "onvif_mgr/delete_device_cfg",
+      name: "app_onvif_mgr/delete_device_cfg",
       messageType: "nepi_ros_interfaces/OnvifDeviceCfgDelete",
       args: {device_uuid : uuid}
     })
