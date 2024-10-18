@@ -15,10 +15,13 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
+import AutomationMgr from "./NepiSystemAutomation"
+
 import PointcloudApp from "./NepiAppPointcloud"
 import AiTargetingApp from "./NepiAppAiTargeting"
 import ImageViewerApp from "./NepiAppImageViewer"
 import ImageSequencer from "./NepiAppImageSequencer"
+
 
 
 
@@ -37,6 +40,7 @@ class AppsSelector extends Component {
       show_delete_app: false,
       mgrName: "apps_mgr",
       mgrNamespace: null,
+      exclude_groups: ['AI','DATA','NAVPOSE'],
 
       viewableApps: false,
 
@@ -159,6 +163,22 @@ class AppsSelector extends Component {
   }
 
 
+  
+  renderAutomationMgr() {
+    return (
+      <Columns>
+        <Column>
+
+        <AutomationMgr
+         title={"AutomationMgr"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+
   renderImageSequencerApp() {
     return (
       <Columns>
@@ -202,6 +222,8 @@ class AppsSelector extends Component {
     )
   }
 
+
+
   
 
   toggleViewableApps() {
@@ -218,26 +240,28 @@ class AppsSelector extends Component {
 
   // Function for creating image topic options.
   getAppOptions() {
-    const appsList = this.state.apps_rui_list 
+    const appsList = this.state.apps_list
+    const ruiList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
+    const exclude = this.state.exclude_groups
+    var ruiInd = 0
     var items = []
     if (appsList) {
       if (appsList.length > 0){
         for (var i = 0; i < appsList.length; i++) {
-            if (groupList[i] !== "AI"){
-              items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
+          if (ruiList){
+            ruiInd = ruiList.indexOf(appsList[i])
+            if (ruiInd !== -1){
+              if (exclude.indexOf(groupList[i]) === -1){
+                items.push(<Option value={appsList[ruiInd]}>{appsList[ruiInd]}</Option>)
+              }
             }
+          }
         }
       }
-      else{
-        items.push(<Option value={'None'}>{'None'}</Option>)
-      }
     }
-    else{
-      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
-      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
-    }
+    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     return items
   }
 
@@ -302,6 +326,10 @@ class AppsSelector extends Component {
             </div>
 
 
+            <div hidden={sel_app !== "Automation Mgr"}>
+            {this.renderAutomationMgr()}    
+            </div>
+
             <div hidden={sel_app !== "Image_Viewer"}>
             {this.renderImageViewerApp()}    
             </div>
@@ -313,6 +341,7 @@ class AppsSelector extends Component {
             <div hidden={sel_app !== "Pointcloud"}>
             {this.renderPointcloudApp()}    
             </div>  
+
 
       </Column>
       </Columns>

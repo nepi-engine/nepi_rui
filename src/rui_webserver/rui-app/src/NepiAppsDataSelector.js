@@ -15,8 +15,9 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-import AiDetectorApp from "./NepiAppAiDetector"
-import AiTargetingApp from "./NepiAppAiTargeting"
+import NepiDashboardData from "./NepiDashboardData"
+import FilePubImgApp from "./NepiAppFilePubImg"
+import FilePubVidApp from "./NepiAppFilePubVid"
 
 
 import { createMenuListFromStrList} from "./Utilities"
@@ -25,7 +26,7 @@ import { createMenuListFromStrList} from "./Utilities"
 @observer
 
 // Pointcloud Application page
-class AppsAiSelector extends Component {
+class AppsDataSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -155,13 +156,13 @@ class AppsAiSelector extends Component {
   }
 
 
-  renderAiDetectorApp() {
+  renderDataDashboard() {
     return (
       <Columns>
         <Column>
 
-        <AiDetectorApp
-         title={"AiDetectorApp"}
+        <NepiDashboardData
+         title={"Data Dashboard"}
          />
 
       </Column>
@@ -169,20 +170,34 @@ class AppsAiSelector extends Component {
     )
   }
 
-  renderAiTargetingApp() {
+
+  renderFilePubImgApp() {
     return (
       <Columns>
         <Column>
 
-        <AiTargetingApp
-         title={"AiTargetingApp"}
+        <FilePubImgApp
+         title={"Img_File_Publisher"}
          />
 
       </Column>
       </Columns>
     )
   }
-  
+
+  renderFilePubVidApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <FilePubVidApp
+         title={"Vid_File_Publisher"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
 
   toggleViewableApps() {
     const viewable = !this.state.viewableApps
@@ -203,13 +218,13 @@ class AppsAiSelector extends Component {
     const groupList = this.state.apps_group_list
     var ruiInd = 0
     var items = []
-    items.push(<Option value={'AI_Detector'}>{'AI_Detector'}</Option>)
+    items.push(<Option value={'Data Dashboard'}>{'Data Dashboard'}</Option>)
     if (appsList.length > 0){
       for (var i = 0; i < appsList.length; i++) {
         if (ruiList){
           ruiInd = ruiList.indexOf(appsList[i])
           if (ruiInd !== -1){
-            if (groupList[i] === "AI"){
+            if (groupList[i] === "DATA"){
               items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
             }
           }
@@ -279,13 +294,17 @@ class AppsAiSelector extends Component {
             {this.renderNoneApp()}    
             </div>
 
-            <div hidden={sel_app !== "AI_Detector"}>
-            {this.renderAiDetectorApp()}    
+            <div hidden={sel_app !== "Data Dashboard"}>
+            {this.renderDataDashboard()}    
             </div>
 
-            <div hidden={sel_app !== "AI_Targeting"}>
-            {this.renderAiTargetingApp()}    
-            </div>
+            <div hidden={sel_app !== "Img_File_Publisher"}>
+            {this.renderFilePubImgApp()}    
+            </div>  
+
+            <div hidden={sel_app !== "Vid_File_Publisher"}>
+            {this.renderFilePubVidApp()}    
+            </div>  
 
       </Column>
       </Columns>
@@ -321,4 +340,4 @@ class AppsAiSelector extends Component {
 
 }
 
-export default AppsAiSelector
+export default AppsDataSelector

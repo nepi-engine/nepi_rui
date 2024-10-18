@@ -216,6 +216,7 @@ class ROSConnectionStore {
   @observable ptxUnits = {}
   @observable lsxUnits = {}
   @observable rbxRobots = {}
+  @observable saveDataTopics = []
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -408,7 +409,8 @@ class ROSConnectionStore {
         this.topicNames = result.topics
         this.topicTypes = result.types
         var newPrefix = this.updatePrefix()
-        var newResettables = this.updateResetTopics()
+        var newResetTopics = this.updateResetTopics()
+        var newSaveDataTopics = this.updateSaveDataTopics()
         var newImageTopics = this.updateImageTopics()
         var newMessageTopics = this.updateMessageTopics()
         var newPointcloudTopics = this.updatePointcloudTopics()
@@ -419,7 +421,7 @@ class ROSConnectionStore {
         this.updateRBXRobotsList()
         this.updateNavPoseSourceTopics()
 
-        if (newPrefix || newResettables || newMessageTopics || newImageTopics || newPointcloudTopics) {
+        if (newPrefix || newResetTopics || newSaveDataTopics || newMessageTopics || newImageTopics || newPointcloudTopics) {
           this.initalizeListeners()
         }
         this.topicQueryLock = false
@@ -468,7 +470,7 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newMessageTopics = []
     for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "std_msgs/String") {
+      if (this.topicTypes[i] === "nepi_ros_interfaces/Message") {
         newMessageTopics.push(this.topicNames[i])
       }
     }
@@ -675,6 +677,28 @@ class ROSConnectionStore {
 
     if (!this.resetTopics.equals(newResetTopics)) {
       this.resetTopics = newResetTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updateSaveDataTopics() {
+    var newSaveDataTopics = []
+    var topic = ""
+    for (var i = 0; i < this.topicNames.length; i++) {
+      topic = this.topicNames[i]
+      if (topic.indexOf('save_data_status') !== -1){
+        newSaveDataTopics.push(topic) 
+      }
+    }
+
+    // sort the topics for comparison to work
+    newSaveDataTopics.sort()
+
+    if (!this.saveDataTopics.equals(newSaveDataTopics)) {
+      this.saveDataTopics = newSaveDataTopics
       return true
     } else {
       return false

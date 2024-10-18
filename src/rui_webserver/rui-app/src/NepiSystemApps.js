@@ -280,7 +280,7 @@ class AppsMgr extends Component {
             {this.state.app_name}
           </label>
   
-          <pre style={{ height: "20Spx", overflowY: "auto" }}>
+          <pre style={{ height: "20px", overflowY: "auto" }}>
           {this.state.app_description}
           </pre>
 

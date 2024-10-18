@@ -311,7 +311,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
           </label>
     
 
-          <pre style={{ height: "20Spx", overflowY: "auto" }}>
+          <pre style={{ height: "20px", overflowY: "auto" }}>
           {this.state.driver_description}
           </pre>
 

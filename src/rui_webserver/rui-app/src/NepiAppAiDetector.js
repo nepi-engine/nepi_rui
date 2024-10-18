@@ -332,19 +332,20 @@ class AiDetectorApp extends Component {
             hideQualitySelector={false}
           />
 
-          <div hidden={appNamespace === null}>
-            <NepiIFSaveData
-                  saveNamespace={appNamespace}
-                  title={"Nepi_IF_SaveData"}
-              />
-          </div>
+
 
           </Column>
           <Column>
 
 
           {this.renderAIManager()}    
-
+          
+          <div hidden={appNamespace === null}>
+            <NepiIFSaveData
+                  saveNamespace={appNamespace}
+                  title={"Nepi_IF_SaveData"}
+              />
+          </div>
 
           </Column>
           </Columns>

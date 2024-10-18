@@ -23,6 +23,8 @@ import LSX from "./NepiControlsLights"
 import RBX from "./NepiControlsRobots"
 
 import AppsSelector from "./NepiAppsSelector"
+import AppsDataSelector from "./NepiAppsDataSelector"
+import AppsNavPoseSelector from "./NepiAppsNavPoseSelector"
 import AppsAiSelector from "./NepiAppsAiSelector"
 
 
@@ -68,22 +70,10 @@ class App extends Component {
                 { path: "/drivers_mgr", label: "Driver Mgr"}
               ]
             },
-            {
-              path: "/ai_system",
-              label: "AI System",
-              subItems: [
-                { path: "/apps_ai_selector", label: "AI Tools"},
-                { path: "/ais_mgr", label: "AI Mgr"}
-              ]
-            },
-            {
-              path: "/applications",
-              label: "Applications",
-              subItems: [
-                { path: "/apps_selector", label: "Applications"},
-                { path: "/apps_mgr", label: "App Mgr"}
-              ]
-            },
+            { path: "/apps_data_selector", label: "Data"},
+            { path: "/apps_navpose_selector", label: "NavPose"},
+            { path: "/apps_ai_selector", label: "AI_System"},
+            { path: "/apps_selector", label: "Other_Apps"},
             {
               path: "/system",
               label: "System",
@@ -118,6 +108,8 @@ class App extends Component {
           <Route path="/lsx" component={LSX} />
 
           <Route path="/apps_selector" component={AppsSelector} />
+          <Route path="/apps_data_selector" component={AppsDataSelector} />
+          <Route path="/apps_navpose_selector" component={AppsNavPoseSelector} />
           <Route path="/apps_ai_selector" component={AppsAiSelector} />
 
           <Route path="/navPose" component={NavPoseMgr} />

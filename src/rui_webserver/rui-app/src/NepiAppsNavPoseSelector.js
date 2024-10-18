@@ -15,8 +15,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
-import AiDetectorApp from "./NepiAppAiDetector"
-import AiTargetingApp from "./NepiAppAiTargeting"
+import NavPoseMgr from "./NepiMgrNavPose"
 
 
 import { createMenuListFromStrList} from "./Utilities"
@@ -25,7 +24,7 @@ import { createMenuListFromStrList} from "./Utilities"
 @observer
 
 // Pointcloud Application page
-class AppsAiSelector extends Component {
+class AppsNavPoseSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -155,13 +154,13 @@ class AppsAiSelector extends Component {
   }
 
 
-  renderAiDetectorApp() {
+  renderNavPoseManager() {
     return (
       <Columns>
         <Column>
 
-        <AiDetectorApp
-         title={"AiDetectorApp"}
+        <NavPoseMgr
+         title={"NavPose Manager"}
          />
 
       </Column>
@@ -169,20 +168,6 @@ class AppsAiSelector extends Component {
     )
   }
 
-  renderAiTargetingApp() {
-    return (
-      <Columns>
-        <Column>
-
-        <AiTargetingApp
-         title={"AiTargetingApp"}
-         />
-
-      </Column>
-      </Columns>
-    )
-  }
-  
 
   toggleViewableApps() {
     const viewable = !this.state.viewableApps
@@ -203,13 +188,13 @@ class AppsAiSelector extends Component {
     const groupList = this.state.apps_group_list
     var ruiInd = 0
     var items = []
-    items.push(<Option value={'AI_Detector'}>{'AI_Detector'}</Option>)
+    items.push(<Option value={'NavPose Manager'}>{'NavPose Manager'}</Option>)
     if (appsList.length > 0){
       for (var i = 0; i < appsList.length; i++) {
         if (ruiList){
           ruiInd = ruiList.indexOf(appsList[i])
           if (ruiInd !== -1){
-            if (groupList[i] === "AI"){
+            if (groupList[i] === "NAVPOSE"){
               items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
             }
           }
@@ -279,13 +264,10 @@ class AppsAiSelector extends Component {
             {this.renderNoneApp()}    
             </div>
 
-            <div hidden={sel_app !== "AI_Detector"}>
-            {this.renderAiDetectorApp()}    
+            <div hidden={sel_app !== "NavPose Manager"}>
+            {this.renderNavPoseManager()}    
             </div>
 
-            <div hidden={sel_app !== "AI_Targeting"}>
-            {this.renderAiTargetingApp()}    
-            </div>
 
       </Column>
       </Columns>
@@ -321,4 +303,4 @@ class AppsAiSelector extends Component {
 
 }
 
-export default AppsAiSelector
+export default AppsNavPoseSelector

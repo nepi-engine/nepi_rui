@@ -38,31 +38,16 @@ class NepiDashboard extends Component {
       saveFreq: this.props.ros.saveFreqHz
     }
 
-    this.onUpdateSaveFreqText = this.onUpdateSaveFreqText.bind(this)
-    this.onKeySaveFreqText = this.onKeySaveFreqText.bind(this);
+  
     this.renderDeviceInfo = this.renderDeviceInfo.bind(this)
     this.renderSystemClock = this.renderSystemClock.bind(this)
     this.renderSystemStatus = this.renderSystemStatus.bind(this)
     this.renderSystemMessages = this.renderSystemMessages.bind(this)
-    this.renderSaveData = this.renderSaveData.bind(this)
-    this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(this)
-    this.onKeySaveSettingFilePrefix = this.onKeySaveSettingFilePrefix.bind(this)
-    this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
-    this.onToggleSaveData = this.onToggleSaveData.bind(this)
+
+
   }
 
-  onUpdateSaveFreqText(e) {
-    this.setState({saveFreq: e.target.value})
-    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
-  }
 
-  onKeySaveFreqText(e) {
-    const {onChangeSaveFreq} = this.props.ros
-    if(e.key === 'Enter'){
-      onChangeSaveFreq(this.state.saveFreq)
-      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
-    }
-  }
 
   renderDeviceInfo() {
     const {
@@ -196,67 +181,9 @@ class NepiDashboard extends Component {
     )
   }
 
-  onUpdateSaveSettingFilePrefix(e) {
-    this.setState({ saveSettingsFilePrefix: e.target.value })
-    document.getElementById("file_prefix_input").style.color = Styles.vars.colors.red
-  }
 
-  onKeySaveSettingFilePrefix(e) {
-    const {saveSettingsFilePrefix} = this.props.ros
-    if(e.key === 'Enter'){
-      saveSettingsFilePrefix({newFilePrefix: this.state.saveSettingsFilePrefix})
-      document.getElementById("file_prefix_input").style.color = Styles.vars.colors.black
-    }
-  }
 
-  onToggleDataDeletion(e) {
-    this.setState({ allowFileDeletion: e.target.checked})
-  }
 
-  onToggleSaveData(e){
-    const {onChangeSaveFreqAll, onToggleSaveDataAll} = this.props.ros
-    const checked = e.target.checked
-    if(checked){
-     onChangeSaveFreqAll(this.state.saveFreq)
-    }
-    onToggleSaveDataAll(checked)
-
-  }
-
-  renderSaveData() {
-    const { systemStatusDiskRate, deleteAllData } = this.props.ros
-    return (
-      <Section title={"Save Data"}>
-        <Label title={"Save All Data"}>
-          <Toggle id={"toggle_save_data"} onClick={this.onToggleSaveData} />
-        </Label>
-        <Label title={"Save Freq. (Hz)"}>
-          <Input id="saveFreqInput" value={this.state.saveFreq} onChange={this.onUpdateSaveFreqText} onKeyDown= {this.onKeySaveFreqText} />
-        </Label>
-        <Label title={"Data Rate"}>
-          <Input disabled value={roundWithSuffix(systemStatusDiskRate, 3, "MB/s")} />
-        </Label>
-        <Label title={"File Name Prefix"}>
-          <Input
-            id={"file_prefix_input"}
-            value={this.state.saveSettingsFilePrefix}
-            onChange={this.onUpdateSaveSettingFilePrefix}
-            onKeyDown={this.onKeySaveSettingFilePrefix}
-          />
-        </Label>
-        <Label title={"Allow Data Deletion"}>
-          <Toggle onClick={this.onToggleDataDeletion} />
-        </Label>
-        <ButtonMenu>
-          <Button
-            onClick={deleteAllData}
-            hidden={!this.state.allowFileDeletion}>
-            {"Delete All Data"}
-          </Button>
-        </ButtonMenu>
-      </Section>
-    )
-  }
 
   //disabled={document.getElementById("toggle_save_data").value}>
 
@@ -265,16 +192,17 @@ class NepiDashboard extends Component {
       <Columns>
         <Column>
           {this.renderDeviceInfo()}
-          {this.renderSystemClock()}
+
         </Column>
         <Column>
           {this.renderSystemStatus()}
-          {this.renderSaveData()}
+
         </Column>
         <Column>
-          {this.renderSystemMessages()}
+        {this.renderSystemClock()}
         </Column>
       </Columns>
+
     )
   }
 }
