@@ -229,6 +229,8 @@ class ROSConnectionStore {
   
   @observable lastUpdate = new Date()
 
+  @observable classifierImageTopic = 'None'
+  @observable classifierImageText = 'None'
   @observable classifierLists = null
   @observable classifierImgTopic = null
   @observable targLocalizerImgTopic = null
@@ -2453,6 +2455,21 @@ class ROSConnectionStore {
     })
 
     this.saveFreqHz = freq
+  }
+
+
+  setClassifierImageInfo(classifierImageTopic,classifierImageText){
+    this.classifierImageTopic = classifierImageTopic
+    this.classifierImageText = classifierImageText
+  }
+
+
+  getClassifierImageTopic(){
+    return this.classifierImageTopic
+  }
+
+  getClassifierImageText(){
+    return this.classifierImageText
   }
 
   @action.bound
