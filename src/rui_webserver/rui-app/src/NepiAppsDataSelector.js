@@ -321,7 +321,7 @@ class AppsDataSelector extends Component {
             {this.renderFilePubVidApp()}    
             </div>  
 
-            <div hidden={false}>
+            <div hidden={sel_app !== "Pcd_File_Publisher"}>
             {this.renderFilePubPcdApp()}    
             </div>  
 

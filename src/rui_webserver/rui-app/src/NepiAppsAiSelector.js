@@ -17,6 +17,7 @@ import Styles from "./Styles"
 
 import AiDetectorApp from "./NepiAppAiDetector"
 import AiTargetingApp from "./NepiAppAiTargeting"
+import AiAlertsApp from "./NepiAppAiAlerts"
 
 
 import { createMenuListFromStrList} from "./Utilities"
@@ -182,6 +183,21 @@ class AppsAiSelector extends Component {
       </Columns>
     )
   }
+
+  renderAiAlertsApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <AiAlertsApp
+         title={"AiAlertsApp"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
   
 
   toggleViewableApps() {
@@ -285,6 +301,10 @@ class AppsAiSelector extends Component {
 
             <div hidden={sel_app !== "AI_Targeting"}>
             {this.renderAiTargetingApp()}    
+            </div>
+
+            <div hidden={sel_app !== "AI_Alerts"}>
+            {this.renderAiAlertsApp()}    
             </div>
 
       </Column>
