@@ -18,6 +18,7 @@ import Styles from "./Styles"
 import NepiDashboardData from "./NepiDashboardData"
 import FilePubImgApp from "./NepiAppFilePubImg"
 import FilePubVidApp from "./NepiAppFilePubVid"
+import FilePubPcdApp from "./NepiAppFilePubPcd"
 
 
 import { createMenuListFromStrList} from "./Utilities"
@@ -199,6 +200,20 @@ class AppsDataSelector extends Component {
     )
   }
 
+  renderFilePubPcdApp() {
+    return (
+      <Columns>
+        <Column>
+
+        <FilePubPcdApp
+         title={"PCD_File_Publisher"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
   toggleViewableApps() {
     const viewable = !this.state.viewableApps
     this.setState({viewableApps: viewable})
@@ -304,6 +319,10 @@ class AppsDataSelector extends Component {
 
             <div hidden={sel_app !== "Vid_File_Publisher"}>
             {this.renderFilePubVidApp()}    
+            </div>  
+
+            <div hidden={false}>
+            {this.renderFilePubPcdApp()}    
             </div>  
 
       </Column>
