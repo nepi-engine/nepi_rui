@@ -246,15 +246,21 @@ class AppsSelector extends Component {
     const exclude = this.state.exclude_groups
     var ruiInd = 0
     var items = []
-    items.push(<Option value={"Automation Mgr"}>{"Automation Mgr"}</Option>)
-    if (appsList) {
-      if (appsList.length > 0){
-        for (var i = 0; i < appsList.length; i++) {
-          if (ruiList){
-            ruiInd = ruiList.indexOf(appsList[i])
-            if (ruiInd !== -1){
-              if (exclude.indexOf(groupList[i]) === -1){
-                items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
+    const connected = this.state.connected
+    if (connected !== true){
+      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
+    }
+    else{
+      items.push(<Option value={"Automation Mgr"}>{"Automation Mgr"}</Option>)
+      if (appsList) {
+        if (appsList.length > 0){
+          for (var i = 0; i < appsList.length; i++) {
+            if (ruiList){
+              ruiInd = ruiList.indexOf(appsList[i])
+              if (ruiInd !== -1){
+                if (exclude.indexOf(groupList[i]) === -1){
+                  items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
+                }
               }
             }
           }

@@ -219,14 +219,20 @@ class AppsAiSelector extends Component {
     const groupList = this.state.apps_group_list
     var ruiInd = 0
     var items = []
-    items.push(<Option value={'AI_Detector'}>{'AI_Detector'}</Option>)
-    if (appsList.length > 0){
-      for (var i = 0; i < appsList.length; i++) {
-        if (ruiList){
-          ruiInd = ruiList.indexOf(appsList[i])
-          if (ruiInd !== -1){
-            if (groupList[i] === "AI"){
-              items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
+    const connected = this.state.connected
+    if (connected !== true){
+      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
+    }
+    else {
+      items.push(<Option value={'AI_Detector'}>{'AI_Detector'}</Option>)
+      if (appsList.length > 0){
+        for (var i = 0; i < appsList.length; i++) {
+          if (ruiList){
+            ruiInd = ruiList.indexOf(appsList[i])
+            if (ruiInd !== -1){
+              if (groupList[i] === "AI"){
+                items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
+              }
             }
           }
         }

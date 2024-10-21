@@ -67,7 +67,7 @@ class App extends Component {
                 { path: "/lsx", label: "Lights" },
                 { path: "/ptx", label: "Pan&Tilts" },
                 { path: "/rbx", label: "Robots" },
-                { path: "/drivers_mgr", label: "Driver Mgr"}
+                { path: "/apps_drivers_selector", label: "Drivers"}
               ]
             },
             { path: "/apps_data_selector", label: "Data"},
