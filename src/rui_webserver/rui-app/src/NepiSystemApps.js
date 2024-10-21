@@ -237,15 +237,21 @@ class AppsMgr extends Component {
   getInstallOptions() {
     const appsList = this.state.apps_install_list
     var items = []
-    if (appsList.length > 0){
-      for (var i = 0; i < appsList.length; i++) {
-          items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
-      }
+    const connected = this.state.connected
+    if (connected !== true){
+      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else{
-      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
-      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+      if (appsList.length > 0){
+        for (var i = 0; i < appsList.length; i++) {
+            items.push(<Option value={appsList[i]}>{appsList[i]}</Option>)
+        }
+      }
+      else{
+        items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+        //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+        //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+      }
     }
     return items
   }option

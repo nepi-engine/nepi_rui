@@ -264,15 +264,21 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
   getInstallOptions() {
     const driversList = this.state.drivers_install_list
     var items = []
-    if (driversList.length > 0){
-      for (var i = 0; i < driversList.length; i++) {
-          items.push(<Option value={driversList[i]}>{driversList[i]}</Option>)
-      }
+    const connected = this.state.connected
+    if (connected !== true){
+      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else{
-      items.push(<Option value={'NONE'}>{'NONE'}</Option>)
-      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+      if (driversList.length > 0){
+        for (var i = 0; i < driversList.length; i++) {
+            items.push(<Option value={driversList[i]}>{driversList[i]}</Option>)
+        }
+      }
+      else{
+        items.push(<Option value={'NONE'}>{'NONE'}</Option>)
+        //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+        //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+      }
     }
     return items
   }

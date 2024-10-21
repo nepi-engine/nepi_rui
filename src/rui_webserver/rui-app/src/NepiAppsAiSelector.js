@@ -254,7 +254,7 @@ class AppsAiSelector extends Component {
         <Column>
 
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Select Application"}
+          {"Select AI Application"}
          </label>
          
 

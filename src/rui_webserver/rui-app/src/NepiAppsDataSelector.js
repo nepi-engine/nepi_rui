@@ -268,7 +268,7 @@ class AppsDataSelector extends Component {
         <Column>
 
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Select Application"}
+          {"Select Data Application"}
          </label>
          
 

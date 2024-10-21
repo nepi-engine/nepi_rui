@@ -34,6 +34,7 @@ class AiDetectorMgr extends Component {
 
     this.state = {
       appName: "ai_detector_mgr",
+      filter_str_list: ['zed_node','app_ai','ai_detector_mgr'],
       last_reportedClassifier: null,
       selected_img_topic: (this.props.ros.reportedClassifier !== null && this.props.ros.reportedClassifier.selected_img_topic !== null) ? 
         this.props.ros.reportedClassifier.selected_img_topic : 'None',
@@ -67,10 +68,11 @@ class AiDetectorMgr extends Component {
   // Function for creating image topic options.
   createImageTopicsOptions() {
     const {imageFilterDetection} = this.props.ros
+    const filter_str_list = this.state.filter_str_list
     var items = []
     items.push(<Option>{"None"}</Option>)
     const { imageTopics } = this.props.ros
-    const imageTopicsFiltered = filterStrList(imageTopics,['zed_node','app_ai_targeting','ai_detector_mgr'])
+    const imageTopicsFiltered = filterStrList(imageTopics,filter_str_list)
     var uniqueNames = createShortValuesFromNamespaces(imageTopicsFiltered)
     const classifier_not_stopped = 
       (this.props.ros.reportedClassifier !== null) && (this.props.ros.reportedClassifier.classifier_state !== "Stopped")
