@@ -184,7 +184,10 @@ class SliderAdjustment extends Component {
       last_step_positive: true
     }
 
-    this.name = this.props.title.toLowerCase()
+
+    const title = this.props.title
+    
+    this.name = (title)? title.toLowerCase() : "none"
     this.onSliderValueChange = this.onSliderValueChange.bind(this)
     this.marksFromStepMapping = this.marksFromStepMapping.bind(this)
 

@@ -358,22 +358,6 @@ class ROSConnectionStore {
   async checkROSConnection() {
     if (!this.connectedToROS) {
       try {
-        // get the image filters
-        const imageFilterDetectionJson = await getFileJson("img_filter_detection.json")
-        if (imageFilterDetectionJson && imageFilterDetectionJson.filter) {
-          this.imageFilterDetection = new RegExp(imageFilterDetectionJson.filter)
-        }
-
-        const imageFilterSequencerJson = await getFileJson("img_filter_sequencer.json")
-        if (imageFilterSequencerJson && imageFilterSequencerJson.filter) {
-          this.imageFilterSequencer = new RegExp(imageFilterSequencerJson.filter)
-        }
-
-        const imageFilterPTXJson = await getFileJson("img_filter_ptx.json")
-        if (imageFilterPTXJson && imageFilterPTXJson.filter) {
-          this.imageFilterPTX = new RegExp(imageFilterPTXJson.filter)
-        }
-
         // setup rosbridge connection
         if (!this.ros) {
           this.ros = new ROS.Ros({
@@ -575,7 +559,7 @@ class ROSConnectionStore {
           this.callSettingsCapabilitiesQueryService(ptx_unit_namespace)
           const ptxUnit = this.ptxUnits[ptx_unit_namespace]
           const settingCaps = this.settingCaps[ptx_unit_namespace]
-          if (ptxUnit && settingCaps)
+          if (ptxUnit)
           {
             ptx_units_detected.push(ptx_unit_namespace)
           }

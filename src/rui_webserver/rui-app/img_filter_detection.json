@@ -1,3 +1,0 @@
-{
-    "filter": "^((?!detection_image|localization_image).)*$"
-}
