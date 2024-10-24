@@ -146,7 +146,7 @@ class NepiDeviceInfo extends Component {
     const {sendTriggerMsg}  = this.props.ros
     const device_name_reset_topic = this.props.deviceNamespace + this.props.name_reset_topic
     return (
-      <Section title={"Sensor Info"}>
+      <Section title={"Device Name"}>
         <Columns>
 
           <Column>
