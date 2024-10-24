@@ -247,11 +247,11 @@ class AppsSelector extends Component {
     var ruiInd = 0
     var items = []
     const connected = this.state.connected
+    var app_name = ""
     if (connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else{
-      items.push(<Option value={"Automation Mgr"}>{"Automation Mgr"}</Option>)
       if (appsList) {
         if (appsList.length > 0){
           for (var i = 0; i < appsList.length; i++) {
@@ -259,13 +259,28 @@ class AppsSelector extends Component {
               ruiInd = ruiList.indexOf(appsList[i])
               if (ruiInd !== -1){
                 if (exclude.indexOf(groupList[i]) === -1){
-                  items.push(<Option value={ruiList[ruiInd]}>{ruiList[ruiInd]}</Option>)
+                  app_name = ruiList[ruiInd]
+                  if ( app_name.indexOf('Viewer') !== -1 )
+                  items.push(<Option value={app_name}>{app_name}</Option>)
+                }
+              }
+            }
+          }
+          for (var i = 0; i < appsList.length; i++) {
+            if (ruiList){
+              ruiInd = ruiList.indexOf(appsList[i])
+              if (ruiInd !== -1){
+                if (exclude.indexOf(groupList[i]) === -1){
+                  app_name = ruiList[ruiInd]
+                  if ( app_name.indexOf('Viewer') === -1 )
+                  items.push(<Option value={app_name}>{app_name}</Option>)
                 }
               }
             }
           }
         }
       }
+      items.push(<Option value={"Automation Mgr"}>{"Automation Mgr"}</Option>)
     }
     //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
     //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
@@ -332,22 +347,22 @@ class AppsSelector extends Component {
             {this.renderNoneApp()}    
             </div>
 
-
-            <div hidden={sel_app !== "Automation Mgr"}>
-            {this.renderAutomationMgr()}    
-            </div>
-
             <div hidden={sel_app !== "Image_Viewer"}>
             {this.renderImageViewerApp()}    
             </div>
+
+            <div hidden={sel_app !== "Pointcloud_Viewer"}>
+            {this.renderPointcloudApp()}    
+            </div>  
+
 
             <div hidden={sel_app !== "Image_Sequencer"}>
             {this.renderImageSequencerApp()}    
             </div>
 
-            <div hidden={sel_app !== "Pointcloud"}>
-            {this.renderPointcloudApp()}    
-            </div>  
+            <div hidden={sel_app !== "Automation Mgr"}>
+            {this.renderAutomationMgr()}    
+            </div>
 
 
       </Column>
