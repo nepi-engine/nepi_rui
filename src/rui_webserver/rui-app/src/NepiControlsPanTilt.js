@@ -187,14 +187,10 @@ class NepiControlsPanTilt extends Component {
   
   // Callback for handling ROS Status3DX messages
   ptxStatusListener(message) {
-    const yaw_ratio_direction_corrected = (message.reverse_yaw_control === false)?
-      (message.yaw_goal_deg - message.yaw_min_softstop_deg) / (message.yaw_max_softstop_deg - message.yaw_min_softstop_deg) :
-      1.0 - ((message.yaw_goal_deg - message.yaw_min_softstop_deg) / (message.yaw_max_softstop_deg - message.yaw_min_softstop_deg))
+    const yaw_ratio_direction_corrected = (message.yaw_goal_deg - message.yaw_min_softstop_deg) / (message.yaw_max_softstop_deg - message.yaw_min_softstop_deg) 
 
-    const pitch_ratio_direction_corrected = (message.reverse_pitch_control === false)?
-      (message.pitch_goal_deg - message.pitch_min_softstop_deg) / (message.pitch_max_softstop_deg - message.pitch_min_softstop_deg) :
-      1.0 - ((message.pitch_goal_deg - message.pitch_min_softstop_deg) / (message.pitch_max_softstop_deg - message.pitch_min_softstop_deg))
-
+    const pitch_ratio_direction_corrected = (message.pitch_goal_deg - message.pitch_min_softstop_deg) / (message.pitch_max_softstop_deg - message.pitch_min_softstop_deg) 
+    
     this.setState({
       ptSerialNum: message.serial_num,
       ptHwVersion: message.hw_version,
