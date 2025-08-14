@@ -8,7 +8,7 @@
 ## License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
 ##
 
-export RUI_HOME="/opt/nepi/rui"
+export RUI_HOME="/opt/nepi/nepi_rui"
 
 # Use the correct python
 source ${RUI_HOME}/venv/bin/activate || echo "Failed to load venv"
