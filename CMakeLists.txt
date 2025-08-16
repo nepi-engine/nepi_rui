@@ -29,6 +29,33 @@ catkin_python_setup()
 #############
 ## Install ##
 #############
+
+
+if(NOT NEPI_BASE)
+  set( NEPI_BASE 
+    /opt/nepi
+  )
+endif()
+
+if(NOT NEPI_RUI)
+  set( NEPI_RUI 
+    ${NEPI_BASE}/nepi_rui
+  )
+endif()
+
+if(NOT NEPI_ENGINE)
+  set( NEPI_ENGINE 
+    ${NEPI_BASE}/nepi_engine
+  )
+endif()
+
+if(NOT NEPI_ETC)
+  set( NEPI_ETC 
+    ${NEPI_BASE}/etc
+  )
+endif()
+
+
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
