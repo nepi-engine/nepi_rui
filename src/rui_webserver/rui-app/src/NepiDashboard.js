@@ -233,7 +233,7 @@ class NepiDashboard extends Component {
 
   renderSystemClock() {
     const {
-      systemInContainer,
+      systemManagesTime,
       systemStatusTime,
       systemStatusTimeStr,
       systemStatusDateStr,
@@ -248,10 +248,12 @@ class NepiDashboard extends Component {
       setTimezoneUTC,
       clockNTP,
       syncTime2Device
+      systemRestrictions
     } = this.props.ros
 
-    const timezoneOptions = this.getTimezoneOptions()
+    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
 
+    const timezoneOptions = this.getTimezoneOptions()
 
     var time_str = ""
     var date_str = ""
@@ -262,7 +264,7 @@ class NepiDashboard extends Component {
 
       timezone = systemStatusTimezoneDesc
       
-      if (systemInContainer === false){
+      if (systemManagesTime === false){
         if (systemStatusTimezoneDesc !== clockTZ && syncTimezone === true && clockNTP === false){
           onSyncTimezone()
         }
@@ -287,7 +289,7 @@ class NepiDashboard extends Component {
         </Label>
 
 
-        {(IS_LOCAL === false && systemInContainer === false) &&
+        {(IS_LOCAL === false && systemManagesTime === true && time_sync_restricted === false) &&
 
             <Columns>
             <Column>
@@ -302,57 +304,8 @@ class NepiDashboard extends Component {
             <Column>
 
 
-
-
-              <Label title={"Auto Sync Timezone"}>
-                <Toggle checked={syncTimezone} onClick={onToggleSyncTimezone} />
-              </Label>
-
-              <div hidden={syncTimezone === false}>
-
-              <pre style={{ height: "31px", overflowY: "auto" }}>
-            {""}
-          </pre>
-
-              </div>
-
-
-                <div hidden={syncTimezone === true}>
-
-
-
-                      <label align={"left"} textAlign={"left"}>
-                          {"Select Timezone"}
-                        </label>
-                  
-
-
-                          <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                                    <Select style={{width: "10px"}}/>
-                                  </div>
-                                  <div hidden={this.state.timezones_list_viewable === false}>
-                                  {timezoneOptions.map( (Timezone) =>
-                                  <div onClick={this.onToggleTimezoneSelection}
-                                    style={{
-                                      textAlign: "center",
-                                      padding: `${Styles.vars.spacing.xs}`,
-                                      color: Styles.vars.colors.black,
-                                      backgroundColor: (timezone === Timezone.props.value)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                                      cursor: "pointer",
-                                      }}>
-                                      <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>
-                                  </div>
-                                  )}
-                            </div>
-
-                        
-                  </div>
-
-
-
-                      </Column>
-                      </Columns>
-
+            </Column>
+            </Columns>
 
 
 

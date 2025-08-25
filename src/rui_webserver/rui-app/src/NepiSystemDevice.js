@@ -49,8 +49,11 @@ class NepiSystemDevice extends Component {
     super(props)
 
     this.state = {
-      mgrName: "network_mgr",
-      mgrNamespace: null,
+      netMgrName: "network_mgr",
+      netMgrNamespace: null,
+
+      timeMgrName: "time_sync_mgr",
+      timeMgrNamespace: null,
 
       autoRate: this.props.ros.triggerAutoRateHz,
       autoRateUserEditing: false,
@@ -70,10 +73,19 @@ class NepiSystemDevice extends Component {
 
       netStatus: null,
       last_netStatus: null,
-      connected: true,
+      netConnected: true,
       netListener: null
 
+
+      timeStatus: null,
+      last_timeStatus: null,
+      timeConnected: true,
+      timeListener: null
+
     }
+
+    this.getNetMgrNamespace = this.getNetMgrNamespace.bind(this)
+    this.getTimeMgrNamespace = this.getTimeMgrNamespace.bind(this)
 
     this.onUpdateAutoRateText = this.onUpdateAutoRateText.bind(this)
     this.onKeyAutoRateText = this.onKeyAutoRateText.bind(this)
@@ -106,33 +118,39 @@ class NepiSystemDevice extends Component {
     this.renderLicense = this.renderLicense.bind(this)
     this.renderLicenseRequestInfo = this.renderLicenseRequestInfo.bind(this)
     this.renderLicenseInfo = this.renderLicenseInfo.bind(this)
-    this.renderNetworkInfo = this.renderNetworkInfo.bind(this)
-    this.renderTriggerSettings = this.renderTriggerSettings.bind(this)
+    this.renderNetworkMgr = this.renderNetworkMgr.bind(this)
 
     this.updateMgrNetStatusListener = this.updateMgrNetStatusListener.bind(this)
     this.netStatusListener = this.netStatusListener.bind(this)
+
+    this.updateMgrTimeStatusListener = this.updateMgrTimeStatusListener.bind(this)
+    this.timeStatusListener = this.timeStatusListener.bind(this)
+
+    
   }
 
-  getMgrNamespace(){
+  getNetMgrNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
-    var mgrNamespace = null
+    var netMgrNamespace = null
     if (namespacePrefix !== null && deviceId !== null){
-      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
+      netMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.netMgrName
     }
-    return mgrNamespace
+    return netMgrNamespace
   }
+
+
 
   // Callback for handling ROS Status messages
   netStatusListener(message) {
     this.setState({
       netStatus: message,
-      connected: true
+      netConnected: true
     })    
   }
 
   // Function for configuring and subscribing to Status
   updateMgrNetStatusListener() {
-    const statusNamespace = this.getMgrNamespace() + '/status'
+    const statusNamespace = this.getNetMgrNamespace() + '/status'
     if (this.state.netListener) {
       this.state.netListener.unsubscribe()
     }
@@ -142,7 +160,7 @@ class NepiSystemDevice extends Component {
           this.netStatusListener
         )
     this.setState({ netListener: netListener,
-      needs_update: false})
+      needs_update: this.state.timeMgrNamespace != null})
   }
 
    async checkConnection() {
@@ -157,6 +175,40 @@ class NepiSystemDevice extends Component {
     }
   }
 
+
+  getTimeMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var timeMgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      timeMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.timeMgrName
+    }
+    return timeMgrNamespace
+  }
+
+ // Callback for handling ROS Status messages
+ timeStatusListener(message) {
+  this.setState({
+    timeStatus: message,
+    timeConnected: true
+  })    
+}
+
+// Function for configuring and subscribing to Status
+updateMgrTimeStatusListener() {
+  const statusNamespace = this.getTimeMgrNamespace() + '/status'
+  if (this.state.timeListener) {
+    this.state.timeListener.unsubscribe()
+  }
+  var timeListener = this.props.ros.setupStatusListener(
+        statusNamespace,
+        "nepi_interfaces/MgrTimeStatus",
+        this.timeStatusListener
+      )
+  this.setState({ timeListener: timeListener,
+    needs_update: this.state.netMgrNamespace != null})
+}
+
+
   componentDidMount(){
     this.checkConnection()
   }
@@ -164,15 +216,24 @@ class NepiSystemDevice extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.getMgrNamespace()
-    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
+    const namespace = this.getNetMgrNamespace()
+    const namespace_updated = (prevState.netMgrNamespace !== namespace && namespace !== null)
     if (namespace_updated) {
       if (namespace.indexOf('null') === -1){
         this.setState({
-          mgrNamespace: namespace
+          netMgrNamespace: namespace
         })
         this.updateMgrNetStatusListener()
       } 
+      const namespace = this.getTimeMgrNamespace()
+      const namespace_updated = (prevState.netMgrNamespace !== namespace && namespace !== null)
+      if (namespace_updated) {
+        if (namespace.indexOf('null') === -1){
+          this.setState({
+            timeMgrNamespace: namespace
+          })
+          this.updateMgrTimeStatusListener()
+        } 
     }
   }
 
@@ -181,6 +242,7 @@ class NepiSystemDevice extends Component {
   componentWillUnmount() {
     if (this.state.netListener) {
       this.state.netListener.unsubscribe()
+      this.state.timeListener.unsubscribe()
       this.state.appListener.unsubscribe()
     }
   }
@@ -188,50 +250,42 @@ class NepiSystemDevice extends Component {
 
 
 
-  async onDeviceIdChange(e) {
-    this.setState({ updatedDeviceId: e.target.value })
-    var device_id_textbox = document.getElementById(e.target.id)
-    styleTextEdited(device_id_textbox)
-  }
-
-  async onDeviceIdKey(e) {
-    const {setDeviceID} = this.props.ros
-    if(e.key === 'Enter'){
-      setDeviceID({newDeviceID: this.state.updatedDeviceId})
-      var device_id_textbox = document.getElementById(e.target.id)
-      styleTextUnedited(device_id_textbox)
-    }
-  }
-
-  renderDeviceConfiguration() {
+  renderAdmin() {
     const { resetTopics, onUserCfgRestore, onFactoryCfgRestore } = this.props.ros
     const { advancedConfigEnabled, configSubsys } = this.state
     const {deviceId} = this.props.ros
     const sys_debug = this.props.ros.systemDebugEnabled
     const debug_mode = sys_debug ? sys_debug : false
+
+    const { systemRestrictions} = this.props.ros
+    const device_restricted = systemRestrictions.indexOf('device_id') !== -1
+
     if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
       this.setState({updatedDeviceId:deviceId})
     }
     const updatedDeviceId = this.state.updatedDeviceId
       
+
+    
     return (
 
       <Section title={"System Settings"}>
-
-
 
 
               <Columns>
               <Column>
 
                     <Label title={"Device ID"}>
+
+                    <div hidden={device_restricted===true}>
                     <Input
                       id={"device_id_update_text"}
                       value={deviceId }
-                      disabled={!advancedConfigEnabled}
+                      disabled={device_restricted===true}
                       onChange={this.onDeviceIdChange}
                       onKeyDown={this.onDeviceIdKey}
                     />
+                    </div>
                   </Label>
 
 
@@ -315,7 +369,96 @@ class NepiSystemDevice extends Component {
               </div>
 
 
+      </Section>
+    )
+  }
 
+
+  async onDeviceIdChange(e) {
+    this.setState({ updatedDeviceId: e.target.value })
+    var device_id_textbox = document.getElementById(e.target.id)
+    styleTextEdited(device_id_textbox)
+  }
+
+  async onDeviceIdKey(e) {
+    const {setDeviceID} = this.props.ros
+    if(e.key === 'Enter'){
+      setDeviceID({newDeviceID: this.state.updatedDeviceId})
+      var device_id_textbox = document.getElementById(e.target.id)
+      styleTextUnedited(device_id_textbox)
+    }
+  }
+
+  renderDeviceConfiguration() {
+    const { systemStatus} = this.props.ros
+    const {deviceId} = this.props.ros
+
+
+    const { systemRestrictions} = this.props.ros
+    const device_restricted = systemRestrictions.indexOf('device_id') !== -1
+
+    if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
+      this.setState({updatedDeviceId:deviceId})
+    }
+    const updatedDeviceId = this.state.updatedDeviceId
+      
+
+    
+    return (
+
+      <Section title={"System Settings"}>
+
+
+              <Columns>
+              <Column>
+
+                    <Label title={"Device ID"}>
+                    <Input
+                      id={"device_id_update_text"}
+                      value={deviceId }
+                      disabled={device_restricted===true}
+                      onChange={this.onDeviceIdChange}
+                      onKeyDown={this.onDeviceIdKey}
+                    />
+                  </Label>
+
+                  <Label title={"Device Type"}>
+                    <Input
+                      id={"device_type"}
+                      value={systemStatus.hw_type}
+                      disabled={true}
+                    />
+                  </Label>
+
+                  <Label title={"Device Model"}>
+                    <Input
+                      id={"device_model"}
+                      value={systemStatus.hw_model}
+                      disabled={true}
+                    />
+                  </Label>
+
+                  <Label title={"Has Cuda"}>
+                    <BooleanIndicator value={systemStatus.has_cuda} />
+                  </Label>
+
+                  <Label title={"Manages Time"}>
+                    <BooleanIndicator value={systemStatus.manages_time} />
+                  </Label>
+
+                  <Label title={"Manages Network"}>
+                    <BooleanIndicator value={systemStatus.manages_network} />
+                  </Label>
+
+
+                  </Column>
+                  <Column>
+ 
+                 
+
+
+                </Column>
+                  </Columns>
 
 
       </Section>
@@ -340,30 +483,35 @@ class NepiSystemDevice extends Component {
     const license_expiration_version = license_info_valid && "expiration_version" in license_info["licensed_components"]["nepi_base"]?
       license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
     
-    return (
-      <div>
-        <Label title={"Issue Date"}>
-          <Input value={license_issue_date} disabled={true}/>
-        </Label>
-        {/*
-        <Label title={"Issue Version"}>
-          <Input value={license_issue_version} disabled={true}/>
-        </Label>
-        {license_expiration_date?
-          <Label title={"Expiration Date"}>
-            <Input value={license_expiration_date} disabled={true}/>
+    const { systemRestrictions} = this.props.ros
+    const license_restricted = systemRestrictions.indexOf('License') !== -1
+
+
+      return (
+        <div>
+          <Label title={"Issue Date"}>
+            <Input value={license_issue_date} disabled={true}/>
           </Label>
-          : null
-        }
-        {license_expiration_version?
-          <Label title={"Expiration Version"}>
-            <Input value={license_expiration_version} disabled={true}/>
+          {/*
+          <Label title={"Issue Version"}>
+            <Input value={license_issue_version} disabled={true}/>
           </Label>
-          : null
-        }
-      */}
-      </div>
-    )
+          {license_expiration_date?
+            <Label title={"Expiration Date"}>
+              <Input value={license_expiration_date} disabled={true}/>
+            </Label>
+            : null
+          }
+          {license_expiration_version?
+            <Label title={"Expiration Version"}>
+              <Input value={license_expiration_version} disabled={true}/>
+            </Label>
+            : null
+          }
+        */}
+        </div>
+      )
+    
   }
 
   renderLicenseRequestInfo() {
@@ -376,6 +524,13 @@ class NepiSystemDevice extends Component {
       license_request_info['license_request']['date'] : 'Unknown'    
     const license_request_version = (license_request_info_valid && ('version' in license_request_info['license_request']))?
       license_request_info['license_request']['version'] : 'Unknown'    
+
+    const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
+    const license_restricted = systemRestrictions.indexOf('License') !== -1
+    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    const network_restricted = systemRestrictions.indexOf('Network') !== -1
+    const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
+    const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
 
     return (
       // TODO: A QR code or automatic API link would be nicer here.
@@ -402,95 +557,283 @@ class NepiSystemDevice extends Component {
     
     var license_type = license_info_valid? license_info["licensed_components"]["nepi_base"]["commercial_license_type"] : "Unlicensed"
     var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : ""
+
+    const { systemRestrictions} = this.props.ros
+    const license_restricted = systemRestrictions.indexOf('License') !== -1
+
+
     if (license_request_mode === true) {
       license_type = "Request"
       license_status = "Pending"
     }
 
-    return (
-      <Section title={"NEPI License"}>
-        <Label title={"Type"}>
-          <Input value={license_type} disabled={true}/>
-        </Label>
+    if (license_restricted === true ){
 
-        <div hidden={license_type !== "Unlicensed"}> 
-        <pre style={{ height: "25px", overflowY: "auto" }}>
-            {"No Commercial License Found. Valid for development purposes only"}
-          </pre>
-        </div>
+      return (
+        <Columns>
+          <Column>
+  
+          </Column>
+        </Columns>
+      )
+    }
+    else {
 
-        {license_info_valid?
-          <Label title={"Status"} >
-            <Input value={license_status} disabled={true}/>
+      return (
+        <Section title={"NEPI License"}>
+          <Label title={"Type"}>
+            <Input value={license_type} disabled={true}/>
           </Label>
-          : null
-        }
 
-        {license_info_valid && license_request_mode?
-          this.renderLicenseRequestInfo() : null
-        }
+          <div hidden={license_type !== "Unlicensed"}> 
+          <pre style={{ height: "25px", overflowY: "auto" }}>
+              {"No Commercial License Found. Valid for development purposes only"}
+            </pre>
+          </div>
 
-        {license_info_valid && !license_request_mode?
-          this.renderLicense() : null
-        }
-                         
-        {(license_info_valid && !commercial_licensed)?
-          <ButtonMenu>
-            <Button onClick={onGenerateLicenseRequest}>{"License Request"}</Button>
-          </ButtonMenu>
-          : null
-        }
-                  
-        {(license_info_valid && !commercial_licensed)?
-            <div style={{textAlign: "center"}}>
-              <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
-                Open license request instructions
-              </Link>
-            </div>
+          {license_info_valid?
+            <Label title={"Status"} >
+              <Input value={license_status} disabled={true}/>
+            </Label>
             : null
-        }
-      </Section>
-    )
+          }
+
+          {license_info_valid && license_request_mode?
+            this.renderLicenseRequestInfo() : null
+          }
+
+          {license_info_valid && !license_request_mode?
+            this.renderLicense() : null
+          }
+                          
+          {(license_info_valid && !commercial_licensed)?
+            <ButtonMenu>
+              <Button onClick={onGenerateLicenseRequest}>{"License Request"}</Button>
+            </ButtonMenu>
+            : null
+          }
+                    
+          {(license_info_valid && !commercial_licensed)?
+              <div style={{textAlign: "center"}}>
+                <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
+                  Open license request instructions
+                </Link>
+              </div>
+              : null
+          }
+        </Section>
+      )
+    }
   }
 
-  renderTriggerSettings() {
+
+
+  // Function for creating image topic options.
+  getTimezoneOptions() {
     const {
-      //triggerMask,
-      onPressManualTrigger,
-      //onToggleHWTriggerOutputEnabled,
-      //onToggleHWTriggerInputEnabled,
-      triggerAutoRateHz
+      available_timezones
+    } = this.props.ros
+    var items = []
+
+    if (available_timezones != null){
+          for (var i = 0; i < available_timezones.length; i++) {
+              if (available_timezones[i] !== 'None'){
+                items.push(<Option value={available_timezones[i]}>{available_timezones[i]}</Option>)
+              }
+          }
+    }
+    return items
+    }
+  
+  
+    toggleTimezonesListViewable() {
+      const set = !this.state.timezones_list_viewable
+      this.setState({timezones_list_viewable: set})
+    }
+  
+  
+    onToggleTimezoneSelection(event){
+      const {
+        setTimezone,
+        available_timezones,
+        systemStatusTimezoneDesc
+      } = this.props.ros
+      const timezoneSelection = event.target.value
+      if (timezoneSelection !== systemStatusTimezoneDesc){
+        setTimezone(timezoneSelection)
+      }
+    }
+
+
+
+  renderTimeMgr() {
+    const {
+      sendBoolMsg,
+      systemManagesTime,
+      systemStatusTime,
+      systemStatusTimeStr,
+      systemStatusDateStr,
+      clockUTCMode,
+      clockTZ,
+      onToggleClockUTCMode,
+      systemStatusTimezone,
+      systemStatusTimezoneDesc,
+      syncTimezone,
+      onToggleSyncTimezone,
+      onSyncTimezone,
+      setTimezoneUTC,
+      clockNTP,
+      syncTime2Device
+      systemRestrictions
     } = this.props.ros
 
+
+    const auto_sync_clocks = systemStatusTime.auto_sync_clocks
+    const { systemManagesTime, systemRestrictions} = this.props.ros
+    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    const time_ntp_restricted = systemRestrauto_sync_clocksictions.indexOf('Time_NTP') !== -1
+
+
+    const timezoneOptions = this.getTimezoneOptions()
+
+    var time_str = ""
+    var date_str = ""
+    var timezone = ""
+    if (systemStatusTime){
+      time_str = systemStatusTimeStr
+      date_str = systemStatusDateStr
+
+      timezone = systemStatusTimezoneDesc
+      
+      if (systemManagesTime === false && autoSyncClocks === true){
+        if (systemStatusTimezoneDesc !== clockTZ && syncTimezone === true && clockNTP === false){
+          onSyncTimezone()
+        }
+      }
+
+    }
+
+    const namespace = this.state.timeMgrNamespace
+ 
+    
     return (
-      <Section title={"Trigger Settings"}>
-        <Label title={"Auto Rate (Hz)"}>
-          <Input
-            id="autoRateInput"
-            value={(this.state.autoRateUserEditing === true)? this.state.autoRate : triggerAutoRateHz}
-            onChange={this.onUpdateAutoRateText} onKeyDown={this.onKeyAutoRateText}
-          />
+      <Section title={"System Time"}>
+        <Label title={"NTP"}>
+          <BooleanIndicator value={clockNTP} />
         </Label>
-        <ButtonMenu>
-          <Button onClick={onPressManualTrigger}>{"Manual Trigger"}</Button>
-        </ButtonMenu>
-        {/*
-        <Label title={"Hardware Trigger Input Enable"}>
-          <Toggle
-            checked={false}
-            disabled={true}
-          />
+        <Label title={"Time"}>
+          <Input disabled value={time_str} />
         </Label>
-        <Label title={"Hardware Trigger Output Enable"}>
-          <Toggle
-            checked={true}
-            disabled={true}
-          />
+        <Label title={"Date"}>
+          <Input disabled value={date_str} />
         </Label>
-        */}
+        <Label title={"Timezone"}>
+          <Input disabled value={timezone} />
+        </Label>
+
+
+        {(IS_LOCAL === false && systemManagesTime === true && time_sync_restricted === false) &&
+
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+          <Label title={"Clock Sync Config"}>
+          </Label>
+
+            <Columns>
+            <Column>
+
+
+            <Label title={"Auto Sync Clocks"}>
+                <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_sync_enable",!auto_sync_clocks)} />
+              </Label>
+
+
+             <div hidden={auto_sync_clocks === true}>
+
+              <ButtonMenu>
+                <Button onClick={syncTime2Device}>{"Sync Clocks"}</Button>
+              </ButtonMenu>
+
+             </div>
+
+
+            </Column >
+            <Column>
+
+
+
+
+              <Label title={"Auto Sync Timezone"}>
+                <Toggle checked={syncTimezone} onClick={onToggleSyncTimezone} />
+              </Label>
+
+              <div hidden={syncTimezone === false}>
+
+              <pre style={{ height: "31px", overflowY: "auto" }}>
+                {""}
+              </pre>
+
+              </div>
+
+
+                <div hidden={syncTimezone === true}>
+
+
+
+                      <label align={"left"} textAlign={"left"}>
+                          {"Select Timezone"}
+                        </label>
+                  
+
+
+                          <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                                    <Select style={{width: "10px"}}/>
+                                  </div>
+                                  <div hidden={this.state.timezones_list_viewable === false}>
+                                  {timezoneOptions.map( (Timezone) =>
+                                  <div onClick={this.onToggleTimezoneSelection}
+                                    style={{
+                                      textAlign: "center",
+                                      padding: `${Styles.vars.spacing.xs}`,
+                                      color: Styles.vars.colors.black,
+                                      backgroundColor: (timezone === Timezone.props.value)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                                      cursor: "pointer",
+                                      }}>
+                                      <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>
+                                  </div>
+                                  )}
+                            </div>
+
+                        
+                  </div>
+
+                      </Column>
+                      </Columns>
+
+            }
+
+          {(systemManagesTime === true && time_ntp_restricted === false) &&
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+            <Label title={"NTP Config"}>
+
+
+            <Label title={"Primary NTP Address:"}>
+                      <pre style={{ height: "25px", overflowY: "auto" }}>
+                        {'  ' + primary_addr }
+                      </pre>
+            </Label>
+
+
+          }
+
+
+
       </Section>
     )
   }
+
 
 
 
@@ -556,37 +899,63 @@ class NepiSystemDevice extends Component {
   }
 
 
-  renderNetworkInfo() {
-    const { systemInContainer, sendTriggerMsg, onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
+  renderNetworkMgr() {
+    const { sendTriggerMsg, onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
     const netStatus = this.state.netStatus
     const dhcp_enabled = (netStatus !== null)? netStatus.dhcp_enabled : false
     const primary_addr = (netStatus !== null)? netStatus.primary_ip_addr : ''
     const managed_addrs = (netStatus !== null)? netStatus.managed_ip_addrs : []
     const dhcp_addr = (netStatus !== null)? netStatus.dhcp_ip_addr : ''
-    const internet_connected = dhcp_enabled ? ((netStatus !== null)? netStatus.internet_connected : false):false
+    const internet_netConnected = dhcp_enabled ? ((netStatus !== null)? netStatus.internet_netConnected : false):false
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock to use DHCP"
     
+
+    const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
+    const license_restricted = systemRestrictions.indexOf('License') !== -1
+    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    const network_restricted = systemRestrictions.indexOf('Network') !== -1
+    const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
+    const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
+
+
+    if (systemManagesNetwork === false || has_wifi === false || ( wifi_restricted === true && ap_restricted === true ) ){
+
+      return (
+        <Columns>
+          <Column>
+  
+          </Column>
+        </Columns>
+      )
+    }
+    else {
     return (
       <Section title={"Ethernet"}>
+
+
+        <Label title={"Primary IP Address:"}>
+                      <pre style={{ height: "25px", overflowY: "auto" }}>
+                        {'  ' + primary_addr }
+                      </pre>
+        </Label>
+
+        <Label title={"Internet Connected"}>
+                              <BooleanIndicator value={internet_netConnected} />
+                            </Label>
+                        </div>
+
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
           <Columns>
             <Column>
 
 
-              <div hidden={systemInContainer === false}> 
-
-                      <pre style={{ height: "88px", overflowY: "auto" }}>
-                        {"NEPI Running in Container Mode.  Ethernet configuration set by host system"}
-                      </pre>
-            </div>
-
-             <div hidden={systemInContainer === true}>  
+            <div hidden={ network_restricted === true }> 
 
 
-
-
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                     <Label title={"Add/Remove IP Alias"}>
                       <Input value={ipAddrVal} onChange={ this.onIPAddrValChange} />
@@ -597,9 +966,9 @@ class NepiSystemDevice extends Component {
                     </ButtonMenu>
 
 
-                    <Label title={"Device IP Addresses"}>
+                    <Label title={"IP Aliases"}>
                       <pre style={{ height: "75px", overflowY: "auto" }}>
-                        {primary_addr + '\n' + managed_addrs.join('\n')}
+                        {'\n' + managed_addrs.join('\n')}
                       </pre>
                     </Label>
 
@@ -636,14 +1005,6 @@ class NepiSystemDevice extends Component {
                               </pre>
                             </Label>
 
-
-                            <Label title={"Wired Internet Connected"}>
-                              <BooleanIndicator value={internet_connected} />
-                            </Label>
-                        </div>
-
-
-
                 </div>
 
 
@@ -671,6 +1032,9 @@ class NepiSystemDevice extends Component {
 
             </Column>
             </Columns>
+
+            {this.renderWifiInfo()}
+
       </Section>
     )
   }
@@ -757,7 +1121,9 @@ class NepiSystemDevice extends Component {
     const { systemInContainer, onToggleWifiAPEnabled, onToggleWifiClientEnabled, onRefreshWifiNetworks } = this.props.ros
     const { wifiClientSSID, wifiClientPassphrase,
             wifiAPSSIDEdited, wifiAPSSID, wifiAPPassphrase } = this.state
+
     const netStatus = this.state.netStatus
+    const has_wifi = netStatus? netStatus.has_wifi : false
     const wifi_enabled = (netStatus !== null)? netStatus.wifi_client_enabled : false
     const wifi_client_ssid = (netStatus !== null)? netStatus.wifi_client_ssid : ""
     const wifi_client_passphrase = (netStatus !== null)? netStatus.wifi_client_passphrase : ""
@@ -767,14 +1133,21 @@ class NepiSystemDevice extends Component {
 
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock to Connect to Internet"
-    const connected = (netStatus !== null)? netStatus.wifi_client_connected : false
+    const netConnected = (netStatus !== null)? netStatus.wifi_client_netConnected : false
     const connecting = (netStatus !== null)? netStatus.wifi_client_connecting : false
-    const internet_connected = connected ? ((netStatus !== null)? netStatus.internet_connected : false) : false
+    const internet_netConnected = netConnected ? ((netStatus !== null)? netStatus.internet_netConnected : false) : false
 
     
-    const connect_text = (connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
-    const connect_value = (connected === true) ? true : connecting
+    const connect_text = (netConnected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
+    const connect_value = (netConnected === true) ? true : connecting
     
+    const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
+    const license_restricted = systemRestrictions.indexOf('License') !== -1
+    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    const network_restricted = systemRestrictions.indexOf('Network') !== -1
+    const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
+    const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
+
 
     // Update on User Change
     var sel_wifi_ssid = 'None'
@@ -812,137 +1185,154 @@ class NepiSystemDevice extends Component {
     }
 
     
+    if (systemManagesNetwork === false || has_wifi === false || ( wifi_restricted === true && ap_restricted === true ) ){
 
-    
-    return (
-      <Section title={"WiFi"}>
-        <div hidden={systemInContainer === false}> 
-
-        <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"NEPI Running in Container Mode.  WiFi configuration set by host system"}
-        </pre>
-      </div>
-
-      <div hidden={systemInContainer === true}> 
-
-      <Columns>
-          <Column>
-          <div hidden={clock_skewed === false && wifi_enabled === true}> 
-
-            <pre style={{ height: "25px", overflowY: "auto" , color: Styles.vars.colors.red }}>
-                {message}
-              </pre>
-
-          </div>
-          </Column>
-        </Columns>
-
-
+      return (
         <Columns>
           <Column>
-            <Label title={"WiFi Enable"}>
-              <Toggle
-                checked={wifi_enabled}
-                onClick= {onToggleWifiClientEnabled}
-              />
-            </Label>
-
-          </Column>
-          <Column>
-    
   
           </Column>
         </Columns>
 
+      )
 
-
-        <div hidden={!wifi_enabled}>
+    }
+    else {
+    
+        return (
 
           <Columns>
-            <Column>
-
-              <Label title={"Selected Network"} >
-                <Select
-                  onChange={this.onWifiNetworkSelected}
-                  value={sel_wifi_ssid}
-                >
-                  {this.createWifiNetworkOptions(available_networks)}
-                </Select>
-              </Label>
-
-              <ButtonMenu>
-                <Button onClick={onRefreshWifiNetworks}>{"Refresh"}</Button>
-              </ButtonMenu>
-
-
-            </Column>
-            <Column>
-
-              <Label title={"Passphrase"} >
-                <Input 
-                  id={"wifi_client_passphrase_textbox"}
-                  type={"password"}
-                  value={sel_passphrase}
-                  onChange={this.onUpdateClientPassphraseText} onKeyDown={this.onKeyClientWifiPassphrase}
-                />
-              </Label>
-
-              <ButtonMenu>
-              <Button onClick={this.onConnectClientWifiButton}>{"Connect"}</Button>
-              </ButtonMenu>
-
-
-              <Label title={connect_text}>
-              <BooleanIndicator value={connect_value} />
-            </Label>
-
-
-              <Label title={"WiFi Internet Connected"}>
-                            <BooleanIndicator value={internet_connected} />
-                          </Label>
-   
-             </Column>
-          </Columns>
- 
-
-        </div>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-        <Columns>
           <Column>
-            <Label title={"Access Point Enable"} >
-              <Toggle
-                checked={(netStatus !== null)? netStatus.wifi_ap_enabled : false}
-                onClick= {onToggleWifiAPEnabled}
-              />
-            </Label>
-          </Column>
-          <Column/>
+
+            <div hidden={ wifi_restricted === true }> 
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                <Columns>
+                    <Column>
+                    <div hidden={clock_skewed === false && wifi_enabled === true}> 
+
+                        <pre style={{ height: "25px", overflowY: "auto" , color: Styles.vars.colors.red }}>
+                            {message}
+                          </pre>
+
+                    </div>
+
+                  </Column>
+                </Columns>
+
+
+                  <Columns>
+                    <Column>
+                      <Label title={"WiFi Enable"}>
+                        <Toggle
+                          checked={wifi_enabled}
+                          onClick= {onToggleWifiClientEnabled}
+                        />
+                      </Label>
+
+                    </Column>
+                    <Column>
+              
+            
+                    </Column>
+                  </Columns>
+
+
+
+                  <div hidden={!wifi_enabled}>
+
+                    <Columns>
+                      <Column>
+
+                        <Label title={"Selected Network"} >
+                          <Select
+                            onChange={this.onWifiNetworkSelected}
+                            value={sel_wifi_ssid}
+                          >
+                            {this.createWifiNetworkOptions(available_networks)}
+                          </Select>
+                        </Label>
+
+                        <ButtonMenu>
+                          <Button onClick={onRefreshWifiNetworks}>{"Refresh"}</Button>
+                        </ButtonMenu>
+
+
+                      </Column>
+                      <Column>
+
+                        <Label title={"Passphrase"} >
+                          <Input 
+                            id={"wifi_client_passphrase_textbox"}
+                            type={"password"}
+                            value={sel_passphrase}
+                            onChange={this.onUpdateClientPassphraseText} onKeyDown={this.onKeyClientWifiPassphrase}
+                          />
+                        </Label>
+
+                        <ButtonMenu>
+                        <Button onClick={this.onConnectClientWifiButton}>{"Connect"}</Button>
+                        </ButtonMenu>
+
+
+                        <Label title={connect_text}>
+                        <BooleanIndicator value={connect_value} />
+                      </Label>
+
+
+            
+                      </Column>
+                    </Columns>
+          
+
+                  </div>
+
+            </div>
+
+
+           <div hidden={ ap_restricted === true }> 
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <Columns>
+                  <Column>
+                    <Label title={"Access Point Enable"} >
+                      <Toggle
+                        checked={(netStatus !== null)? netStatus.wifi_ap_enabled : false}
+                        onClick= {onToggleWifiAPEnabled}
+                      />
+                    </Label>
+                  </Column>
+                  <Column/>
+                </Columns>
+                <Columns>
+                  <Column>
+                    <Label title={"Access Point"} >
+                      <Input
+                        id={"wifi_ap_ssid_textbox"} 
+                        value={(wifiAPSSIDEdited === true)? wifiAPSSID : ap_ssid}
+                        onChange={this.onUpdateAPSSIDText} onKeyDown={this.onKeyAPWifi}
+                      />
+                    </Label>
+                  </Column>
+                  <Column>
+                    <Label title={"Passphrase"} >
+                      <Input
+                      id={"wifi_ap_passphrase_textbox"}                 
+                        value={(wifiAPSSIDEdited === true)? wifiAPPassphrase : ap_passphrase}
+                        onChange={this.onUpdateAPPassphraseText} onKeyDown={this.onKeyAPWifi}
+                      />
+                    </Label>
+                  </Column>
+                </Columns>
+
+            </div>
+        </Column>
         </Columns>
-        <Columns>
-          <Column>
-            <Label title={"Access Point"} >
-              <Input
-                id={"wifi_ap_ssid_textbox"} 
-                value={(wifiAPSSIDEdited === true)? wifiAPSSID : ap_ssid}
-                onChange={this.onUpdateAPSSIDText} onKeyDown={this.onKeyAPWifi}
-              />
-            </Label>
-          </Column>
-          <Column>
-            <Label title={"Passphrase"} >
-              <Input
-              id={"wifi_ap_passphrase_textbox"}                 
-                value={(wifiAPSSIDEdited === true)? wifiAPPassphrase : ap_passphrase}
-                onChange={this.onUpdateAPPassphraseText} onKeyDown={this.onKeyAPWifi}
-              />
-            </Label>
-          </Column>
-        </Columns>
-        </div>
+          
+        )
 
-      </Section>
-    )
+      }
   }
 
   async onSaveCfg() {
@@ -1009,21 +1399,19 @@ class NepiSystemDevice extends Component {
 
   render() {
     const netStatus = this.state.netStatus
-    const has_wifi = netStatus? netStatus.has_wifi : false
-    const internet_connected = (netStatus !== null)? netStatus.wifi_client_connected : false
+    const internet_netConnected = (netStatus !== null)? netStatus.wifi_client_netConnected : false
     return (
       <Columns>
         <Column>
           {this.renderDeviceConfiguration()}
           {this.renderLicenseInfo()}
-          {/*this.renderTriggerSettings()*/}
 
         </Column>
         <Column>
 
-
-          {this.renderNetworkInfo()}
-          {has_wifi? this.renderWifiInfo(): null}
+          {this.renderTimeMgr()}
+          {this.renderNetworkMgr()}
+          
 
         </Column>
       </Columns>

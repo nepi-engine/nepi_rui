@@ -151,7 +151,15 @@ class ROSConnectionStore {
   @observable systemStatus = null
   @observable systemDebugEnabled = false
   @observable heartbeat = false
+  @observable systemHwType = "Uknown"
+  @observable systemHwModel = "Uknown"
   @observable systemInContainer = false
+  @observable systemManagesSSH = false
+  @observable systemManagesSHARE = false
+  @observable systemManagesTime = false
+  @observable systemManagesNetwork = false
+  @observable systemRestrictOptions = []
+  @observable systemRestrictions = []
   @observable systemStatusDiskUsageMB = null
   @observable systemStatusDiskRate = null
   @observable systemStatusTempC = null
@@ -1001,7 +1009,15 @@ class ROSConnectionStore {
         }, 500)
         this.systemStatus = message
         this.systemDebugEnabled = message.sys_debug_enabled
+        this.systemHwType = message.hw_type
+        this.systemHwModel = message.hw_model
         this.systemInContainer = message.in_container
+        this.systemManagesSSH = message.manages_ssh
+        this.systemManagesSHARE = message.manages_share
+        this.systemManagesTime = message.manages_time
+        this.systemManagesNetwork = message.manages_network
+        this.systemRestrictOptions = message.sys_admin_restrict_options
+        this.systemRestrictions = message.sys_admin_restricted
         this.systemStatusDiskUsageMB = message.disk_usage
         this.systemStatusDiskRate = message.storage_rate
         

@@ -142,18 +142,6 @@ class NepiSystemSoftware extends Component {
     }
 
     render() {
-      const {systemInContainer
-      } = this.props.ros
-
-      if (systemInContainer === true){
-        return (
-
-          <pre style={{ height: "88px", overflowY: "auto" }}>
-            {"NEPI Running in Container Mode.  Software Update, Backup, and Cloning disabled"}
-          </pre>
-        )
-      }
-      else {
         return (
 
           <Columns>
@@ -166,9 +154,7 @@ class NepiSystemSoftware extends Component {
           </Column>
         </Columns>
 
-            )
-
-      }
+      )
     }
 }
 
