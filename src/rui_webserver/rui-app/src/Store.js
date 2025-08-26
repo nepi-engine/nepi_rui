@@ -1972,7 +1972,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
     const _pollOnce = async () => {
       this.timeStatus = await this.callService({
         name: "time_status_query",
-        messageType: "nepi_interfaces/SystemTriggersQuery",
+        messageType: "nepi_interfaces/TimeStatusQuery",
       })
 
       // if last_ntp_sync is 10y, no sync has happened
