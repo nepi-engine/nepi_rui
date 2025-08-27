@@ -247,7 +247,7 @@ class NepiDashboard extends Component {
       onSyncTimezone,
       setTimezoneUTC,
       clockNTP,
-      syncTime2Device
+      syncTime2Device,
       systemRestrictions
     } = this.props.ros
 

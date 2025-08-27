@@ -42,6 +42,9 @@ const styles = Styles.Create({
   }
 })
 
+
+const IS_LOCAL = window.location.hostname === "localhost"
+
 @inject("ros")
 @observer
 class NepiSystemDevice extends Component {
@@ -74,7 +77,7 @@ class NepiSystemDevice extends Component {
       netStatus: null,
       last_netStatus: null,
       netConnected: true,
-      netListener: null
+      netListener: null,
 
 
       timeStatus: null,
@@ -234,6 +237,7 @@ updateMgrTimeStatusListener() {
           })
           this.updateMgrTimeStatusListener()
         } 
+      }
     }
   }
 
@@ -345,8 +349,8 @@ updateMgrTimeStatusListener() {
 
 
                             <ButtonMenu>
-                              <Button onClick={this.onFactoryCfgRestore}>{"Full Factory Restore"}</Button>
                               <Button onClick={onUserCfgRestore}>{"Full User Restore"}</Button>
+                              <Button onClick={this.onFactoryCfgRestore}>{"Full Factory Restore"}</Button>
                             </ButtonMenu>
 
      
@@ -684,15 +688,15 @@ updateMgrTimeStatusListener() {
       setTimezoneUTC,
       clockNTP,
       syncTime2Device
-      systemRestrictions
     } = this.props.ros
 
 
     const auto_sync_clocks = systemStatusTime.auto_sync_clocks
-    const { systemManagesTime, systemRestrictions} = this.props.ros
+    const { systemRestrictions} = this.props.ros
     const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    const time_ntp_restricted = systemRestrauto_sync_clocksictions.indexOf('Time_NTP') !== -1
+    const time_ntp_restricted = systemRestrictions.indexOf('Time_NTP') !== -1
 
+    const primary_addr = ""
 
     const timezoneOptions = this.getTimezoneOptions()
 
@@ -705,7 +709,7 @@ updateMgrTimeStatusListener() {
 
       timezone = systemStatusTimezoneDesc
       
-      if (systemManagesTime === false && autoSyncClocks === true){
+      if (systemManagesTime === false && auto_sync_clocks === true){
         if (systemStatusTimezoneDesc !== clockTZ && syncTimezone === true && clockNTP === false){
           onSyncTimezone()
         }
@@ -734,104 +738,115 @@ updateMgrTimeStatusListener() {
 
         {(IS_LOCAL === false && systemManagesTime === true && time_sync_restricted === false) &&
 
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+          <Columns>
+          <Column>
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-          <Label title={"Clock Sync Config"}>
-          </Label>
+                <Label title={"Clock Sync Config"}>
+                </Label>
+
+                  <Columns>
+                  <Column>
+
+
+                  <Label title={"Auto Sync Clocks"}>
+                      <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_sync_enable",!auto_sync_clocks)} />
+                    </Label>
+
+
+                  <div hidden={auto_sync_clocks === true}>
+
+                    <ButtonMenu>
+                      <Button onClick={syncTime2Device}>{"Sync Clocks"}</Button>
+                    </ButtonMenu>
+
+                  </div>
+
+
+                  </Column >
+                  <Column>
+
+
+
+
+                    <Label title={"Auto Sync Timezone"}>
+                      <Toggle checked={syncTimezone} onClick={onToggleSyncTimezone} />
+                    </Label>
+
+                    <div hidden={syncTimezone === false}>
+
+                    <pre style={{ height: "31px", overflowY: "auto" }}>
+                      {""}
+                    </pre>
+
+                    </div>
+
+
+                      <div hidden={syncTimezone === true}>
+
+
+
+                            <label align={"left"} textAlign={"left"}>
+                                {"Select Timezone"}
+                              </label>
+                        
+
+
+                                <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                                          <Select style={{width: "10px"}}/>
+                                        </div>
+                                        <div hidden={this.state.timezones_list_viewable === false}>
+                                        {timezoneOptions.map( (Timezone) =>
+                                        <div onClick={this.onToggleTimezoneSelection}
+                                          style={{
+                                            textAlign: "center",
+                                            padding: `${Styles.vars.spacing.xs}`,
+                                            color: Styles.vars.colors.black,
+                                            backgroundColor: (timezone === Timezone.props.value)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                                            cursor: "pointer",
+                                            }}>
+                                            <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>
+                                        </div>
+                                        )}
+                                  </div>
+
+                              
+                        </div>
+
+                  </Column>
+                  </Columns>
+
+              </Column>
+              </Columns>
+
+        }
+
+          {(systemManagesTime === true && time_ntp_restricted === false) &&
 
             <Columns>
             <Column>
 
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-            <Label title={"Auto Sync Clocks"}>
-                <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_sync_enable",!auto_sync_clocks)} />
-              </Label>
-
-
-             <div hidden={auto_sync_clocks === true}>
-
-              <ButtonMenu>
-                <Button onClick={syncTime2Device}>{"Sync Clocks"}</Button>
-              </ButtonMenu>
-
-             </div>
+                <Label title={"NTP Config"}>
+                </Label>
 
 
-            </Column >
-            <Column>
+                <Label title={"Primary NTP Address:"}>
+                          <pre style={{ height: "25px", overflowY: "auto" }}>
+                            {'  ' + primary_addr }
+                          </pre>
+                </Label>
 
-
-
-
-              <Label title={"Auto Sync Timezone"}>
-                <Toggle checked={syncTimezone} onClick={onToggleSyncTimezone} />
-              </Label>
-
-              <div hidden={syncTimezone === false}>
-
-              <pre style={{ height: "31px", overflowY: "auto" }}>
-                {""}
-              </pre>
-
-              </div>
-
-
-                <div hidden={syncTimezone === true}>
-
-
-
-                      <label align={"left"} textAlign={"left"}>
-                          {"Select Timezone"}
-                        </label>
-                  
-
-
-                          <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                                    <Select style={{width: "10px"}}/>
-                                  </div>
-                                  <div hidden={this.state.timezones_list_viewable === false}>
-                                  {timezoneOptions.map( (Timezone) =>
-                                  <div onClick={this.onToggleTimezoneSelection}
-                                    style={{
-                                      textAlign: "center",
-                                      padding: `${Styles.vars.spacing.xs}`,
-                                      color: Styles.vars.colors.black,
-                                      backgroundColor: (timezone === Timezone.props.value)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                                      cursor: "pointer",
-                                      }}>
-                                      <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>
-                                  </div>
-                                  )}
-                            </div>
-
-                        
-                  </div>
-
-                      </Column>
-                      </Columns>
-
-            }
-
-          {(systemManagesTime === true && time_ntp_restricted === false) &&
-
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-            <Label title={"NTP Config"}>
-
-
-            <Label title={"Primary NTP Address:"}>
-                      <pre style={{ height: "25px", overflowY: "auto" }}>
-                        {'  ' + primary_addr }
-                      </pre>
-            </Label>
-
+            </Column>
+              </Columns>
 
           }
 
 
 
-      </Section>
-    )
+        </Section>
+      )
   }
 
 
@@ -920,7 +935,7 @@ updateMgrTimeStatusListener() {
     const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
 
 
-    if (systemManagesNetwork === false || has_wifi === false || ( wifi_restricted === true && ap_restricted === true ) ){
+    if (systemManagesNetwork === false){
 
       return (
         <Columns>
@@ -942,101 +957,103 @@ updateMgrTimeStatusListener() {
         </Label>
 
         <Label title={"Internet Connected"}>
-                              <BooleanIndicator value={internet_netConnected} />
-                            </Label>
-                        </div>
+          <BooleanIndicator value={internet_netConnected} />
+        </Label>
+
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-          <Columns>
-            <Column>
+          <div hidden={ network_restricted === true }> 
+
+              <Columns>
+                <Column>
 
 
-            <div hidden={ network_restricted === true }> 
+                      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                      <Label title={"Add/Remove IP Alias"}>
+                        <Input value={ipAddrVal} onChange={ this.onIPAddrValChange} />
+                      </Label>
+                      <ButtonMenu>
+                        <Button onClick={this.onAddButtonPressed}>{"Add"}</Button>
+                        <Button onClick={this.onRemoveButtonPressed}>{"Remove"}</Button>
+                      </ButtonMenu>
 
 
-                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                    <Label title={"Add/Remove IP Alias"}>
-                      <Input value={ipAddrVal} onChange={ this.onIPAddrValChange} />
-                    </Label>
-                    <ButtonMenu>
-                      <Button onClick={this.onAddButtonPressed}>{"Add"}</Button>
-                      <Button onClick={this.onRemoveButtonPressed}>{"Remove"}</Button>
-                    </ButtonMenu>
-
-
-                    <Label title={"IP Aliases"}>
-                      <pre style={{ height: "75px", overflowY: "auto" }}>
-                        {'\n' + managed_addrs.join('\n')}
-                      </pre>
-                    </Label>
+                      <Label title={"IP Aliases"}>
+                        <pre style={{ height: "75px", overflowY: "auto" }}>
+                          {'\n' + managed_addrs.join('\n')}
+                        </pre>
+                      </Label>
 
 
 
 
-                    <Columns>
-                  <Column>
+                        <Columns>
+                      <Column>
 
                   <div hidden={clock_skewed === false}> 
 
-                        <pre style={{ height: "25px", overflowY: "auto" , color: Styles.vars.colors.red }}>
-                            {message}
-                          </pre>
-
-                   </div>
-
-                      </Column>
-                  </Columns>
-
-                      <Label title={"DHCP Enable"}>
-                            <Toggle
-                              checked={dhcp_enabled}
-                              onClick= {onToggleDHCPEnabled}
-                            />
-                          </Label>
-
-
-                        <div hidden={dhcp_enabled === false}>
-
-                            <Label title={"DHCP IP Addresses"}>
-                              <pre style={{ height: "25px", overflowY: "auto" }}>
-                                {dhcp_addr}
+                            <pre style={{ height: "25px", overflowY: "auto" , color: Styles.vars.colors.red }}>
+                                {message}
                               </pre>
-                            </Label>
 
-                </div>
+                  </div>
 
+                          </Column>
+                      </Columns>
 
-            </Column>
-              <Column>
-
-
-
-              <Label title={"TX Data Rate (Mbps)"}>
-                      <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.tx_rate_mbps, 2) : -1.0} />
-                    </Label>
-                    <Label title={"RX Data Rate (Mbps)"}>
-                      <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.rx_rate_mbps, 2) : -1.0} />
-                    </Label>
-                    <Label title={"TX Rate Limit (Mbps)"}>
-                      <Input
-                        id="txRateLimit"
-                        value={((this.state.tx_bandwidth_user_editing === true) || (bandwidth_usage_query_response === null))?
-                          this.state.tx_bandwidth_limit : bandwidth_usage_query_response.tx_limit_mbps}
-                        onChange={this.onUpdateTXRateLimitText}
-                        onKeyDown={this.onKeyTXRateLimitText}
-                      />
-                    </Label>
+                          <Label title={"DHCP Enable"}>
+                                <Toggle
+                                  checked={dhcp_enabled}
+                                  onClick= {onToggleDHCPEnabled}
+                                />
+                              </Label>
 
 
-            </Column>
-            </Columns>
+                  <div hidden={dhcp_enabled === false}>
+
+                                <Label title={"DHCP IP Addresses"}>
+                                  <pre style={{ height: "25px", overflowY: "auto" }}>
+                                    {dhcp_addr}
+                                  </pre>
+                                </Label>
+
+                    </div>
+
+
+                </Column>
+                  <Column>
+
+
+
+                <Label title={"TX Data Rate (Mbps)"}>
+                        <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.tx_rate_mbps, 2) : -1.0} />
+                      </Label>
+                      <Label title={"RX Data Rate (Mbps)"}>
+                        <Input disabled value={(bandwidth_usage_query_response !== null)? round(bandwidth_usage_query_response.rx_rate_mbps, 2) : -1.0} />
+                      </Label>
+                      <Label title={"TX Rate Limit (Mbps)"}>
+                        <Input
+                          id="txRateLimit"
+                          value={((this.state.tx_bandwidth_user_editing === true) || (bandwidth_usage_query_response === null))?
+                            this.state.tx_bandwidth_limit : bandwidth_usage_query_response.tx_limit_mbps}
+                          onChange={this.onUpdateTXRateLimitText}
+                          onKeyDown={this.onKeyTXRateLimitText}
+                        />
+                      </Label>
+
+
+              </Column>
+              </Columns>
 
             {this.renderWifiInfo()}
 
+            </div>
+
       </Section>
-    )
+      )
+    }
   }
 
 
@@ -1118,7 +1135,7 @@ updateMgrTimeStatusListener() {
 
 
   renderWifiInfo() {
-    const { systemInContainer, onToggleWifiAPEnabled, onToggleWifiClientEnabled, onRefreshWifiNetworks } = this.props.ros
+    const { onToggleWifiAPEnabled, onToggleWifiClientEnabled, onRefreshWifiNetworks } = this.props.ros
     const { wifiClientSSID, wifiClientPassphrase,
             wifiAPSSIDEdited, wifiAPSSID, wifiAPPassphrase } = this.state
 
@@ -1418,4 +1435,5 @@ updateMgrTimeStatusListener() {
     )
   }
 }
+
 export default NepiSystemDevice
