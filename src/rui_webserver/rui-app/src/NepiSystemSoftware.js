@@ -32,8 +32,8 @@ class NepiSystemSoftware extends Component {
         systemStatus
       } = this.props.ros
 
-      const active_device_str = systemDefs? systemDefs.active_rootfs_device + ": " + systemDefs.firmware_version : ""
-      const inactive_device_str = systemDefs? systemDefs.inactive_rootfs_device + ": " + systemDefs.inactive_rootfs_fw_version : ""
+      const active_str = systemDefs? systemDefs.active_rootfs + ": " + systemDefs.firmware_version : ""
+      const inactive_str = systemDefs? systemDefs.inactive_rootfs + ": " + systemDefs.inactive_rootfs_fw_version : ""
 
       const stale_active_inactive = systemStatus && (systemStatus.warnings.flags[3] === true)
       var active_inactive_style = {width: '100%'}
@@ -45,13 +45,13 @@ class NepiSystemSoftware extends Component {
       return (
         <Section title={"A/B Partition Settings"}>
           <Label title={"First-stage"}>
-            <Input disabled value={systemDefs? systemDefs.first_stage_rootfs_device : ""} style={{width: '100%'}}/>
+            <Input disabled value={systemDefs? systemDefs.first_stage_rootfs : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Active"}>
-            <Input disabled value={active_device_str} style={active_inactive_style}/>
+            <Input disabled value={active_str} style={active_inactive_style}/>
           </Label>
           <Label title={"Inactive"}>
-            <Input disabled value={inactive_device_str} style={active_inactive_style}/>
+            <Input disabled value={inactive_str} style={active_inactive_style}/>
           </Label>
           <Label title={"Max Boot Fail Count"}>
             <Input disabled value={systemDefs? systemDefs.max_boot_fail_count : ""} style={{width: '100%'}}/>
@@ -74,7 +74,7 @@ class NepiSystemSoftware extends Component {
       return (
         <Section title={"Full System Update"}>
           <Label title={"Source"}>
-            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_staging_device : ""} style={{width: '100%'}}/>
+            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_staging : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Image Filename"}>
             <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img : ""} style={{width: '100%'}}/>
@@ -110,11 +110,11 @@ class NepiSystemSoftware extends Component {
       } = this.props.ros
 
       const source_str = systemDefs? 
-        systemDefs.inactive_rootfs_device + ":  (" + systemDefs.inactive_rootfs_size_mb.toFixed(0) + "MB)": 
+        systemDefs.inactive_rootfs + ":  (" + systemDefs.inactive_rootfs_size_mb.toFixed(0) + "MB)": 
         ""
       
       const dest_str = systemSoftwareStatus?
-        systemSoftwareStatus.new_sys_img_staging_device + ":  (" + systemSoftwareStatus.new_sys_img_staging_device_free_mb.toFixed(0) + "MB free)":
+        systemSoftwareStatus.new_sys_img_staging + ":  (" + systemSoftwareStatus.new_sys_img_staging_free_mb.toFixed(0) + "MB free)":
         ""
       
         return (
