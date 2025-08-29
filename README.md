@@ -63,7 +63,7 @@ where the final two steps should be rerun any time Node packages as specified in
 
 When developing, always source the `devenv.sh` to ensure the correct versions of Python, node and define environment variables:
 
-        cd /opt/nepi/rui
+        cd /opt/nepi/nepi_rui
         source devenv.sh
 
 >Note: If using the unified _nepi_engine_build_complete.sh_ build script in parent repository _nepi_engine_ws_, the devenv.sh file is properly sourced prior to the build, so you do not need to do that step manually.
@@ -100,14 +100,14 @@ Once this is complete, you can proceed to install dependencies and set up the Py
 
 The web server backend can be manually started with
 
-        /opt/nepi/rui/etc/start_rui.sh        
+        /opt/nepi/nepi_rui/etc/start_rui.sh        
 
 after which the webserver should be available on port 5003 of any IP address assigned to the device.
 
 ## Automate Start-up
 A start-up script is provided at `nepi_rui/etc/start_rui.sh`. This can be automatically run by installing `systemd` services file `nepi_rui/launch/nepi_rui.service`:
 
-        sudo cp /opt/nepi/rui/etc/nepi_rui.service /etc/systemd/system
+        sudo cp /opt/nepi/nepi_rui/etc/nepi_rui.service /etc/systemd/system
         sudo systemctl enable nepi_rui
 
 The `nepi_rui.service` unit requires the `roslaunch.service` provided in the `nepi_sdk` repository to guarantee that `rosbridge` is also launched, so ensure this is also installed and enabled on the taget device.
