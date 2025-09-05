@@ -43,10 +43,7 @@ class NepiSystemSoftware extends Component {
       }
 
       return (
-        <Section title={"A/B Partition Settings"}>
-          <Label title={"First-stage"}>
-            <Input disabled value={systemDefs? systemDefs.first_stage_rootfs : ""} style={{width: '100%'}}/>
-          </Label>
+        <Section title={"A/B File System Settings"}>
           <Label title={"Active"}>
             <Input disabled value={active_str} style={active_inactive_style}/>
           </Label>
