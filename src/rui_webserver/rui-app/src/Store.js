@@ -160,6 +160,7 @@ class ROSConnectionStore {
   @observable systemManagesNetwork = false
   @observable systemRestrictOptions = []
   @observable systemRestrictions = []
+  @observable systemRestricted = []
   @observable systemStatusDiskUsageMB = null
   @observable systemStatusDiskRate = null
   @observable systemStatusTempC = null
@@ -1016,8 +1017,10 @@ class ROSConnectionStore {
         this.systemManagesSHARE = message.manages_share
         this.systemManagesTime = message.manages_time
         this.systemManagesNetwork = message.manages_network
+        this.systemAdminEnabled=message.sys_admin_restrict_enabled
         this.systemRestrictOptions = message.sys_admin_restrict_options
         this.systemRestrictions = message.sys_admin_restricted
+        this.systemRestricted = (this.systemAdminEnabled === true) ? [] : message.sys_admin_restricted
         this.systemStatusDiskUsageMB = message.disk_usage
         this.systemStatusDiskRate = message.storage_rate
         

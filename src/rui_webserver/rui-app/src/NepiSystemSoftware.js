@@ -44,9 +44,6 @@ class NepiSystemSoftware extends Component {
 
       return (
         <Section title={"A/B File System Settings"}>
-          <Label title={"First-stage"}>
-            <Input disabled value={systemDefs? systemDefs.boot_rootfs : ""} style={{width: '100%'}}/>
-          </Label>
           <Label title={"Active"}>
             <Input disabled value={active_str} style={active_inactive_style}/>
           </Label>

@@ -77,7 +77,7 @@ class EnableAdjustment extends Component {
       // ros message
       checked: this.props.enabled,
       // value used by the input field and the slider
-      value: Math.round(this.props.adjustment * 3.5),
+      value: Math.round(this.props.adjustment * 100),
       // scaled is for sending updates to the ROS message
       // adjustment is the field name in the ROS message
       scaled: this.props.adjustment
@@ -108,7 +108,7 @@ class EnableAdjustment extends Component {
     ) {
       this.setState({
         checked: enabled,
-        value: Math.round(adjustment * 3.5),
+        value: Math.round(adjustment * 100),
         scaled: adjustment
       })
     }
@@ -146,14 +146,14 @@ class EnableAdjustment extends Component {
   // Handler for slider value changes
   onSliderValueChange(value) {
     this.onValueChange(value)
-    this.sendUpdate(this.state.checked, value / 3.5, true)
+    this.sendUpdate(this.state.checked, value / 100, true)
   }
 
   // Function for updating state to new value
   onValueChange(value) {
     this.setState({
       value: Math.round(value),
-      scaled: value / 3.5
+      scaled: value / 100
     })
   }
 
@@ -165,7 +165,7 @@ class EnableAdjustment extends Component {
 
   // Handler function called when user releases mouse on slider
   onValueAfterChange(value) {
-    this.sendUpdate(this.state.checked, value / 3.5)
+    this.sendUpdate(this.state.checked, value / 100)
   }
 
   // Function for sending updated state through rosbridge
