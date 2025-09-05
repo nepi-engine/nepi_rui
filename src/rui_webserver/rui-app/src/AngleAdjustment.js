@@ -65,8 +65,8 @@ class AngleAdjustment extends Component {
     const { offset, total } = this.props
     this.state = {
       // offset and total are used by the sliders for their values
-      offset: offset * 3.5,
-      total: total * 3.5,
+      offset: offset * 100,
+      total: total * 100,
       // scaled offset and total are used for communicating with ROS messages
       scaled_offset: offset,
       scaled_total: total,
@@ -101,8 +101,8 @@ class AngleAdjustment extends Component {
       (!disabled && prevProps.disabled)
     ) {
       this.setState({
-        offset: offset * 3.5,
-        total: total * 3.5,
+        offset: offset * 100,
+        total: total * 100,
         scaled_offset: offset,
         scaled_total: total,
         input_offset: Math.round(offset * 100),
@@ -129,14 +129,14 @@ class AngleAdjustment extends Component {
   onOffsetChange(value) {
     this.setState({
       offset: value,
-      scaled_offset: value / 3.5,
+      scaled_offset: value / 100,
       input_offset: Math.round(value)
     })
   }
   onTotalChange(value) {
     this.setState({
       total: value,
-      scaled_total: value / 3.5,
+      scaled_total: value / 100,
       input_total: Math.round(value)
     })
   }
@@ -163,10 +163,10 @@ class AngleAdjustment extends Component {
 
   // Functions for sending value changes through rosbridge
   sendOffsetUpdate(value, throttled = false) {
-    this.sendUpdate(value / 3.5, this.state.scaled_total, throttled)
+    this.sendUpdate(value / 100, this.state.scaled_total, throttled)
   }
   sendTotalUpdate(value, throttled = false) {
-    this.sendUpdate(this.state.scaled_offset, value / 3.5, throttled)
+    this.sendUpdate(this.state.scaled_offset, value / 100, throttled)
   }
   sendUpdate(offset, total, throttled = false) {
     this.props.ros.publishAngle3DX(this.props.topic, offset, total, throttled)

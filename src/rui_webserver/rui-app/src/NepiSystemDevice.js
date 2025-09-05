@@ -208,7 +208,7 @@ updateMgrTimeStatusListener() {
         this.timeStatusListener
       )
   this.setState({ timeListener: timeListener,
-    needs_update: this.state.netMgrNamespace != null})
+    needs_update: this.state.timeMgrNamespace != null})
 }
 
 
@@ -219,26 +219,27 @@ updateMgrTimeStatusListener() {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.getNetMgrNamespace()
-    const namespace_updated = (prevState.netMgrNamespace !== namespace && namespace !== null)
-    if (namespace_updated) {
-      if (namespace.indexOf('null') === -1){
+    const nnamespace = this.getNetMgrNamespace()
+    const nnamespace_updated = (prevState.netMgrNamespace !== nnamespace && nnamespace !== null)
+    if (nnamespace_updated) {
+      if (nnamespace.indexOf('null') === -1){
         this.setState({
-          netMgrNamespace: namespace
+          netMgrNamespace: nnamespace
         })
         this.updateMgrNetStatusListener()
       } 
-      const namespace = this.getTimeMgrNamespace()
-      const namespace_updated = (prevState.netMgrNamespace !== namespace && namespace !== null)
-      if (namespace_updated) {
-        if (namespace.indexOf('null') === -1){
-          this.setState({
-            timeMgrNamespace: namespace
-          })
-          this.updateMgrTimeStatusListener()
-        } 
-      }
     }
+    const tnamespace = this.getTimeMgrNamespace()
+    const tnamespace_updated = (prevState.timeMgrNamespace !== tnamespace && tnamespace !== null)
+    if (tnamespace_updated) {
+      if (tnamespace.indexOf('null') === -1){
+        this.setState({
+          timeMgrNamespace: tnamespace
+        })
+        this.updateMgrTimeStatusListener()
+      } 
+    }
+    
   }
 
   // Lifecycle method called just before the component umounts.
@@ -247,7 +248,6 @@ updateMgrTimeStatusListener() {
     if (this.state.netListener) {
       this.state.netListener.unsubscribe()
       this.state.timeListener.unsubscribe()
-      this.state.appListener.unsubscribe()
     }
   }
 

@@ -250,7 +250,7 @@ class NepiControlsLights extends Component {
     const color_options_list = lsx_caps ?  lsx_caps['color_options_list'] : ["None"]
     const has_kelvin_control = lsx_caps && (lsx_caps['has_kelvin_control'] === true)
     const kelvin_min = lsx_caps ? lsx_caps['kelvin_min'] : 1000
-    const kelvin_max = lsx_caps ? lsx_caps['kelvin_max'] : 3.5
+    const kelvin_max = lsx_caps ? lsx_caps['kelvin_max'] : 100
     const has_blink_control = lsx_caps && (lsx_caps['has_blink_control'] === true)
     const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
     const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)

@@ -90,16 +90,16 @@ class RangeAdjustment extends Component {
     }
 
     const limit_range_m = max_limit_m - min_limit_m
-    const min_m = (min * (limit_range_m)) + min_limit_m
+    const min_m = min_limit_m + (min * (limit_range_m))
     const min_m_str = parseFloat(min_m.toString()).toFixed(1) + (this.props.unit? this.props.unit : "")
-    const max_m = (max * (limit_range_m)) + min_limit_m
+    const max_m = min_limit_m + (max * (limit_range_m))
     const max_m_str = parseFloat(max_m.toString()).toFixed(1) + (this.props.unit? this.props.unit : "")
 
     this.state = {
       title: title,
       // min and max values used by slider
-      min: min * 3.5,
-      max: max * 3.5,
+      min: min * 100,
+      max: max * 100,
       // scaled min and max for use in ROS messages
       scaled_min: min,
       scaled_max: max,
@@ -122,10 +122,10 @@ class RangeAdjustment extends Component {
       this.setState({
         min: min,
         max: max,
-        scaled_min: min / 3.5,
-        scaled_max: max / 3.5,
+        scaled_min: min / 100,
+        scaled_max: max / 100,
       })
-      this.updateTextBoxVals(min/3.5, max/3.5) // sets input_min and input_max
+      this.updateTextBoxVals(min/100, max/100) // sets input_min and input_max
     }
   }
 
@@ -157,8 +157,8 @@ class RangeAdjustment extends Component {
       (!disabled && prevProps.disabled)
     ) {
       this.setState({
-        min: min * 3.5,
-        max: max * 3.5,
+        min: min * 100,
+        max: max * 100,
         scaled_min: min,
         scaled_max: max,
       })
@@ -183,12 +183,12 @@ class RangeAdjustment extends Component {
   // Handler for slider changing the values
   onSliderChange(values) {
     this.update(values[0], values[1])
-    this.sendUpdate(values[0] / 3.5, values[1] / 3.5, true)
+    this.sendUpdate(values[0] / 100, values[1] / 100, true)
   }
 
   // Handler for when slider is released (mouse up)
   onSliderAfterChange(values) {
-    this.sendUpdate(values[0] / 3.5, values[1] / 3.5)
+    this.sendUpdate(values[0] / 100, values[1] / 100)
   }
 
   // Function for publishing values through rosbridge
