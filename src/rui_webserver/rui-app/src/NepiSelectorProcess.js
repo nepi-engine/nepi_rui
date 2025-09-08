@@ -13,6 +13,7 @@ import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
+import TargetsMgr from "./NepiMgrTargets"
 import AiDetectorMgr from "./NepiMgrAiDetector"
 //import AiSegmentorMgr from "./NepiMgrAiSegmentor"
 //import AiPoserMgr from "./NepiMgrAiPoser"
@@ -27,7 +28,7 @@ import AppRender from "./Nepi_IF_Apps"
 @observer
 
 // Pointcloud Application page
-class AiSelector extends Component {
+class ProcessSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -258,6 +259,16 @@ class AiSelector extends Component {
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else {
+      if (appsList.length > 0){
+        for (var i = 0; i < ruiList.length; i++) {
+          if (groupList[i] === "Process" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          }
+        }
+      }
+
+      items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
+
       if (activeModelTypes.indexOf('detection') !== -1){
         items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
       }
@@ -270,16 +281,8 @@ class AiSelector extends Component {
       if (activeModelTypes.indexOf('orientation') !== -1){
         items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
       }
-
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "AI" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
-          }
-        }
-      }
-
-      items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
+      
+      items.push(<Option value={'Model Manager'}>{'Model Manager'}</Option>)
       //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
     }
     return items
@@ -297,7 +300,7 @@ class AiSelector extends Component {
         <Column>
 
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Select AI App"}
+          {"Select Process App"}
          </label>
          
 
@@ -332,6 +335,24 @@ class AiSelector extends Component {
 
     const {appNameList, appStatusList} = this.props.ros
   
+    if (sel_app === "Targeting"){
+      return (
+        <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+            </label>
+            <Columns>
+            <Column>
+
+              <TargetsMgr
+              title={"Targeting"}
+              />
+
+          </Column>
+          </Columns>  
+        </React.Fragment>
+      )
+    }
     if (sel_app === "AI Detector"){
       return (
         <React.Fragment>
@@ -350,6 +371,7 @@ class AiSelector extends Component {
         </React.Fragment>
       )
     }
+
     {/*
     if (sel_app === "AI Segmentor"){
       return (
@@ -406,7 +428,7 @@ class AiSelector extends Component {
       )
     }
   */}
-    if (sel_app === "AI Model Manager"){
+    if (sel_app === "Model Manager"){
       return (
         <React.Fragment>
             <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
@@ -416,7 +438,7 @@ class AiSelector extends Component {
             <Column>
 
               <AifsMgr
-              title={"AI Model Manager"}
+              title={"Model Manager"}
               />
 
           </Column>
@@ -476,4 +498,4 @@ class AiSelector extends Component {
 
 }
 
-export default AiSelector
+export default ProcessSelector
