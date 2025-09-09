@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright (c) 2024 Numurus, LLC <https://www.numurus.com>.
 #

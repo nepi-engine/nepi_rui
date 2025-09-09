@@ -117,9 +117,10 @@ class NepiDevicePTX extends Component {
       panScanMax: null,
       tiltScanMin: null,
       tiltScanMax: null,
-
+      /*
       sinPanEnabled: false,
-      sinTiltEnabled: false,
+      #sinTiltEnabled: false,
+      */
 
       speed_pan_dps: 0,
       speed_tilt_dps: 0,
@@ -344,8 +345,10 @@ class NepiDevicePTX extends Component {
       autoTiltEnabled: message.auto_tilt_enabled,
       autoTiltMin: message.auto_tilt_range_window.start_range,
       autoTiltMax: message.auto_tilt_range_window.stop_range,
+      /*
       sinPanEnabled: message.sin_pan_enabled,
       sinTiltEnabled: message.sin_tilt_enabled,
+      */
       speed_pan_dps: message.speed_pan_dps,
       speed_tilt_dps: message.speed_tilt_dps,
     })
@@ -472,7 +475,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
             panMaxSoftstopDeg, tiltMaxSoftstopDeg, panMinSoftstopDeg, tiltMinSoftstopDeg,
             panMinSoftstopEdited, tiltMinSoftstopEdited, panMaxSoftstopEdited, tiltMaxSoftstopEdited,
             speedRatio, panHomePosEdited, tiltHomePosEdited,
-            reversePanEnabled, reverseTiltEnabled, autoPanEnabled, autoTiltEnabled,sinPanEnabled ,sinTiltEnabled, speed_pan_dps, speed_tilt_dps  } = this.state
+            reversePanEnabled, reverseTiltEnabled, autoPanEnabled, autoTiltEnabled, speed_pan_dps, speed_tilt_dps  } = this.state /*sinPanEnabled ,sinTiltEnabled*/
 
     const namespace = this.state.namespace
     const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
@@ -670,30 +673,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
           </div>
         </Label>
 
-        <div hidden={(autoPanEnabled === false && autoTiltEnabled === false)}>
-        <Label title={"Enable Sin Scan"}>
 
-        <div hidden={(autoPanEnabled === false)}>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-            <Toggle
-              checked={this.state.sinPanEnabled}
-              onClick={() => sendBoolMsg(namespace + "/set_auto_pan_sin_enable", !this.state.sinPanEnabled)
-              }
-            />
-          </div>
-        </div>
-
-        <div hidden={(autoTiltEnabled === false)}>
-          <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-            <Toggle
-              checked={this.state.sinTiltEnabled}
-              onClick={() => sendBoolMsg(namespace + "/set_auto_tilt_sin_enable", !this.state.sinTiltEnabled)
-              }
-            />
-          </div>
-        </div>
-          </Label>
-        </div>
 
         <Label title={"Min Scan Limits"}>
 
