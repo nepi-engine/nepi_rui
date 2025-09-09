@@ -13,8 +13,6 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 
 import OnvifMgr from "./NepiAppOnvifMgr"
-import AiTargetingApp from "./NepiAppAiTargeting"
-import AiAlertsApp from "./NepiAppAiAlerts"
 import AiPtTrackerApp from "./NepiAppAiPtTracker"
 import FilePubImgApp from "./NepiAppFilePubImg"
 import FilePubVidApp from "./NepiAppFilePubVid"
@@ -25,8 +23,6 @@ import ImageViewerApp from "./NepiAppImageViewer"
 
 const appsClassMap = new Map([
   ["OnvifMgr", OnvifMgr],
-  ["AiTargetingApp", AiTargetingApp],
-  ["AiAlertsApp", AiAlertsApp],
   ["AiPtTrackerApp", AiPtTrackerApp],
   ["FilePubImgApp", FilePubImgApp],
   ["FilePubVidApp", FilePubVidApp],
