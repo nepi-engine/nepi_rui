@@ -12,24 +12,12 @@ import { observer, inject } from "mobx-react"
 
 import { Columns, Column } from "./Columns"
 
-import OnvifMgr from "./NepiAppOnvifMgr"
-import AiPtTrackerApp from "./NepiAppAiPtTracker"
-import FilePubImgApp from "./NepiAppFilePubImg"
-import FilePubVidApp from "./NepiAppFilePubVid"
-import FilePubPcdApp from "./NepiAppFilePubPcd"
-import PointcloudViewerApp from "./NepiAppPointcloudViewer"
-import ImageViewerApp from "./NepiAppImageViewer"
 
 
-const appsClassMap = new Map([
-  ["OnvifMgr", OnvifMgr],
-  ["AiPtTrackerApp", AiPtTrackerApp],
-  ["FilePubImgApp", FilePubImgApp],
-  ["FilePubVidApp", FilePubVidApp],
-  ["FilePubPcdApp", FilePubPcdApp],
-  ["PointcloudViewerApp", PointcloudViewerApp],
-  ["ImageViewerApp", ImageViewerApp]
-]);
+import NepiAppsMap from "./NepiApps"
+
+const NepiAppsMapInstance = new NepiAppsMap()
+const appsClassMap = NepiAppsMapInstance.appsClassMap
 
 
 @inject("ros")
