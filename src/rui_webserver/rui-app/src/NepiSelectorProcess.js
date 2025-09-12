@@ -261,7 +261,7 @@ class ProcessSelector extends Component {
     else {
       if (appsList.length > 0){
         for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "Process" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+          if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
             items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
           }
         }
