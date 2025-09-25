@@ -16,7 +16,7 @@ import LaserLinesApp from "./NepiAppLaserLines"
 
 
 class NepiAppsMap extends Component {
-  this.appsClassMap = new Map()
+  appsClassMap = new Map()
   // ADD APP TO CLASSMAP HERE
   appsClassMap.set("LaserLinesApp", LaserLinesApp)
 
