@@ -358,7 +358,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
         this.setState({ settings_namespace: cur_namespace})
       }
     }
-    return cur_namespace + '/settings'
+    return cur_namespace
   }
 
   renderDriverConfigure() {
