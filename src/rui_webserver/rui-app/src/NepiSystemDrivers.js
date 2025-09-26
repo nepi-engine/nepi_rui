@@ -365,7 +365,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
     const { sendStringMsg, sendUpdateOrderMsg, sendUpdateStateMsg, } = this.props.ros
     const NoneOption = <Option>None</Option>
     const namespace = this.getSettingsNamespace()
-    const check_topic = namespace + "/status"
+    const check_topic = namespace + "/settings/status"
     const {topicNames} = this.props.ros
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
     const settings_namespace = topic_publishing ? namespace : ""
