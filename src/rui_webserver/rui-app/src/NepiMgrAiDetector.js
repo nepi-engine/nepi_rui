@@ -612,6 +612,8 @@ renderDetectorSettings() {
       const detection_state = det_msg.detection_state
       const det_running = (detector_state === "Running")
 
+
+      const pub_image_enabled = det_msg.pub_image_enabled
       const overlay_labels = det_msg.overlay_labels
       const overlay_detector_name = det_msg.overlay_clf_name
       const overlay_img_name = det_msg.overlay_img_name
@@ -876,35 +878,44 @@ renderDetectorSettings() {
             <Columns>
             <Column>
 
-                <Label title="Use Last Image">
+                  <Label title="Publish Image">
                   <Toggle
-                  checked={use_last_image===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_use_last_image", use_last_image===false)}>
-                  </Toggle>
-                  </Label>
-
-                <Label title="Overlay Labels">
-                  <Toggle
-                  checked={overlay_labels===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_labels", overlay_labels===false)}>
-                  </Toggle>
-                </Label>
-
-                <Label title="Overlay Image Name">
-                  <Toggle
-                  checked={overlay_img_name===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_img_name", overlay_img_name===false)}>
+                  checked={pub_image_enabled===true}
+                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_image_pub", pub_image_enabled===false)}>
                   </Toggle>
                   </Label>
 
 
-                  <Label title="Overlay Classifier">
-                  <Toggle
-                  checked={overlay_detector_name===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_clf_name", overlay_detector_name===false)}>
-                  </Toggle>
+                <div hidden={pub_image_enabled === false}>
+                  <Label title="Use Last Image">
+                    <Toggle
+                    checked={use_last_image===true}
+                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_use_last_image", use_last_image===false)}>
+                    </Toggle>
+                    </Label>
+
+                  <Label title="Overlay Labels">
+                    <Toggle
+                    checked={overlay_labels===true}
+                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_labels", overlay_labels===false)}>
+                    </Toggle>
                   </Label>
 
+                  <Label title="Overlay Image Name">
+                    <Toggle
+                    checked={overlay_img_name===true}
+                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_img_name", overlay_img_name===false)}>
+                    </Toggle>
+                    </Label>
+
+
+                    <Label title="Overlay Classifier">
+                    <Toggle
+                    checked={overlay_detector_name===true}
+                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_clf_name", overlay_detector_name===false)}>
+                    </Toggle>
+                    </Label>
+                </div>
 
               </Column>
               <Column>
