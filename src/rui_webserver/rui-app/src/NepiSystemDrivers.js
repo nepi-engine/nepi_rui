@@ -60,6 +60,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       driver_group_id: null,
       driver_interfaces: null, 
       driver_active_state: null,
+      driver_running_state: null,
       driver_order: 0,
       driver_msg_str: "",
       
@@ -162,6 +163,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       driver_type: message.type,
       driver_group_id: message.group_id,
       driver_active_state: message.active_state,
+      driver_running_state: message.running_state,
       driver_order: message.order,
       driver_msg_str: message.msg_str
     })
@@ -404,8 +406,8 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
       </Column>
       <Column>
 
-      <Label title={"Driver Enabled"}>
-          <BooleanIndicator value={(this.state.driver_active_state !== null)? this.state.driver_active_state : false} />
+      <Label title={"Driver Running"}>
+          <BooleanIndicator value={(this.state.driver_running_state !== null)? this.state.driver_running_state : false} />
         </Label>
         
       </Column>
