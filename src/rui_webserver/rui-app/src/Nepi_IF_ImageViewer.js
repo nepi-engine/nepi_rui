@@ -244,6 +244,7 @@ class ImageViewer extends Component {
 
   componentDidMount() {
     this.updateImageSource()
+    this.updateStatusListener()
   }
 
   onChangeImageQuality(quality) {

@@ -43,7 +43,7 @@ function round(value, decimals = 0) {
 @observer
 
 // Component that contains the PTX controls
-class NepiDevicePTX extends Component {
+class NepiDevicePTXControls extends Component {
   constructor(props) {
     super(props)
 
