@@ -632,6 +632,7 @@ renderDetectorSettings() {
       const det_latency = round(det_msg.detect_latency_time, 3)
       const pre_time = round(det_msg.preprocess_time, 3)
       const det_time = round(det_msg.detect_time, 3)
+      const max_rate = round(1 / det_time, 3)
       const rate_hz = round(det_msg.avg_rate_hz, 3)
       const img_options = this.createImageTopicsOptions()
 
@@ -721,6 +722,7 @@ renderDetectorSettings() {
 
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
         {"\n Avg Detect Latency: " + det_time +
+        "\n Avg Detect Rate Hz: " + rate_hz +
         "\n Max Detect Rate Hz: " + rate_hz}
         
         </pre>

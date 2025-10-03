@@ -267,8 +267,6 @@ class ProcessSelector extends Component {
         }
       }
 
-      items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
-
       if (activeModelTypes.indexOf('detection') !== -1){
         items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
       }
@@ -281,6 +279,8 @@ class ProcessSelector extends Component {
       if (activeModelTypes.indexOf('orientation') !== -1){
         items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
       }
+
+      items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
       
       items.push(<Option value={'Model Manager'}>{'Model Manager'}</Option>)
       //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
