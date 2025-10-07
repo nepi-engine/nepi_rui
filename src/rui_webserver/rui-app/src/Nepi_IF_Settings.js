@@ -425,8 +425,7 @@ class Nepi_IF_Settings extends Component {
                   onChange={this.onUpdateInputSettingValue} 
                   onKeyDown= {this.onKeySaveInputSettingValue} />
               </Label>
-              <Label title={"* Some changes may require power cycle"}>
-              </Label>
+
           </div>
 
 
