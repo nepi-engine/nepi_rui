@@ -260,35 +260,7 @@ class NepiDeviceIDXControls extends Component {
                   </div>
                   */}
 
-                        <Columns>
-                        <Column>
-
-                        <Label title={"Width (Deg)"}>
-                          <Input
-                            value={this.state.width_deg}
-                            id="image_width"
-                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"image_width")}
-                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_width_deg')}
-                            style={{ width: "80%" }}
-                          />
-                        </Label>
-
-
-                            </Column>
-                            <Column>
-
-                            <Label title={"Height (Deg)"}>
-                          <Input
-                            value={this.state.height_deg}
-                            id="image_height"
-                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"image_height")}
-                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_height_deg')}
-                            style={{ width: "80%" }}
-                          />
-                        </Label>
-
-                            </Column>
-                          </Columns>  
+        
 
 
 
@@ -470,8 +442,38 @@ class NepiDeviceIDXControls extends Component {
                           />
                         </div>
 
+                        <Columns>
+                        <Column>
+
+                        <Label title={"Width (Deg)"}>
+                          <Input
+                            value={this.state.width_deg}
+                            id="image_width"
+                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"image_width")}
+                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_width_deg')}
+                            style={{ width: "80%" }}
+                          />
+                        </Label>
 
 
+                            </Column>
+                            <Column>
+
+                            <Label title={"Height (Deg)"}>
+                          <Input
+                            value={this.state.height_deg}
+                            id="image_height"
+                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"image_height")}
+                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_height_deg')}
+                            style={{ width: "80%" }}
+                          />
+                        </Label>
+
+                            </Column>
+                          </Columns>  
+
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                 <Columns>
                       <Column>

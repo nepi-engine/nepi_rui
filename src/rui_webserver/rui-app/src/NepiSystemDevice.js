@@ -686,6 +686,7 @@ updateMgrTimeStatusListener() {
       onToggleSyncTimezone,
       onSyncTimezone,
       setTimezoneUTC,
+      ntp_sources,
       clockNTP,
       syncTime2Device
     } = this.props.ros
@@ -832,9 +833,9 @@ updateMgrTimeStatusListener() {
                 </Label>
 
 
-                <Label title={"Primary NTP Address:"}>
+                <Label title={"NTP Addresses:"}>
                           <pre style={{ height: "25px", overflowY: "auto" }}>
-                            {'  ' + primary_addr }
+                            {'  ' + ntp_sources }
                           </pre>
                 </Label>
 

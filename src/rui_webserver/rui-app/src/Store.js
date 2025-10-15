@@ -176,6 +176,7 @@ class ROSConnectionStore {
   @observable systemStatusTimezone = null
   @observable clockTZ = this.get_timezone_desc()
   @observable clockNTP = false
+  @observable ntp_sources = []
   @observable clockPPS = false
 
   @observable blankNavPose = {
@@ -1979,6 +1980,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
       })
 
       // if last_ntp_sync is 10y, no sync has happened
+      this.ntp_sources = this.timeStatus.time_status.ntp_sources
       this.clockNTP = false
       const currentlySyncd = this.timeStatus.time_status.currently_syncd
       currentlySyncd &&
