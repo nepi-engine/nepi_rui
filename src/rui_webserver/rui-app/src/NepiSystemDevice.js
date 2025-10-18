@@ -76,7 +76,7 @@ class NepiSystemDevice extends Component {
 
       netStatus: null,
       last_netStatus: null,
-      netConnected: true,
+      wifi_client_connected: true,
       netListener: null,
 
 
@@ -147,7 +147,7 @@ class NepiSystemDevice extends Component {
   netStatusListener(message) {
     this.setState({
       netStatus: message,
-      netConnected: true
+      wifi_client_connected: true
     })    
   }
 
@@ -923,11 +923,10 @@ updateMgrTimeStatusListener() {
     const primary_addr = (netStatus !== null)? netStatus.primary_ip_addr : ''
     const managed_addrs = (netStatus !== null)? netStatus.managed_ip_addrs : []
     const dhcp_addr = (netStatus !== null)? netStatus.dhcp_ip_addr : ''
-    const internet_netConnected = dhcp_enabled ? ((netStatus !== null)? netStatus.internet_netConnected : false):false
+    const internet_connected = (netStatus !== null)? netStatus.internet_connected : false
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
-    const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock to use DHCP"
+    const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-
     const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
     const license_restricted = systemRestrictions.indexOf('License') !== -1
     const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
@@ -958,8 +957,22 @@ updateMgrTimeStatusListener() {
         </Label>
 
         <Label title={"Internet Connected"}>
-          <BooleanIndicator value={internet_netConnected} />
+          <BooleanIndicator value={internet_connected} />
         </Label>
+
+          <Columns>
+              <Column>
+
+                  <div hidden={clock_skewed === false}> 
+
+                            <pre style={{ height: "25px", overflowY: "auto" , color: Styles.vars.colors.red }}>
+                                {message}
+                              </pre>
+
+                  </div>
+
+              </Column>
+          </Columns>
 
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -988,39 +1001,49 @@ updateMgrTimeStatusListener() {
                       </Label>
 
 
+                        <div hidden={dhcp_enabled === true}> 
+
+                                  <Label title={"DHCP Enable"}>
+                                        <Toggle
+                                          checked={dhcp_enabled}
+                                          onClick= {onToggleDHCPEnabled}
+                                        />
+                                      </Label>
+                          
+                          </div>
 
 
-                        <Columns>
-                      <Column>
+                        <div hidden={dhcp_enabled === false}>
 
-                  <div hidden={clock_skewed === false}> 
+                              <Columns>
+                                  <Column>
 
-                            <pre style={{ height: "25px", overflowY: "auto" , color: Styles.vars.colors.red }}>
-                                {message}
-                              </pre>
-
-                  </div>
-
-                          </Column>
-                      </Columns>
-
-                          <Label title={"DHCP Enable"}>
-                                <Toggle
-                                  checked={dhcp_enabled}
-                                  onClick= {onToggleDHCPEnabled}
-                                />
-                              </Label>
+                                      
 
 
-                  <div hidden={dhcp_enabled === false}>
+                                            <Label title={"DHCP Enabled"}>
+                                            <BooleanIndicator value={true} />
+                                          </Label>
 
-                                <Label title={"DHCP IP Addresses"}>
-                                  <pre style={{ height: "25px", overflowY: "auto" }}>
-                                    {dhcp_addr}
-                                  </pre>
-                                </Label>
 
-                    </div>
+
+                                  </Column>
+                                  <Column>
+
+
+                                        <Label title={"DHCP IP Addresses"}>
+                                          <pre style={{ height: "25px", overflowY: "auto" }}>
+                                            {dhcp_addr}
+                                          </pre>
+                                        </Label>
+
+
+
+                                    </Column>
+                                </Columns>
+                              </div>
+
+
 
 
                 </Column>
@@ -1151,13 +1174,12 @@ updateMgrTimeStatusListener() {
 
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock to Connect to Internet"
-    const netConnected = (netStatus !== null)? netStatus.wifi_client_netConnected : false
+    const wifi_client_connected = (netStatus !== null)? netStatus.wifi_client_connected : false
     const connecting = (netStatus !== null)? netStatus.wifi_client_connecting : false
-    const internet_netConnected = netConnected ? ((netStatus !== null)? netStatus.internet_netConnected : false) : false
 
     
-    const connect_text = (netConnected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
-    const connect_value = (netConnected === true) ? true : connecting
+    const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
+    const connect_value = (wifi_client_connected === true) ? true : connecting
     
     const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
     const license_restricted = systemRestrictions.indexOf('License') !== -1
@@ -1417,7 +1439,6 @@ updateMgrTimeStatusListener() {
 
   render() {
     const netStatus = this.state.netStatus
-    const internet_netConnected = (netStatus !== null)? netStatus.wifi_client_netConnected : false
     return (
       <Columns>
         <Column>
@@ -1427,10 +1448,9 @@ updateMgrTimeStatusListener() {
         </Column>
         <Column>
 
-          {this.renderTimeMgr()}
           {this.renderNetworkMgr()}
+          {this.renderTimeMgr()}
           
-
         </Column>
       </Columns>
     )
