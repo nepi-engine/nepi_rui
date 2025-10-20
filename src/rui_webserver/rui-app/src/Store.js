@@ -1902,7 +1902,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
   @action.bound
   async onStartSysBackup() {
     this.publishMessage({
-      name: "archive_inactive_rootfs",
+      name: "save_nepi_image",
       messageType: "std_msgs/Empty",
       data: {}
     })
