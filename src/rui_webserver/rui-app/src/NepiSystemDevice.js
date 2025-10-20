@@ -722,7 +722,7 @@ updateMgrTimeStatusListener() {
  
     
     return (
-      <Section title={"System Time"}>
+      <Section title={"Time"}>
         <Label title={"NTP"}>
           <BooleanIndicator value={clockNTP} />
         </Label>
@@ -1241,6 +1241,8 @@ updateMgrTimeStatusListener() {
     
         return (
 
+      <Section title={"WiFi"}>
+
           <Columns>
           <Column>
 
@@ -1369,7 +1371,8 @@ updateMgrTimeStatusListener() {
             </div>
         </Column>
         </Columns>
-          
+        
+      </Section>
         )
 
       }
