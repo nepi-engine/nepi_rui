@@ -1884,7 +1884,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
   @action.bound
   async onInstallFullSysImg(new_img_filename) {
     this.publishMessage({
-      name: "install_new_image",
+      name: "install_nepi_image",
       messageType: "std_msgs/String",
       data: { data: new_img_filename }
     })    

@@ -189,8 +189,8 @@ class Nav extends Component {
         </Columns>
         {unlicensed?
           <Label
-            labelStyle={{ color: Styles.vars.colors.red, fontWeight: "bold", fontSize: Styles.vars.fontSize.large}}
-            title={"LICENSE ACTIVATION REQUIRED"}
+            labelStyle={{ color: Styles.vars.colors.red, fontWeight: "bold", fontSize: Styles.vars.fontSize.medium}}
+            title={"UNLICENSED - DEMO USE ONLY"}
           />
           : null
         }
