@@ -28,7 +28,7 @@ class NepiSystemSoftware extends Component {
     renderSysPartitionSettings() {
       const {
         systemDefs,
-        onSwitchActiveInactiveRootfs,
+        onSwitchNepitImage,
         systemStatus
       } = this.props.ros
 
@@ -54,7 +54,7 @@ class NepiSystemSoftware extends Component {
             <Input disabled value={systemDefs? systemDefs.max_boot_fail_count : ""} style={{width: '100%'}}/>
           </Label>
           <ButtonMenu>
-            <Button onClick={onSwitchActiveInactiveRootfs}>{"Switch Active/Inactive"}</Button>
+            <Button onClick={onSwitchNepitImage}>{"Switch Active/Inactive"}</Button>
           </ButtonMenu>                    
         </Section>
       )

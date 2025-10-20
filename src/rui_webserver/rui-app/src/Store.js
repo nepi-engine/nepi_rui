@@ -1891,9 +1891,9 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
   }
 
   @action.bound
-  async onSwitchActiveInactiveRootfs() {
+  async onSwitchNepitImage() {
     this.publishMessage({
-      name: "switch_active_inactive_rootfs",
+      name: "switch_nepi_image",
       messageType: "std_msgs/Empty",
       data: {}
     })
