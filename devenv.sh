@@ -11,7 +11,7 @@
 # Setup environment
 
 # Use the correct python and npm
-source ./venv/bin/activate || echo "Failed to load venv"
+#source ./venv/bin/activate || echo "Failed to load venv"
 source ~/.nvm/nvm.sh
 # Set environment variables
 export RUI_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
