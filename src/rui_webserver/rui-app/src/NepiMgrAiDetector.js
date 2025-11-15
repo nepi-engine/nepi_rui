@@ -723,7 +723,7 @@ renderDetectorSettings() {
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
         {"\n Avg Detect Latency: " + det_time +
         "\n Avg Detect Rate Hz: " + rate_hz +
-        "\n Max Detect Rate Hz: " + rate_hz}
+        "\n Max Detect Rate Hz: " + max_rate}
         
         </pre>
 

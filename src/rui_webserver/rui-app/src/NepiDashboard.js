@@ -144,9 +144,6 @@ class NepiDashboard extends Component {
     } = this.props.ros
     return (
       <Section title={"Device Info"}>
-        <Label title={"Type"}>
-          <Input disabled value={deviceType} />
-        </Label>
         <Label title={"Device ID"}>
           <Input disabled value={deviceId} />
         </Label>
