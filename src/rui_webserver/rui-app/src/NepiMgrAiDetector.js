@@ -632,8 +632,9 @@ renderDetectorSettings() {
       const det_latency = round(det_msg.detect_latency_time, 3)
       const pre_time = round(det_msg.preprocess_time, 3)
       const det_time = round(det_msg.detect_time, 3)
-      const max_rate = round(1 / det_time, 3)
+
       const rate_hz = round(det_msg.avg_rate_hz, 3)
+      const max_rate = round(det_msg.max_rate_hz, 3)
       const img_options = this.createImageTopicsOptions()
 
       const img_list_viewable = this.state.img_list_viewable
@@ -641,11 +642,86 @@ renderDetectorSettings() {
       const detector_display_name = detector_name.toUpperCase()
 
       return (
-
       <Columns>
       <Column>
 
-      <Label title={"DETECTOR"}></Label>
+
+
+          <Columns>
+        <Column>
+
+          <label align={"left"} textAlign={"left"}>
+              {"Select Images"}
+            </label>
+
+
+            </Column>
+          <Column>
+
+                <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+        <div onClick={this.toggleImagesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
+          <Select style={{width: "10px"}}/>
+        </div>
+        <div hidden={this.state.img_list_viewable === false}>
+        {img_options.map((image) =>
+        <div onClick={this.onImagesTopicSelected}
+          style={{
+            textAlign: "center",
+            padding: `${Styles.vars.spacing.xs}`,
+            color: Styles.vars.colors.black,
+            backgroundColor: (image.props.value === sel_img) ?
+              Styles.vars.colors.green :
+              (det_img_topics.indexOf(image.props.value) !== -1 ) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+            cursor: "pointer",
+            }}>
+            <body image-topic ={image} style={{color: Styles.vars.colors.black}}>{image}</body>
+        </div>
+        )}
+        </div>
+
+          </Column>
+          </Columns>
+
+
+
+          <Columns>
+        <Column>
+
+        <label align={"left"} textAlign={"left"}>
+            {"Select Classes"}
+          </label>
+
+
+            </Column>
+          <Column>
+
+                <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                <div onClick={this.toggleClassesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                      <Select style={{width: "10px"}}/>
+                    </div>
+                    <div hidden={this.state.classes_list_viewable === false}>
+                    {classOptions.map((Class) =>
+                    <div onClick={this.onToggleClassSelection}
+                      style={{
+                        textAlign: "center",
+                        padding: `${Styles.vars.spacing.xs}`,
+                        color: Styles.vars.colors.black,
+                        backgroundColor: (selectedClassesList.includes(Class.props.value))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                        cursor: "pointer",
+                        }}>
+                        <body class_name ={Class} style={{color: Styles.vars.colors.black}}>{Class}</body>
+                    </div>
+                    )}
+                    </div>
+
+          </Column>
+          </Columns>
+
+
+
+
 
         <Columns>
         <Column>
@@ -659,12 +735,28 @@ renderDetectorSettings() {
 
         </Column>
         <Column>
-        <Label title={"Running"}>
-                        <BooleanIndicator value={det_running} />
-                      </Label>
+
         </Column>
         </Columns>
 
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+      <Label title={"STATUS"}></Label>
+
+
+
+              <Columns>
+        <Column>
+
+        <Label title={"Running"}>
+                        <BooleanIndicator value={det_running} />
+         </Label>
+
+        </Column>
+        <Column>
+
+        </Column>
+        </Columns>
 
 
         <Label title={"IMAGE"}></Label>
@@ -751,81 +843,6 @@ renderDetectorSettings() {
         <Column>
 
 
-
-          </Column>
-          </Columns>
-
-
-          <Columns>
-        <Column>
-
-        <label align={"left"} textAlign={"left"}>
-            {"Select Classes"}
-          </label>
-
-
-            </Column>
-          <Column>
-
-                <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                <div onClick={this.toggleClassesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-                    <div hidden={this.state.classes_list_viewable === false}>
-                    {classOptions.map((Class) =>
-                    <div onClick={this.onToggleClassSelection}
-                      style={{
-                        textAlign: "center",
-                        padding: `${Styles.vars.spacing.xs}`,
-                        color: Styles.vars.colors.black,
-                        backgroundColor: (selectedClassesList.includes(Class.props.value))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                        cursor: "pointer",
-                        }}>
-                        <body class_name ={Class} style={{color: Styles.vars.colors.black}}>{Class}</body>
-                    </div>
-                    )}
-                    </div>
-
-          </Column>
-          </Columns>
-
-
-
-
-
-          <Columns>
-        <Column>
-
-        <label align={"left"} textAlign={"left"}>
-            {"Select Images"}
-          </label>
-
-
-            </Column>
-          <Column>
-
-                <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-        <div onClick={this.toggleImagesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
-          <Select style={{width: "10px"}}/>
-        </div>
-        <div hidden={this.state.img_list_viewable === false}>
-        {img_options.map((image) =>
-        <div onClick={this.onImagesTopicSelected}
-          style={{
-            textAlign: "center",
-            padding: `${Styles.vars.spacing.xs}`,
-            color: Styles.vars.colors.black,
-            backgroundColor: (image.props.value === sel_img) ?
-              Styles.vars.colors.green :
-              (det_img_topics.indexOf(image.props.value) !== -1 ) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-            cursor: "pointer",
-            }}>
-            <body image-topic ={image} style={{color: Styles.vars.colors.black}}>{image}</body>
-        </div>
-        )}
-        </div>
 
           </Column>
           </Columns>
