@@ -280,7 +280,7 @@ class ProcessSelector extends Component {
         items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
       }
 
-      items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
+      //items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
       
       items.push(<Option value={'Model Manager'}>{'Model Manager'}</Option>)
       //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)

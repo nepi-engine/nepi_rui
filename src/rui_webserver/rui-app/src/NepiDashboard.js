@@ -272,7 +272,7 @@ class NepiDashboard extends Component {
     
     return (
       <Section title={"System Clock"}>
-        <Label title={"NTP"}>
+        <Label title={"NTP Status"}>
           <BooleanIndicator value={clockNTP} />
         </Label>
         <Label title={"Time"}>
@@ -338,25 +338,23 @@ class NepiDashboard extends Component {
           <Input disabled value={roundWithSuffix(systemStatusTempC, 1, "\u00B0C")} />
         </Label>
 
-        <Label title={"Storage"}>
-          <Input disabled value={diskUsagePercent} />
-        </Label>
-
         <Label title={"Capacity"}>
           <Input disabled value={roundWithSuffix(systemDefsDiskCapacityMB / 1000.0, 1, "GB")} />
         </Label>
+
         {/*
+        <Label title={"AVAILABLE"}>
+          <Input disabled value={1 -diskUsagePercent} />
+        </Label>
+        */}
+
         <Label title={"Used"}>
           <Input disabled value={roundWithSuffix(systemStatusDiskUsageMB / 1000.0, 1, "GB")} />
         </Label>
-      */}
+
 
         <Label title={"Internet Connected"}>
           <BooleanIndicator value={internet_connected} />
-        </Label>
-
-        <Label title={"Debug Mode Enabled"}>
-          <BooleanIndicator value={debug_mode} />
         </Label>
 
 
