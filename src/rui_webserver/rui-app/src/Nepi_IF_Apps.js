@@ -15,7 +15,6 @@ import { Columns, Column } from "./Columns"
 import OnvifMgr from "./NepiAppOnvifMgr"
 import FilePubImgApp from "./NepiAppFilePubImg"
 import FilePubVidApp from "./NepiAppFilePubVid"
-import FilePubPcdApp from "./NepiAppFilePubPcd"
 import ImageViewerApp from "./NepiAppImageViewer"
 
 
@@ -23,7 +22,6 @@ const appsClassMap = new Map([
   ["OnvifMgr", OnvifMgr],
   ["FilePubImgApp", FilePubImgApp],
   ["FilePubVidApp", FilePubVidApp],
-  ["FilePubPcdApp", FilePubPcdApp],
   ["ImageViewerApp", ImageViewerApp]
 ]);
 
