@@ -404,6 +404,12 @@ class NepiIFSaveData extends Component {
                       />
                     </Label>
 
+
+                        <Label title={"Data Save Rate"}>
+                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+                        </Label>
+                        
+
                       <Label title="Show Controls">
                         <Toggle
                           checked={this.state.showControls===true}
@@ -484,9 +490,6 @@ class NepiIFSaveData extends Component {
                           <BooleanIndicator value={(this.getSaveDataValue() === true)} />
                         </Label>
 
-                        <Label title={"Data Save Rate"}>
-                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
-                        </Label>
 
                         <Label title={"Example Filename"}>
                         </Label>

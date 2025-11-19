@@ -615,6 +615,7 @@ renderDetectorSettings() {
 
       const pub_image_enabled = det_msg.pub_image_enabled
       const overlay_labels = det_msg.overlay_labels
+      const overlay_targeting = det_msg.overlay_targeting
       const overlay_detector_name = det_msg.overlay_clf_name
       const overlay_img_name = det_msg.overlay_img_name
 
@@ -633,6 +634,7 @@ renderDetectorSettings() {
       const pre_time = round(det_msg.preprocess_time, 3)
       const det_time = round(det_msg.detect_time, 3)
 
+      const latency_sec = round(det_msg.avg_latency_sec, 3)
       const rate_hz = round(det_msg.avg_rate_hz, 3)
       const max_rate = round(det_msg.max_rate_hz, 3)
       const img_options = this.createImageTopicsOptions()
@@ -813,7 +815,7 @@ renderDetectorSettings() {
 
 
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-        {"\n Avg Detect Latency: " + det_time +
+        {"\n Avg Detect Latency: " + latency_sec +
         "\n Avg Detect Rate Hz: " + rate_hz +
         "\n Max Detect Rate Hz: " + max_rate}
         
@@ -917,6 +919,13 @@ renderDetectorSettings() {
                     <Toggle
                     checked={overlay_labels===true}
                     onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_labels", overlay_labels===false)}>
+                    </Toggle>
+                  </Label>
+
+                  <Label title="Overlay Targeting">
+                    <Toggle
+                    checked={overlay_targeting===true}
+                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_targeting", overlay_targeting===false)}>
                     </Toggle>
                   </Label>
 
