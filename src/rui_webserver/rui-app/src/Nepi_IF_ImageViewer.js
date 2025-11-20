@@ -452,8 +452,8 @@ class ImageViewer extends Component {
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
       const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
-      const has_rotate = (capabilities && capabilities.has_rotate && !this.state.disabled)
-      const has_tilt = (capabilities && capabilities.has_tilt && !this.state.disabled)
+      const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
+      const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
       const has_enhances = (capabilities && capabilities.has_enhances && !this.state.disabled)
 
       const message = this.state.status_msg
@@ -471,8 +471,8 @@ class ImageViewer extends Component {
       const pan_lr_ratio = message.pan_left_right_ratio
       const pan_ud_ratio = message.pan_up_down_ratio
       const window_ratios = message.window_ratios
-      const rotate_ratio = message.rotate_ratio
-      const tilt_ratio = message.tilt_ratio
+      const rotate_3d_ratio = message.rotate_3d_ratio
+      const tilt_3d_ratio = message.tilt_3d_ratio
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
       const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') != -1)
@@ -689,13 +689,13 @@ class ImageViewer extends Component {
 
           </div>
 
-          <div hidden={(has_rotate !== true )}>
+          <div hidden={(has_rotate_3d !== true )}>
 
                       <SliderAdjustment
                             title={"Rotate"}
                             msgType={"std_msgs/Float32"}
-                            adjustment={rotate_ratio}
-                            topic={namespace + "/set_rotate_ratio"}
+                            adjustment={rotate_3d_ratio}
+                            topic={namespace + "/set_rotate_3d_ratio"}
                             scaled={0.01}
                             min={0}
                             max={100}
@@ -706,13 +706,13 @@ class ImageViewer extends Component {
 
           </div>
 
-          <div hidden={(has_tilt !== true )}>
+          <div hidden={(has_tilt_3d !== true )}>
 
                         <SliderAdjustment
                             title={"Tilt"}
                             msgType={"std_msgs/Float32"}
-                            adjustment={tilt_ratio}
-                            topic={namespace + "/set_tilt_ratio"}
+                            adjustment={tilt_3d_ratio}
+                            topic={namespace + "/set_tilt_3d_ratio"}
                             scaled={0.01}
                             min={0}
                             max={100}
