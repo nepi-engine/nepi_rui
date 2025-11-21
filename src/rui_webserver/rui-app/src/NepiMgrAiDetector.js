@@ -629,7 +629,6 @@ renderDetectorSettings() {
       const img_selected = det_msg.image_selected
       const img_connected = det_msg.image_connected
 
-      const image_receive_latency = round(det_msg.avg_image_receive_latency, 3)
       const image_receive_rate = round(det_msg.avg_image_receive_rate, 3)
 
       const image_process_time = round(det_msg.avg_image_process_time, 3)
@@ -824,7 +823,6 @@ renderDetectorSettings() {
 
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
         {"\n Avg Detect Rate: " + detect_process_rate +
-        "\n Avg Image Receive Latency: " + image_receive_latency +
         "\n Avg Image Process Latency: " + image_process_latency +
         "\n Avg Detect Publish Latency: " + detect_process_latency +
         "\n" +
