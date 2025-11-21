@@ -629,14 +629,22 @@ renderDetectorSettings() {
       const img_selected = det_msg.image_selected
       const img_connected = det_msg.image_connected
 
-      const img_latency = round(det_msg.image_latency_time, 3)
-      const det_latency = round(det_msg.detect_latency_time, 3)
-      const pre_time = round(det_msg.preprocess_time, 3)
-      const det_time = round(det_msg.detect_time, 3)
+      const image_receive_latency = round(det_msg.avg_image_receive_latency, 3)
+      const image_receive_rate = round(det_msg.avg_image_receive_rate, 3)
 
-      const latency_sec = round(det_msg.avg_latency_sec, 3)
-      const rate_hz = round(det_msg.avg_rate_hz, 3)
-      const max_rate = round(det_msg.max_rate_hz, 3)
+      const image_process_time = round(det_msg.avg_image_process_time, 3)
+
+      const image_process_latency = round(det_msg.avg_image_process_latency, 3)
+      const image_process_rate = round(det_msg.avg_image_process_rate, 3)
+
+      const detect_process_time = round(det_msg.avg_detect_process_time, 3)
+
+      const detect_process_latency = round(det_msg.avg_detect_process_latency, 3)
+      const detect_process_rate = round(det_msg.avg_detect_process_rate, 3)
+
+      const max_detect_rate = round(det_msg.max_detect_rate, 3)
+
+
       const img_options = this.createImageTopicsOptions()
 
       const img_list_viewable = this.state.img_list_viewable
@@ -815,11 +823,21 @@ renderDetectorSettings() {
 
 
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-        {"\n Avg Detect Latency: " + latency_sec +
-        "\n Avg Detect Rate Hz: " + rate_hz +
-        "\n Max Detect Rate Hz: " + max_rate}
-        
+        {"\n Avg Detect Rate: " + detect_process_rate +
+        "\n Avg Image Receive Latency: " + image_receive_latency +
+        "\n Avg Image Process Latency: " + image_process_latency +
+        "\n Avg Detect Publish Latency: " + detect_process_latency +
+        "\n" +
+        "\n Avg Image Process Time: " + image_process_time +
+        "\n Avg Detect Process Time: " + detect_process_time +
+        "\n Max Detect Rate Hz: " + max_detect_rate +
+        "\n" +
+        "\n Avg Image Receive Rate: " + image_receive_rate +
+        "\n Avg Image Process Rate: " + image_process_rate}
+
+      
         </pre>
+
 
 
         <NepiIFConfig
@@ -902,7 +920,7 @@ renderDetectorSettings() {
                   <Label title="Publish Image">
                   <Toggle
                   checked={pub_image_enabled===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_image_pub", pub_image_enabled===false)}>
+                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_image_process", pub_image_enabled===false)}>
                   </Toggle>
                   </Label>
 
@@ -1066,9 +1084,9 @@ renderDetectorSettings() {
     const {topicNames} = this.props.ros
     const img_options = this.getDisplayImgOptions()
     const sel_img_topic = this.state.selected_img_topic
-    const img_publishing = topicNames.indexOf(sel_img_topic) !== -1
-    const sel_img = img_publishing? sel_img_topic : ""
-    const sel_img_text = img_publishing?  this.state.selected_img_text : 'Waiting for image to publish'
+    const img_processlishing = topicNames.indexOf(sel_img_topic) !== -1
+    const sel_img = img_processlishing? sel_img_topic : ""
+    const sel_img_text = img_processlishing?  this.state.selected_img_text : 'Waiting for image to publish'
 
     const saveNamespace = this.getSaveNamespace()
 
