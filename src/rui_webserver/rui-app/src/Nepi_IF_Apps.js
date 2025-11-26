@@ -12,17 +12,14 @@ import { observer, inject } from "mobx-react"
 
 import { Columns, Column } from "./Columns"
 
-import OnvifMgr from "./NepiAppOnvifMgr"
-import FilePubImgApp from "./NepiAppFilePubImg"
-import FilePubVidApp from "./NepiAppFilePubVid"
-import ImageViewerApp from "./NepiAppImageViewer"
+
+//ADD APP FILE IMPORTS
+import EmptyClass from "./EmptyClass"
 
 
+//ADD APP FILE MAPPINGS
 const appsClassMap = new Map([
-  ["OnvifMgr", OnvifMgr],
-  ["FilePubImgApp", FilePubImgApp],
-  ["FilePubVidApp", FilePubVidApp],
-  ["ImageViewerApp", ImageViewerApp]
+["EmptyClass", EmptyClass]
 ]);
 
 @inject("ros")
