@@ -161,6 +161,7 @@ class ROSConnectionStore {
   @observable systemRestrictOptions = []
   @observable systemRestrictions = []
   @observable systemRestricted = []
+  @observable systemSoftwareInstallOptions = []
   @observable systemStatusDiskUsageMB = null
   @observable systemStatusDiskRate = null
   @observable systemStatusTempC = null
@@ -1022,6 +1023,7 @@ class ROSConnectionStore {
         this.systemRestrictOptions = message.sys_admin_restrict_options
         this.systemRestrictions = message.sys_admin_restricted
         this.systemRestricted = (this.systemAdminEnabled === true) ? [] : message.sys_admin_restricted
+        this.systemSoftwareInstallOptions = message.sys_img_update_options
         this.systemStatusDiskUsageMB = message.disk_usage
         this.systemStatusDiskRate = message.storage_rate
         
