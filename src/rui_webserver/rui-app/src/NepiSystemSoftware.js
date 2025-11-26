@@ -64,6 +64,7 @@ class NepiSystemSoftware extends Component {
       const {
           systemStatus,
           systemSoftwareStatus,
+          systemSoftwareInstallOptions,
           callSystemSoftwareStatusQueryService,
           onInstallFullSysImg
       } = this.props.ros
@@ -80,7 +81,7 @@ class NepiSystemSoftware extends Component {
             <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_version : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Image Size"}>
-            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_size_mb.toFixed(0) + "MB" : ""} style={{width: '100%'}}/>
+            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_size_mb.toFixed(0) + "GB" : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Status"}>
             <Input disabled value={systemStatus? systemStatus.sys_img_update_status : ""} style={{width: '100%'}}/> 
