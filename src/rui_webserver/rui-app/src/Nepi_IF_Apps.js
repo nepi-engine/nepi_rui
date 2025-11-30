@@ -12,14 +12,12 @@ import { observer, inject } from "mobx-react"
 
 import { Columns, Column } from "./Columns"
 
-
 //ADD APP FILE IMPORTS
-import EmptyClass from "./EmptyClass"
 
 
 //ADD APP FILE MAPPINGS
 const appsClassMap = new Map([
-["EmptyClass", EmptyClass]
+
 ]);
 
 @inject("ros")
