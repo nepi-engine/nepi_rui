@@ -107,6 +107,10 @@ class NepiDevicePTX extends Component {
       reversePanEnabled: false,
       reverseTiltEnabled: false,
 
+      track_source_namespaces: null,
+      track_source_namespace: null,
+      track_source_connected: null,
+
       autoPanEnabled: false,
       autoPanMin: -1,
       autoPanMax: 1,
@@ -340,10 +344,15 @@ class NepiDevicePTX extends Component {
       tiltMaxSoftstopDeg: message.tilt_max_softstop_deg,
       reversePanEnabled: message.reverse_pan_enabled,
       reverseTiltEnabled: message.reverse_tilt_enabled,
+      track_source_namespaces: message.track_source_namespaces,
+      track_source_namespace: message.track_source_namespace,
+      track_source_connected: message.track_source_connected,
       autoPanEnabled: message.auto_pan_enabled,
+      trackPanEnabled: message.track_pan_enabled,
       autoPanMin: message.auto_pan_range_window.start_range,
       autoPanMax: message.auto_pan_range_window.stop_range,
       autoTiltEnabled: message.auto_tilt_enabled,
+      trackTiltEnabled: message.tracl_tilt_enabled,
       autoTiltMin: message.auto_tilt_range_window.start_range,
       autoTiltMax: message.auto_tilt_range_window.stop_range,
       /*
@@ -476,7 +485,9 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
             panMaxSoftstopDeg, tiltMaxSoftstopDeg, panMinSoftstopDeg, tiltMinSoftstopDeg,
             panMinSoftstopEdited, tiltMinSoftstopEdited, panMaxSoftstopEdited, tiltMaxSoftstopEdited,
             speedRatio, panHomePosEdited, tiltHomePosEdited,
-            reversePanEnabled, reverseTiltEnabled, autoPanEnabled, autoTiltEnabled, speed_pan_dps, speed_tilt_dps  } = this.state /*sinPanEnabled ,sinTiltEnabled*/
+            reversePanEnabled, reverseTiltEnabled, autoPanEnabled, autoTiltEnabled, trackPanEnabled, trackTiltEnabled, 
+            track_source_namespaces, track_source_namespace, track_source_connected,
+            speed_pan_dps, speed_tilt_dps  } = this.state /*sinPanEnabled ,sinTiltEnabled*/
 
     const namespace = this.state.namespace
     const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
@@ -510,6 +521,10 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
     const hide_auto_pan = ((has_auto_pan === false || has_abs_pos === false) || (has_sep_pan_tilt === false && autoTiltEnabled == true))
     const hide_auto_tilt = ((has_auto_tilt === false || has_abs_pos === false) || (has_sep_pan_tilt === false && autoPanEnabled == true))
+
+    const hide_track_pan = ((track_source_connected === false || hide_auto_pan == true))
+    const hide_track_tilt = ((track_source_connected === false || hide_auto_tilt == true))
+
     const {sendTriggerMsg} = this.props.ros
 
     return (
@@ -549,6 +564,21 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
           <div hidden={(hide_auto_tilt === true)}>
           <div style={{ display: "inline-block", width: "45%", float: "right" }}>
             <Toggle style={{justifyContent: "flex-right"}} checked={autoTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_tilt_enable",!autoTiltEnabled)} />
+          </div>
+          </div>
+        </Label>
+
+
+        <Label title={"Enable Track Scan"}>
+        <div hidden={(hide_track_pan === true)}>
+          <div style={{ display: "inline-block", width: "45%", float: "left" }}>
+            <Toggle style={{justifyContent: "flex-left"}} checked={trackPanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_track_pan_enable",!trackPanEnabled)} />
+          </div>
+          </div>
+
+          <div hidden={(hide_track_tilt === true)}>
+          <div style={{ display: "inline-block", width: "45%", float: "right" }}>
+            <Toggle style={{justifyContent: "flex-right"}} checked={trackTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_track_tilt_enable",!trackTiltEnabled)} />
           </div>
           </div>
         </Label>

@@ -615,7 +615,7 @@ renderDetectorSettings() {
 
       const pub_image_enabled = det_msg.pub_image_enabled
       const overlay_labels = det_msg.overlay_labels
-      const overlay_targeting = det_msg.overlay_targeting
+      const overlay_range_bearing = det_msg.overlay_range_bearing
       const overlay_detector_name = det_msg.overlay_clf_name
       const overlay_img_name = det_msg.overlay_img_name
 
@@ -938,10 +938,10 @@ renderDetectorSettings() {
                     </Toggle>
                   </Label>
 
-                  <Label title="Overlay Targeting">
+                  <Label title="Overlay Range Bearing">
                     <Toggle
-                    checked={overlay_targeting===true}
-                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_targeting", overlay_targeting===false)}>
+                    checked={overlay_range_bearing===true}
+                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_range_bearing", overlay_range_bearing===false)}>
                     </Toggle>
                   </Label>
 
