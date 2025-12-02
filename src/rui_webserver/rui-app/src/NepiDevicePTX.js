@@ -569,7 +569,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
         </Label>
 
 
-        <Label title={"Enable Track Scan"}>
+        <Label title={"Enable Tracking"}>
         <div hidden={(hide_track_pan === true)}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>
             <Toggle style={{justifyContent: "flex-left"}} checked={trackPanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_track_pan_enable",!trackPanEnabled)} />
