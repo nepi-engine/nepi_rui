@@ -14,6 +14,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
 import DriversMgr from "./NepiSystemDrivers"
+import OnvifMgr from "./NepiAppOnvifMgr"
 
 import IDX from "./NepiDeviceIDX"
 import PTX from "./NepiDevicePTX"
@@ -189,6 +190,22 @@ class DevicesSelector extends Component {
   }
 
 
+ 
+  renderOnvifMgr() {
+    return (
+      <Columns>
+        <Column>
+
+        <OnvifMgr
+         title={"Onvif Manager"}
+         />
+
+      </Column>
+      </Columns>
+    )
+  }
+
+
   renderIdxDev() {
     return (
       <Columns>
@@ -302,6 +319,7 @@ class DevicesSelector extends Component {
             }
         }
       }
+      items.push(<Option value={"Onvif Mgr"}>{"Onvif Mgr"}</Option>)
       items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
     }
     //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
@@ -411,6 +429,16 @@ class DevicesSelector extends Component {
             {this.state.selected_app}
           </label>
           {this.renderNpxDev()}    
+        </React.Fragment>
+      )
+    }
+    else if (sel_app === "Onvif Mgr"){
+      return (
+        <React.Fragment>
+          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {this.state.selected_app}
+          </label>
+          {this.renderOnvifMgr()}    
         </React.Fragment>
       )
     }
