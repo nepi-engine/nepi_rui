@@ -2195,8 +2195,8 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
           update_time: true,
           secs: Math.floor(utcTS),
           nsecs: 0,
-          update_timezone: false,
-          timezone:  ''
+          update_timezone: true,
+          timezone:  this.systemStatusTimezoneDesc
       }
     })
   }
