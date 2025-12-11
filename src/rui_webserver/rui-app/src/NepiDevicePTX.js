@@ -70,7 +70,7 @@ class NepiDevicePTX extends Component {
 
       show_navpose: false,
 
-      showLimits: false,
+      showSettings: false,
 
       panMaxHardstopDeg: null,
       panMaxHardstopEdited: null,
@@ -148,7 +148,7 @@ class NepiDevicePTX extends Component {
     this.ptxStatusListener = this.ptxStatusListener.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
     this.createPTXOptions = this.createPTXOptions.bind(this)
-    this.onClickToggleShowLimits = this.onClickToggleShowLimits.bind(this)
+    this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
     this.onClickToggleShowTransform = this.onClickToggleShowTransform.bind(this)
 
     this.onEnterSendScanRangeWindowValue = this.onEnterSendScanRangeWindowValue.bind(this)
@@ -352,7 +352,7 @@ class NepiDevicePTX extends Component {
       autoPanMin: message.auto_pan_range_window.start_range,
       autoPanMax: message.auto_pan_range_window.stop_range,
       autoTiltEnabled: message.auto_tilt_enabled,
-      trackTiltEnabled: message.tracl_tilt_enabled,
+      trackTiltEnabled: message.track_tilt_enabled,
       autoTiltMin: message.auto_tilt_range_window.start_range,
       autoTiltMax: message.auto_tilt_range_window.stop_range,
       /*
@@ -440,9 +440,9 @@ class NepiDevicePTX extends Component {
   }
 
 
-  onClickToggleShowLimits(){
-    const currentVal = this.state.showLimits 
-    this.setState({showLimits: !currentVal})
+  onClickToggleShowSettings(){
+    const currentVal = this.state.showSettings 
+    this.setState({showSettings: !currentVal})
     this.render()
   }
 
@@ -519,8 +519,8 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
     const panSoftStopMax = (panMaxSoftstopEdited === null)? round(panMaxSoftstopDeg, 1) : panMaxSoftstopEdited
     const tiltSoftStopMax = (tiltMaxSoftstopEdited === null)? round(tiltMaxSoftstopDeg, 1) : tiltMaxSoftstopEdited
 
-    const hide_auto_pan = ((has_auto_pan === false || has_abs_pos === false) || (has_sep_pan_tilt === false && autoTiltEnabled == true))
-    const hide_auto_tilt = ((has_auto_tilt === false || has_abs_pos === false) || (has_sep_pan_tilt === false && autoPanEnabled == true))
+    const hide_auto_pan = ((has_auto_pan === false ))
+    const hide_auto_tilt = ((has_auto_tilt === false ))
 
     const hide_track_pan = ((track_source_connected === false || hide_auto_pan == true))
     const hide_track_tilt = ((track_source_connected === false || hide_auto_tilt == true))
@@ -530,19 +530,6 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
     return (
       <Section title={ptx_id} >
 
-
-        <Label title={"Serial Number"}>
-          <Input disabled={true} value={ptSerialNum}/>
-        </Label>
-        <Label title={"H/W Rev."}>
-          <Input disabled={true} value={ptHwVersion}/>
-        </Label>
-        <Label title={"S/W Rev."}>
-          <Input disabled={true} value={ptSwVersion}/>
-        </Label>
-        
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
          </label>
@@ -550,6 +537,46 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
 
         <Label title={""}>
+          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+        </Label>
+
+
+
+        <div hidden={(has_abs_pos === false)}>
+
+            <Label title={"Present Position"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(panPositionDegClean, 2)}
+              />
+              <Input
+                disabled
+                style={{ width: "45%" }}
+                value={round(tiltPositionDegClean, 2)}
+              />
+            </Label>
+
+
+            <Label title={"Current Speed (Deg/Sec)"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(speed_pan_dps, 0)}
+              />
+              <Input
+                disabled
+                style={{ width: "45%" }}
+                value={round(speed_tilt_dps, 0)}
+              />
+            </Label>
+
+          </div>
+
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+        <Label title={"Pan Tilt Automation"}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
         </Label>
@@ -569,6 +596,50 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
         </Label>
 
 
+
+        <div hidden={(autoPanEnabled === false && autoTiltEnabled === false)}>
+
+            <Label title={"Min Scan Limits"}>
+
+              <Input id="scan_pan_min" 
+                  value={this.state.panScanMin} 
+                  style={{ width: "45%", float: "left" }}
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"panScanMin")} 
+                  onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_pan_window","min",Number(this.state.panScanMax))} />
+
+              <Input id="scan_tilt_min" 
+                  value={this.state.tiltScanMin} 
+                  style={{ width: "45%" }}
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"tiltScanMin")} 
+                  onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_tilt_window","min",Number(this.state.tiltScanMax))} />
+
+              
+            </Label>
+
+
+
+
+
+            <Label title={"Max Scan Limits"}>
+
+              <Input id="scan_pan_max" 
+                value={this.state.panScanMax} 
+                style={{ width: "45%", float: "left" }}
+                onChange={(event) => onUpdateSetStateValue.bind(this)(event,"panScanMax")} 
+                onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_pan_window","max",Number(this.state.panScanMin))} />     
+
+
+              <Input id="scan_tilt_max" 
+                  value={this.state.tiltScanMax} 
+                  style={{ width: "45%" }}
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"tiltScanMax")} 
+                  onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_tilt_window","max",Number(this.state.tiltScanMin))} />                      
+            </Label>
+
+        </div>
+
+
+
         <Label title={"Enable Tracking"}>
         <div hidden={(hide_track_pan === true)}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>
@@ -584,70 +655,29 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
         </Label>
 
 
-        <div hidden={(has_speed_control === false)}>
-
-        <SliderAdjustment
-          disabled={!has_speed_control}
-          title={"Speed"}
-          msgType={"std_msgs/Float32"}
-          adjustment={speedRatio}
-          topic={namespace + "/set_speed_ratio"}
-          scaled={0.01}
-          min={0}
-          max={100}
-          tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-          unit={"%"}
-        />
-
-        </div>
-
-        <div hidden={(has_abs_pos === false)}>
-
-        <Label title={"Present Position"}>
-          <Input
-            disabled
-            style={{ width: "45%", float: "left" }}
-            value={round(panPositionDegClean, 2)}
-          />
-          <Input
-            disabled
-            style={{ width: "45%" }}
-            value={round(tiltPositionDegClean, 2)}
-          />
-        </Label>
 
 
-        <Label title={"Current Speed (Deg/Sec)"}>
-          <Input
-            disabled
-            style={{ width: "45%", float: "left" }}
-            value={round(speed_pan_dps, 0)}
-          />
-          <Input
-            disabled
-            style={{ width: "45%" }}
-            value={round(speed_tilt_dps, 0)}
-          />
-        </Label>
 
-        <Label title={"GoTo Position"}>
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXPanGoto"}
-            style={{ width: "45%", float: "left" }}
-            value={this.state.panGotoDeg}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXTiltGoto"}
-            style={{ width: "45%" }}
-            value={this.state.tiltGotoDeg}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-        </Label>
+          <div hidden={(has_abs_pos === false)}>
+
+            <Label title={"GoTo Position"}>
+              <Input
+                disabled={!has_abs_pos}
+                id={"PTXPanGoto"}
+                style={{ width: "45%", float: "left" }}
+                value={this.state.panGotoDeg}
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+              />
+              <Input
+                disabled={!has_abs_pos}
+                id={"PTXTiltGoto"}
+                style={{ width: "45%" }}
+                value={this.state.tiltGotoDeg}
+                onChange= {this.onUpdateText}
+                onKeyDown= {this.onKeyText}
+              />
+            </Label>
 
         </div>
 
@@ -690,72 +720,17 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
         />
         </div>
 
-        <Label title={""}>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
-        </Label>
 
 
-          <Label title={"Reverse Control"}>
-            <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-              <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
-            </div>
-            <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-              <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
-            </div>
-          </Label>
-
-
-
-        <Label title={"Min Scan Limits"}>
-
-          <Input id="scan_pan_min" 
-              value={this.state.panScanMin} 
-              style={{ width: "45%", float: "left" }}
-              onChange={(event) => onUpdateSetStateValue.bind(this)(event,"panScanMin")} 
-              onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_pan_window","min",Number(this.state.panScanMax))} />
-
-          <Input id="scan_tilt_min" 
-              value={this.state.tiltScanMin} 
-              style={{ width: "45%" }}
-              onChange={(event) => onUpdateSetStateValue.bind(this)(event,"tiltScanMin")} 
-              onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_tilt_window","min",Number(this.state.tiltScanMax))} />
-
-          
-        </Label>
-
-
-
-
-
-
-        <Label title={"Max Scan Limits"}>
-
-          <Input id="scan_pan_max" 
-            value={this.state.panScanMax} 
-            style={{ width: "45%", float: "left" }}
-            onChange={(event) => onUpdateSetStateValue.bind(this)(event,"panScanMax")} 
-            onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_pan_window","max",Number(this.state.panScanMin))} />     
-
-
-          <Input id="scan_tilt_max" 
-              value={this.state.tiltScanMax} 
-              style={{ width: "45%" }}
-              onChange={(event) => onUpdateSetStateValue.bind(this)(event,"tiltScanMax")} 
-              onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_tilt_window","max",Number(this.state.tiltScanMin))} />                      
-        </Label>
-        <div hidden={(hide_auto_tilt === true)}>
-
-        </div>
 
 
         <Columns>
           <Column>
 
-            <Label title="Show Limits">
+            <Label title="Show Pan Tilt Settings">
                     <Toggle
-                      checked={this.state.showLimits===true}
-                      onClick={this.onClickToggleShowLimits}>
+                      checked={this.state.showSettings===true}
+                      onClick={this.onClickToggleShowSettings}>
                     </Toggle>
                   </Label>
 
@@ -769,108 +744,148 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
         </Columns>
 
 
-        <div hidden={(this.state.showLimits === false  || has_abs_pos === false)}>
-
-        <Label title={"Hard Limit Min"}>
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXPanHardStopMin"}
-            style={{ width: "45%", float: "left" }}
-            value={panHardStopMin}
-          />
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXTiltHardStopMin"}
-            style={{ width: "45%" }}
-            value={tiltHardStopMin}
-          />
-        </Label>
-
-        <Label title={"Hard Limit Max"}>
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXPanHardStopMax"}
-            style={{ width: "45%", float: "left" }}
-            value={panHardStopMax}
-          />
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXTiltHardStopMax"}
-            style={{ width: "45%" }}
-            value={tiltHardStopMax}
-          />
-        </Label>
+        <div hidden={(this.state.showSettings === false)}>
 
 
-        <Label title={"Soft Limit Min"}>
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXPanSoftStopMin"}
-            style={{ width: "45%", float: "left" }}
-            value={panSoftStopMin}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXTiltSoftStopMin"}
-            style={{ width: "45%" }}
-            value={tiltSoftStopMin}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-        </Label>
-        <Label title={"Soft Limit Max"}>
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXPanSoftStopMax"}
-            style={{ width: "45%", float: "left" }}
-            value={panSoftStopMax}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-          <Input
-            disabled={!has_abs_pos}
-            id={"PTXTiltSoftStopMax"}
-            style={{ width: "45%" }}
-            value={tiltSoftStopMax}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-        </Label>
+                  <Label title={""}>
+                    <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+                    <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+                  </Label>
 
-        </div>
+                    <Label title={"Reverse Control"}>
+                      <div style={{ display: "inline-block", width: "45%", float: "left" }}>
+                        <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
+                      </div>
+                      <div style={{ display: "inline-block", width: "45%", float: "right" }}>
+                        <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
+                      </div>
+                    </Label>
 
-        <div
-              style={{
-                borderTop: "1px solid #050404ff",
-                marginTop: Styles.vars.spacing.medium,
-                marginBottom: Styles.vars.spacing.xs,
-              }}
-            />
-            <Label title="Show 3D Transform">
-              <Toggle
-                checked={this.state.showTransform}
-                onClick={this.onClickToggleShowTransform}>
-              </Toggle>
-            </Label>
 
-            <div hidden={ this.state.showTransform === false}>
+                  <div hidden={(has_speed_control === false)}>
 
-            <Columns>
-              <Column>
+                  <SliderAdjustment
+                    disabled={!has_speed_control}
+                    title={"Speed"}
+                    msgType={"std_msgs/Float32"}
+                    adjustment={speedRatio}
+                    topic={namespace + "/set_speed_ratio"}
+                    scaled={0.01}
+                    min={0}
+                    max={100}
+                    tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                    unit={"%"}
+                  />
 
-                      <NepiIF3DTransform
-                          namespace={namespace}
-                          supports_updates={true}
-                          title={"Nepi_IF_3DTransform"}
-                      />
+                  </div>
 
-              </Column>
-           </Columns>
 
+
+
+
+
+                  <div hidden={(has_abs_pos === false)}>
+
+                          <Label title={"Hard Limit Min"}>
+                            <Input
+                              disabled={true}
+                              id={"PTXPanHardStopMin"}
+                              style={{ width: "45%", float: "left" }}
+                              value={panHardStopMin}
+                            />
+                            <Input
+                              disabled={true}
+                              id={"PTXTiltHardStopMin"}
+                              style={{ width: "45%" }}
+                              value={tiltHardStopMin}
+                            />
+                          </Label>
+
+                          <Label title={"Hard Limit Max"}>
+                            <Input
+                              disabled={true}
+                              id={"PTXPanHardStopMax"}
+                              style={{ width: "45%", float: "left" }}
+                              value={panHardStopMax}
+                            />
+                            <Input
+                              disabled={true}
+                              id={"PTXTiltHardStopMax"}
+                              style={{ width: "45%" }}
+                              value={tiltHardStopMax}
+                            />
+                          </Label>
+
+
+                          <Label title={"Soft Limit Min"}>
+                            <Input
+                              disabled={!has_abs_pos}
+                              id={"PTXPanSoftStopMin"}
+                              style={{ width: "45%", float: "left" }}
+                              value={panSoftStopMin}
+                              onChange= {this.onUpdateText}
+                              onKeyDown= {this.onKeyText}
+                            />
+                            <Input
+                              disabled={!has_abs_pos}
+                              id={"PTXTiltSoftStopMin"}
+                              style={{ width: "45%" }}
+                              value={tiltSoftStopMin}
+                              onChange= {this.onUpdateText}
+                              onKeyDown= {this.onKeyText}
+                            />
+                          </Label>
+                          <Label title={"Soft Limit Max"}>
+                            <Input
+                              disabled={!has_abs_pos}
+                              id={"PTXPanSoftStopMax"}
+                              style={{ width: "45%", float: "left" }}
+                              value={panSoftStopMax}
+                              onChange= {this.onUpdateText}
+                              onKeyDown= {this.onKeyText}
+                            />
+                            <Input
+                              disabled={!has_abs_pos}
+                              id={"PTXTiltSoftStopMax"}
+                              style={{ width: "45%" }}
+                              value={tiltSoftStopMax}
+                              onChange= {this.onUpdateText}
+                              onKeyDown= {this.onKeyText}
+                            />
+                          </Label>
+
+                  </div>
+
+                  <div
+                      style={{
+                        borderTop: "1px solid #050404ff",
+                        marginTop: Styles.vars.spacing.medium,
+                        marginBottom: Styles.vars.spacing.xs,
+                      }}
+                    />
+                    <Label title="Show 3D Transform">
+                      <Toggle
+                        checked={this.state.showTransform}
+                        onClick={this.onClickToggleShowTransform}>
+                      </Toggle>
+                    </Label>
+
+                    <div hidden={ this.state.showTransform === false}>
+
+                        <Columns>
+                          <Column>
+
+                                  <NepiIF3DTransform
+                                      namespace={namespace}
+                                      supports_updates={true}
+                                      title={"Nepi_IF_3DTransform"}
+                                  />
+
+                          </Column>
+                      </Columns>
+
+                  </div>
             </div>
-
 
 
       </Section>

@@ -168,6 +168,7 @@ export function createShortUniqueValues(list) {
 
 
 export function createShortValuesFromNamespaces(namespacesList) {
+  const filterList = ['idx/', 'ptx/', 'rbx/' , 'lsx/', 'npx/', 'ai/' ]
   var tokenizedList = []
   var outputList = []
   var shortName = ''
@@ -177,17 +178,26 @@ export function createShortValuesFromNamespaces(namespacesList) {
       if(tokenizedList.length === 2){
         shortName = tokenizedList[1]
       }     
-      if(tokenizedList.length === 3){
+      else if(tokenizedList.length === 3){
         shortName = tokenizedList[2]
       }
       else if(tokenizedList.length === 4){
         shortName = tokenizedList[2] + "/" + tokenizedList[3]
       }
       else if(tokenizedList.length === 5){
-        shortName = tokenizedList[3] + "/" + tokenizedList[4]
+        shortName = tokenizedList[2] + "/" + tokenizedList[3] + "/" + tokenizedList[4]
+      }
+      else if(tokenizedList.length > 5){
+        shortName = tokenizedList[tokens_len-4]
+        for (var i2 = (tokens_len-3); i2 < tokenizedList.length; ++i2) {
+          shortName = shortName + "/" + tokenizedList[i2]
+        }
       }
       else {
-        shortName = tokenizedList[tokens_len-3] + "/" + tokenizedList[tokens_len-1]
+        shortName = namespacesList[i]
+      }
+      for (var i2 = 0; i2 < filterList.length; ++i2) {
+        shortName = shortName.replace(filterList[i2],"")
       }
       outputList.push(shortName)
   }
