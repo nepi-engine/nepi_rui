@@ -249,8 +249,14 @@ class NepiDashboard extends Component {
     } = this.props.ros
 
     const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    const auto_sync_clocks = systemStatusTime.auto_sync_clocks
+    const clock_synced = systemStatusTime.clock_synced
+    const show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
+    const should_sync = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
 
-    const timezoneOptions = this.getTimezoneOptions()
+    if (should_sync === true) {
+      syncTime2Device()
+    }
 
     var time_str = ""
     var date_str = ""
@@ -272,6 +278,9 @@ class NepiDashboard extends Component {
     
     return (
       <Section title={"System Clock"}>
+        <Label title={"Clock Synced"}>
+          <BooleanIndicator value={clock_synced} />
+        </Label>
         <Label title={"NTP Status"}>
           <BooleanIndicator value={clockNTP} />
         </Label>
@@ -285,8 +294,8 @@ class NepiDashboard extends Component {
           <Input disabled value={timezone} />
         </Label>
 
-
-        {(IS_LOCAL === false && systemManagesTime === true && time_sync_restricted === false) &&
+        <div hidden={show_sync_button===false}>
+    
 
             <Columns>
             <Column>
@@ -303,10 +312,8 @@ class NepiDashboard extends Component {
 
             </Column>
             </Columns>
+        </div>
 
-
-
-            }
 
 
 

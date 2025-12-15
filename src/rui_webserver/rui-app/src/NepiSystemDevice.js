@@ -591,7 +591,7 @@ updateMgrTimeStatusListener() {
 
           <div hidden={license_type !== "Unlicensed"}> 
           <pre style={{ height: "25px", overflowY: "auto" }}>
-              {"No Commercial License Found. Valid for development purposes only"}
+              {"No License Found. Valid for Demo use only"}
             </pre>
           </div>
 

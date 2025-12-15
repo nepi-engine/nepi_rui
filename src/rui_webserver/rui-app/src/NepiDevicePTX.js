@@ -528,10 +528,10 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
     const {sendTriggerMsg} = this.props.ros
 
     return (
-      <Section title={ptx_id} >
+      <Section >
 
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
+          {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
          </label>
 
 
@@ -576,7 +576,8 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-        <Label title={"Pan Tilt Automation"}>
+
+        <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
         </Label>
@@ -683,51 +684,20 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
         <div hidden={(has_homing === false)}>
 
-        <Label title={"Home Position"}>
-          <Input
-            disabled={!has_homing}
-            id={"PTXPanHomePos"}
-            style={{ width: "45%", float: "left" }}
-            value={panHomePos}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-          <Input
-            disabled={!has_homing}
-            id={"PTXTiltHomePos"}
-            style={{ width: "45%" }}
-            value={tiltHomePos}
-            onChange= {this.onUpdateText}
-            onKeyDown= {this.onKeyText}
-          />
-        </Label>
-
-
         <ButtonMenu>
           <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
-          <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(namespace)}>{"Set Home Here"}</Button>
         </ButtonMenu>
 
       </div>
 
-        <div hidden={(hide_auto_pan === true)}>
-        <div
-          style={{
-            borderTop: "1px solid #ffffff",
-            marginTop: Styles.vars.spacing.medium,
-            marginBottom: Styles.vars.spacing.xs,
-          }}
-        />
-        </div>
-
-
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
 
         <Columns>
           <Column>
 
-            <Label title="Show Pan Tilt Settings">
+            <Label title="PT SETUP">
                     <Toggle
                       checked={this.state.showSettings===true}
                       onClick={this.onClickToggleShowSettings}>
@@ -855,6 +825,39 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                           </Label>
 
                   </div>
+
+
+                  <div hidden={(has_homing === false)}>
+
+                  <Label title={"Home Position"}>
+                    <Input
+                      disabled={!has_homing}
+                      id={"PTXPanHomePos"}
+                      style={{ width: "45%", float: "left" }}
+                      value={panHomePos}
+                      onChange= {this.onUpdateText}
+                      onKeyDown= {this.onKeyText}
+                    />
+                    <Input
+                      disabled={!has_homing}
+                      id={"PTXTiltHomePos"}
+                      style={{ width: "45%" }}
+                      value={tiltHomePos}
+                      onChange= {this.onUpdateText}
+                      onKeyDown= {this.onKeyText}
+                    />
+                  </Label>
+
+
+                  <ButtonMenu>
+                    <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(namespace)}>{"Set Home Here"}</Button>
+                  </ButtonMenu>
+
+                </div>
+
+
+
+
 
                   <div
                       style={{
