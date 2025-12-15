@@ -83,10 +83,12 @@ class NepiSystemDevice extends Component {
       timeStatus: null,
       last_timeStatus: null,
       timeConnected: true,
-      timeListener: null
+      timeListener: null,
+      timezones_list_viewable: false
 
     }
 
+    this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.getNetMgrNamespace = this.getNetMgrNamespace.bind(this)
     this.getTimeMgrNamespace = this.getTimeMgrNamespace.bind(this)
 
@@ -127,9 +129,18 @@ class NepiSystemDevice extends Component {
     this.netStatusListener = this.netStatusListener.bind(this)
 
     this.updateMgrTimeStatusListener = this.updateMgrTimeStatusListener.bind(this)
-    this.timeStatusListener = this.timeStatusListener.bind(this)
+    this.timeStatusListener = this.timeStatusListener.bind(this)   
+    this.toggleTimezonesListViewable = this.toggleTimezonesListViewable.bind(this)
+  }
 
-    
+
+  getBaseNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var baseNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      baseNamespace = "/" + namespacePrefix + "/" + deviceId
+    }
+    return baseNamespace
   }
 
   getNetMgrNamespace(){
@@ -442,23 +453,21 @@ updateMgrTimeStatusListener() {
                     />
                   </Label>
 
-                  <Label title={"Has Cuda"}>
-                    <BooleanIndicator value={systemStatus.has_cuda} />
+
+                  </Column>
+                  <Column>
+ 
+                  <Label title={"Manages Network"}>
+                    <BooleanIndicator value={systemStatus.manages_network} />
                   </Label>
 
                   <Label title={"Manages Time"}>
                     <BooleanIndicator value={systemStatus.manages_time} />
                   </Label>
 
-                  <Label title={"Manages Network"}>
-                    <BooleanIndicator value={systemStatus.manages_network} />
+                  <Label title={"Has Cuda"}>
+                    <BooleanIndicator value={systemStatus.has_cuda} />
                   </Label>
-
-
-                  </Column>
-                  <Column>
- 
-                 
 
 
                 </Column>
@@ -651,8 +660,8 @@ updateMgrTimeStatusListener() {
   
   
     toggleTimezonesListViewable() {
-      const set = !this.state.timezones_list_viewable
-      this.setState({timezones_list_viewable: set})
+      const viewable = (this.state.timezones_list_viewable === false)
+      this.setState({timezones_list_viewable: viewable})
     }
   
   
@@ -674,56 +683,53 @@ updateMgrTimeStatusListener() {
     const {
       sendBoolMsg,
       systemManagesTime,
+      systemRestrictions,
+      ntp_sources,
+      clockNTP,
+      syncTime2Device,
       systemStatusTime,
       systemStatusTimeStr,
       systemStatusDateStr,
-      clockUTCMode,
-      clockTZ,
-      onToggleClockUTCMode,
-      systemStatusTimezone,
-      systemStatusTimezoneDesc,
-      syncTimezone,
-      onToggleSyncTimezone,
-      onSyncTimezone,
-      setTimezoneUTC,
-      ntp_sources,
-      clockNTP,
-      syncTime2Device
-    } = this.props.ros
-
-
-    const auto_sync_clocks = systemStatusTime.auto_sync_clocks
-    const { systemRestrictions} = this.props.ros
-    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    const time_ntp_restricted = systemRestrictions.indexOf('Time_NTP') !== -1
-
-    const primary_addr = ""
+      systemStatusTimezoneDesc
+    } = this.props.ros  
 
     const timezoneOptions = this.getTimezoneOptions()
+    const baseNamespace = this.getBaseNamespace()
+    const namespace = this.state.timeMgrNamespace
 
     var time_str = ""
     var date_str = ""
     var timezone = ""
-    if (systemStatusTime){
+
+    var time_sync_restricted = true
+    var time_ntp_restricted = true
+    var clock_synced = false
+    var auto_sync_clocks = false
+    var auto_sync_timezones = false
+    var show_sync_button = false
+
+    const timeStatus = this.state.timeStatus
+    const timezones_list_viewable  = this.state.timezones_list_viewable
+
+    if (systemStatusTime && timeStatus){
+      time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+      time_ntp_restricted = systemRestrictions.indexOf('Time_NTP') !== -1
+      clock_synced = timeStatus.clock_synced
+      auto_sync_clocks = timeStatus.auto_sync_clocks
+      auto_sync_timezones = timeStatus.auto_sync_timezones
+
+      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
       time_str = systemStatusTimeStr
       date_str = systemStatusDateStr
-
       timezone = systemStatusTimezoneDesc
-      
-      if (systemManagesTime === false && auto_sync_clocks === true){
-        if (systemStatusTimezoneDesc !== clockTZ && syncTimezone === true && clockNTP === false){
-          onSyncTimezone()
-        }
-      }
-
     }
-
-    const namespace = this.state.timeMgrNamespace
- 
     
     return (
       <Section title={"Time"}>
-        <Label title={"NTP"}>
+        <Label title={"Clock Synced"}>
+          <BooleanIndicator value={clock_synced} />
+        </Label>
+        <Label title={"NTP Connected"}>
           <BooleanIndicator value={clockNTP} />
         </Label>
         <Label title={"Time"}>
@@ -751,7 +757,7 @@ updateMgrTimeStatusListener() {
 
 
                   <Label title={"Auto Sync Clocks"}>
-                      <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_sync_enable",!auto_sync_clocks)} />
+                      <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_clocks",!auto_sync_clocks)} />
                     </Label>
 
 
@@ -771,10 +777,10 @@ updateMgrTimeStatusListener() {
 
 
                     <Label title={"Auto Sync Timezone"}>
-                      <Toggle checked={syncTimezone} onClick={onToggleSyncTimezone} />
+                      <Toggle checked={auto_sync_timezones} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_timezones",!auto_sync_timezones)} />
                     </Label>
 
-                    <div hidden={syncTimezone === false}>
+                    <div hidden={auto_sync_timezones === false}>
 
                     <pre style={{ height: "31px", overflowY: "auto" }}>
                       {""}
@@ -783,7 +789,7 @@ updateMgrTimeStatusListener() {
                     </div>
 
 
-                      <div hidden={syncTimezone === true}>
+                      <div hidden={auto_sync_timezones === true}>
 
 
 
@@ -796,14 +802,14 @@ updateMgrTimeStatusListener() {
                                 <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
                                           <Select style={{width: "10px"}}/>
                                         </div>
-                                        <div hidden={this.state.timezones_list_viewable === false}>
+                                        <div hidden={timezones_list_viewable === false}>
                                         {timezoneOptions.map( (Timezone) =>
                                         <div onClick={this.onToggleTimezoneSelection}
                                           style={{
                                             textAlign: "center",
                                             padding: `${Styles.vars.spacing.xs}`,
                                             color: Styles.vars.colors.black,
-                                            backgroundColor: (timezone === Timezone.props.value)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                                            backgroundColor: (Timezone === timezone)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
                                             cursor: "pointer",
                                             }}>
                                             <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>

@@ -173,7 +173,6 @@ class ROSConnectionStore {
   @observable systemStatusDateStr = null
   @observable clockUTCMode = false
   @observable available_timezones = []
-  @observable syncTimezone = true
   @observable systemStatusTimezone = null
   @observable clockTZ = this.get_timezone_desc()
   @observable clockNTP = false
@@ -2004,7 +2003,18 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
       const currTS = this.systemStatusTime && this.systemStatusTime.unix()
       if (currTS && lastPPSTS - currTS < 1) {
         this.clockPPS = false
+      }     
+      const IS_LOCAL = window.location.hostname === "localhost"
+      const clock_synced = this.timeStatus.time_status.clock_synced
+
+      const auto_sync_clocks = this.timeStatus.time_status.auto_sync_clocks
+
+      const should_sync = (IS_LOCAL === false && this.systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
+
+      if (should_sync === true ){
+        this.syncTime2Device()
       }
+
 
       if (this.connectedToROS) {
         setTimeout(_pollOnce, 1000)
@@ -2114,16 +2124,6 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
 
 
 
-  @action.bound
-  onToggleSyncTimezone() {
-    const new_val = !this.syncTimezone
-    this.syncTimezone = new_val
-    if (new_val === true){
-      this.onSyncTimezone()
-    }
-  }
-
-
   get_timezone_desc(){
     var timezone = getLocalTZ()
     timezone = timezone.replace(' ','_')
@@ -2188,17 +2188,38 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
   syncTime2Device() {
     const utcTS = moment.utc()
       .unix()
-    this.publishMessage({
-      name: "set_time",
-      messageType: "nepi_interfaces/TimeUpdate",
-      data: {
-          update_time: true,
-          secs: Math.floor(utcTS),
-          nsecs: 0,
-          update_timezone: true,
-          timezone:  this.systemStatusTimezoneDesc
+
+    if (this.timeStatus != null) {
+      const auto_sync_timezones = this.timeStatus.time_status.auto_sync_timezones
+
+      if ( auto_sync_timezones === true){
+          this.publishMessage({
+            name: "set_time",
+            messageType: "nepi_interfaces/TimeUpdate",
+            data: {
+                update_time: true,
+                secs: Math.floor(utcTS),
+                nsecs: 0,
+                update_timezone: true,
+                timezone:  this.systemStatusTimezoneDesc
+            }
+        })
       }
-    })
+      else {
+          this.publishMessage({
+                    name: "set_time",
+                    messageType: "nepi_interfaces/TimeUpdate",
+                    data: {
+                        update_time: true,
+                        secs: Math.floor(utcTS),
+                        nsecs: 0,
+                        update_timezone: false,
+                        timezone:  ""
+                    }
+                })
+
+      }
+    }
   }
 
 

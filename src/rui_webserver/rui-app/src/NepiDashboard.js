@@ -45,7 +45,6 @@ class NepiDashboard extends Component {
       viewableMessages: false,
       selected_message: 'NONE',
 
-      timezones_list_viewable: false
     }
 
   
@@ -56,9 +55,6 @@ class NepiDashboard extends Component {
     this.toggleViewableMessages = this.toggleViewableMessages.bind(this)
     this.onToggleMessagesSelection = this.onToggleMessagesSelection.bind(this)
 
-    this.onToggleTimezoneSelection = this.onToggleTimezoneSelection.bind(this)
-    this.getTimezoneOptions = this.getTimezoneOptions.bind(this)
-    this.toggleTimezonesListViewable = this.toggleTimezonesListViewable.bind(this)
 
   }
 
@@ -189,92 +185,42 @@ class NepiDashboard extends Component {
   }
 
 
-
-  // Function for creating image topic options.
-  getTimezoneOptions() {
-    const {
-      available_timezones
-    } = this.props.ros
-    var items = []
-
-    if (available_timezones != null){
-          for (var i = 0; i < available_timezones.length; i++) {
-              if (available_timezones[i] !== 'None'){
-                items.push(<Option value={available_timezones[i]}>{available_timezones[i]}</Option>)
-              }
-          }
-    }
-    return items
-    }
   
   
-    toggleTimezonesListViewable() {
-      const set = !this.state.timezones_list_viewable
-      this.setState({timezones_list_viewable: set})
-    }
-  
-  
-    onToggleTimezoneSelection(event){
-      const {
-        setTimezone,
-        available_timezones,
-        systemStatusTimezoneDesc
-      } = this.props.ros
-      const timezoneSelection = event.target.value
-      if (timezoneSelection !== systemStatusTimezoneDesc){
-        setTimezone(timezoneSelection)
-      }
-    }
-
-
-
   renderSystemClock() {
     const {
+      timeStatus,
       systemManagesTime,
+      clockNTP,
+      syncTime2Device,
+      systemRestrictions,
       systemStatusTime,
       systemStatusTimeStr,
       systemStatusDateStr,
-      clockUTCMode,
-      clockTZ,
-      onToggleClockUTCMode,
-      systemStatusTimezone,
       systemStatusTimezoneDesc,
-      syncTimezone,
-      onToggleSyncTimezone,
-      onSyncTimezone,
-      setTimezoneUTC,
-      clockNTP,
-      syncTime2Device,
-      systemRestrictions
     } = this.props.ros
 
-    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    const auto_sync_clocks = systemStatusTime.auto_sync_clocks
-    const clock_synced = systemStatusTime.clock_synced
-    const show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
-    const should_sync = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
 
-    if (should_sync === true) {
-      syncTime2Device()
-    }
-
+  
+ 
     var time_str = ""
     var date_str = ""
     var timezone = ""
-    if (systemStatusTime){
+
+    var time_sync_restricted = true
+    var clock_synced = false
+    var auto_sync_clocks = false
+    var show_sync_button = false
+
+    if (systemStatusTime && timeStatus){
+      time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+      clock_synced = timeStatus.time_status.clock_synced
+      auto_sync_clocks = timeStatus.time_status.auto_sync_clocks
+      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
       time_str = systemStatusTimeStr
       date_str = systemStatusDateStr
-
       timezone = systemStatusTimezoneDesc
-      
-      if (systemManagesTime === false){
-        if (systemStatusTimezoneDesc !== clockTZ && syncTimezone === true && clockNTP === false){
-          onSyncTimezone()
-        }
-      }
-
     }
- 
     
     return (
       <Section title={"System Clock"}>
