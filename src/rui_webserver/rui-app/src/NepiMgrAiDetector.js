@@ -659,10 +659,7 @@ renderDetectorSettings() {
           <Columns>
         <Column>
 
-          <label align={"left"} textAlign={"left"}>
-              {"Select Images"}
-            </label>
-
+          <Label title={"Select Images"}/>
 
             </Column>
           <Column>
@@ -697,10 +694,7 @@ renderDetectorSettings() {
           <Columns>
         <Column>
 
-        <label align={"left"} textAlign={"left"}>
-            {"Select Classes"}
-          </label>
-
+          <Label title={"Select Classes"}/>
 
             </Column>
           <Column>
