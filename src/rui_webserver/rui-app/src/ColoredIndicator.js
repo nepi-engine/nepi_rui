@@ -20,7 +20,7 @@ const styles = Styles.Create({
     }
 })
 
-export const indicator_colors = Styles.Create({
+const indicator_colors = Styles.Create({
   red: {
     backgroundColor: Styles.vars.colors.red,
     color: Styles.vars.colors.black
@@ -43,7 +43,7 @@ export const indicator_colors = Styles.Create({
   }
 })
 
-export const ColoredIndicator = props => {
+const ColoredIndicator = props => {
   const { indicator_color, style } = props
 
   const actualStyle = {
@@ -59,17 +59,4 @@ export const ColoredIndicator = props => {
   )
 }
 
-export const ColoredTextIndicator = props => {
-  const { indicator_color, style, text } = props
-
-  const actualStyle = {
-    ...styles.base,
-    ...indicator_color,
-    ...style
-  }
-
-  return (
-    <Input {...props} style={actualStyle} disabled={true} backgroundOverride={indicator_color.backgroundColor} value={text}/>
-  )
-
-}
+export default ColoredIndicator
