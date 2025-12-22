@@ -62,12 +62,12 @@ class ImageViewer extends Component {
 
     this.state = {
       has_status: false,
-      show_status: false,
-      has_controls: false,
-      controls_namespace: null,
       show_controls: false,
+      show_status: false,
+      show_renders: false,
+      controls_namespace: null,
       has_overlay: false,
-      show_overlays: false,
+      show_overlayss: false,
       has_navpose: false,
       show_navpose: false,
       hasInitialized: false,
@@ -88,8 +88,9 @@ class ImageViewer extends Component {
     this.updateImageSource = this.updateImageSource.bind(this)
     this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
     this.renderFilterControls = this.renderFilterControls.bind(this)
-    this.renderOrienSizeControls = this.renderOrienSizeControls.bind(this)
-    this.renderOverlays = this.renderOverlays.bind(this)
+    this.renderRenderControls = this.renderRenderControls.bind(this)
+    this.renderResOrientControls = this.renderResOrientControls.bind(this)
+    this.renderOverlayControls = this.renderOverlayControls.bind(this)
     this.renderStats = this.renderStats.bind(this)
     this.getImgStatsText = this.getImgStatsText.bind(this)
 
@@ -416,52 +417,34 @@ class ImageViewer extends Component {
   renderFilterControls() {
 
     const namespace = this.state.controls_namespace
-    const has_controls = this.props.has_controls ? this.props.has_controls : true
+    const show_filters = this.props.show_filters ? this.props.show_filters : true
 
     const { imageCaps, sendTriggerMsg, sendBoolMsg, sendUpdateStateMsg, sendUpdateRatioMsg } = this.props.ros
     const capabilities = (imageCaps != null) ? (imageCaps[namespace] != null ? imageCaps[namespace] : null) : null
 
    
-    if (has_controls === true && this.state.status_msg != null && namespace != null && capabilities != null){
+    if (show_filters === true && this.state.status_msg != null && namespace != null && capabilities != null){
       const has_auto_adjust = (capabilities && capabilities.has_auto_adjust && !this.state.disabled)
       const has_contrast = (capabilities && capabilities.has_contrast && !this.state.disabled)
       const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
       const has_threshold = (capabilities && capabilities.has_threshold && !this.state.disabled)
-      const has_resolution = (capabilities && capabilities.has_resolution && !this.state.disabled)
       const has_framerate = (capabilities && capabilities.has_framerate && !this.state.disabled)
-      const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
-      const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
-      const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
-      const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
-      const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
-      const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
-      const has_filters = (capabilities && capabilities.has_filters && !this.state.disabled)
+
 
       const message = this.state.status_msg
       const auto_adjust_enabled = message.auto_adjust_enabled
       const auto_adjust_ratio = message.auto_adjust_ratio
       const auto_adjust_controls = message.auto_adjust_controls
-      const resolution_ratio = message.resolution_ratio
-      const resolution_str = message.resolution_current
       const brightness_ratio = message.brightness_ratio
       const contrast_ratio = message.contrast_ratio
       const threshold_ratio = message.threshold_ratio
-      const range_start_ratio = message.range_ratios.start_range
-      const range_stop_ratio = message.range_ratios.stop_range
-      const zoom_ratio = message.zoom_ratio
-      const pan_lr_ratio = message.pan_left_right_ratio
-      const pan_ud_ratio = message.pan_up_down_ratio
-      const window_ratios = message.window_ratios
-      const rotate_3d_ratio = message.rotate_3d_ratio
-      const tilt_3d_ratio = message.tilt_3d_ratio
+
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
       const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') != -1)
-      const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') != -1)
       const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') != -1)
       const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') != -1)
       const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') != -1)
-      const hide_range = (!has_range || auto_controls.indexOf('range') != -1)
 
 
 
@@ -572,6 +555,81 @@ class ImageViewer extends Component {
 
 
 
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
+
+
+          <ButtonMenu>
+            <Button onClick={() => sendTriggerMsg( namespace + "/reset_filters")}>{"Reset Controls"}</Button>
+          </ButtonMenu>
+
+
+      </Column>
+      </Columns>
+      )
+    }
+    else {
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+
+    }
+
+  }
+
+
+  renderRenderControls() {
+
+    const namespace = this.state.controls_namespace
+    const show_renders = this.props.show_renders ? this.props.show_renders : true
+
+    const { imageCaps, sendTriggerMsg, sendBoolMsg, sendUpdateStateMsg, sendUpdateRatioMsg } = this.props.ros
+    const capabilities = (imageCaps != null) ? (imageCaps[namespace] != null ? imageCaps[namespace] : null) : null
+
+   
+    if (show_renders === true && this.state.status_msg != null && namespace != null && capabilities != null){
+      const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
+      const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
+      const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
+      const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
+      const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
+      const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
+
+
+      const message = this.state.status_msg
+      const auto_adjust_enabled = message.auto_adjust_enabled
+      const auto_adjust_controls = message.auto_adjust_controls
+      const range_start_ratio = message.range_ratios.start_range
+      const range_stop_ratio = message.range_ratios.stop_range
+      const zoom_ratio = message.zoom_ratio
+      const pan_lr_ratio = message.pan_left_right_ratio
+      const pan_ud_ratio = message.pan_up_down_ratio
+      const x_min_ratio = message.window_x_ratios.start_range
+      const x_max_ratio = message.window_x_ratios.stop_range
+      const y_min_ratio = message.window_y_ratios.start_range
+      const y_max_ratio = message.window_y_ratios.stop_range
+      const rotate_3d_ratio = message.rotate_3d_ratio
+      const tilt_3d_ratio = message.tilt_3d_ratio
+
+      const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
+      const hide_range = (!has_range || auto_controls.indexOf('range') != -1)
+      const hide_window = (!has_window || auto_controls.indexOf('window') != -1)
+
+
+
+      return (
+
+        <Columns>
+        <Column>
+ 
+
+             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+            <Label title={"RENDER  CONTROLS"} />
+ 
+    
 
             <div hidden={(hide_range)}>
                     <RangeAdjustment
@@ -603,13 +661,14 @@ class ImageViewer extends Component {
                         />
           </div>
 
+
           <div hidden={(has_pan !== true )}>
 
                       <SliderAdjustment
-                            title={"Pan Left-Right"}
+                            title={"Pan X"}
                             msgType={"std_msgs/Float32"}
                             adjustment={pan_lr_ratio}
-                            topic={namespace + "/set_pan_lr_ratio"}
+                            topic={namespace + "/set_pan_left_right_ratio"}
                             scaled={0.01}
                             min={0}
                             max={100}
@@ -618,11 +677,35 @@ class ImageViewer extends Component {
                             unit={"%"}
                         />
 
+                  
+
+          </div>
+
+
+          <div hidden={(hide_window)}>
+                    <RangeAdjustment
+                      title="X Window"
+                      min={x_min_ratio}
+                      max={x_max_ratio}
+                      min_limit_m={0.2}
+                      max_limit_m={1.0}
+                      topic={namespace + "/set_x_window_ratios"}
+                      tooltip={"Adjustable x_min and x_max ratios"}
+                      unit={"%"}
+                    />
+
+                 
+          </div>
+
+          <div hidden={(has_pan !== true )}>
+
+
+
                       <SliderAdjustment
-                            title={"Pan Up-Down"}
+                            title={"Pan Y"}
                             msgType={"std_msgs/Float32"}
                             adjustment={pan_ud_ratio}
-                            topic={namespace + "/set_pan_up_ratio"}
+                            topic={namespace + "/set_pan_up_down_ratio"}
                             scaled={0.01}
                             min={0}
                             max={100}
@@ -631,6 +714,22 @@ class ImageViewer extends Component {
                             unit={"%"}
                         />
 
+          </div>
+
+
+          <div hidden={(hide_window)}>
+
+
+                    <RangeAdjustment
+                      title="Y Window"
+                      min={y_min_ratio}
+                      max={y_max_ratio}
+                      min_limit_m={0.2}
+                      max_limit_m={1.0}
+                      topic={namespace + "/set_y_window_ratios"}
+                      tooltip={"Adjustable y_min and y_max ratios"}
+                      unit={"%"}
+                    />
           </div>
 
           <div hidden={(has_rotate_3d !== true )}>
@@ -672,7 +771,7 @@ class ImageViewer extends Component {
 
 
           <ButtonMenu>
-            <Button onClick={() => sendTriggerMsg( namespace + "/reset_controls")}>{"Reset Controls"}</Button>
+            <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
           </ButtonMenu>
 
 
@@ -693,71 +792,36 @@ class ImageViewer extends Component {
 
   }
 
-
-  renderOrienSizeControls() {
+  renderResOrientControls() {
 
     const namespace = this.state.controls_namespace
-    const has_controls = this.props.has_controls ? this.props.has_controls : true
+    const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
 
     const { imageCaps, sendTriggerMsg, sendBoolMsg, sendUpdateStateMsg, sendUpdateRatioMsg } = this.props.ros
     const capabilities = (imageCaps != null) ? (imageCaps[namespace] != null ? imageCaps[namespace] : null) : null
 
    
-    if (has_controls === true && this.state.status_msg != null && namespace != null && capabilities != null){
-      const has_auto_adjust = (capabilities && capabilities.has_auto_adjust && !this.state.disabled)
-      const has_contrast = (capabilities && capabilities.has_contrast && !this.state.disabled)
-      const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
-      const has_threshold = (capabilities && capabilities.has_threshold && !this.state.disabled)
+    if (show_res_orient === true && this.state.status_msg != null && namespace != null && capabilities != null){
       const has_rotate_2d = (capabilities && capabilities.has_rotate_2d && !this.state.disabled)
       const has_flip_horz = (capabilities && capabilities.has_flip_horz && !this.state.disabled)
       const has_flip_vert = (capabilities && capabilities.has_flip_vert && !this.state.disabled)
       const has_resolution = (capabilities && capabilities.has_resolution && !this.state.disabled)
-      const has_framerate = (capabilities && capabilities.has_framerate && !this.state.disabled)
-      const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
-      const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
-      const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
-      const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
-      const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
-      const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
-      const has_filters = (capabilities && capabilities.has_filters && !this.state.disabled)
+
 
       const message = this.state.status_msg
       const auto_adjust_enabled = message.auto_adjust_enabled
-      const auto_adjust_ratio = message.auto_adjust_ratio
       const auto_adjust_controls = message.auto_adjust_controls
       const resolution_ratio = message.resolution_ratio
       const resolution_str = message.resolution_current
-      const brightness_ratio = message.brightness_ratio
-      const contrast_ratio = message.contrast_ratio
-      const threshold_ratio = message.threshold_ratio
       const rotate_2d_deg = message.rotate_2d_deg
       const flip_horz = message.flip_horz
       const flip_vert = message.flip_vert
-      const range_start_ratio = message.range_ratios.start_range
-      const range_stop_ratio = message.range_ratios.stop_range
-      const zoom_ratio = message.zoom_ratio
-      const pan_lr_ratio = message.pan_left_right_ratio
-      const pan_ud_ratio = message.pan_up_down_ratio
-      const window_ratios = message.window_ratios
-      const rotate_3d_ratio = message.rotate_3d_ratio
-      const tilt_3d_ratio = message.tilt_3d_ratio
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
-      const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') != -1)
       const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') != -1)
-      const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') != -1)
-      const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') != -1)
-      const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') != -1)
       const hide_rotate_2d = (!has_rotate_2d || auto_controls.indexOf('rotate_2d_deg') != -1)
       const hide_flip_horz = (!has_flip_horz || auto_controls.indexOf('flip_horz') != -1)
       const hide_flip_vert = (!has_flip_vert || auto_controls.indexOf('flip_vert') != -1)
-      const hide_range = (!has_range || auto_controls.indexOf('range') != -1)
-
-
-
-      const filter_options = message.filter_options
-      const filter_states = message.filter_states
-      const filter_ratios = message.filter_ratios
 
 
 
@@ -881,7 +945,7 @@ class ImageViewer extends Component {
 
 
           <ButtonMenu>
-            <Button onClick={() => sendTriggerMsg( namespace + "/reset_controls")}>{"Reset Controls"}</Button>
+            <Button onClick={() => sendTriggerMsg( namespace + "/reset_res_orients")}>{"Reset Controls"}</Button>
           </ButtonMenu>
 
 
@@ -903,12 +967,12 @@ class ImageViewer extends Component {
   }
 
 
-  renderOverlays() {
+  renderOverlayControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
     const namespace = this.state.controls_namespace
-    const has_overlays = this.props.has_overlays ? this.props.has_overlays : true
+    const show_overlayss = this.props.show_overlayss ? this.props.show_overlayss : true
    
-    if (has_overlays === true && this.state.status_msg != null && namespace != null){
+    if (show_overlayss === true && this.state.status_msg != null && namespace != null){
       const message = this.state.status_msg
       const size_ratio = message.overlay_size_ratio
       const name = message.overlay_img_name
@@ -1093,9 +1157,11 @@ class ImageViewer extends Component {
   render() {
 
     const namespace = this.props.imageTopic ? this.props.imageTopic : 'None'
+
     const show_status = this.state.show_status
+    const show_options = this.props.show_options ? this.props.show_options : true
     const show_controls = this.state.show_controls
-    const show_overlays = this.state.show_overlays
+    const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace
 
@@ -1103,176 +1169,182 @@ class ImageViewer extends Component {
     return (
       <Section title={this.props.title}>
 
-          <canvas style={styles.canvas} ref={this.onCanvasRef} />
+      <canvas style={styles.canvas} ref={this.onCanvasRef} />
 
-        <div style={{ display: 'flex' }}>
-                <div style={{ width: '15%' }}>
-                      <Label title="Show Controls">
-                        <Toggle
-                          checked={this.state.show_controls===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",this.state.show_controls)}>
-                        </Toggle>
-                    </Label>
-                </div>
-                <div style={{ width: '10%' }}>
-                </div>
+      <div align={"left"} textAlign={"left"} hidden={(show_options !== true || namespace === 'None')}>
 
-                <div style={{ width: '15%' }}>
-                      <Label title="Show Overlays">
-                        <Toggle
-                          checked={this.state.show_overlays===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_overlays",this.state.show_overlays)}>
-                        </Toggle>
-                    </Label>
-                </div>
-                <div style={{ width: '10%' }}>
-                </div>
+                <div style={{ display: 'flex' }}>
+                        <div style={{ width: '15%' }}>
+                              <Label title="Show Image Controls">
+                                <Toggle
+                                  checked={this.state.show_controls===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",this.state.show_controls)}>
+                                </Toggle>
+                            </Label>
+                        </div>
+                        <div style={{ width: '10%' }}>
+                        </div>
 
-                <div style={{ width: '15%' }}>
-                    <Label title="Show Info">
-                        <Toggle
-                          checked={this.state.show_status===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_status",this.state.show_status)}>
-                        </Toggle>
-                      </Label>
-                </div>
-                <div style={{ width: '10%' }}>
-                </div>
-
-                <div style={{ width: '15%' }}>
-                     <Label title="Show NavPose">
-                        <Toggle
-                          checked={this.state.show_navpose===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
-                        </Toggle>
-                      </Label>
-                </div>
-                <div style={{ width: '10%' }}>
-                </div>
-
-              </div>
+                        <div style={{ width: '15%' }}>
+                              <Label title="Show Render Controls">
+                                <Toggle
+                                  checked={this.state.show_renders===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_renders",this.state.show_renders)}>
+                                </Toggle>
+                            </Label>
+                        </div>
 
 
+                        <div style={{ width: '10%' }}>
+                        </div>
 
-        <div align={"left"} textAlign={"left"} hidden={(show_status !== true || namespace === 'None')}>
+                        <div style={{ width: '15%' }}>
+                            <Label title="Show Image Info">
+                                <Toggle
+                                  checked={this.state.show_status===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_status",this.state.show_status)}>
+                                </Toggle>
+                              </Label>
+                        </div>
+                        <div style={{ width: '10%' }}>
+                        </div>
 
+                        <div style={{ width: '15%' }}>
+                            <Label title="Show NavPose Data">
+                                <Toggle
+                                  checked={this.state.show_navpose===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
+                                </Toggle>
+                              </Label>
+                        </div>
+                        <div style={{ width: '10%' }}>
+                        </div>
 
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-              <div style={{ display: 'flex' }}>
-                <div style={{ width: '40%' }}>
-
-
-                <Label title={"Info"} />
-                    {this.renderInfo()}
-
-
-                </div>
-
-                <div style={{ width: '20%' }}>
-                  {}
-                </div>
-
-                <div style={{ width: '40%' }}>
-
-
-                <Label title={"Stats"} />
-                    {this.renderStats()}
-
-
-                </div>
-              </div>
+                  </div>
 
 
 
+                  <div align={"left"} textAlign={"left"} hidden={(show_status !== true || namespace === 'None')}>
 
-        </div>
+
+                        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ width: '40%' }}>
+
+
+                          <Label title={"INFO"} />
+                              {this.renderInfo()}
+
+
+                          </div>
+
+                          <div style={{ width: '20%' }}>
+                            {}
+                          </div>
+
+                          <div style={{ width: '40%' }}>
+
+
+                          <Label title={"STATS"} />
+                              {this.renderStats()}
+
+
+                          </div>
+                        </div>
+
+
+
+
+                  </div>
 
        
 
 
-        <div align={"left"} textAlign={"left"} hidden={(show_overlays !== true || namespace === 'None')}>
+                  <div align={"left"} textAlign={"left"} hidden={(show_renders !== true || namespace === 'None')}>
 
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-                <div style={{ display: 'flex' }}>
-                      <div style={{ width: '40%' }}>
-
-
-                          <Label title={"OVERLAYS"} />
-                                        {this.renderOverlays()}
+                          <div style={{ display: 'flex' }}>
+                                <div style={{ width: '40%' }}>
 
 
-                      </div>
-
-                      <div style={{ width: '20%' }}>
-                        {}
-                      </div>
-
-                      <div style={{ width: '40%' }}>
-
-                        {}
-                      </div>
-      
-                </div>
-
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
-
-                  {this.renderCompression()}
-
-                  <NepiIFConfig
-                      namespace={namespace}
-                      title={"Nepi_IF_Config"}
-                  />
-
-          </div>
+                                    <Label title={"OVERLAYS"} />
+                                      {this.renderOverlayControls()}
 
 
-        <div align={"left"} textAlign={"left"} hidden={(show_controls !== true || namespace === 'None')}>
+                                </div>
 
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                                <div style={{ width: '20%' }}>
+                                  {}
+                                </div>
 
-                <div style={{ display: 'flex' }}>
-                      <div style={{ width: '40%' }}>
+                                <div style={{ width: '40%' }}>
+                                  <Label title={"ZOOM PAN ROTATE"} />
+                                  {this.renderRenderControls()}
+                                </div>
+                
+                          </div>
+
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
+
+                            {this.renderCompression()}
+
+                            <NepiIFConfig
+                                namespace={namespace}
+                                title={"Nepi_IF_Config"}
+                            />
+
+                    </div>
 
 
-                                        {this.renderFilterControls()}
+                  <div align={"left"} textAlign={"left"} hidden={(show_controls !== true || namespace === 'None')}>
+
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                          <div style={{ display: 'flex' }}>
+                                <div style={{ width: '40%' }}>
+
+                                  <Label title={"FILTERS"} />
+                                  {this.renderFilterControls()}
 
 
-                      </div>
+                                </div>
 
-                      <div style={{ width: '20%' }}>
-                        {}
-                      </div>
+                                <div style={{ width: '20%' }}>
+                                  {}
+                                </div>
 
-                      <div style={{ width: '40%' }}>
+                                <div style={{ width: '40%' }}>
+                                <Label title={"SIZE ORIENTATION"} />
+                                  {this.renderResOrientControls()}
+                                </div>
+                
+                          </div>
 
-                                        {this.renderOrienSizeControls()}
-                      </div>
-      
-                </div>
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
 
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
+                            {this.renderCompression()}
 
-                  {this.renderCompression()}
+                            <NepiIFConfig
+                                namespace={namespace}
+                                title={"Nepi_IF_Config"}
+                            />
 
-                  <NepiIFConfig
-                      namespace={namespace}
-                      title={"Nepi_IF_Config"}
-                  />
+                    </div>
 
-          </div>
+                    <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
 
-          <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
+                                <NavPoseViewer
+                                  namespace={(show_navpose === true)? navpose_namespace : null}
+                                  make_section={false}
+                                  title={"IDX NavPose Data"}
+                                />
 
-                      <NavPoseViewer
-                        namespace={(show_navpose === true)? navpose_namespace : null}
-                        make_section={false}
-                        title={"IDX NavPose Data"}
-                      />
+                    </div>
 
-</div>
+        </div>
 
              
       </Section>

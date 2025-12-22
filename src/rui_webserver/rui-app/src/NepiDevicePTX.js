@@ -993,6 +993,7 @@ renderNavPose(){
                     id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
+                    show_options={false}
                     hideQualitySelector={false}
                   />
                 </div>
