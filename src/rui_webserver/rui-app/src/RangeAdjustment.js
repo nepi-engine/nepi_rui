@@ -203,11 +203,16 @@ class RangeAdjustment extends Component {
   }
 
   render() {
+    const hide_display = this.props.hide_display ? this.props.hide_display : false
     return (
+
       <div style={{ display: "flex", ...styles.root }}>
-        <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
-          <label style={styles.label}>{this.state.title}</label>
-        </Tooltip>
+        {(this.props.noLabel)?
+          null :
+          <Tooltip placement="bottomRight" overlay={this.props.tooltip}>
+            <label style={styles.label}>{this.props.title}</label>
+          </Tooltip>
+        }
         <Range
           style={this.props.disabled? styles.disabled_range : styles.range}
           value={[this.state.min, this.state.max]}
@@ -222,20 +227,24 @@ class RangeAdjustment extends Component {
           pushable={0.1}
           handle={handle}
         />
-        <Tooltip placement="top" overlay="min">
-          <Input
-            style={styles.min_input}
-            value={this.state.input_min}
-            disabled={true}
-          />
-        </Tooltip>
-        <Tooltip placement="top" overlay="max">
-          <Input
-            style={styles.max_input}
-            value={this.state.input_max}
-            disabled={true}
-          />
-        </Tooltip>
+          <div hidden={this.props.noTextBox === true}>
+              <Tooltip placement="top" overlay="min">
+                <Input
+                  style={styles.min_input}
+                  value={this.state.input_min}
+                  disabled={true}
+                />
+              </Tooltip>
+              <Tooltip placement="top" overlay="max">
+                <Input
+                  style={styles.max_input}
+                  value={this.state.input_max}
+                  disabled={true}
+                />
+              </Tooltip>
+        </div>
+
+
       </div>
     )
   }

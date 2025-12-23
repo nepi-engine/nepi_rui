@@ -1448,6 +1448,50 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
+  sendImagePixelMsg(namespace,x,y,r,g,b,a) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImagePixel",
+      data: {x: x,
+          y: y,
+          r: r,
+          g: g,
+          b: b,
+          a: a},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  sendImageDragMsg(namespace,x,y,r,g,b,a) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImagePixel",
+      data: {x: x,
+          y: y,
+          r: r,
+          g: g,
+          b: b,
+          a: a},
+      noPrefix: true
+    })
+  }
+
+
+    @action.bound
+  sendImageWindowMsg(namespace,x_min,x_max,y_min,y_max) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImageWindow",
+      data: {x_min: x_min,
+        x_max: x_max,
+        y_min: y_min,
+        y_max: y_max},
+      noPrefix: true
+    })
+  }
+
   /*******************************/
   // Custom Send Data Functions
   /*******************************/

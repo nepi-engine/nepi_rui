@@ -7,6 +7,7 @@
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
 import React, { Component } from "react"
+
 //import moment from "moment"
 import { observer, inject } from "mobx-react"
 
@@ -78,6 +79,9 @@ class ImageViewer extends Component {
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
       status_listenter: null,
       status_msg: null,
+      pixel: null,
+      mouse_drag: false,
+
 
       filter_list_viewable: false,
 
@@ -93,6 +97,10 @@ class ImageViewer extends Component {
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
     this.renderStats = this.renderStats.bind(this)
     this.getImgStatsText = this.getImgStatsText.bind(this)
+
+    this.mouseDownEvent = this.mouseDownEvent.bind(this)
+    this.mouseDragEvent = this.mouseDragEvent.bind(this)
+    this.mouseUpEvent = this.mouseUpEvent.bind(this)
 
 
     //this.ZoomViewer = this.ZoomViewer.bind(this)
@@ -160,8 +168,113 @@ class ImageViewer extends Component {
   }
   
 
+  getPixelLoc(canvas,event){
+
+      const rect = canvas.getBoundingClientRect()
+      const xr = (event.clientX - rect.left) / (canvas.offsetWidth ) 
+      const yr = (event.clientY - rect.top) / (canvas.offsetHeight )
+
+      const w = canvas.width
+      const h = canvas.height
+
+      const x = Math.floor(w * xr )
+      const y = Math.floor(h * yr )
+
+    return [x,y]
+  }
+
+
+  getPixelColor(canvas,x, y){
+
+
+      // pixelData is a Uint8ClampedArray with 4 values: [R, G, B, A]
+      const ctx = canvas.getContext('2d')
+      const imageData = ctx.getImageData(x, y, 1, 1)
+      const pixelData = imageData.data // This is a Uint8ClampedArray [R, G, B, A]
+      const r = pixelData[0]
+      const g = pixelData[1]
+      const b = pixelData[2]
+      const a = pixelData[3] / 255 // Alpha is in range [0, 255], convert to [0, 1]
+    return [r,g,b,a]
+  }
+
+  mouseDownEvent(canvas, event) {
+      //const rect = canvas.getBoundingClientRect()
+      const [x,y] = this.getPixelLoc(canvas, event)
+      const [r,g,b,a] = this.getPixelColor(canvas,x, y)
+      this.setState({pixel: [x,y,r,g,b,a], mouse_drag: true})
+      console.log("x coords: " + x + ", y coords: " + y);
+  }
+
+
+  mouseDragEvent(canvas,event){
+      const {sendImageDragMsg} = this.props.ros
+      const namespace = this.state.controls_namespace
+      //const rect = canvas.getBoundingClientRect()
+
+      const is_drag = this.state.mouse_drag
+      if (is_drag === true){
+          const [x2,y2] = this.getPixelLoc(canvas, event)
+          const pixel = this.state.pixel
+          if (pixel !== null){
+            const [x1,y1] = pixel
+            const dx = Math.abs(x2 - x1) 
+            const dy = Math.abs(y2 - y1) 
+
+            const pt = 5
+            if (dx > pt && dy > pt){
+              const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
+              sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
+            }
+          }
+      }
+  }
+
+  mouseUpEvent(canvas,event){
+      const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
+      const namespace = this.state.controls_namespace
+      //const rect = canvas.getBoundingClientRect()
+
+      const [x2,y2] = this.getPixelLoc(canvas, event)
+      const pixel = this.state.pixel
+      this.setState({pixel: null, mouse_drag: false})
+      if (pixel !== null){
+        const [x1,y1,r,g,b,a] = pixel
+        const dx = Math.abs(x2 - x1) 
+        const dy = Math.abs(y2 - y1) 
+
+        const pt = 5
+        if (dx < pt && dy < pt){
+          const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
+          sendImagePixelMsg(namespace + '/set_pixel',x1,y1,r,g,b,a)
+        }
+
+        const wt = Math.max(canvas.width, canvas.height) * 0.05
+        if (dx > wt && dy > wt){
+          sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
+        }
+
+
+      }
+      
+    
+  }
+
   onCanvasRef(ref) {
     this.canvas = ref
+
+    this.canvas.addEventListener('mousedown', (e) => {
+    this.mouseDownEvent(this.canvas, e)
+    })
+
+    this.canvas.addEventListener('mousemove', (e) => {
+    this.mouseDragEvent(this.canvas, e)
+    })
+
+    this.canvas.addEventListener('mouseup', (e) => {
+    this.mouseUpEvent(this.canvas, e)
+    })
+
     //this.updateImageSource()
   }
 
@@ -1139,27 +1252,17 @@ class ImageViewer extends Component {
 
   }
 
-  /*
-  ZoomViewer(){
-    return (
-  
-      <TransformWrapper>
-        <TransformComponent>
-          <canvas style={styles.canvas} ref={this.onCanvasRef} />
-          </TransformComponent>
-      </TransformWrapper>
-  
-    )
-  
-  }
-*/
+
+
+
+
 
   render() {
 
     const namespace = this.props.imageTopic ? this.props.imageTopic : 'None'
-
+    const { sendTriggerMsg } = this.props.ros
+    const show_image_controls = this.props.show_image_controls ? this.props.show_image_controls : true
     const show_status = this.state.show_status
-    const show_options = this.props.show_options ? this.props.show_options : true
     const show_controls = this.state.show_controls
     const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
@@ -1169,9 +1272,14 @@ class ImageViewer extends Component {
     return (
       <Section title={this.props.title}>
 
-      <canvas style={styles.canvas} ref={this.onCanvasRef} />
+                  <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
+                  </ButtonMenu>
 
-      <div align={"left"} textAlign={"left"} hidden={(show_options !== true || namespace === 'None')}>
+                  <canvas style={styles.canvas} ref={this.onCanvasRef} />
+
+
+      <div align={"left"} textAlign={"left"} hidden={(show_image_controls !== true || namespace === 'None')}>
 
                 <div style={{ display: 'flex' }}>
                         <div style={{ width: '15%' }}>
@@ -1185,19 +1293,7 @@ class ImageViewer extends Component {
                         <div style={{ width: '10%' }}>
                         </div>
 
-                        <div style={{ width: '15%' }}>
-                              <Label title="Show Render Controls">
-                                <Toggle
-                                  checked={this.state.show_renders===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_renders",this.state.show_renders)}>
-                                </Toggle>
-                            </Label>
-                        </div>
-
-
-                        <div style={{ width: '10%' }}>
-                        </div>
-
+            
                         <div style={{ width: '15%' }}>
                             <Label title="Show Image Info">
                                 <Toggle
@@ -1217,6 +1313,20 @@ class ImageViewer extends Component {
                                 </Toggle>
                               </Label>
                         </div>
+                        <div style={{ width: '10%' }}>
+                        </div>
+
+
+                       <div style={{ width: '15%' }}>
+                              <Label title="Show Render Controls">
+                                <Toggle
+                                  checked={this.state.show_renders===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_renders",this.state.show_renders)}>
+                                </Toggle>
+                            </Label>
+                        </div>
+
+
                         <div style={{ width: '10%' }}>
                         </div>
 
