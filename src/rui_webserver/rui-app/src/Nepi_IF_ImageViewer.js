@@ -19,16 +19,15 @@ import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
+import { SliderAdjustment} from "./AdjustmentWidgets"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
-import Select from "./Select"
 import Input from "./Input"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
 
-import { createMenuListFromStrList, onChangeSwitchStateValue, onEnterSendFloatValue } from "./Utilities"
+import {  onChangeSwitchStateValue } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -376,7 +375,7 @@ class ImageViewer extends Component {
   getImgInfoText(){
     const status_msg = this.state.status_msg
     var msg = ""
-    if (status_msg != null){
+    if (status_msg !== null){
       const frame_3d = status_msg.frame_3d
       const encoding = status_msg.encoding
       const width_px = round(status_msg.width_px, 0)
@@ -401,7 +400,7 @@ class ImageViewer extends Component {
 
   renderInfo() {
    
-    if (this.state.status_msg != null){
+    if (this.state.status_msg !== null){
       const msg = this.getImgInfoText()
       return (
         <Columns>
@@ -434,7 +433,7 @@ class ImageViewer extends Component {
     const status_msg = this.state.status_msg
     const has_status = this.props.has_status ? this.props.has_status : true
     var msg = ""
-    if (status_msg != null && has_status === true){
+    if (status_msg !== null && has_status === true){
       const get_lat = round(status_msg.get_latency_time, 3)
       const pub_lat = round(status_msg.pub_latency_time, 3)
       const proc_time = round(status_msg.process_time, 3)
@@ -532,11 +531,11 @@ class ImageViewer extends Component {
     const namespace = this.state.controls_namespace
     const show_filters = this.props.show_filters ? this.props.show_filters : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg, sendUpdateStateMsg, sendUpdateRatioMsg } = this.props.ros
-    const capabilities = (imageCaps != null) ? (imageCaps[namespace] != null ? imageCaps[namespace] : null) : null
+    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
    
-    if (show_filters === true && this.state.status_msg != null && namespace != null && capabilities != null){
+    if (show_filters === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_auto_adjust = (capabilities && capabilities.has_auto_adjust && !this.state.disabled)
       const has_contrast = (capabilities && capabilities.has_contrast && !this.state.disabled)
       const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
@@ -554,10 +553,10 @@ class ImageViewer extends Component {
 
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
-      const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') != -1)
-      const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') != -1)
-      const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') != -1)
-      const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') != -1)
+      //Unused const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') !== -1)
+      const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') !== -1)
+      const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') !== -1)
+      const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
 
 
 
@@ -699,11 +698,11 @@ class ImageViewer extends Component {
     const namespace = this.state.controls_namespace
     const show_renders = this.props.show_renders ? this.props.show_renders : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg, sendUpdateStateMsg, sendUpdateRatioMsg } = this.props.ros
-    const capabilities = (imageCaps != null) ? (imageCaps[namespace] != null ? imageCaps[namespace] : null) : null
+    const { imageCaps, sendTriggerMsg } = this.props.ros
+    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
    
-    if (show_renders === true && this.state.status_msg != null && namespace != null && capabilities != null){
+    if (show_renders === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
@@ -728,8 +727,8 @@ class ImageViewer extends Component {
       const tilt_3d_ratio = message.tilt_3d_ratio
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
-      const hide_range = (!has_range || auto_controls.indexOf('range') != -1)
-      const hide_window = (!has_window || auto_controls.indexOf('window') != -1)
+      const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
+      const hide_window = (!has_window || auto_controls.indexOf('window') !== -1)
 
 
 
@@ -910,11 +909,11 @@ class ImageViewer extends Component {
     const namespace = this.state.controls_namespace
     const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg, sendUpdateStateMsg, sendUpdateRatioMsg } = this.props.ros
-    const capabilities = (imageCaps != null) ? (imageCaps[namespace] != null ? imageCaps[namespace] : null) : null
+    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
    
-    if (show_res_orient === true && this.state.status_msg != null && namespace != null && capabilities != null){
+    if (show_res_orient === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_rotate_2d = (capabilities && capabilities.has_rotate_2d && !this.state.disabled)
       const has_flip_horz = (capabilities && capabilities.has_flip_horz && !this.state.disabled)
       const has_flip_vert = (capabilities && capabilities.has_flip_vert && !this.state.disabled)
@@ -931,10 +930,10 @@ class ImageViewer extends Component {
       const flip_vert = message.flip_vert
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
-      const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') != -1)
-      const hide_rotate_2d = (!has_rotate_2d || auto_controls.indexOf('rotate_2d_deg') != -1)
-      const hide_flip_horz = (!has_flip_horz || auto_controls.indexOf('flip_horz') != -1)
-      const hide_flip_vert = (!has_flip_vert || auto_controls.indexOf('flip_vert') != -1)
+      const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') !== -1)
+      const hide_rotate_2d = (!has_rotate_2d || auto_controls.indexOf('rotate_2d_deg') !== -1)
+      const hide_flip_horz = (!has_flip_horz || auto_controls.indexOf('flip_horz') !== -1)
+      const hide_flip_vert = (!has_flip_vert || auto_controls.indexOf('flip_vert') !== -1)
 
 
 
@@ -1085,7 +1084,7 @@ class ImageViewer extends Component {
     const namespace = this.state.controls_namespace
     const show_overlayss = this.props.show_overlayss ? this.props.show_overlayss : true
    
-    if (show_overlayss === true && this.state.status_msg != null && namespace != null){
+    if (show_overlayss === true && this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
       const size_ratio = message.overlay_size_ratio
       const name = message.overlay_img_name

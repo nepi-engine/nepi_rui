@@ -123,7 +123,7 @@ class NepiIFSaveData extends Component {
     if (this.state.saveStatusListener) {
       this.state.saveStatusListener.unsubscribe()
     }
-    if (namespace != 'None'){
+    if (namespace !== 'None'){
       var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
             namespace,
             this.saveStatusListener
@@ -329,7 +329,7 @@ class NepiIFSaveData extends Component {
 
   onKeySaveInputSaveDataRateValue(event) {
     const saveDataRate = this.state.saveDataRate
-    const rate = parseFloat(saveDataRate)
+    //Unused const rate = parseFloat(saveDataRate)
     if(event.key === 'Enter'){
       const rate = parseFloat(event.target.value)
       if (!isNaN(rate)){
@@ -349,9 +349,9 @@ class NepiIFSaveData extends Component {
   }
 
   onKeySaveInputSaveDataPrefixValue(event) {
-    const { updateSaveDataPrefix} = this.props.ros
+    //Unused const { updateSaveDataPrefix} = this.props.ros
     const key = event.key
-    const value = event.target.value
+    //Unused const value = event.target.value
     if(key === 'Enter'){
       document.getElementById("input_prefix").style.color = Styles.vars.colors.black
     }
@@ -378,7 +378,6 @@ class NepiIFSaveData extends Component {
   }
 
   render() {
-    const { sendTriggerMsg} = this.props.ros
     const saveDataEnabled = this.getSaveDataValue()
     const dataProdcutSources = this.getSaveNamesList()
     const selectedDataProducts = this.getSelectedDataProducts()

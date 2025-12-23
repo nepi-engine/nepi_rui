@@ -10,7 +10,7 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import {Link} from "react-router-dom"
 import Toggle from "react-toggle"
-import { displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
+//Unused import { displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -266,7 +266,7 @@ updateMgrTimeStatusListener() {
 
 
   renderAdmin() {
-    const { resetTopics, onUserCfgRestore, onFactoryCfgRestore } = this.props.ros
+    const { resetTopics, onUserCfgRestore } = this.props.ros
     const { advancedConfigEnabled, configSubsys } = this.state
     const {deviceId} = this.props.ros
     const sys_debug = this.props.ros.systemDebugEnabled
@@ -278,7 +278,7 @@ updateMgrTimeStatusListener() {
     if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
       this.setState({updatedDeviceId:deviceId})
     }
-    const updatedDeviceId = this.state.updatedDeviceId
+    //Unused const updatedDeviceId = this.state.updatedDeviceId
       
 
     
@@ -415,7 +415,7 @@ updateMgrTimeStatusListener() {
     if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
       this.setState({updatedDeviceId:deviceId})
     }
-    const updatedDeviceId = this.state.updatedDeviceId
+    //Unused const updatedDeviceId = this.state.updatedDeviceId
       
 
     
@@ -480,7 +480,6 @@ updateMgrTimeStatusListener() {
 
   renderLicense() {
     const {license_info} = this.props.ros
-
     const license_info_valid = license_info && ("licensed_components" in license_info) && ("nepi_base" in license_info["licensed_components"]) &&
       "commercial_license_type" in license_info["licensed_components"]["nepi_base"]
 
@@ -495,9 +494,10 @@ updateMgrTimeStatusListener() {
 
     const license_expiration_version = license_info_valid && "expiration_version" in license_info["licensed_components"]["nepi_base"]?
       license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
-    
+ 
+
     const { systemRestrictions} = this.props.ros
-    const license_restricted = systemRestrictions.indexOf('License') !== -1
+    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
 
 
       return (
@@ -538,12 +538,12 @@ updateMgrTimeStatusListener() {
     const license_request_version = (license_request_info_valid && ('version' in license_request_info['license_request']))?
       license_request_info['license_request']['version'] : 'Unknown'    
 
-    const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
-    const license_restricted = systemRestrictions.indexOf('License') !== -1
-    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    const network_restricted = systemRestrictions.indexOf('Network') !== -1
-    const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
-    const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
+    //Unused const { systemManagesNetwork, systemRestrictions} = this.props.ros
+    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
+    //Unused const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    //Unused const network_restricted = systemRestrictions.indexOf('Network') !== -1
+    //Unused const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
+    //Unused const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
 
     return (
       // TODO: A QR code or automatic API link would be nicer here.
@@ -668,7 +668,7 @@ updateMgrTimeStatusListener() {
     onToggleTimezoneSelection(event){
       const {
         setTimezone,
-        available_timezones,
+        //Unused available_timezones,
         systemStatusTimezoneDesc
       } = this.props.ros
       const timezoneSelection = event.target.value
@@ -695,7 +695,7 @@ updateMgrTimeStatusListener() {
 
     const timezoneOptions = this.getTimezoneOptions()
     const baseNamespace = this.getBaseNamespace()
-    const namespace = this.state.timeMgrNamespace
+    //Unused const namespace = this.state.timeMgrNamespace
 
     var time_str = ""
     var date_str = ""
@@ -922,7 +922,7 @@ updateMgrTimeStatusListener() {
 
 
   renderNetworkMgr() {
-    const { sendTriggerMsg, onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
+    const {  onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
     const netStatus = this.state.netStatus
     const dhcp_enabled = (netStatus !== null)? netStatus.dhcp_enabled : false
@@ -931,14 +931,14 @@ updateMgrTimeStatusListener() {
     const dhcp_addr = (netStatus !== null)? netStatus.dhcp_ip_addr : ''
     const internet_connected = (netStatus !== null)? netStatus.internet_connected : false
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
-    const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
+    const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-    const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
-    const license_restricted = systemRestrictions.indexOf('License') !== -1
-    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    const { systemManagesNetwork, systemRestrictions} = this.props.ros
+    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
+    //Unused const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
     const network_restricted = systemRestrictions.indexOf('Network') !== -1
-    const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
-    const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
+    //Unused const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
+    //Unused const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
 
 
     if (systemManagesNetwork === false){
@@ -1179,7 +1179,7 @@ updateMgrTimeStatusListener() {
     const available_networks = (netStatus !== null)? netStatus.available_networks : []
 
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
-    const message = clock_skewed == false ? "" : "Clock out of date. Sync Clock to Connect to Internet"
+    const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock to Connect to Internet"
     const wifi_client_connected = (netStatus !== null)? netStatus.wifi_client_connected : false
     const connecting = (netStatus !== null)? netStatus.wifi_client_connecting : false
 
@@ -1187,10 +1187,10 @@ updateMgrTimeStatusListener() {
     const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
     const connect_value = (wifi_client_connected === true) ? true : connecting
     
-    const { systemInContainer, systemManagesTime, systemManagesNetwork, systemRestrictOptions, systemRestrictions} = this.props.ros
-    const license_restricted = systemRestrictions.indexOf('License') !== -1
-    const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    const network_restricted = systemRestrictions.indexOf('Network') !== -1
+    const { systemManagesNetwork, systemRestrictions} = this.props.ros
+    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
+    //Unused const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
+    //Unused const network_restricted = systemRestrictions.indexOf('Network') !== -1
     const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
     const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
 
@@ -1447,7 +1447,7 @@ updateMgrTimeStatusListener() {
 
 
   render() {
-    const netStatus = this.state.netStatus
+    //Unused const netStatus = this.state.netStatus
     return (
       <Columns>
         <Column>

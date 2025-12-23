@@ -15,23 +15,21 @@ import Select, { Option } from "./Select"
 //import EnableAdjustment from "./EnableAdjustment"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import Input from "./Input"
 import { Column, Columns } from "./Columns"
 import {
-  round,
-  createShortUniqueValues,
+  //Unused round,
+  //Unused createShortUniqueValues,
   onUpdateSetStateValue,
   onEnterSetStateFloatValue,
-  onChangeSwitchStateNestedValue,
+  //Unused onChangeSwitchStateNestedValue,
   createMenuListFromStrList,
   onDropdownSelectedSetState
 } from "./Utilities"
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
+//Unused import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
@@ -284,7 +282,7 @@ class MgrNavPose extends Component {
   }
 
   navposeListener(message) {
-    const last_navpose_msg = this.state.navpose_msg
+    //Unused const last_navpose_msg = this.state.navpose_msg
     const navpose_data = {
       frame_3d: message.frame_3d,
       frame_nav: message.frame_nav,
@@ -421,7 +419,7 @@ class MgrNavPose extends Component {
 
   // Function for creating topic options for Select input
   createTopicOptions(name) {
-    const namespace = this.state.namespace
+    //Unused const namespace = this.state.namespace
     const status_msg = this.state.status_msg
 
     var items = []
@@ -563,7 +561,7 @@ class MgrNavPose extends Component {
   }
 
   renderMgrFixedControls(name, comp_info) {
-    const {sendTriggerMsg, sendNavPoseMsg} = this.props.ros
+    //Unused const {sendTriggerMsg, sendNavPoseMsg} = this.props.ros
     const namespace = this.state.namespace
 
     // location
@@ -941,7 +939,7 @@ class MgrNavPose extends Component {
   }
 
   renderMgrTopicControls(name, comp_info) {
-    const namespace = this.state.namespace
+    //Unused const namespace = this.state.namespace
     const status_msg = this.state.status_msg
     
     if (status_msg == null){
@@ -952,8 +950,8 @@ class MgrNavPose extends Component {
       )
     } else {
       const topic = (comp_info.topic !== '') ? comp_info.topic : 'None'
-      const msg = comp_info.topic_msg
-      const con = comp_info.connected
+      //Unused const msg = comp_info.topic_msg
+      //Unused const con = comp_info.connected
       const rate = comp_info.avg_rate
       const time = comp_info.last_time
       const topic_selected = topic !== 'None' && topic !== 'Fixed' && topic !== ''
@@ -1073,9 +1071,9 @@ class MgrNavPose extends Component {
   }
 
   renderMgrSettings() {
-    const {sendTriggerMsg} = this.props.ros
+    //Unused const {sendTriggerMsg} = this.props.ros
     const connected = (this.state.namespace != null)
-    const namespace = this.state.namespace
+    //Unused const namespace = this.state.namespace
 
     return (
       <React.Fragment>
@@ -1096,7 +1094,7 @@ class MgrNavPose extends Component {
 
   render() {
     const namespace = this.state.namespace
-    const navpose_data = this.state.navpose_data
+    //Unused const navpose_data = this.state.navpose_data
     const connected = this.state.connected
 
     return (

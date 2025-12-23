@@ -13,9 +13,6 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
-import Button, { ButtonMenu } from "./Button"
-import Styles from "./Styles"
-
 import NepiDeviceIDXControls from "./NepiDeviceIDX-Controls"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
@@ -26,8 +23,6 @@ import NepiIFConfig from "./Nepi_IF_Config"
 
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
-
-import {createShortUniqueValues} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -174,7 +169,7 @@ class NepiDeviceIDX extends Component {
   }
 
   renderDeviceSelection() {
-    const { idxDevices, sendTriggerMsg  } = this.props.ros
+    const { idxDevices} = this.props.ros
     const NoneOption = <Option>None</Option>
     const device_selected = (this.state.namespace != null)
     const data_topic = this.state.data_topic

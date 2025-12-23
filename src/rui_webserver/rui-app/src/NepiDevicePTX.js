@@ -18,13 +18,13 @@ import Label from "./Label"
 import Input from "./Input"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
-import {createShortUniqueValues, setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue, onUpdateSetStateIndexValue, onEnterSetStateFloatValue} from "./Utilities"
+import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
 import {createShortValuesFromNamespaces} from "./Utilities"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFSaveData from "./Nepi_IF_SaveData"
+//Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
@@ -213,7 +213,7 @@ class NepiDevicePTX extends Component {
     const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
     const namespace = this.state.namespace
 
-    const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
+    //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
     const ptx_caps = ptxDevices[namespace]
     const has_sep_pan_tilt = ptx_caps && (ptx_caps.has_seperate_pan_tilt_control)
     var panElement = null
@@ -478,7 +478,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
   renderControlPanel() {
     const { ptxDevices, sendBoolMsg, onPTXGoHome, onPTXSetHomeHere } = this.props.ros
     
-    const { ptSerialNum, ptHwVersion, ptSwVersion,
+    const { //Unused ptSerialNum, ptHwVersion, ptSwVersion,
             panPositionDeg, tiltPositionDeg, panHomePosDeg, tiltHomePosDeg,
             panMaxHardstopDeg, tiltMaxHardstopDeg, panMinHardstopDeg, tiltMinHardstopDeg,
             panMinHardstopEdited, tiltMinHardstopEdited, panMaxHardstopEdited, tiltMaxHardstopEdited,
@@ -486,24 +486,24 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
             panMinSoftstopEdited, tiltMinSoftstopEdited, panMaxSoftstopEdited, tiltMaxSoftstopEdited,
             speedRatio, panHomePosEdited, tiltHomePosEdited,
             reversePanEnabled, reverseTiltEnabled, autoPanEnabled, autoTiltEnabled, trackPanEnabled, trackTiltEnabled, 
-            track_source_namespaces, track_source_namespace, track_source_connected,
+            track_source_connected,
             speed_pan_dps, speed_tilt_dps  } = this.state /*sinPanEnabled ,sinTiltEnabled*/
 
     const namespace = this.state.namespace
-    const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
+    //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
 
     const panPositionDegClean = panPositionDeg + .001
     const tiltPositionDegClean = tiltPositionDeg + .001
 
     const ptx_caps = ptxDevices[namespace]
     const has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning)
-    const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning)
-    const has_sep_pan_tilt = ptx_caps && (ptx_caps.has_seperate_pan_tilt_control)
+    //Unused const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning)
+    //Unused const has_sep_pan_tilt = ptx_caps && (ptx_caps.has_seperate_pan_tilt_control)
     const has_auto_pan = ptx_caps && (ptx_caps.has_auto_pan)
     const has_auto_tilt = ptx_caps && (ptx_caps.has_auto_tilt)
     const has_speed_control = ptx_caps && (ptx_caps.has_adjustable_speed)
     const has_homing = ptx_caps && (ptx_caps.has_homing)
-    const has_set_home = ptx_caps && (ptx_caps.has_set_home)
+    //Unused const has_set_home = ptx_caps && (ptx_caps.has_set_home)
     
     const panHomePos = (panHomePosEdited === null)? round(panHomePosDeg, 1) : panHomePosEdited
     const tiltHomePos = (tiltHomePosEdited === null)? round(tiltHomePosDeg, 1) : tiltHomePosEdited
@@ -522,10 +522,10 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
     const hide_auto_pan = ((has_auto_pan === false ))
     const hide_auto_tilt = ((has_auto_tilt === false ))
 
-    const hide_track_pan = ((track_source_connected === false || hide_auto_pan == true))
-    const hide_track_tilt = ((track_source_connected === false || hide_auto_tilt == true))
+    const hide_track_pan = ((track_source_connected === false || hide_auto_pan === true))
+    const hide_track_tilt = ((track_source_connected === false || hide_auto_tilt === true))
 
-    const {sendTriggerMsg} = this.props.ros
+    //Unused const {sendTriggerMsg} = this.props.ros
 
     return (
       <Section >
@@ -899,7 +899,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 renderNavPose(){
   const show_navpose = this.state.show_navpose
   const namespace = this.state.namespace ? this.state.namespace : 'None'
-  const make_section = this.props.make_section ? this.props.make_section : true
+  //Unused const make_section = this.props.make_section ? this.props.make_section : true
   //console.log("show navpose: " + show_navpose)
   //console.log("renderNavPose namespace : " + namespace)
   if (namespace == null || namespace === 'None'){
@@ -952,7 +952,7 @@ renderNavPose(){
 
 
   render() {
-    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop, sendTriggerMsg } = this.props.ros
+    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
     const { panNowRatio, panGoalRatio, tiltNowRatio, tiltGoalRatio} = this.state
     const namespace = this.state.namespace
 
@@ -962,8 +962,8 @@ renderNavPose(){
     const ptx_caps = ptxDevices[namespace]
     const has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
     const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
-    const show_navpose = this.state.show_navpose
-    const device_selected = (this.state.namespace != null)
+    //Unused const show_navpose = this.state.show_navpose
+    //Unused const device_selected = (this.state.namespace != null)
 
     console.log("render namespace : " + namespace)
 

@@ -318,7 +318,7 @@ class NepiDeviceRBX extends Component {
 
 
     renderDeviceSelection() {
-      const { rbxDevices, sendTriggerMsg, sendStringMsg, sendBoolMsg, saveConfigTriggered, sendGeoPointMsg } = this.props.ros
+      const { rbxDevices, sendStringMsg, sendBoolMsg, sendGeoPointMsg } = this.props.ros
       const NoneOption = <Option>None</Option>
       const deviceSelected = (this.state.currentRBXNamespace != null)
       const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
@@ -594,7 +594,6 @@ class NepiDeviceRBX extends Component {
 
 
   render() {
-    const { sendTriggerMsg} = this.props.ros
     const deviceSelected = (this.state.currentRBXNamespace != null)
     const namespace = this.state.currentRBXNamespace
     return (
