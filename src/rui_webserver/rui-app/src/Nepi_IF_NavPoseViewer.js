@@ -7,17 +7,17 @@
  * License: 3-clause BSD, see https://opensource.org/licenses/BSD-3-Clause
  */
 import React, { Component } from "react"
-import Toggle from "react-toggle"
+//Unused import Toggle from "react-toggle"
 import { observer, inject } from "mobx-react"
 
 import Input from "./Input"
 import Section from "./Section"
-import Button, { ButtonMenu } from "./Button"
+//Unused import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
-import Select, { Option } from "./Select"
-import {setElementStyleModified, clearElementStyleModified} from "./Utilities"
+//Unused import Select, { Option } from "./Select"
+//Unused import {setElementStyleModified, clearElementStyleModified} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -79,7 +79,7 @@ class NepiIFNavPoseViewer extends Component {
   navposeListener(message) {
     console.log("=====navposeListener called=====" + message)
     console.log("navposeListener msg: " + message)
-    const last_navpose_msg = this.state.navpose_msg
+    //Unused const last_navpose_msg = this.state.navpose_msg
     const navpose_data = {
       frame_3d: message.frame_3d,
       frame_nav: message.frame_nav,
@@ -191,7 +191,7 @@ class NepiIFNavPoseViewer extends Component {
 
     }
     else {
-          const frame_3d = navpose_data ? navpose_data.frame_3d : null
+          //Unused const frame_3d = navpose_data ? navpose_data.frame_3d : null
           const frame_nav = navpose_data ? navpose_data.frame_nav : null
           const frame_alt = navpose_data ? navpose_data.frame_alt : null
           const lat = navpose_data ? navpose_data.latitude : null

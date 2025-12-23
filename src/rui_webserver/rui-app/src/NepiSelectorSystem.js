@@ -129,7 +129,7 @@ class SystemSelector extends Component {
     const namespace = this.getMgrNamespace()
 
     const {topicNames} = this.props.ros
-    const script_file = this.state.automationSelectedScript
+    //Unused const script_file = this.state.automationSelectedScript
     const check_topic = namespace + "/status"
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
 

@@ -21,7 +21,7 @@ import BooleanIndicator from "./BooleanIndicator"
 
 import NepiIFSettings from "./Nepi_IF_Settings"
 
-import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedSetState } from "./Utilities"
+import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilities"
 
   @inject("ros")
   @observer
@@ -171,7 +171,9 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
     const type_index = types.indexOf(message.type)
     const type_names = this.state.type_names
     if ( type_index !== -1){
-      this.state.driver_type_name = type_names[type_index]
+      this.setstate({
+      driver_type_name : type_names[type_index]
+      })
     }
   }
 
@@ -365,7 +367,7 @@ import { onChangeSwitchStateValue,createMenuListFromStrList, onDropdownSelectedS
 
   renderDriverConfigure() {
     const { sendStringMsg, sendUpdateOrderMsg, sendUpdateStateMsg, } = this.props.ros
-    const NoneOption = <Option>None</Option>
+    //Unused const NoneOption = <Option>None</Option>
     const namespace = this.getSettingsNamespace()
     const check_topic = namespace + "/settings/status"
     const {topicNames} = this.props.ros

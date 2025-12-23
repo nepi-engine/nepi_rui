@@ -10,7 +10,6 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
@@ -301,7 +300,6 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderSettings() {
-    const { sendTriggerMsg} = this.props.ros
     const show_all = this.props.show_all ? this.props.show_all : false
     const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
 
@@ -372,7 +370,7 @@ class Nepi_IF_Settings extends Component {
     const selSetMin = selSetInfo[4]
     const selSetMax = selSetInfo[5]
     const selSetOptions= selSetInfo[6]
-    const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
+    //Unused const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
     return (
 
         <Columns>
@@ -442,7 +440,6 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderConfigs(){
-    const { sendTriggerMsg } = this.props.ros
     const namespace = this.state.namespace
     return(
       <Columns>

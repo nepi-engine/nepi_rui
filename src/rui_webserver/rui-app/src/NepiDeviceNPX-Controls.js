@@ -11,17 +11,7 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Button, { ButtonMenu } from "./Button"
-import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
-import Toggle from "react-toggle"
-import Label from "./Label"
-import Input from "./Input"
 import { Column, Columns } from "./Columns"
-import Styles from "./Styles"
-
-
-import { round, onUpdateSetStateValue, onEnterSetStateFloatValue,  } from "./Utilities"
-
 
 import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
@@ -44,18 +34,18 @@ class NepiDeviceNPXControls extends Component {
 
 
   renderControls() {
-    const { npxDevices, sendBoolMsg, sendTriggerMsg, setIdxControlsEnable, setIdxAutoAdjust, setFrame3D } = this.props.ros
+    const { npxDevices, sendTriggerMsg} = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : null
     const message = this.props.status_msg ? this.props.status_msg : null
     const capabilities = npxDevices[namespace] ? npxDevices[namespace] : null
 
 
     if (namespace != null && capabilities != null && message != null){
-      const update_rate = message.update_rate
-      const frame_3d = message.frame_3d
-      const frame_nav = message.frame_nav
-      const frame_altitude = message.frame_altitude
-      const frame_depth = message.frame_depth
+      //Unused const update_rate = message.update_rate
+      //Unused const frame_3d = message.frame_3d
+      //Unused const frame_nav = message.frame_nav
+      //Unused const frame_altitude = message.frame_altitude
+      //Unused const frame_depth = message.frame_depth
       const has_loc = message.has_location
       const has_head = message.has_heading
       const has_orien = message.has_orientation

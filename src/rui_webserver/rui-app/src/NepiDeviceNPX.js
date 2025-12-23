@@ -13,7 +13,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
-import Styles from "./Styles"
+//Unused import Styles from "./Styles"
 
 import NepiDeviceNPXControls from "./NepiDeviceNPX-Controls"
 
@@ -24,7 +24,7 @@ import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
-import {createShortUniqueValues} from "./Utilities"
+//Unused import {createShortUniqueValues} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -106,7 +106,7 @@ class NepiDeviceNPX extends Component {
 
 updateStatusListener() {
   const namespace = this.state.namespace
-  const statusTopic = namespace + "/status"
+  //Unused const statusTopic = namespace + "/status"
   var statusListener = this.props.ros.setupStatusListener(
     namespace + "/status",
     "nepi_interfaces/DeviceNPXStatus",
@@ -204,9 +204,9 @@ updateNavposeListener() {
         return
       }
       else{
-        var autoSelectedImgTopic = null
-        var autoSelectedImgTopicText = null
-        const capabilities = this.props.ros.npxDevices[value]
+        //Unused var autoSelectedImgTopic = null
+        //Unused var autoSelectedImgTopicText = null
+        //Unused const capabilities = this.props.ros.npxDevices[value]
         
   
         this.setState({
@@ -218,8 +218,8 @@ updateNavposeListener() {
 
 
   renderDeviceSelection() {
-    const { npxDevices, sendTriggerMsg, saveConfigTriggered  } = this.props.ros
-    const NoneOption = <Option>None</Option>
+    const { npxDevices, } = this.props.ros
+    //Unused const NoneOption = <Option>None</Option>
     const deviceSelected = (this.state.namespace != null)
     const namespace = this.state.namespace
     
@@ -269,9 +269,9 @@ updateNavposeListener() {
   render() {
     const deviceSelected = (this.state.namespace != null)
     const namespace = this.state.namespace
-    const navpose_data = this.state.navpose_data
+    //Unused const navpose_data = this.state.navpose_data
     const status_msg = this.state.status_msg
-    const connected = this.state.connected
+    //Unused const connected = this.state.connected
 
     return (
       

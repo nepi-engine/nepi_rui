@@ -11,7 +11,6 @@ import { observer, inject } from "mobx-react"
 
 import Input from "./Input"
 import Select, { Option } from "./Select"
-import Toggle from "react-toggle"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
@@ -133,7 +132,7 @@ class NepiDashboard extends Component {
 
   renderDeviceInfo() {
     const {
-      deviceType,
+      //Unused deviceType,
       deviceId,
       deviceSerial,
       systemDefsFirmwareVersion,
@@ -273,14 +272,14 @@ class NepiDashboard extends Component {
       systemStatusDiskUsageMB,
       systemStatusTempC,
       systemDefsDiskCapacityMB,
-      diskUsagePercent
+      //Unused diskUsagePercent
     } = this.props.ros
 
     const { wifi_query_response } = this.props.ros
     const internet_connected = (wifi_query_response !== null)? wifi_query_response.internet_connected : false
     
     const sys_debug = this.props.ros.systemDebugEnabled
-    const debug_mode = sys_debug ? sys_debug : false
+    //Unused const debug_mode = sys_debug ? sys_debug : false
     return (
       <Section title={"System Status"}>
         <Label title={"Heartbeat"}>

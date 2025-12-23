@@ -13,17 +13,17 @@ import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
 import RangeAdjustment from "./RangeAdjustment"
-import {RadioButtonAdjustment, SliderAdjustment} from "./AdjustmentWidgets"
+import {SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import Styles from "./Styles"
-import Select from "./Select"
+//Unused import Select from "./Select"
 import Input from "./Input"
 import { Column, Columns } from "./Columns"
-import { round, onUpdateSetStateValue, onEnterSendIntValue, onEnterSetStateFloatValue, onChangeSwitchStateValue} from "./Utilities"
+import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFReset from "./Nepi_IF_Reset"
-import NepiIFConfig from "./Nepi_IF_Config"
+//Unused import NepiIFConfig from "./Nepi_IF_Config" 
 import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
 @inject("ros")
@@ -144,7 +144,7 @@ class NepiDeviceIDXControls extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { namespace } = this.props
     if (prevProps.namespace !== namespace){
-      if (namespace != null) {
+      if (namespace !== null) {
         this.updateListener()
       } else if (namespace === null){
         this.setState({ disabled: true })
@@ -196,10 +196,10 @@ class NepiDeviceIDXControls extends Component {
   }
 
   render() {
-    const { idxDevices, sendTriggerMsg, sendBoolMsg, sendStringMsg } = this.props.ros
+    const { idxDevices, sendBoolMsg } = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : 'None'
     var capabilities = null
-    if (namespace != 'None'){
+    if (namespace !== 'None'){
       capabilities = idxDevices[namespace] ? idxDevices[namespace] : null
     }
     if (capabilities == null){
@@ -219,7 +219,7 @@ class NepiDeviceIDXControls extends Component {
       const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
       const has_threshold = (capabilities && capabilities.has_threshold && !this.state.disabled)
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
-      const data_products = (capabilities && capabilities.data_products && !this.state.disabled)
+      /*const data_products = (capabilities && capabilities.data_products && !this.state.disabled)  Unused*/
 
       const framerates = this.state.frameratesCurrent
       const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
@@ -240,12 +240,12 @@ class NepiDeviceIDXControls extends Component {
         }
 
         const auto_controls = this.state.auto_adjust_enabled ? this.state.auto_adjust_controls : []
-        const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') != -1)
-        const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') != -1)
-        const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') != -1)
-        const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') != -1)
-        const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') != -1)
-        const hide_range = (!has_range || auto_controls.indexOf('range') != -1)
+        const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') !== -1)
+        const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') !== -1)
+        const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') !== -1)
+        const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') !== -1)
+        const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
+        const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
         return (
 
           <Section title={"Controls"}>

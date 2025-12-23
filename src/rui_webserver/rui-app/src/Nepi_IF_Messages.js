@@ -118,7 +118,7 @@ class NepiSystemMessages extends Component {
     const namespace_updated = (prevState.messagesNamespace !== namespace && namespace !== null)
     const msg_namespace = namespace + "/messages"
     const message_publishing = topicNames.indexOf(msg_namespace) !== -1
-    const needs_update = (this.state.needs_update && namespace !== null && message_publishing == true)
+    const needs_update = (this.state.needs_update && namespace !== null && message_publishing === true)
     if (namespace_updated || needs_update) {
       if (namespace.indexOf('null') === -1){
         this.setState({messagesNamespace: namespace})
@@ -152,7 +152,7 @@ class NepiSystemMessages extends Component {
 
   renderShowControl() {
   const show_control = this.state.show_control
-  const show_messages = this.state.show_messages
+  //Unused const show_messages = this.state.show_messages
 
   const sys_debug = this.props.ros.systemDebugEnabled
   const debug_mode = sys_debug ? sys_debug : false
@@ -269,11 +269,11 @@ class NepiSystemMessages extends Component {
   }
 
   render() {
-    const show_debug = this.props.ros.systemDebugEnabled
+    //Unused const show_debug = this.props.ros.systemDebugEnabled
     const connected = this.state.connected
     const msg_str_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
-    const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
-    const paused = this.state.paused
+    //Unused const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
+    //Unused const paused = this.state.paused
 
     return (
 

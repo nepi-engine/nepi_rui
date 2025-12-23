@@ -387,7 +387,7 @@ class NepiMgrTargets extends Component {
   }
 
   renderApp() {
-    const {sendBoolMsg, sendTriggerMsg,} = this.props.ros
+    const {sendBoolMsg} = this.props.ros
     const classOptions = this.getClassOptions()
     const selectedClasses = this.state.selected_classes_list
     const NoneOption = <Option>None</Option>

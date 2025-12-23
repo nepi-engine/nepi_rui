@@ -9,7 +9,6 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
-import Styles from "./Styles"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
@@ -17,7 +16,6 @@ import Select, { Option } from "./Select"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
-import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
@@ -28,7 +26,7 @@ import NepiSystemMessages from "./Nepi_IF_Messages"
 
 import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
-import {createShortUniqueValues, onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
+import {onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
 import {createShortValuesFromNamespaces} from "./Utilities"
 
 function round(value, decimals = 0) {
@@ -236,7 +234,6 @@ class NepiControlsLights extends Component {
 
   
   renderControlPanel() {
-    const { sendTriggerMsg } = this.props.ros
     const { lsxNamespace, lsxTempC } = this.state
     const { lsxDevices } = this.props.ros
     const lsx_id = lsxNamespace? lsxNamespace.split('/').slice(-1) : "No Light Selected"
@@ -401,9 +398,8 @@ class NepiControlsLights extends Component {
   }
 
   render() {
-    const { sendTriggerMsg } = this.props.ros
     const { lsxDevices } = this.props.ros
-    const { lsxNamespace } = this.state
+    //Unused const { lsxNamespace } = this.state
     const connected = this.state.connected
     const namespace = this.state.lsxNamespace
 
