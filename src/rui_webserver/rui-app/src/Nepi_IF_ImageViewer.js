@@ -245,7 +245,11 @@ class ImageViewer extends Component {
         const pt = 5
         if (dx < pt && dy < pt){
           const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
-          sendImagePixelMsg(namespace + '/set_pixel',x1,y1,r,g,b,a)
+          //const cur_ms = Date.now()
+          //const last_click_ms = this.state.last_click_ms
+          sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
+
+          //this.setState({last_click_ms: cur_ms})
         }
 
         const wt = Math.max(canvas.width, canvas.height) * 0.05
@@ -717,8 +721,8 @@ class ImageViewer extends Component {
       const range_start_ratio = message.range_ratios.start_range
       const range_stop_ratio = message.range_ratios.stop_range
       const zoom_ratio = message.zoom_ratio
-      const pan_lr_ratio = message.pan_left_right_ratio
-      const pan_ud_ratio = message.pan_up_down_ratio
+      const pan_x_ratio = message.pan_x_ratio
+      const pan_y_ratio = message.pan_y_ratio
       const x_min_ratio = message.window_x_ratios.start_range
       const x_max_ratio = message.window_x_ratios.stop_range
       const y_min_ratio = message.window_y_ratios.start_range
@@ -779,8 +783,8 @@ class ImageViewer extends Component {
                       <SliderAdjustment
                             title={"Pan X"}
                             msgType={"std_msgs/Float32"}
-                            adjustment={pan_lr_ratio}
-                            topic={namespace + "/set_pan_left_right_ratio"}
+                            adjustment={pan_x_ratio}
+                            topic={namespace + "/set_pan_x_ratio"}
                             scaled={0.01}
                             min={0}
                             max={100}
@@ -801,7 +805,7 @@ class ImageViewer extends Component {
                       max={x_max_ratio}
                       min_limit_m={0.2}
                       max_limit_m={1.0}
-                      topic={namespace + "/set_x_window_ratios"}
+                      disabled={true}
                       tooltip={"Adjustable x_min and x_max ratios"}
                       unit={"%"}
                     />
@@ -816,8 +820,8 @@ class ImageViewer extends Component {
                       <SliderAdjustment
                             title={"Pan Y"}
                             msgType={"std_msgs/Float32"}
-                            adjustment={pan_ud_ratio}
-                            topic={namespace + "/set_pan_up_down_ratio"}
+                            adjustment={pan_y_ratio}
+                            topic={namespace + "/set_pan_y_ratio"}
                             scaled={0.01}
                             min={0}
                             max={100}
@@ -838,7 +842,7 @@ class ImageViewer extends Component {
                       max={y_max_ratio}
                       min_limit_m={0.2}
                       max_limit_m={1.0}
-                      topic={namespace + "/set_y_window_ratios"}
+                      disabled={true}
                       tooltip={"Adjustable y_min and y_max ratios"}
                       unit={"%"}
                     />
