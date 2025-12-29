@@ -1264,7 +1264,7 @@ class ImageViewer extends Component {
 
     const namespace = this.props.imageTopic ? this.props.imageTopic : 'None'
     const { sendTriggerMsg } = this.props.ros
-    const show_image_controls = this.props.show_image_controls ? this.props.show_image_controls : true
+    const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const show_status = this.state.show_status
     const show_controls = this.state.show_controls
     const show_renders = this.state.show_renders
@@ -1282,7 +1282,7 @@ class ImageViewer extends Component {
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
 
 
-      <div align={"left"} textAlign={"left"} hidden={(show_image_controls !== true || namespace === 'None')}>
+      <div align={"left"} textAlign={"left"} hidden={(show_image_options === false || namespace === 'None')}>
 
                 <div style={{ display: 'flex' }}>
                         <div style={{ width: '15%' }}>
