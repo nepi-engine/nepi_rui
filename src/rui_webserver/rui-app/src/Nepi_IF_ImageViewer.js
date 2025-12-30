@@ -265,18 +265,19 @@ class ImageViewer extends Component {
 
   onCanvasRef(ref) {
     this.canvas = ref
+    if (ref != null){
+          this.canvas.addEventListener('mousedown', (e) => {
+          this.mouseDownEvent(this.canvas, e)
+          })
 
-    this.canvas.addEventListener('mousedown', (e) => {
-    this.mouseDownEvent(this.canvas, e)
-    })
+          this.canvas.addEventListener('mousemove', (e) => {
+          this.mouseDragEvent(this.canvas, e)
+          })
 
-    this.canvas.addEventListener('mousemove', (e) => {
-    this.mouseDragEvent(this.canvas, e)
-    })
-
-    this.canvas.addEventListener('mouseup', (e) => {
-    this.mouseUpEvent(this.canvas, e)
-    })
+          this.canvas.addEventListener('mouseup', (e) => {
+          this.mouseUpEvent(this.canvas, e)
+          })
+      }
 
     //this.updateImageSource()
   }

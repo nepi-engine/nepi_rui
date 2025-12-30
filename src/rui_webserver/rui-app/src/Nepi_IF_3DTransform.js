@@ -69,9 +69,9 @@ class NepiIF3DTransform extends Component {
       source: message.source_ref_description,
       end: message.end_ref_description
     })
-    const update_msg = message.toString()
-    if (update_msg !== last_msg.toString()) {
+    if (message !== last_msg) {
       this.setState({
+        transform_msg: message,
         transformTX: message.translate_vector.x,
         transformTY: message.translate_vector.y,
         transformTZ: message.translate_vector.z,

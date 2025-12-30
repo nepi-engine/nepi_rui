@@ -51,7 +51,8 @@ class NepiDeviceIDX extends Component {
     }
 
     this.onDeviceSelected = this.onDeviceSelected.bind(this)
-    this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
+    this.setDeviceSelection = this.setDeviceSelection.bind(this)
+    this.setDeviceSelection = this.setDeviceSelection.bind(this)
     this.createDeviceOptions = this.createDeviceOptions.bind(this)
 
     this.createDataProductOptions = this.createDataProductOptions.bind(this)
@@ -75,11 +76,31 @@ class NepiDeviceIDX extends Component {
     }
     // Check that our current selection hasn't disappeard as an available option
     const { namespace } = this.state
-    if ((namespace != null) && (! topics.includes(namespace))) {
+    if ((namespace != null) && (topics.includes(namespace) === false)) {
       this.clearDeviceSelection()
     }
 
     return items
+  }
+
+  setDeviceSelection(namespace, namespace_text) {
+      const capabilities = this.props.ros.idxDevices[namespace]
+
+      var autoSelectedImgTopic = 'None'
+      var autoSelectedImgTopicText = 'None'
+      if (capabilities.has_color_image) {
+        autoSelectedImgTopic = namespace + '/color_image'
+        autoSelectedImgTopicText = 'color_image'
+      }
+
+      this.setState({
+        namespace: namespace,
+        namespaceText: namespace_text,
+        data_topic: autoSelectedImgTopic,
+        data_product: autoSelectedImgTopicText,
+        imageTopic: autoSelectedImgTopic,
+        imageText: autoSelectedImgTopicText
+      })
   }
 
 
@@ -87,6 +108,8 @@ class NepiDeviceIDX extends Component {
     this.setState({
       namespace: null,
       namespaceText: "No sensor selected",
+      data_topic: "None",
+      data_product: "None",
       imageTopic: "None",
       imageText: "None"        
     })
@@ -94,32 +117,17 @@ class NepiDeviceIDX extends Component {
 
   // Handler for IDX Sensor topic selection
   onDeviceSelected(event) {
-    var index = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[index].text
-    var value = event.target.value
+    const index = event.nativeEvent.target.selectedIndex
+    const text = event.nativeEvent.target[index].text
+    const value = event.target.value
 
     // Handle the "None" option -- always index 0
-    if (index === 0) {
-      this.clearDeviceSelection()
-      return
-    }
-    else{
-      var autoSelectedImgTopic = null
-      var autoSelectedImgTopicText = null
-      const capabilities = this.props.ros.idxDevices[value]
-      if (capabilities.has_color_image) {
-        autoSelectedImgTopic = value + '/color_image'
-        autoSelectedImgTopicText = 'color_image'
-      }
 
-      this.setState({
-        namespace: value,
-        namespaceText: text,
-        data_topic: autoSelectedImgTopic,
-        data_product: autoSelectedImgTopicText,
-        imageTopic: autoSelectedImgTopic,
-        imageText: autoSelectedImgTopicText
-      })
+    if (index > 0) {
+      this.setDeviceSelection(value, text)
+    }
+    else {
+      this.clearDeviceSelection()
     }
   }
 
@@ -171,62 +179,89 @@ class NepiDeviceIDX extends Component {
   renderDeviceSelection() {
     const { idxDevices} = this.props.ros
     const NoneOption = <Option>None</Option>
-    const device_selected = (this.state.namespace != null)
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
     const data_topic = this.state.data_topic
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
-    return (
-      <React.Fragment>
-        <Columns>
-          <Column>
-            <Section title={"Selection"}>
-
-              <Columns>
-              <Column>
-              
-                <Label title={"Device"}>
-                  <Select
-                    onChange={this.onDeviceSelected}
-                    value={namespace}
-                  >
-                    {this.createDeviceOptions(Object.keys(idxDevices))}
-                  </Select>
-                </Label>
-               
-                <div align={"left"} textAlign={"left"} hidden={!device_selected}>
-                  <Label title={"Data Product"}>
-                    <Select
-                      id="topicSelect"
-                      onChange={this.onDataProductSelected}
-                      value={data_topic}
-                    >
-                      {namespace
-                        ? this.createDataProductOptions(namespace)
-                        : NoneOption}
-                    </Select>
-                  </Label>
-                </div>
-
-              </Column>
-              <Column>
- 
-              </Column>
-            </Columns>
-
-            <div align={"left"} textAlign={"left"} hidden={!device_selected}>
-              
-                    <NepiIFConfig
-                        namespace={namespace}
-                        title={"Nepi_IF_Conig"}
-                  />
-          </div>
+    if (device_selected === false){
 
 
-            </Section>
-          </Column>
-        </Columns>
-      </React.Fragment>
-    )
+      return(
+                <Section title={"Selection"}>
+
+                  <Columns>
+                  <Column>
+                  
+                    <Label title={"Device"}>
+                      <Select
+                        onChange={this.onDeviceSelected}
+                        value={namespace}
+                      >
+                        {this.createDeviceOptions(Object.keys(idxDevices))}
+                      </Select>
+                    </Label>
+
+                  </Column>
+                  <Column>
+    
+                  </Column>
+                </Columns>
+                  
+                </Section>
+
+        )
+
+    }
+    else {
+
+        return (
+               <Section title={"Selection"}>
+
+                  <Columns>
+                  <Column>
+                  
+                    <Label title={"Device"}>
+                      <Select
+                        onChange={this.onDeviceSelected}
+                        value={namespace}
+                      >
+                        {this.createDeviceOptions(Object.keys(idxDevices))}
+                      </Select>
+                    </Label>
+                  
+                    <div align={"left"} textAlign={"left"}>
+                      <Label title={"Data Product"}>
+                        <Select
+                          id="topicSelect"
+                          onChange={this.onDataProductSelected}
+                          value={data_topic}
+                        >
+                          {namespace
+                            ? this.createDataProductOptions(namespace)
+                            : NoneOption}
+                        </Select>
+                      </Label>
+                    </div>
+
+                  </Column>
+                  <Column>
+    
+                  </Column>
+                </Columns>
+
+                <div align={"left"} textAlign={"left"}>
+                  
+                        <NepiIFConfig
+                            namespace={namespace}
+                            title={"Nepi_IF_Conig"}
+                      />
+              </div>
+
+
+                </Section>
+
+        )
+    }
   }
 
   renderImageViewer() {
@@ -254,93 +289,133 @@ class NepiDeviceIDX extends Component {
 
 
   render() {
-    const device_selected = (this.state.namespace != null)
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
     const namespace = this.state.namespace
     const data_product = this.state.data_product
 
+      if (device_selected === false){
+
+
+      return(
+              <Columns>
+              <Column>
+
+
+            
+              <div style={{ display: 'flex' }}>
+
+                  <div style={{ width: "68%" }}>
+
+                            {this.renderImageViewer()}
+
+
+                  </div>
+
+
+                  <div style={{ width: '2%' }}>
+                        {}
+                  </div>
+
+
+
+                  <div style={{ width: "30%"}}>
+
+                        {this.renderDeviceSelection()}
+
+                  </div>
+
+            </div>
+
+
+              </Column>
+            </Columns>
+
+            )
+
+    }
+    else {
+
     
-    return (
+            return (
 
-      <Columns>
-      <Column>
-
-
-    
-      <div style={{ display: 'flex' }}>
-
-          <div style={{ width: "68%" }}>
-
-                    <div hidden={(!device_selected)}>
-                      <NepiDeviceInfo
-                            deviceNamespace={namespace}
-                            status_topic={"/status"}
-                            status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
-                            name_update_topic={"/update_device_name"}
-                            name_reset_topic={"/reset_device_name"}
-                            title={"NepiDeviceIDXInfo"}
-                        />
-
-                    </div>
+              <Columns>
+              <Column>
 
 
-                        {this.renderImageViewer()}
+            
+              <div style={{ display: 'flex' }}>
 
-                    <div hidden={(!device_selected)}>
-
-                      <NepiIFSaveData
-                          namespace={namespace}
-                          title={"Nepi_IF_SaveData"}
-                      />
+                  <div style={{ width: "68%" }}>
 
 
-                    <NepiSystemMessages
-                    messagesNamespace={namespace}
-                    title={"NepiSystemMessages"}
-                    />
-
-                    </div>
-
-
-          </div>
-
-
-          <div style={{ width: '2%' }}>
-                {}
-          </div>
+                              <NepiDeviceInfo
+                                    deviceNamespace={namespace}
+                                    status_topic={"/status"}
+                                    status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
+                                    name_update_topic={"/update_device_name"}
+                                    name_reset_topic={"/reset_device_name"}
+                                    title={"NepiDeviceIDXInfo"}
+                                />
 
 
 
-          <div style={{ width: "30%"}}>
 
-                {this.renderDeviceSelection()}
-
+                                {this.renderImageViewer()}
 
 
-                <div hidden={(!device_selected && this.state.show_controls)}>
-                      <NepiDeviceIDXControls
-                          namespace={namespace}
-                          dataProduct={data_product}
-                          title={"NepiDeviceIDXControls"}
-                      />
-                </div>
+
+                              <NepiIFSaveData
+                                  namespace={namespace}
+                                  title={"Nepi_IF_SaveData"}
+                              />
 
 
-                <div hidden={(!device_selected && this.state.show_settings)}>
-                      <NepiIFSettings
-                        namespace={namespace}
-                        title={"Nepi_IF_Settings"}
-                      />
-                </div>
-
-          </div>
-
-    </div>
+                            <NepiSystemMessages
+                            messagesNamespace={namespace}
+                            title={"NepiSystemMessages"}
+                            />
 
 
-      </Column>
-    </Columns>
 
-    )
+
+                  </div>
+
+
+                  <div style={{ width: '2%' }}>
+                        {}
+                  </div>
+
+
+
+                  <div style={{ width: "30%"}}>
+
+                        {this.renderDeviceSelection()}
+
+
+
+                              <NepiDeviceIDXControls
+                                  namespace={namespace}
+                                  dataProduct={data_product}
+                                  title={"NepiDeviceIDXControls"}
+                              />
+
+
+
+                              <NepiIFSettings
+                                namespace={namespace}
+                                title={"Nepi_IF_Settings"}
+                              />
+
+                  </div>
+
+            </div>
+
+
+              </Column>
+            </Columns>
+
+            )
+      }
   }
 
 
