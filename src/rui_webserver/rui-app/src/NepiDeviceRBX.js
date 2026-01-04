@@ -501,7 +501,7 @@ class NepiDeviceRBX extends Component {
                   <Column>
 
                           <NepiIF3DTransform
-                              namespace={namespace}
+                              namespace={namespace + '/frame_3d_transform'}
                               supports_updates={true}
                               title={"Nepi_IF_3DTransform"}
                           />
@@ -595,7 +595,7 @@ class NepiDeviceRBX extends Component {
 
   render() {
     const deviceSelected = (this.state.currentRBXNamespace != null)
-    const namespace = this.state.currentRBXNamespace
+    const namespace = (this.state.currentRBXNamespace !== null) ? this.state.currentRBXNamespace : 'None'
     return (
       <Columns>
         <Column>
@@ -631,7 +631,7 @@ class NepiDeviceRBX extends Component {
 
 
           <NepiSystemMessages
-                    messagesNamespace={namespace + '/messages'}
+                    messagesNamespace={namespace.replace('/rbx','') + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -661,7 +661,7 @@ class NepiDeviceRBX extends Component {
 
           <div hidden={(!deviceSelected && this.state.show_settings)}>
             <NepiIFSettings
-              settingsNamespace={namespace}
+              settingsNamespace={namespace + '/settings'}
               title={"Nepi_IF_Settings"}
             />
           </div>

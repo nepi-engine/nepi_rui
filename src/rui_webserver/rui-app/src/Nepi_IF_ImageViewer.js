@@ -1270,7 +1270,7 @@ class ImageViewer extends Component {
     const show_controls = this.state.show_controls
     const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
-    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace
+    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace  + "/navpose"
 
     
     return (

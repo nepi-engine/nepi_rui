@@ -86,7 +86,7 @@ class NepiIF3DTransform extends Component {
 
   // Function for configuring and subscribing to StatusIDX
   updateListener() {
-    const namespace = this.props.namespace + '/frame_3d_transform'
+    const namespace = this.props.namespace
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }

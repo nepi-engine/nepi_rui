@@ -290,7 +290,7 @@ class NepiDeviceIDX extends Component {
 
   render() {
     const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
-    const namespace = this.state.namespace
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const data_product = this.state.data_product
 
     
@@ -329,7 +329,7 @@ class NepiDeviceIDX extends Component {
 
 
                         <NepiSystemMessages
-                        messagesNamespace={namespace + '/messages'}
+                        messagesNamespace={namespace.replace('/idx','') + '/messages'}
                         title={"NepiSystemMessages"}
                         />
 
@@ -357,7 +357,10 @@ class NepiDeviceIDX extends Component {
                               title={"NepiDeviceIDXControls"}
                           />
 
-
+                          <NepiIFSettings
+                            settingsNamespace={namespace + '/settings'}
+                            title={"Nepi_IF_Settings"}
+                          />
 
 
 

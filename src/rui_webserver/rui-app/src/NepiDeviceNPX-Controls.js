@@ -114,7 +114,7 @@ class NepiDeviceNPXControls extends Component {
                   <Column>
 
                           <NepiIF3DTransform
-                              namespace={namespace}
+                              namespace={namespace + '/frame_3d_transform'}
                               has_transform={has_transform}
                               supports_updates={updates}
                               title={"Nepi_IF_3DTransform"}

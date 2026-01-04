@@ -69,8 +69,8 @@ class NepiDashboard extends Component {
   createMessageOptions() {
     const allNamespace = this.getAllNamespace()
     var items = []
-    //items.push(<Option value={"All"}>{"All"}</Option>)
-    items.push(<Option value={"None"}>{"None"}</Option>)
+    items.push(<Option value={allNamespace}>{"All"}</Option>)
+    //items.push(<Option value={"None"}>{"None"}</Option>)
     const Messages_topics = this.props.ros.messageTopics
     const shortnames = createShortUniqueValues(Messages_topics)
     var topic = ""

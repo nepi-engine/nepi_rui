@@ -1101,12 +1101,12 @@ class MgrNavPose extends Component {
       <div style={{ display: 'flex' }}>
         <div style={{ width: "65%" }}>
           <NepiIFNavPoseViewer
-            namespace={namespace}
+            namespace={namespace  + "/navpose"}
             title={"NavPose Data"}
           />
           <div hidden={(!connected)}>
             <NepiIFSaveData
-              namespace={namespace}
+              namespace={namespace + '/save_data'}
               title={"Nepi_IF_SaveData"}
             />
           </div>
@@ -1118,12 +1118,6 @@ class MgrNavPose extends Component {
 
         <div style={{ width: "30%"}}>
           {this.renderMgrSettings()}
-          <div hidden={(!connected && this.state.show_settings)}>
-            <NepiIFSettings
-              namespace={namespace ? namespace + '/npx' : null}
-              title={"Nepi_IF_Settings"}
-            />
-          </div>
         </div>
       </div>
     )

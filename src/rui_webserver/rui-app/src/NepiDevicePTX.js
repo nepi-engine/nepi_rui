@@ -879,7 +879,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                           <Column>
 
                                   <NepiIF3DTransform
-                                      namespace={namespace}
+                                      namespace={namespace + '/frame_3d_transform'}
                                       supports_updates={true}
                                       title={"Nepi_IF_3DTransform"}
                                   />
@@ -937,7 +937,7 @@ renderNavPose(){
                     <div align={"left"} textAlign={"left"} hidden={!this.state.show_navpose}>
 
                   <NavPoseViewer
-                    namespace={(show_navpose === true) ? namespace : null}
+                    namespace={(show_navpose === true) ? namespace  + "/navpose": null}
                     make_section={false}
                     title={"PTX NavPose Data"}
                   />
@@ -954,7 +954,7 @@ renderNavPose(){
   render() {
     const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
     const { panNowRatio, panGoalRatio, tiltNowRatio, tiltGoalRatio} = this.state
-    const namespace = this.state.namespace
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
 
     const ptxImageViewerElement = document.getElementById("ptxImageViewer")
     const tiltSliderHeight = (ptxImageViewerElement)? ptxImageViewerElement.offsetHeight : "100px"
@@ -1053,7 +1053,7 @@ renderNavPose(){
                 {this.renderNavPose()}
 
             <NepiSystemMessages
-              messagesNamespace={namespace + '/messages'}
+              messagesNamespace={namespace.replace('/ptx','') + '/messages'}
               title={"NepiSystemMessages"}
               />
 
@@ -1116,7 +1116,7 @@ renderNavPose(){
 
             <div hidden={(namespace == null)}>
               <NepiIFSettings
-                settingsNamespace={namespace}
+                settingsNamespace={namespace + '/settings'}
                 title={"Nepi_IF_Settings"}
               />
             </div>

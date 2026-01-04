@@ -268,7 +268,7 @@ updateNavposeListener() {
 
   render() {
     const deviceSelected = (this.state.namespace != null)
-    const namespace = this.state.namespace
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     //Unused const navpose_data = this.state.navpose_data
     const status_msg = this.state.status_msg
     //Unused const connected = this.state.connected
@@ -292,7 +292,7 @@ updateNavposeListener() {
                     </div>
 
                     <NepiIFNavPoseViewer
-                      namespace={namespace}
+                      namespace={namespace + "/navpose"}
                       title={"NavPose Data"}
                     />
 
@@ -305,7 +305,7 @@ updateNavposeListener() {
                       />
 
                     <NepiSystemMessages
-                    messagesNamespace={namespace + '/messages'}
+                    messagesNamespace={namespace.replace('/npx','') + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -341,7 +341,7 @@ updateNavposeListener() {
 
                     <div hidden={(!deviceSelected && this.state.show_settings)}>
                       <NepiIFSettings
-                        settingsNamespace={namespace}
+                        settingsNamespace={namespace + '/settings'}
                         title={"Nepi_IF_Settings"}
                       />
                     </div>

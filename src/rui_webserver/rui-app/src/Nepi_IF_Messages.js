@@ -94,16 +94,19 @@ class NepiSystemMessages extends Component {
 
   // Function for configuring and subscribing to Status
   updateMessagesStatusListener() {
-    const namespace = this.state.messagesNamespace
+    const {topicNames} = this.props.ros
+    const allNamespace = this.getAllNamespace()
+    const { messagesNamespace } = this.props
+
     if (this.state.messagesStatusListener) {
       this.state.messagesStatusListener.unsubscribe()
     }
     var messagesStatusListener = this.props.ros.setupStatusListener(
-      namespace,
+      messagesNamespace,
       "nepi_interfaces/Message",
       this.messagesStatusListener
     )
-    this.setState({ messagesStatusListener: messagesStatusListener,
+    this.setState({ messagesNamespace: messagesNamespace, messagesStatusListener: messagesStatusListener,
       needs_update: false})
   }
 
@@ -111,20 +114,13 @@ class NepiSystemMessages extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const {topicNames} = this.props.ros
-    const allNamespace = this.getAllNamespace()
     const { messagesNamespace } = this.props
-    const msg_namespace = messagesNamespace
-    var namespace = messagesNamespace
-    if (messagesNamespace === "All"){
-      namespace = allNamespace
-    }
 
-    const namespace_updated = (this.state.messagesNamespace !== namespace && namespace !== null)
-    const message_publishing = topicNames.indexOf(msg_namespace) !== -1
-    const needs_update = (this.state.needs_update && namespace !== null && message_publishing === true)
+    const namespace_updated = (this.state.messagesNamespace !== messagesNamespace && messagesNamespace !== null)
+    const message_publishing = topicNames.indexOf(messagesNamespace) !== -1
+    const needs_update = (this.state.needs_update && messagesNamespace !== null && message_publishing === true)
     if (namespace_updated || needs_update) {
-      if (namespace.indexOf('null') === -1){
-        this.setState({messagesNamespace: namespace})
+      if (messagesNamespace.indexOf('null') === -1){
         this.updateMessagesStatusListener()
       }
     }

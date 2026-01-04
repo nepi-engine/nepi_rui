@@ -108,7 +108,7 @@ class Nepi_IF_Settings extends Component {
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
     const settingsNamespace = this.props.settingsNamespace ? 
-        (this.props.settingsNamespace !== 'None' ? this.props.settingsNamespace + '/settings': 'None') : 'None'
+        (this.props.settingsNamespace !== 'None' ? this.props.settingsNamespace: 'None') : 'None'
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
     }

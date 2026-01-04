@@ -479,7 +479,7 @@ class NepiDeviceIDXControls extends Component {
                       <Column>
 
                               <NepiIF3DTransform
-                                  namespace={namespace}
+                                  namespace={namespace + '/frame_3d_transform'}
                                   supports_updates={true}
                                   title={"Nepi_IF_3DTransform"}
                               />

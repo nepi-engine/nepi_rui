@@ -171,7 +171,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
     const type_index = types.indexOf(message.type)
     const type_names = this.state.type_names
     if ( type_index !== -1){
-      this.setstate({
+      this.setState({
       driver_type_name : type_names[type_index]
       })
     }
@@ -372,7 +372,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
     const check_topic = namespace + "/settings/status"
     const {topicNames} = this.props.ros
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
-    const settings_namespace = topic_publishing ? namespace : ""
+    const settings_namespace = topic_publishing ? namespace + '/settings' : "None"
 
 
     return (
@@ -479,7 +479,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
 
           <NepiIFSettings
-            namespace={settings_namespace}
+            settingsNamespace={settings_namespace}
             make_section={false}
             title={"Nepi_IF_Settings"}
           />
