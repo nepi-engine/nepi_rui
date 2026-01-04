@@ -431,7 +431,7 @@ class NepiControlsLights extends Component {
                 </div>
 
                 <NepiSystemMessages
-                    messagesNamespace={namespace}
+                    messagesNamespace={namespace + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -485,7 +485,7 @@ class NepiControlsLights extends Component {
             
 
             <NepiIFSettings
-            namespace={namespace + '/lxs'}
+            settingsNamespace={namespace + '/lxs'}
             title={"Nepi_IF_Settings"}
           />
 

@@ -33,6 +33,8 @@ class NepiSystemMessages extends Component {
     // these states track the values through  Status messages
     this.state = {
 
+      messagesNamespace: null,
+
       msg_queue_size: 50,
       status_msg: null,
 
@@ -92,12 +94,7 @@ class NepiSystemMessages extends Component {
 
   // Function for configuring and subscribing to Status
   updateMessagesStatusListener() {
-    const allNamespace = this.getAllNamespace()
-    const { messagesNamespace } = this.props
-    var namespace = messagesNamespace
-    if (messagesNamespace === "All"){
-      namespace = allNamespace
-    }
+    const namespace = this.state.messagesNamespace
     if (this.state.messagesStatusListener) {
       this.state.messagesStatusListener.unsubscribe()
     }
@@ -114,9 +111,15 @@ class NepiSystemMessages extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const {topicNames} = this.props.ros
-    const namespace = this.props.messagesNamespace
-    const namespace_updated = (prevState.messagesNamespace !== namespace && namespace !== null)
-    const msg_namespace = namespace + "/messages"
+    const allNamespace = this.getAllNamespace()
+    const { messagesNamespace } = this.props
+    const msg_namespace = messagesNamespace
+    var namespace = messagesNamespace
+    if (messagesNamespace === "All"){
+      namespace = allNamespace
+    }
+
+    const namespace_updated = (this.state.messagesNamespace !== namespace && namespace !== null)
     const message_publishing = topicNames.indexOf(msg_namespace) !== -1
     const needs_update = (this.state.needs_update && namespace !== null && message_publishing === true)
     if (namespace_updated || needs_update) {

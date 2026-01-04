@@ -47,17 +47,19 @@ class SaveDataSelector extends Component {
   }
 
   createSaveOptions() {
+    const { namespacePrefix, deviceId} = this.props.ros
     const allNamespace = this.getAllNamespace()
     var items = []
     //items.push(<Option value={"All"}>{"All"}</Option>)
     items.push(<Option value={"None"}>{"None"}</Option>)
     const saveData_topics = this.props.ros.saveDataNamespaces
-    const shortnames = createShortUniqueValues(saveData_topics)
+    var shortname = ''
     var topic = ""
     for (var i = 0; i < saveData_topics.length; i++) {
       topic = saveData_topics[i]
       if (topic !== allNamespace && topic.indexOf("None") === -1) {
-        items.push(<Option value={topic}>{shortnames[i]}</Option>)
+        shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')
+        items.push(<Option value={topic}>{shortname}</Option>)
       }
     }
     return items    
@@ -98,7 +100,7 @@ class SaveDataSelector extends Component {
 
 
   renderApplication() {
-    const node_namespace = this.state.selected_topic.replace("/save_data/status", "")
+    const node_namespace = this.state.selected_topic
 
     return (
       <React.Fragment>
@@ -107,7 +109,7 @@ class SaveDataSelector extends Component {
         <Column>
 
         <NepiIFSaveData
-        saveNamespace={node_namespace}
+        saveNamespace={node_namespace + '/save_data'}
         showSettings = {true}
         title={"NepiIFSaveData.js"}
         />

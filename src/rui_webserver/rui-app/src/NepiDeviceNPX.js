@@ -300,12 +300,12 @@ updateNavposeListener() {
                     <div hidden={(!deviceSelected)}>
 
                       <NepiIFSaveData
-                        namespace={namespace}
+                        saveNamespace={namespace + '/save_data'}
                         title={"Nepi_IF_SaveData"}
                       />
 
                     <NepiSystemMessages
-                    messagesNamespace={namespace}
+                    messagesNamespace={namespace + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -341,7 +341,7 @@ updateNavposeListener() {
 
                     <div hidden={(!deviceSelected && this.state.show_settings)}>
                       <NepiIFSettings
-                        namespace={namespace}
+                        settingsNamespace={namespace}
                         title={"Nepi_IF_Settings"}
                       />
                     </div>

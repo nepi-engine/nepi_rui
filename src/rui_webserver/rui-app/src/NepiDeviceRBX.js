@@ -616,7 +616,7 @@ class NepiDeviceRBX extends Component {
           <div hidden={(!deviceSelected)}>
 
             <NepiIFSaveData
-                namespace={namespace}
+                saveNamespace={namespace + '/save_data'}
                 title={"Nepi_IF_SaveData"}
             />
           </div>
@@ -631,7 +631,7 @@ class NepiDeviceRBX extends Component {
 
 
           <NepiSystemMessages
-                    messagesNamespace={namespace}
+                    messagesNamespace={namespace + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -661,7 +661,7 @@ class NepiDeviceRBX extends Component {
 
           <div hidden={(!deviceSelected && this.state.show_settings)}>
             <NepiIFSettings
-              namespace={namespace}
+              settingsNamespace={namespace}
               title={"Nepi_IF_Settings"}
             />
           </div>

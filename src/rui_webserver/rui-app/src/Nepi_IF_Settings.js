@@ -32,7 +32,7 @@ class Nepi_IF_Settings extends Component {
     // these states track the values through  Status messages
     this.state = {
 
-      namespace: 'None',
+      settingsNamespace: 'None',
       capabilities: null,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
@@ -107,17 +107,17 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const namespace = this.props.namespace ? 
-        (this.props.namespace !== 'None' ? this.props.namespace + '/settings': 'None') : 'None'
+    const settingsNamespace = this.props.settingsNamespace ? 
+        (this.props.settingsNamespace !== 'None' ? this.props.settingsNamespace + '/settings': 'None') : 'None'
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
     }
-    if (namespace !== 'None'){
+    if (settingsNamespace !== 'None'){
       var settingsListener = this.props.ros.setupSettingsStatusListener(
-        namespace + '/status',
+        settingsNamespace + '/status',
         this.settingsStatusListener
       )
-      this.setState({namespace: namespace})
+      this.setState({settingsNamespace: settingsNamespace})
       this.setState({ settingsListener: settingsListener})
     }
   }
@@ -126,8 +126,8 @@ class Nepi_IF_Settings extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.props.namespace
-    if (prevProps.namespace !== namespace) {
+    const settingsNamespace = this.props.settingsNamespace
+    if (prevProps.settingsNamespace !== settingsNamespace) {
       this.updateSettingsListener()
     }
   }
@@ -233,7 +233,7 @@ class Nepi_IF_Settings extends Component {
   onChangeBoolSettingValue(){
     const {updateSetting}  = this.props.ros
     const value = (this.getSettingValue(this.state.selectedSettingName) === "True") ? "False" : "True" 
-    updateSetting(this.state.namespace,
+    updateSetting(this.state.settingsNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -241,7 +241,7 @@ class Nepi_IF_Settings extends Component {
     const {updateSetting}  = this.props.ros
     const ind = event.nativeEvent.target.selectedIndex
     const value = event.nativeEvent.target[ind].text
-    updateSetting(this.state.namespace,
+    updateSetting(this.state.settingsNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -255,7 +255,7 @@ class Nepi_IF_Settings extends Component {
     const {updateSetting}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.selectedSettingInput
-      updateSetting(this.state.namespace,
+      updateSetting(this.state.settingsNamespace,
         this.state.selectedSettingName,this.state.selectedSettingType,value)
       document.getElementById("input_setting").style.color = Styles.vars.colors.black
       this.updateSelectedSettingInfo()
@@ -440,14 +440,14 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderConfigs(){
-    const namespace = this.state.namespace
+    const settingsNamespace = this.state.settingsNamespace
     return(
       <Columns>
       <Column>
 
 
           <NepiIFConfig
-                        namespace={namespace}
+                        settingsNamespace={settingsNamespace}
                         title={"Nepi_IF_Config"}
           />
 
@@ -462,15 +462,15 @@ class Nepi_IF_Settings extends Component {
 
   render() {
     const make_section = this.props.make_section ? this.props.make_section : true
-    const namespace = this.state.namespace ? this.state.namespace : 'None'
-    if (namespace !== 'None' && make_section === true){
+    const settingsNamespace = this.state.settingsNamespace ? this.state.settingsNamespace : 'None'
+    if (settingsNamespace !== 'None' && make_section === true){
       return (
         <Section title={"Device Settings"}>
           {this.renderSettings()}
         </Section>
       )
     }
-    else if (namespace !== 'None' && make_section === false) {
+    else if (settingsNamespace !== 'None' && make_section === false) {
       return (
 
 

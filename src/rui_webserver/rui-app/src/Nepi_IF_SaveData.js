@@ -37,7 +37,7 @@ class NepiIFSaveData extends Component {
 
     // these states track the values through the components Save Data Status messages
     this.state = {
-      namespace: 'None',
+      saveNamespace: 'None',
       capabilities: null,
       saveRatesMsg: "",
       saveDataPrefix: "",
@@ -119,16 +119,16 @@ class NepiIFSaveData extends Component {
 
   // Function for configuring and subscribing to Status
   updateSaveStatusListener() {
-    const namespace = this.props.namespace + '/save_data'
+    const saveNamespace = this.props.saveNamespace 
     if (this.state.saveStatusListener) {
       this.state.saveStatusListener.unsubscribe()
     }
-    if (namespace !== 'None'){
+    if (saveNamespace !== 'None'){
       var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
-            namespace,
+            saveNamespace,
             this.saveStatusListener
           )
-      this.setState({ namespace: namespace})
+      this.setState({ saveNamespace: saveNamespace})
       this.setState({ saveStatusListener: saveStatusListener,
         needs_update: false})
     }
@@ -137,10 +137,10 @@ class NepiIFSaveData extends Component {
   // Lifecycle method cAlled when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.props.namespace ? this.props.namespace : 'None'
-    const namespace_updated = (prevProps.namespace !== namespace && namespace !== 'None')
+    const saveNamespace = this.props.saveNamespace ? this.props.saveNamespace : 'None'
+    const namespace_updated = (prevState.saveNamespace !== saveNamespace && saveNamespace !== 'None')
   
-    if ((namespace_updated) && !namespace.includes("null")) {
+    if ((namespace_updated) && !saveNamespace.includes("null")) {
       this.updateSaveStatusListener()
     }
   }
@@ -158,13 +158,12 @@ class NepiIFSaveData extends Component {
   // Function for creating settings options list from capabilities
   updateCapabilities() {
     const {saveDataCaps} = this.props.ros
-    const cur_namespace = this.props.namespace
-    const set_namespace = this.state.namespace.replace('/save_data','')
+    const saveNamespace = this.props.saveNamespace
     var capabilities = null
     if (saveDataCaps){
-      capabilities = saveDataCaps[set_namespace]
+      capabilities = saveDataCaps[saveNamespace]
     }    
-    if (capabilities != null && set_namespace !== cur_namespace){
+    if (capabilities != null && this.state.saveNamespace !== saveNamespace){
       this.setState({
         capabilities: capabilities,
       })
@@ -174,8 +173,7 @@ class NepiIFSaveData extends Component {
         capabilities: null,
       })
     }
-    const new_namespace = this.state.namespace + '/save_data'
-    this.setState({namespace:  new_namespace})
+    this.setState({saveNamespace:  saveNamespace})
   }
 
 
@@ -253,7 +251,7 @@ class NepiIFSaveData extends Component {
   sendSaveRateUpdate(data_product,rate) {
     const {updateSaveDataRate}  = this.props.ros
     if (isNaN(rate) === false){
-      updateSaveDataRate(this.state.namespace,data_product,rate)
+      updateSaveDataRate(this.state.saveNamespace,data_product,rate)
     }
   }
 
@@ -310,14 +308,14 @@ class NepiIFSaveData extends Component {
     const saveDataRate = this.state.saveDataRate
     const rate = parseFloat(saveDataRate)
     this.sendSaveRateUpdate('Active',rate)
-    sendBoolMsg(this.state.namespace + '/save_data_enable',enabled)
+    sendBoolMsg(this.state.saveNamespace + '/save_data_enable',enabled)
 
   }
 
   onChangeBoolUtcTzValue(e){
     const {sendBoolMsg}  = this.props.ros
     const enabled = e.target.checked
-    sendBoolMsg(this.state.namespace + '/save_data_utc',enabled)
+    sendBoolMsg(this.state.saveNamespace + '/save_data_utc',enabled)
   }
 
 
@@ -374,7 +372,7 @@ class NepiIFSaveData extends Component {
 
   onSnapshotTriggered(){
     const { sendTriggerMsg} = this.props.ros
-    sendTriggerMsg(this.state.namespace + '/snapshot_trigger')
+    sendTriggerMsg(this.state.saveNamespace + '/snapshot_trigger')
   }
 
   render() {
@@ -383,7 +381,7 @@ class NepiIFSaveData extends Component {
     const selectedDataProducts = this.getSelectedDataProducts()
     const diskUsage = this.getDiskUsageRate()
     const saveUtcTz = this.state.saveUtcTz
-    const namespace = this.state.namespace ? this.state.namespace : 'None'
+    const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
 
     
     return (
@@ -510,10 +508,10 @@ class NepiIFSaveData extends Component {
           </div>
 
 
-          <div align={"left"} textAlign={"left"} hidden={namespace === 'None'}>
+          <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None'}>
 
                   <NepiIFConfig
-                        namespace={namespace}
+                        saveNamespace={saveNamespace}
                         title={"Nepi_IF_Config"}
                   />
 

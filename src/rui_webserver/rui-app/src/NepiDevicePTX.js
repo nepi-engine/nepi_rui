@@ -1053,7 +1053,7 @@ renderNavPose(){
                 {this.renderNavPose()}
 
             <NepiSystemMessages
-              messagesNamespace={namespace}
+              messagesNamespace={namespace + '/messages'}
               title={"NepiSystemMessages"}
               />
 
@@ -1116,7 +1116,7 @@ renderNavPose(){
 
             <div hidden={(namespace == null)}>
               <NepiIFSettings
-                namespace={namespace}
+                settingsNamespace={namespace}
                 title={"Nepi_IF_Settings"}
               />
             </div>

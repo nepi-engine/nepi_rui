@@ -1116,7 +1116,7 @@ renderDetectorSettings() {
 
       <div hidden={saveNamespace === 'None'}>
         <NepiIFSaveData
-              namespace={saveNamespace}
+              namespace={saveNamespace + '/save_data'}
               title={"Nepi_IF_SaveData"}
           />
       </div>

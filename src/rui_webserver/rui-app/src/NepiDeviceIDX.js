@@ -293,129 +293,83 @@ class NepiDeviceIDX extends Component {
     const namespace = this.state.namespace
     const data_product = this.state.data_product
 
-      if (device_selected === false){
-
-
-      return(
-              <Columns>
-              <Column>
-
-
-            
-              <div style={{ display: 'flex' }}>
-
-                  <div style={{ width: "68%" }}>
-
-                            {this.renderImageViewer()}
-
-
-                  </div>
-
-
-                  <div style={{ width: '2%' }}>
-                        {}
-                  </div>
-
-
-
-                  <div style={{ width: "30%"}}>
-
-                        {this.renderDeviceSelection()}
-
-                  </div>
-
-            </div>
-
-
-              </Column>
-            </Columns>
-
-            )
-
-    }
-    else {
-
     
-            return (
+        return (
 
-              <Columns>
-              <Column>
-
-
-            
-              <div style={{ display: 'flex' }}>
-
-                  <div style={{ width: "68%" }}>
+          <Columns>
+          <Column>
 
 
-                              <NepiDeviceInfo
-                                    deviceNamespace={namespace}
-                                    status_topic={"/status"}
-                                    status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
-                                    name_update_topic={"/update_device_name"}
-                                    name_reset_topic={"/reset_device_name"}
-                                    title={"NepiDeviceIDXInfo"}
-                                />
+        
+          <div style={{ display: 'flex' }}>
+
+              <div style={{ width: "68%" }}>
 
 
-
-
-                                {this.renderImageViewer()}
-
-
-
-                              <NepiIFSaveData
-                                  namespace={namespace}
-                                  title={"Nepi_IF_SaveData"}
-                              />
-
-
-                            <NepiSystemMessages
-                            messagesNamespace={namespace}
-                            title={"NepiSystemMessages"}
+                          <NepiDeviceInfo
+                                deviceNamespace={namespace}
+                                status_topic={"/status"}
+                                status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
+                                name_update_topic={"/update_device_name"}
+                                name_reset_topic={"/reset_device_name"}
+                                title={"NepiDeviceIDXInfo"}
                             />
 
 
 
 
-                  </div>
-
-
-                  <div style={{ width: '2%' }}>
-                        {}
-                  </div>
+                            {this.renderImageViewer()}
 
 
 
-                  <div style={{ width: "30%"}}>
-
-                        {this.renderDeviceSelection()}
-
-
-
-                              <NepiDeviceIDXControls
-                                  namespace={namespace}
-                                  dataProduct={data_product}
-                                  title={"NepiDeviceIDXControls"}
-                              />
+                          <NepiIFSaveData
+                              saveNamespace={namespace + '/save_data'}
+                              title={"Nepi_IF_SaveData"}
+                          />
 
 
-
-                              <NepiIFSettings
-                                namespace={namespace}
-                                title={"Nepi_IF_Settings"}
-                              />
-
-                  </div>
-
-            </div>
+                        <NepiSystemMessages
+                        messagesNamespace={namespace + '/messages'}
+                        title={"NepiSystemMessages"}
+                        />
 
 
-              </Column>
-            </Columns>
 
-            )
-      }
+
+              </div>
+
+
+              <div style={{ width: '2%' }}>
+                    {}
+              </div>
+
+
+
+              <div style={{ width: "30%"}}>
+
+                    {this.renderDeviceSelection()}
+
+
+
+                          <NepiDeviceIDXControls
+                              namespace={namespace}
+                              dataProduct={data_product}
+                              title={"NepiDeviceIDXControls"}
+                          />
+
+
+
+
+
+              </div>
+
+        </div>
+
+
+          </Column>
+        </Columns>
+
+        )
   }
 
 
