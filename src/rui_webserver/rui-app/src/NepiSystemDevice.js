@@ -528,47 +528,47 @@ updateMgrTimeStatusListener() {
   }
 
   renderLicenseRequestInfo() {
-    const { license_request_info } = this.props.ros
+    const {onGenerateLicenseRequest} = this.props.ros
 
-    const license_request_info_valid = license_request_info && ('license_request' in license_request_info)
-    const license_hw_key = (license_request_info_valid && ('hardware_key' in license_request_info['license_request']))?
-      license_request_info['license_request']['hardware_key'] : 'Unknown'
-    const license_request_date = (license_request_info_valid && ('date' in license_request_info['license_request']))?
-      license_request_info['license_request']['date'] : 'Unknown'    
-    const license_request_version = (license_request_info_valid && ('version' in license_request_info['license_request']))?
-      license_request_info['license_request']['version'] : 'Unknown'    
-
-    //Unused const { systemManagesNetwork, systemRestrictions} = this.props.ros
-    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
-    //Unused const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    //Unused const network_restricted = systemRestrictions.indexOf('Network') !== -1
-    //Unused const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
-    //Unused const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
 
     return (
-      // TODO: A QR code or automatic API link would be nicer here.
-      <div>
-        <Label title={"H/W Key"}>
-          <Input value={license_hw_key} disabled={true}/>
-        </Label>
-        <Label title={"Date"}>
-          <Input value={license_request_date} disabled={true}/>
-        </Label>
-        <Label title={"Version"}>
-          <Input value={license_request_version} disabled={true}/>
-        </Label>
-      </div>
+                <Columns>
+                  <Column>
+          
+                  <pre style={{ height: "25px", overflowY: "auto" }}>
+                      {"No License Found. Valid for Demo use only"}
+                    </pre>
+
+
+                    <ButtonMenu>
+                      <Button onClick={onGenerateLicenseRequest}>{"License Request"}</Button>
+                    </ButtonMenu>
+
+
+                      <div style={{textAlign: "center"}}>
+                        <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
+                          Open license request instructions
+                        </Link>
+                      </div>
+
+                  </Column>
+                </Columns>
     )
   }
 
   renderLicenseInfo() {
     const {license_info, commercial_licensed, license_request_mode, onGenerateLicenseRequest} = this.props.ros
 
+    const license_key_valid = license_info && ("licensed_components" in license_info) && ("hardware_key" in license_info["licensed_components"])
+    const license_hw_key = license_key_valid?  license_info["licensed_components"]['hardware_key'] : 'Unknown'
+
     const license_info_valid = license_info && ("licensed_components" in license_info) && ("nepi_base" in license_info["licensed_components"]) &&
                                "commercial_license_type" in license_info["licensed_components"]["nepi_base"] &&
                                "status" in license_info["licensed_components"]["nepi_base"]
     
     var license_type = license_info_valid? license_info["licensed_components"]["nepi_base"]["commercial_license_type"] : "Unlicensed"
+
+
     var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : ""
 
     const { systemRestrictions} = this.props.ros
@@ -576,7 +576,7 @@ updateMgrTimeStatusListener() {
 
 
     if (license_request_mode === true) {
-      license_type = "Request"
+      //license_type = "Request"
       license_status = "Pending"
     }
 
@@ -594,15 +594,13 @@ updateMgrTimeStatusListener() {
 
       return (
         <Section title={"NEPI License"}>
+          <Label title={"H/W Key"}>
+            <Input value={license_hw_key} disabled={true}/>
+          </Label>
+
           <Label title={"Type"}>
             <Input value={license_type} disabled={true}/>
           </Label>
-
-          <div hidden={license_type !== "Unlicensed"}> 
-          <pre style={{ height: "25px", overflowY: "auto" }}>
-              {"No License Found. Valid for Demo use only"}
-            </pre>
-          </div>
 
           {license_info_valid?
             <Label title={"Status"} >
@@ -611,29 +609,12 @@ updateMgrTimeStatusListener() {
             : null
           }
 
-          {license_info_valid && license_request_mode?
-            this.renderLicenseRequestInfo() : null
+
+          {license_info_valid && (license_type !== "Unlicensed")?
+            this.renderLicense() :
+            this.renderLicenseRequestInfo()
           }
 
-          {license_info_valid && !license_request_mode?
-            this.renderLicense() : null
-          }
-                          
-          {(license_info_valid && !commercial_licensed)?
-            <ButtonMenu>
-              <Button onClick={onGenerateLicenseRequest}>{"License Request"}</Button>
-            </ButtonMenu>
-            : null
-          }
-                    
-          {(license_info_valid && !commercial_licensed)?
-              <div style={{textAlign: "center"}}>
-                <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
-                  Open license request instructions
-                </Link>
-              </div>
-              : null
-          }
         </Section>
       )
     }
