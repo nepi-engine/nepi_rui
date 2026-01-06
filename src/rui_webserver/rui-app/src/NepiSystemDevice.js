@@ -546,7 +546,7 @@ updateMgrTimeStatusListener() {
 
 
                       <div style={{textAlign: "center"}}>
-                        <Link to={{ pathname: "commercial_license_request_instructions.html" }} target="_blank" style={styles.link_style}>
+                        <Link to={{ pathname: "license_request_instructions.html" }} target="_blank" style={styles.link_style}>
                           Open license request instructions
                         </Link>
                       </div>
@@ -612,7 +612,16 @@ updateMgrTimeStatusListener() {
 
           {license_info_valid && (license_type !== "Unlicensed")?
             this.renderLicense() :
-            this.renderLicenseRequestInfo()
+                <Columns>
+                  <Column>
+          
+                  <pre style={{ height: "25px", overflowY: "auto" }}>
+                      {"No License Found. Valid for Demo use only"}
+                    </pre>
+
+
+                  </Column>
+                </Columns>
           }
 
         </Section>

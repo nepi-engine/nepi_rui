@@ -51,8 +51,6 @@ class NepiDashboard extends Component {
     this.renderSystemClock = this.renderSystemClock.bind(this)
     this.renderMgrSystemStatus = this.renderMgrSystemStatus.bind(this)
 
-    this.toggleViewableMessages = this.toggleViewableMessages.bind(this)
-    this.onToggleMessagesSelection = this.onToggleMessagesSelection.bind(this)
 
 
   }
@@ -66,69 +64,6 @@ class NepiDashboard extends Component {
     return allNamespace
   }
 
-  createMessageOptions() {
-    const allNamespace = this.getAllNamespace()
-    var items = []
-    items.push(<Option value={allNamespace}>{"All"}</Option>)
-    //items.push(<Option value={"None"}>{"None"}</Option>)
-    const Messages_topics = this.props.ros.messageTopics
-    const shortnames = createShortUniqueValues(Messages_topics)
-    var topic = ""
-    for (var i = 0; i < Messages_topics.length; i++) {
-      topic = Messages_topics[i]
-      if (topic !== allNamespace && topic.indexOf("None") === -1) {
-        items.push(<Option value={topic}>{shortnames[i]}</Option>)
-      }
-    }
-    return items    
-  }
-
-  toggleViewableMessages() {
-    const viewable = !this.state.viewableMessages
-    this.setState({viewableMessages: viewable})
-  }
-
-  onToggleMessagesSelection(event){
-    const selected_message = event.target.innerText
-    this.setState({selected_message: selected_message})
-  }
-
-  renderSelectorMessages() {
-    const messageTopics = this.createMessageOptions()
-    const hide_messages_list = !this.state.viewableMessages && !this.state.connected
-    return (
-      <React.Fragment>
-      <Columns>
-      <Column>
-
-      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Select message Topic"}
-         </label>
-
-      <div onClick={this.toggleViewableMessages} style={{backgroundColor: Styles.vars.colors.grey0}}>
-      <Select style={{width: "10px"}}/>
-    </div>
-    <div hidden={hide_messages_list}>
-    {messageTopics.map((message) =>
-    <div onClick={this.onToggleMessagesSelection}
-      style={{
-        textAlign: "center",
-        padding: `${Styles.vars.spacing.xs}`,
-        color: Styles.vars.colors.black,
-        backgroundColor: (message.props.value === this.state.selected_message) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-        cursor: "pointer",
-        }}>
-        <body message-topic ={message} style={{color: Styles.vars.colors.black}}>{message}</body>
-    </div>
-    )}
-    </div>
-
-    </Column>
-      </Columns>
-
-    </React.Fragment>
-    )
-  }
 
   renderDeviceInfo() {
     const {
