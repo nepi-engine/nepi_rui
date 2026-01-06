@@ -52,9 +52,9 @@ class NepiMessagesSelector extends Component {
     const msgTopicsSorted = msgTopics.sort()
     //items.push(<Option value={"All"}>{"All"}</Option>)
     if (msgTopics.length > 0 && msgTopics.indexOf(allNamespace) !== -1 ){
-      items.push(<Option value={"All"}>{"All"}</Option>)
+      items.push(<Option value={allNamespace}>{"All"}</Option>)
       if (sel_topic === "Connecting"){
-        this.setState({selected_topic: "All"})
+        this.setState({selected_topic: allNamespace})
       }
       const shortnames = createShortUniqueValues(msgTopics)
       var topic = ""
@@ -78,6 +78,8 @@ class NepiMessagesSelector extends Component {
 
   renderSelection() {
     const messageTopics = this.createMessageOptions()
+    const allNamespace = this.getAllNamespace()
+    const selected_topic = (this.state.selected_topic !== 'All') ? this.state.selected_topic : allNamespace
 
     return (
       <React.Fragment>
@@ -94,7 +96,7 @@ class NepiMessagesSelector extends Component {
 
             <Select onChange={this.onChangeMessageSelection}
             id="MsgSelector"
-            value={this.state.selected_topic}>
+            value={selected_topic}>
             {messageTopics}
             </Select>
          
@@ -132,7 +134,10 @@ class NepiMessagesSelector extends Component {
 
 
   render() {
-    const msg_namespace = this.state.selected_topic
+    const allNamespace = this.getAllNamespace()
+    const selected_topic = (this.state.selected_topic !== 'All') ? this.state.selected_topic : allNamespace
+
+
     const hide_app = this.state.selected_topic === "Connecting"
     return (
 
@@ -148,7 +153,7 @@ class NepiMessagesSelector extends Component {
 
         <div hidden={hide_app} style={{ width: '75%' }}>
           <label style={{fontWeight: 'bold'}}>
-            {msg_namespace}
+            {selected_topic}
           </label>
           {this.renderApplication()}
         </div>
