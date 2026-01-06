@@ -57,6 +57,7 @@ class NepiSystemSoftware extends Component {
             <Button onClick={onSwitchNepitImage}>{"Switch Active/Inactive"}</Button>
           </ButtonMenu>                    
         </Section>
+
       )
     }
 
@@ -70,7 +71,7 @@ class NepiSystemSoftware extends Component {
       } = this.props.ros
 
       return (
-        <Section title={"Full System Update"}>
+        <Section title={"NEPI Image Import"}>
           <Label title={"Source"}>
             <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_staging : ""} style={{width: '100%'}}/>
           </Label>
@@ -107,16 +108,23 @@ class NepiSystemSoftware extends Component {
         systemStatus
       } = this.props.ros
 
+      // const formatMbToGb = (mb) => (mb / 1024).toFixed(2);
+
+      // const active_rootfs_size_gb = formatMbToGb(systemDefs.active_rootfs_size_mb);
+
+      // const new_sys_img_staging_free_gb = formatMbToGb(systemSoftwareStatus.new_sys_img_staging_free_mb);
+
+
       const source_str = systemDefs? 
-        systemDefs.inactive_rootfs + ":  (" + systemDefs.inactive_rootfs_size_mb.toFixed(0) + "MB)": 
+        systemDefs.active_rootfs + ":  (" + systemDefs.active_rootfs_size_mb + "GB)": 
         ""
       
       const dest_str = systemSoftwareStatus?
-        systemSoftwareStatus.new_sys_img_staging + ":  (" + systemSoftwareStatus.new_sys_img_staging_free_mb.toFixed(0) + "MB free)":
+        systemSoftwareStatus.new_sys_img_staging + ":  (" + systemSoftwareStatus.new_sys_img_staging_free_mb + "GB free)":
         ""
       
         return (
-        <Section title={"Full System Archive"}>
+        <Section title={"NEPI Image Export"}>
           <Label title={"Source"}>
             <Input disabled value={source_str} style={{width: '100%'}}/>
           </Label>
@@ -140,17 +148,20 @@ class NepiSystemSoftware extends Component {
     }
 
     render() {
-        return (
 
-          <Columns>
-          <Column>
-            {this.renderSysPartitionSettings()}
-            {this.renderSysArchive()}
-          </Column>
-          <Column>
-            {this.renderSysSoftwareUpdate()}  
-          </Column>
-        </Columns>
+      const {
+        systemDefs
+      } = this.props.ros
+      return (
+        <Columns>
+        <Column>
+          {systemDefs.has_ab_fs && this.renderSysPartitionSettings()}
+          {this.renderSysArchive()}
+        </Column>
+        <Column>
+          {this.renderSysSoftwareUpdate()}  
+        </Column>
+      </Columns>
 
       )
     }
