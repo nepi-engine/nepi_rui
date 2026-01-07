@@ -82,6 +82,7 @@ class Nepi_IF_Settings extends Component {
 
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
+    const last_values_list = this.state.settingsValuesList
     const settings = message.settings_list
     const capabilities = message.setting_caps_list
     var namesList = []
@@ -101,6 +102,10 @@ class Nepi_IF_Settings extends Component {
                    settingsValuesList:valuesList,
                    settingsCount: count
     })
+
+    if (last_values_list !== valuesList){
+      this.updateSelectedSettingInfo()
+    }
 
     this.updateCapabilities() 
   }
@@ -224,7 +229,7 @@ class Nepi_IF_Settings extends Component {
   getSelectedSettingInfo(){
     const info = [this.state.selectedSettingInd, this.state.selectedSettingType , this.state.selectedSettingName ,
        this.state.selectedSettingValue , this.state.selectedSettingLowerLimit , this.state.selectedSettingUpperLimit,
-       this.state.selectedSettingOptions
+       this.state.selectedSettingOptions, this.state.selectedSettingValue
        ]
     return info
   }
@@ -370,6 +375,11 @@ class Nepi_IF_Settings extends Component {
     const selSetMin = selSetInfo[4]
     const selSetMax = selSetInfo[5]
     const selSetOptions= selSetInfo[6]
+    const selValue = selSetInfo[7]
+    
+    
+    const selOptions = createMenuListFromStrList(selSetOptions,false,[],["Select"],[])
+    
     //Unused const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
     return (
 
@@ -379,7 +389,7 @@ class Nepi_IF_Settings extends Component {
           <div align={"left"} textAlign={"right"} hidden={selSetType !== "Bool" }>
             <Label title={selSetName}>
               <Toggle
-                checked={ (this.getSettingValue(selSetName) === "True")}
+                checked={ (selValue === "True")}
                 onClick={() => {this.onChangeBoolSettingValue()}}
               />
             </Label>
@@ -392,9 +402,9 @@ class Nepi_IF_Settings extends Component {
               <Select
                 id="descreteSetting"
                 onChange={this.onChangeDescreteSettingValue}
-                value={this.getSettingValue(selSetName)}
+                value={selValue}
               >
-                {createMenuListFromStrList(selSetOptions,false,[],["Select"],[])}
+                {selOptions}
               </Select>
             </Label>
             </div>

@@ -234,7 +234,7 @@ export function createMenuListFromStrList(optionsStrList, useShortNames, filterO
   if (filterOut) {
     for (i = 0; i < optionsStrList.length; i++) {
         if (filterOut.includes(optionsStrList[i]) === false){
-          filteredTopics.push(optionsStrList[i])
+          filteredTopics.push(String(optionsStrList[i]))
         }
     }
   }

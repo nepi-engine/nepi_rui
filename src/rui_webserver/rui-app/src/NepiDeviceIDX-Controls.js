@@ -341,7 +341,7 @@ class NepiDeviceIDXControls extends Component {
                         <div hidden={(hide_framerate)}>
 
                         <SliderAdjustment
-                                      title={"Framerate"}
+                                      title={"Publish Framerate"}
                                       msgType={"std_msgs/Float32"}
                                       adjustment={this.state.framerateAdjustment}
                                       topic={namespace + '/set_framerate_ratio'}
@@ -359,7 +359,7 @@ class NepiDeviceIDXControls extends Component {
                       <div hidden={(hide_resolution)}>
 
                         <SliderAdjustment
-                                        title={"Resolution"}
+                                        title={"Publish Resolution"}
                                         msgType={"std_msgs/Float32"}
                                         adjustment={this.state.resolutionAdjustment}
                                         topic={namespace + '/set_resolution_ratio'}
