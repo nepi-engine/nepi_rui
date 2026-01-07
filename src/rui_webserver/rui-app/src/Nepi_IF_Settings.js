@@ -83,6 +83,7 @@ class Nepi_IF_Settings extends Component {
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
     const last_values_list = this.state.settingsValuesList
+    const lastCaps = this.state.capabilities
     const settings = message.settings_list
     const capabilities = message.setting_caps_list
     var namesList = []
@@ -95,6 +96,8 @@ class Nepi_IF_Settings extends Component {
     }
     const count = namesList.length
 
+    
+
     this.setState({
                   capabilities: capabilities,
                    settingsNamesList:namesList,
@@ -103,11 +106,13 @@ class Nepi_IF_Settings extends Component {
                    settingsCount: count
     })
 
-    if (last_values_list !== valuesList){
-      this.updateSelectedSettingInfo()
+    if (lastCaps !== capabilities){
+      this.updateCapabilities(capabilities) 
     }
 
-    this.updateCapabilities() 
+    
+
+
   }
 
   // Function for configuring and subscribing to Settings Status
@@ -122,6 +127,24 @@ class Nepi_IF_Settings extends Component {
         settingsNamespace + '/status',
         this.settingsStatusListener
       )
+
+      this.setState({capSettingsNamesList: [],
+      capSettingsTypesList: [],
+      capSettingsOptionsLists: [],
+      settingsNamesList: [],
+      settingsTypesList: [],
+      settingsValuesList: [],
+      settings: null,
+      settingsCount: 0,
+      selectedSettingInd: 0,
+      selectedSettingName: "",
+      selectedSettingType: "",
+      selectedSettingValue: "",
+      selectedSettingLowerLimit: "",
+      selectedSettingUpperLimit: "",
+      selectedSettingOptions: [],
+      selectedSettingInput: ""
+      })
       this.setState({settingsNamespace: settingsNamespace})
       this.setState({ settingsListener: settingsListener})
     }
@@ -147,15 +170,13 @@ class Nepi_IF_Settings extends Component {
 
 
   // Function for creating settings options list from capabilities
-  updateCapabilities() {
-    const lastCaps = this.state.last_caps
-    const cap_settings = this.state.capabilities
-    this.setState({last_caps: cap_settings})
+  updateCapabilities(cap_settings) {
+
     var namesList = []
     var typesList = []
     var optionsLists = []
     var ind = 0 
-    if (cap_settings != null && cap_settings !== lastCaps){
+    if (cap_settings != null){
       for ( ind = 0; ind < cap_settings.length; ind++){
         namesList.push(cap_settings[ind].name_str)
         typesList.push(cap_settings[ind].type_str)
@@ -229,7 +250,7 @@ class Nepi_IF_Settings extends Component {
   getSelectedSettingInfo(){
     const info = [this.state.selectedSettingInd, this.state.selectedSettingType , this.state.selectedSettingName ,
        this.state.selectedSettingValue , this.state.selectedSettingLowerLimit , this.state.selectedSettingUpperLimit,
-       this.state.selectedSettingOptions, this.state.selectedSettingValue
+       this.state.selectedSettingOptions
        ]
     return info
   }
@@ -374,8 +395,8 @@ class Nepi_IF_Settings extends Component {
     const selSetName = selSetInfo[2]
     const selSetMin = selSetInfo[4]
     const selSetMax = selSetInfo[5]
-    const selSetOptions= selSetInfo[6]
-    const selValue = selSetInfo[7]
+    const selSetOptions = selSetInfo[6]
+    const selValue = this.getSettingValue(selSetName)
     
     
     const selOptions = createMenuListFromStrList(selSetOptions,false,[],["Select"],[])

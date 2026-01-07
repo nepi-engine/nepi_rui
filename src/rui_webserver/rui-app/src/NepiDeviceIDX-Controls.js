@@ -248,7 +248,7 @@ class NepiDeviceIDXControls extends Component {
         const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
         return (
 
-          <Section title={"Controls"}>
+          <Section title={"Publish Controls"}>
 
 
 
