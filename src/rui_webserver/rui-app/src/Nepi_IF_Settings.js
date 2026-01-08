@@ -478,7 +478,7 @@ class Nepi_IF_Settings extends Component {
 
 
           <NepiIFConfig
-                        settingsNamespace={settingsNamespace}
+                        namespace={settingsNamespace}
                         title={"Nepi_IF_Config"}
           />
 

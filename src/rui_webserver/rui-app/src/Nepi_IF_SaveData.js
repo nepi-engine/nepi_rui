@@ -511,7 +511,7 @@ class NepiIFSaveData extends Component {
           <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None'}>
 
                   <NepiIFConfig
-                        saveNamespace={saveNamespace}
+                        namespace={saveNamespace}
                         title={"Nepi_IF_Config"}
                   />
 

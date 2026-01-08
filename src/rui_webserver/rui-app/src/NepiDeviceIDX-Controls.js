@@ -38,6 +38,7 @@ class NepiDeviceIDXControls extends Component {
     this.state = {
 
       show_controls: false,
+      status_msg: null,
       rtsp_url: "",
       rtsp_username: "",
       rtsp_password: "",
@@ -47,7 +48,7 @@ class NepiDeviceIDXControls extends Component {
       auto_adjust_controls: [],
       resolutionAdjustment: null,
       resolutionString: null,
-      framerateAdjustment: null,
+      max_framerate: null,
       dataProducts: [],
       frameratesCurrent: [],
       contrastAdjustment: null,
@@ -93,17 +94,16 @@ class NepiDeviceIDXControls extends Component {
 
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
+
     this.setState({
+      status_msg: message,
       rtsp_url: message.rtsp_url,
       rtsp_username: message.rtsp_username,
       rtsp_password: message.rtsp_password,
-      width_deg: message.width_deg,
-      height_deg: message.height_deg,
       autoAdjust: message.auto_adjust_enabled,
       auto_adjust_controls: message.auto_adjust_controls,
       resolutionAdjustment: message.resolution_ratio,
       resolutionString : message.resolution_current,
-      framerateAdjustment: message.framerate_ratio,
       dataProducts: message.data_products,
       frameratesCurrent: message.framerates,
       contrastAdjustment: message.contrast_ratio,
@@ -122,7 +122,20 @@ class NepiDeviceIDXControls extends Component {
       sel_pantilt_navpose_topic: message.sel_pantilt_navpose_topic,
       sel_pantilt_connected: message.sel_pantilt_connected,
     })
-   
+    
+
+    if (message.max_framerate !== this.state.max_framerate){
+      this.setState({max_framerate: message.max_framerate})
+    }
+
+    if (message.width_deg !== this.state.width_deg){
+      this.setState({width_deg: message.width_deg})
+    }
+
+    if (message.height_deg !== this.state.height_deg){
+      this.setState({height_deg: message.height_deg})
+    }
+
   }
 
   // Function for configuring and subscribing to StatusIDX
@@ -267,14 +280,19 @@ class NepiDeviceIDXControls extends Component {
                       <Columns>
                         <Column>
 
-                        <Label title={"Framerate"}>
-                        <Input
-                          value={framerate_str}
-                          id="framerate"
-                          style={{ width: "100%" }}
-                          disabled={true}
-                        />
-                      </Label>
+
+                        <div hidden={(hide_framerate)}>
+                            <Label title={"Max Framerate"}>
+                          <Input
+                            value={this.state.max_framerate}
+                            id="max_framerate"
+                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"max_framerate")}
+                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_max_framerate')}
+                            style={{ width: "100%" }}
+                          />
+                        </Label>
+
+                      </div>
 
 
                             </Column>
@@ -283,7 +301,7 @@ class NepiDeviceIDXControls extends Component {
                             <Label title={"Image Size"}>
                           <Input
                             value={this.state.resolutionString}
-                            id="framerate"
+                            id="size"
                             style={{ width: "100%" }}
                             disabled={true}
                           />
@@ -338,28 +356,11 @@ class NepiDeviceIDXControls extends Component {
 
 
 
-                        <div hidden={(hide_framerate)}>
-
-                        <SliderAdjustment
-                                      title={"Publish Framerate"}
-                                      msgType={"std_msgs/Float32"}
-                                      adjustment={this.state.framerateAdjustment}
-                                      topic={namespace + '/set_framerate_ratio'}
-                                      scaled={0.01}
-                                      min={0}
-                                      max={100}
-                                      disabled={(capabilities && !this.state.disabled)? false : true}
-                                      tooltip={"Adjustable Framerate"}
-                                      unit={"%"}
-                                  />
-
-                      </div>
-
 
                       <div hidden={(hide_resolution)}>
 
                         <SliderAdjustment
-                                        title={"Publish Resolution"}
+                                        title={"Publish Size"}
                                         msgType={"std_msgs/Float32"}
                                         adjustment={this.state.resolutionAdjustment}
                                         topic={namespace + '/set_resolution_ratio'}
