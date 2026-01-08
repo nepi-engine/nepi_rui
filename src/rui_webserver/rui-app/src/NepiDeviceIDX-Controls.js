@@ -94,7 +94,7 @@ class NepiDeviceIDXControls extends Component {
 
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
-
+    const last_msg = this.state.status_msg
     this.setState({
       status_msg: message,
       rtsp_url: message.rtsp_url,
@@ -124,15 +124,15 @@ class NepiDeviceIDXControls extends Component {
     })
     
 
-    if (message.max_framerate !== this.state.max_framerate){
+    if (message.max_framerate !== last_msg.max_framerate){
       this.setState({max_framerate: message.max_framerate})
     }
 
-    if (message.width_deg !== this.state.width_deg){
+    if (message.width_deg !== last_msg.width_deg){
       this.setState({width_deg: message.width_deg})
     }
 
-    if (message.height_deg !== this.state.height_deg){
+    if (message.height_deg !== last_msg.height_deg){
       this.setState({height_deg: message.height_deg})
     }
 
