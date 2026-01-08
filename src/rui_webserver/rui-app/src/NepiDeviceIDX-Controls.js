@@ -65,6 +65,10 @@ class NepiDeviceIDXControls extends Component {
 
       age_filter_s: null,
 
+      last_max_framerate: null,
+      last_width_deg: null,
+      last_height_deg: null,
+
       listener: null,
 
       disabled: false,
@@ -123,18 +127,18 @@ class NepiDeviceIDXControls extends Component {
       sel_pantilt_connected: message.sel_pantilt_connected,
     })
     
-
-    if (message.max_framerate !== last_msg.max_framerate){
-      this.setState({max_framerate: message.max_framerate})
+    if (message.max_framerate !== this.state.last_max_framerate){
+      this.setState({max_framerate: message.max_framerate, last_max_framerate: message.max_framerate})
     }
 
-    if (message.width_deg !== last_msg.width_deg){
-      this.setState({width_deg: message.width_deg})
+    if (message.width_deg !== this.state.last_width_deg){
+      this.setState({width_deg: message.width_deg, last_width_deg: message.width_deg})
     }
 
-    if (message.height_deg !== last_msg.height_deg){
-      this.setState({height_deg: message.height_deg})
+    if (message.height_deg !== this.state.last_height_deg){
+      this.setState({height_deg: message.height_deg, last_height_deg: message.height_deg})
     }
+
 
   }
 
