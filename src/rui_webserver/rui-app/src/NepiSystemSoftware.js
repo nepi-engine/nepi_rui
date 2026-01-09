@@ -14,7 +14,11 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
+import Select, { Option } from "./Select"
 import Styles from "./Styles"
+
+import { createMenuListFromStrList } from "./Utilities"
+
 
 @inject("ros")
 @observer
@@ -22,7 +26,11 @@ class NepiSystemSoftware extends Component {
     constructor(props) {
         super(props)
     
-        this.renderSysSoftwareUpdate = this.renderSysSoftwareUpdate.bind(this)
+        this.renderSysSoftwareUpdate = this.renderSysSoftwareUpdate.bind(this),
+        this.onImageTopicSelected = this.onImageTopicSelected.bind(this),
+        this.state = {
+          selected_source_control: null
+        }
     }
 
     renderSysPartitionSettings() {
@@ -61,6 +69,22 @@ class NepiSystemSoftware extends Component {
       )
     }
 
+
+  // Handler for Image topic selection
+  onImageTopicSelected(event) {
+    const { sendStringMsg } = this.props.ros
+
+    var ind = event.nativeEvent.target.selectedIndex
+    var text = event.nativeEvent.target[ind].text
+    var value = event.target.value
+
+    const { namespacePrefix, deviceId } = this.props.ros
+    const namespace = '/' + namespacePrefix + '/' + deviceId + '/' + 'select_nepi_image'
+    sendStringMsg(namespace, value)
+  }
+
+
+
     renderSysSoftwareUpdate() {
       const {
           systemStatus,
@@ -70,10 +94,23 @@ class NepiSystemSoftware extends Component {
           onInstallFullSysImg
       } = this.props.ros
 
+      const selected_image = systemSoftwareStatus.sys_img_update_selected
+      const NoneOption = <Option>None</Option>
+
+      
+      const systemSoftwareInstallMenu = createMenuListFromStrList(systemSoftwareInstallOptions,false,[],[],[])
+      
+
       return (
         <Section title={"NEPI Image Import"}>
-          <Label title={"Source"}>
-            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_staging : ""} style={{width: '100%'}}/>
+          <Label title={"Select Source"}>
+            <Select
+              id="selected_source_control"
+              onChange={this.onImageTopicSelected}
+              value={selected_image}
+            >
+              {systemSoftwareInstallOptions ? systemSoftwareInstallMenu : NoneOption}
+            </Select>
           </Label>
           <Label title={"Image Filename"}>
             <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img : ""} style={{width: '100%'}}/>
@@ -113,6 +150,9 @@ class NepiSystemSoftware extends Component {
       // const active_rootfs_size_gb = formatMbToGb(systemDefs.active_rootfs_size_mb);
 
       // const new_sys_img_staging_free_gb = formatMbToGb(systemSoftwareStatus.new_sys_img_staging_free_mb);
+
+
+      
 
 
       const source_str = systemDefs? 
