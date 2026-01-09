@@ -419,7 +419,7 @@ class NepiControlsLights extends Component {
                     id="lsxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
-                    show_image_options={show_image_controls}
+                    show_image_options={false}
                   />
                 </div>
 

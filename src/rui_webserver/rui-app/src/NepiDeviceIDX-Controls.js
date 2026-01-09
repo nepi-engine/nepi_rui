@@ -23,7 +23,7 @@ import { Column, Columns } from "./Columns"
 import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFReset from "./Nepi_IF_Reset"
-//Unused import NepiIFConfig from "./Nepi_IF_Config" 
+import NepiIFConfig from "./Nepi_IF_Config" 
 import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
 @inject("ros")
@@ -515,7 +515,17 @@ class NepiDeviceIDXControls extends Component {
                             title={"Nepi_IF_Reset"}
                       />
 
-            </div>
+
+        </div>
+
+          <div align={"left"} textAlign={"left"}>
+            
+            <NepiIFConfig
+                namespace={namespace}
+                title={"Nepi_IF_Conig"}
+          />
+
+      </div>
 
           </Section>
         )

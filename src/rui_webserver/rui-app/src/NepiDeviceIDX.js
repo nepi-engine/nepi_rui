@@ -20,7 +20,6 @@ import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
-
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
 
@@ -248,14 +247,6 @@ class NepiDeviceIDX extends Component {
     
                   </Column>
                 </Columns>
-
-                <div align={"left"} textAlign={"left"}>
-                  
-                        <NepiIFConfig
-                            namespace={namespace}
-                            title={"Nepi_IF_Conig"}
-                      />
-              </div>
 
 
                 </Section>

@@ -982,7 +982,7 @@ renderNavPose(){
                     id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
-                    show_image_options={show_image_controls}
+                    show_image_options={false}
                   />
                 </div>
                 <SliderAdjustment
@@ -1060,7 +1060,7 @@ renderNavPose(){
           </Column>
           <Column style={{flex: 0.05}}>
 
-          <div style={{ height: '155px' }}></div>
+          <div style={{ height: '0px' }}></div>
 
             <SliderAdjustment
               disabled={!has_abs_pos}

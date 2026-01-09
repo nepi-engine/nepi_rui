@@ -584,7 +584,7 @@ class NepiDeviceRBX extends Component {
             <ImageViewer
               imageTopic={this.state.image_topic}
               title={""}
-              show_image_options={show_image_controls}
+              show_image_options={false}
             />
           </Column>
         </Columns>

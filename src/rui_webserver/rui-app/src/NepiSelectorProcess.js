@@ -34,8 +34,8 @@ class ProcessSelector extends Component {
 
     this.state = {
       show_delete_app: false,
-      mgrName: "apps_mgr",
-      mgrNamespace: null,
+      appsMgrName: "apps_mgr",
+      appsMgrNamespace: null,
 
       viewableApps: false,
 
@@ -81,7 +81,7 @@ class ProcessSelector extends Component {
 
     this.checkConnection = this.checkConnection.bind(this)
 
-    this.getMgrNamespace = this.getMgrNamespace.bind(this)
+    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
     this.getAiMgrNamespace = this.getAiMgrNamespace.bind(this)
 
     this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
@@ -98,13 +98,13 @@ class ProcessSelector extends Component {
     
   }
 
-  getMgrNamespace(){
+  getAppsMgrNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
-    var mgrNamespace = null
+    var appsMgrNamespace = null
     if (namespacePrefix !== null && deviceId !== null){
-      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
+      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
     }
-    return mgrNamespace
+    return appsMgrNamespace
   }
 
   getAiMgrNamespace(){
@@ -137,7 +137,7 @@ class ProcessSelector extends Component {
 
   // Function for configuring and subscribing to Status
   updateMgrAppsStatusListener() {
-    const statusNamespace = this.getMgrNamespace() + '/status'
+    const statusNamespace = this.getAppsMgrNamespace() + '/status'
     if (this.state.appsListener) {
       this.state.appsListener.unsubscribe()
     }
@@ -200,13 +200,13 @@ class ProcessSelector extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.getMgrNamespace()
-    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
+    const namespace = this.getAppsMgrNamespace()
+    const namespace_updated = (prevState.appsMgrNamespace !== namespace && namespace !== null)
     const needs_update = (this.state.needs_update && namespace !== null)
     if (namespace_updated || needs_update) {
       if (namespace.indexOf('null') === -1){
         this.setState({
-          mgrNamespace: namespace,
+          appsMgrNamespace: namespace,
         })
         this.updateMgrAppsStatusListener()
       } 
@@ -229,6 +229,9 @@ class ProcessSelector extends Component {
   componentWillUnmount() {
     if (this.state.appsListener) {
       this.state.appsListener.unsubscribe()
+    }
+    if (this.state.aiMgrListener) {
+      this.state.aiMgrListener.unsubscribe()
     }
   }
 

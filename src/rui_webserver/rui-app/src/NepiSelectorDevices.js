@@ -14,7 +14,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
 import DriversMgr from "./NepiSystemDrivers"
-import OnvifMgr from "./NepiAppOnvifMgr"
+import AppRender from "./Nepi_IF_Apps"
 
 import IDX from "./NepiDeviceIDX"
 import PTX from "./NepiDevicePTX"
@@ -32,11 +32,35 @@ class DevicesSelector extends Component {
     super(props)
 
     this.state = {
-      show_delete_drv: false,
-      mgrName: "drivers_mgr",
-      mgrNamespace: null,
+      show_delete_app: false,
 
-      viewabledrvs: false,
+      appsMgrName: "apps_mgr",
+      appsMgrNamespace: null,
+
+      drvsMgrName: "drivers_mgr",
+      drvsMgrNamespace: null,
+
+      viewableApps: false,
+
+      apps_list: ['NONE'],
+      last_apps_list: [],
+      apps_active_list: [],
+      apps_active_type_list: [],
+      apps_install_path: null,
+      apps_install_list: [],
+
+
+      apps_rui_list: null,
+      apps_type_list: [],
+
+      app_name: 'NONE',
+      app_description: null,
+      apps_path: null,
+      app_options_menu: null,
+      active_state: null,
+
+      backup_removed_apps: true,
+
 
       drvs_list: ['NONE'],
       last_drvs_list: [],
@@ -44,7 +68,6 @@ class DevicesSelector extends Component {
       drvs_active_type_list: [],
       drvs_install_path: null,
       drvs_install_list: [],
-      selected_app: 'NONE',
 
       drvs_rui_list: null,
       drvs_type_list: [],
@@ -57,36 +80,90 @@ class DevicesSelector extends Component {
 
       backup_removed_drvs: true,
 
-      connected: false,
+
+      selected_app: 'NONE',
+
+      apps_connected: false,
+      drvs_connected: false,
+
+      appsListener: null,
+      appListener: null,
 
       drvsListener: null,
       drvListener: null,
 
-      selected_app_install_pkg: null,
       needs_update: false
     }
 
     this.checkConnection = this.checkConnection.bind(this)
 
-    this.getMgrNamespace = this.getMgrNamespace.bind(this)
+    this.getDrvsMgrNamespace = this.getDrvsMgrNamespace.bind(this)
+    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
 
-    this.updatedrvsStatusListener = this.updatedrvsStatusListener.bind(this)
+    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
+    this.appsStatusListener = this.appsStatusListener.bind(this)
+
+    this.updateDrvsMgrStatusListener = this.updateDrvsMgrStatusListener.bind(this)
     this.drvsStatusListener = this.drvsStatusListener.bind(this)
 
-    this.toggleViewabledrvs = this.toggleViewabledrvs.bind(this)  
-    this.onToggledrvSelection = this.onToggledrvSelection.bind(this)  
+    this.toggleViewableApps = this.toggleViewableApps.bind(this)  
+    this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
-    
   }
 
-  getMgrNamespace(){
+  getDrvsMgrNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
-    var mgrNamespace = null
+    var drvsMgrNamespace = null
     if (namespacePrefix !== null && deviceId !== null){
-      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
+      drvsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.drvsMgrName
     }
-    return mgrNamespace
+    return drvsMgrNamespace
   }
+
+  getAppsMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var appsMgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
+    }
+    return appsMgrNamespace
+  }
+
+
+  // Callback for handling ROS Status messages
+  appsStatusListener(message) {
+    this.setState({
+      apps_path: message.apps_path,
+      apps_list: message.apps_ordered_list,
+      apps_group_list: message.apps_group_list,
+      apps_rui_list: message.apps_rui_list,
+      apps_active_list: message.apps_active_list,
+      apps_install_path: message.apps_install_path,
+      apps_install_list: message.apps_install_list,
+      backup_removed_apps: message.backup_removed_apps,
+
+      apps_connected: true
+    })    
+
+    this.props.ros.appNames = message.apps_ordered_list
+
+  }
+
+  // Function for configuring and subscribing to Status
+  updateMgrAppsStatusListener() {
+    const statusNamespace = this.getAppsMgrNamespace() + '/status'
+    if (this.state.appsListener) {
+      this.state.appsListener.unsubscribe()
+    }
+    var appsListener = this.props.ros.setupStatusListener(
+          statusNamespace,
+          "nepi_interfaces/MgrAppsStatus",
+          this.appsStatusListener
+        )
+    this.setState({ appsListener: appsListener,
+      needs_update: false})
+  }
+
 
   // Callback for handling ROS Status messages
   drvsStatusListener(message) {
@@ -95,14 +172,14 @@ class DevicesSelector extends Component {
       drvs_type_list: message.type_list,
       drvs_active_list: message.active_pkg_list,
       drvs_active_type_list: message.active_type_list,
-      connected: true
+      drvs_connected: true
     })    
 
   }
 
   // Function for configuring and subscribing to Status
-  updatedrvsStatusListener() {
-    const statusNamespace = this.getMgrNamespace() + '/status'
+  updateDrvsMgrStatusListener() {
+    const statusNamespace = this.getDrvsMgrNamespace() + '/status'
     if (this.state.drvsListener) {
       this.state.drvsListener.unsubscribe()
     }
@@ -135,20 +212,26 @@ class DevicesSelector extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.getMgrNamespace()
-    const {topicNames} = this.props.ros
-    //Unused const script_file = this.state.automationSelectedScript
-    const check_topic = namespace + "/status"
-    const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
-
-    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
-    const needs_update = (this.state.needs_update && namespace !== null && topic_publishing)
+    const namespace = this.getAppsMgrNamespace()
+    const namespace_updated = (prevState.appsMgrNamespace !== namespace && namespace !== null)
+    const needs_update = (this.state.needs_update && namespace !== null)
     if (namespace_updated || needs_update) {
       if (namespace.indexOf('null') === -1){
         this.setState({
-          mgrNamespace: namespace,
+          appsMgrNamespace: namespace,
         })
-        this.updatedrvsStatusListener()
+        this.updateMgrAppsStatusListener()
+      } 
+    }
+
+    const drvsNamespace = this.getDrvsMgrNamespace()
+    const drvsNamespace_updated = (prevState.drvsNamespace !== drvsNamespace && drvsNamespace !== null)
+    if (namespace_updated ) {
+      if (drvsNamespace.indexOf('null') === -1){
+        this.setState({
+          drvsNamespace: drvsNamespace,
+        })
+        this.updateDrvsMgrStatusListener()
       } 
     }
   }
@@ -159,9 +242,15 @@ class DevicesSelector extends Component {
     if (this.state.drvsListener) {
       this.state.drvsListener.unsubscribe()
     }
+    if (this.state.appsListener) {
+      this.state.appsListener.unsubscribe()
+    }
   }
 
-
+  toggleViewableApps() {
+    const viewable = !this.state.viewableApps
+    this.setState({viewableApps: viewable})
+  }
 
   renderNoneApp() {
     return (
@@ -190,20 +279,6 @@ class DevicesSelector extends Component {
   }
 
 
- 
-  renderOnvifMgr() {
-    return (
-      <Columns>
-        <Column>
-
-        <OnvifMgr
-         title={"Onvif Manager"}
-         />
-
-      </Column>
-      </Columns>
-    )
-  }
 
 
   renderIdxDev() {
@@ -278,28 +353,37 @@ class DevicesSelector extends Component {
 
   
 
-  toggleViewabledrvs() {
-    const viewable = !this.state.viewabledrvs
-    this.setState({viewabledrvs: viewable})
+
+  toggleViewableApps() {
+    const viewable = !this.state.viewableApps
+    this.setState({viewableApps: viewable})
   }
 
 
-  onToggledrvSelection(event){
-    const drv_name = event.target.innerText
-    this.setState({selected_app: drv_name})
+  onToggleAppSelection(event){
+    const app_name = event.target.value
+    this.setState({selected_app: app_name})
   }
 
 
   // Function for creating image topic options.
-  getdrvOptions() {
+  getAppOptions() {
     const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
     const typeList = this.state.drvs_active_type_list
     var items = []
-    const connected = this.state.connected
+    const connected = this.state.drvs_connected && this.state.apps_connected
+    const appsList = this.state.apps_list
+    const ruiList = this.state.apps_rui_list 
+    const groupList = this.state.apps_group_list
+    const activeAppList = this.state.apps_active_list
+    const activeModelTypes = this.state.active_models_types
+
     if (connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
-    else{
+    else {
+
+
       if (typeList) {
         if (typeList.length > 0){
             if (Object.keys(idxDevices).length > 0){
@@ -319,7 +403,14 @@ class DevicesSelector extends Component {
             }
         }
       }
-      items.push(<Option value={"Onvif Mgr"}>{"Onvif Mgr"}</Option>)
+
+      if (appsList.length > 0){
+        for (var i = 0; i < ruiList.length; i++) {
+          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          }
+        }
+      }
       items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
     }
     //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
@@ -329,8 +420,9 @@ class DevicesSelector extends Component {
 
 
   renderSelection() {
-    const drv_options = this.getdrvOptions()
-    const hide_drv_list = !this.state.viewabledrvs && !this.state.connected
+    const app_options = this.getAppOptions()
+    const connected = this.state.drvs_connected && this.state.apps_connected 
+    const hide_app_list = !this.state.viewableApps && !connected
 
     return (
       <React.Fragment>
@@ -343,20 +435,20 @@ class DevicesSelector extends Component {
          </label>
          
 
-          <div onClick={this.toggleViewabledrvs} style={{backgroundColor: Styles.vars.colors.grey0}}>
+          <div onClick={this.onToggleAppSelection} style={{backgroundColor: Styles.vars.colors.grey0}}>
             <Select style={{width: "10px"}}/>
           </div>
-          <div hidden={hide_drv_list}>
-          {drv_options.map((drv) =>
-          <div onClick={this.onToggledrvSelection}
+          <div hidden={hide_app_list}>
+          {app_options.map((app) =>
+          <div onClick={this.onToggleAppSelection}
             style={{
               textAlign: "center",
               padding: `${Styles.vars.spacing.xs}`,
               color: Styles.vars.colors.black,
-              backgroundColor: (drv.props.value === this.state.selected_app) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+              backgroundColor: (app.props.value === this.state.selected_app) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
               cursor: "pointer",
               }}>
-              <body drv-topic ={drv} style={{color: Styles.vars.colors.black}}>{drv}</body>
+              <body app-topic ={app} style={{color: Styles.vars.colors.black}}>{app}</body>
           </div>
           )}
           </div>
@@ -369,8 +461,9 @@ class DevicesSelector extends Component {
   }
 
 
-  renderdrvlication() {
+  renderApplication() {
     const sel_app = this.state.selected_app
+    const {appNameList, appStatusList} = this.props.ros
 
     if (sel_app === "NONE"){
       return (
@@ -432,16 +525,13 @@ class DevicesSelector extends Component {
         </React.Fragment>
       )
     }
-    else if (sel_app === "Onvif Mgr"){
+    else if (appNameList.indexOf(sel_app) !== -1){
       return (
-        <React.Fragment>
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {this.state.selected_app}
-          </label>
-          {this.renderOnvifMgr()}    
-        </React.Fragment>
-      )
-    }
+         <AppRender
+         sel_app={sel_app}
+         />
+       );
+     }
     else if (sel_app === "Driver Mgr"){
       return (
         <React.Fragment>
@@ -472,7 +562,7 @@ class DevicesSelector extends Component {
         </div>
 
         <div style={{ width: '85%' }}>
-          {this.renderdrvlication()}
+          {this.renderApplication()}
         </div>
       </div>
 
