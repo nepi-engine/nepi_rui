@@ -123,7 +123,7 @@ class Nepi_IF_Settings extends Component {
       this.state.settingsListener.unsubscribe()
     }
     if (settingsNamespace !== 'None'){
-      var settingsListener = this.props.ros.setupSettingsStatusListener(
+      const settingsListener = this.props.ros.setupSettingsStatusListener(
         settingsNamespace + '/status',
         this.settingsStatusListener
       )
