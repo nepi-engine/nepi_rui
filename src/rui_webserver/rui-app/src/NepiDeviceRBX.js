@@ -584,7 +584,7 @@ class NepiDeviceRBX extends Component {
             <ImageViewer
               imageTopic={this.state.image_topic}
               title={""}
-              hideQualitySelector={false}
+              show_image_options={show_image_controls}
             />
           </Column>
         </Columns>
@@ -600,16 +600,7 @@ class NepiDeviceRBX extends Component {
       <Columns>
         <Column>
 
-        <div hidden={(!deviceSelected)}>
-            <NepiDeviceInfo
-                  deviceNamespace={namespace}
-                  status_topic={"/info"}
-                  status_msg_type={"nepi_interfaces/RBXInfo"}
-                  name_update_topic={"/update_device_name"}
-                  name_reset_topic={"/reset_device_name"}
-                  title={"Device Info"}
-              />
-          </div>
+
 
           {this.renderImageViewer()}
 
@@ -621,7 +612,16 @@ class NepiDeviceRBX extends Component {
             />
           </div>
 
-
+          <div hidden={(!deviceSelected)}>
+            <NepiDeviceInfo
+                  deviceNamespace={namespace}
+                  status_topic={"/info"}
+                  status_msg_type={"nepi_interfaces/RBXInfo"}
+                  name_update_topic={"/update_device_name"}
+                  name_reset_topic={"/reset_device_name"}
+                  title={"Device Info"}
+              />
+          </div>
           <div hidden={(!deviceSelected && this.state.show_controls)}>
             <NepiDeviceMessages
                 deviceNamespace={namespace}

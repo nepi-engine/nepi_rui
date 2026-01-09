@@ -121,32 +121,35 @@ class Nepi_IF_Settings extends Component {
         (this.props.settingsNamespace !== 'None' ? this.props.settingsNamespace: 'None') : 'None'
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
+      this.setState({settingsListener: null})
     }
-    if (settingsNamespace !== 'None'){
-      const settingsListener = this.props.ros.setupSettingsStatusListener(
-        settingsNamespace + '/status',
-        this.settingsStatusListener
-      )
+    else {
+      if (settingsNamespace !== 'None'){
+        const settingsListener = this.props.ros.setupSettingsStatusListener(
+          settingsNamespace + '/status',
+          this.settingsStatusListener
+        )
 
-      this.setState({capSettingsNamesList: [],
-      capSettingsTypesList: [],
-      capSettingsOptionsLists: [],
-      settingsNamesList: [],
-      settingsTypesList: [],
-      settingsValuesList: [],
-      settings: null,
-      settingsCount: 0,
-      selectedSettingInd: 0,
-      selectedSettingName: "",
-      selectedSettingType: "",
-      selectedSettingValue: "",
-      selectedSettingLowerLimit: "",
-      selectedSettingUpperLimit: "",
-      selectedSettingOptions: [],
-      selectedSettingInput: ""
-      })
-      this.setState({settingsNamespace: settingsNamespace})
-      this.setState({ settingsListener: settingsListener})
+        this.setState({capSettingsNamesList: [],
+        capSettingsTypesList: [],
+        capSettingsOptionsLists: [],
+        settingsNamesList: [],
+        settingsTypesList: [],
+        settingsValuesList: [],
+        settings: null,
+        settingsCount: 0,
+        selectedSettingInd: 0,
+        selectedSettingName: "",
+        selectedSettingType: "",
+        selectedSettingValue: "",
+        selectedSettingLowerLimit: "",
+        selectedSettingUpperLimit: "",
+        selectedSettingOptions: [],
+        selectedSettingInput: ""
+        })
+        this.setState({settingsNamespace: settingsNamespace})
+        this.setState({ settingsListener: settingsListener})
+      }
     }
   }
 
@@ -155,7 +158,8 @@ class Nepi_IF_Settings extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const settingsNamespace = this.props.settingsNamespace
-    if (prevProps.settingsNamespace !== settingsNamespace) {
+    const namespace = this.state.settingsNamespace
+    if (settingsNamespace !== namespace) {
       this.updateSettingsListener()
     }
   }

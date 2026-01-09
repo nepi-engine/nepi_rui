@@ -975,17 +975,6 @@ renderNavPose(){
           <Column equalWidth = {false} >
 
 
-
-                <div hidden={(namespace === null)}>
-                      <NepiDeviceInfo
-                            deviceNamespace={namespace}
-                            status_topic={"/status"}
-                            status_msg_type={"nepi_interfaces/DevicePTXStatus"}
-                            name_update_topic={"/update_device_name"}
-                            name_reset_topic={"/reset_device_name"}
-                            title={"NepiSensorsImagingInfo"}
-                        />
-                </div>
                 
 
                 <div id="ptxImageViewer">
@@ -993,8 +982,7 @@ renderNavPose(){
                     id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
-                    show_options={false}
-                    hideQualitySelector={false}
+                    show_image_options={show_image_controls}
                   />
                 </div>
                 <SliderAdjustment
@@ -1051,6 +1039,18 @@ renderNavPose(){
                 </ButtonMenu>
 
                 {this.renderNavPose()}
+
+
+                <div hidden={(namespace === null)}>
+                      <NepiDeviceInfo
+                            deviceNamespace={namespace}
+                            status_topic={"/status"}
+                            status_msg_type={"nepi_interfaces/DevicePTXStatus"}
+                            name_update_topic={"/update_device_name"}
+                            name_reset_topic={"/reset_device_name"}
+                            title={"NepiSensorsImagingInfo"}
+                        />
+                </div>
 
             <NepiSystemMessages
               messagesNamespace={namespace.replace('/ptx','') + '/messages'}

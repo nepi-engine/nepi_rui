@@ -48,7 +48,9 @@ class NepiIF3DTransform extends Component {
       transformRZ: 0,
       transformHO: 0,
       needs_update: false,
-      namespace: null
+      namespace: null,
+
+      listener: null
 
     }
 
@@ -69,7 +71,7 @@ class NepiIF3DTransform extends Component {
       source: message.source_ref_description,
       end: message.end_ref_description
     })
-    if (message !== last_msg) {
+    if (JSON.stringify(message) !== JSON.stringify(last_msg)) {
       this.setState({
         transform_msg: message,
         transformTX: message.translate_vector.x,
@@ -87,16 +89,30 @@ class NepiIF3DTransform extends Component {
   // Function for configuring and subscribing to StatusIDX
   updateListener() {
     const namespace = this.props.namespace
-    if (this.state.listener) {
+    if (this.state.listener != null) {
       this.state.listener.unsubscribe()
+      this.setState({listener: null})
     }
-    this.setState({ namespace: namespace  })
-    var listener = this.props.ros.setupFrame3DTransformListener(
-      namespace,
-      this.statusListener
-    )
-    this.setState({ listener: listener, disabled: false })
+    else {
+      this.setState({ namespace: namespace  })
+      var listener = this.props.ros.setupFrame3DTransformListener(
+        namespace,
+        this.statusListener
+      )
+      this.setState({ listener: listener, disabled: false })
+    }
 
+  }
+
+
+  // Lifecycle method called when compnent updates.
+  // Used to track changes in the topic
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const transformNamespace = this.props.namespace
+    const namespace = this.state.namespace
+    if (transformNamespace !== namespace) {
+      this.updateListener()
+    }
   }
 
 

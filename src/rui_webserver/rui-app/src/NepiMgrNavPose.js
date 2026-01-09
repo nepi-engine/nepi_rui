@@ -26,8 +26,10 @@ import {
   onEnterSetStateFloatValue,
   //Unused onChangeSwitchStateNestedValue,
   createMenuListFromStrList,
-  onDropdownSelectedSetState
+  onDropdownSelectedSetState,
+  createShortValuesFromNamespaces
 } from "./Utilities"
+
 
 //Unused import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import NepiIFSettings from "./Nepi_IF_Settings"
@@ -73,6 +75,7 @@ class MgrNavPose extends Component {
       position_fixed: false,
       altitude_fixed: false,
       depth_fixed: false,
+      pan_tilt_fixed: false,
       
       fixed_npData_frame_3d: 'nepi_frame',
       fixed_npData_frame_nav: 'ENU',
@@ -110,13 +113,19 @@ class MgrNavPose extends Component {
       fixed_npData_time_depth: moment.utc().unix(),
       fixed_npData_depth_m: 0.0,
 
+      fixed_npData_has_pan_tilt: false,
+      fixed_npData_time_pan_tilt: moment.utc().unix(),
+      fixed_npData_pan_deg: 0.0,
+      fixed_npData_tilt_deg: 0.0,
+
       showTransformsDict: {
         location: false,
         heading: false,
         orientation: false,
         position: false,
         altitude: false,
-        depth: false
+        depth: false,
+        pan_tilt: false
       },
 
       transformsDict: {
@@ -179,7 +188,17 @@ class MgrNavPose extends Component {
           transformRY: 0,
           transformRZ: 0,
           transformHO: 0
-          }
+          },
+          pan_tilt: { 
+            transform_msg: null,
+            transformTX: 0,
+            transformTY: 0,
+            transformTZ: 0,
+            transformRX: 0,
+            transformRY: 0,
+            transformRZ: 0,
+            transformHO: 0
+            }
       },
      
       needs_update: true,
@@ -296,7 +315,9 @@ class MgrNavPose extends Component {
       yaw: message.yaw_deg,
       x_m: message.x_m,
       y_m: message.y_m,
-      z_m: message.z_m
+      z_m: message.z_m,
+      pan: message.pan_deg,
+      tilt: message.tilt_deg
     }
         
     this.setState({
@@ -423,7 +444,7 @@ class MgrNavPose extends Component {
     const status_msg = this.state.status_msg
 
     var items = []
-    items.push(<Option value={'Fixed'}>{'Fixed'}</Option>)
+    items.push(<Option value={'None'}>{'None'}</Option>)
     if (status_msg != null){
       const comp_names = status_msg.comp_names
       const comp_infos = status_msg.comp_infos
@@ -431,8 +452,10 @@ class MgrNavPose extends Component {
       if (index !== -1){
         const infos = comp_infos[index]
         const topics = infos.available_topics
+        var topicShortnames = createShortValuesFromNamespaces(topics)
+
         for (var i = 0; i < topics.length; i++) {
-          items.push(<Option value={topics[i]}>{topics[i]}</Option>)
+          items.push(<Option value={topics[i]}>{topicShortnames[i]}</Option>)
         }
       }
     }
@@ -1096,12 +1119,13 @@ class MgrNavPose extends Component {
     const namespace = this.state.namespace
     //Unused const navpose_data = this.state.navpose_data
     const connected = this.state.connected
+    const base_namespace = this.state.base_namespace
 
     return (
       <div style={{ display: 'flex' }}>
         <div style={{ width: "65%" }}>
           <NepiIFNavPoseViewer
-            namespace={namespace  + "/navpose"}
+            namespace={base_namespace  + "/navpose"}
             title={"NavPose Data"}
           />
           <div hidden={(!connected)}>

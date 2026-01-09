@@ -59,56 +59,58 @@ class NepiDeviceNPXControls extends Component {
       return (
         <Section title={"NavPose Controls"}>
           
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Set System NavPose Source"}
-         </label>
+          <div hidden={true}>
+                  
+                <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                {"Set System NavPose Source"}
+              </label>
 
-          <Columns equalWidth={true}>
-            <Column>
-                <div hidden={!has_loc}>    
-                <ButtonMenu>   
-                  <Button onClick={() => sendTriggerMsg(namespace + "/set_as_location_source")}>{"Location "}</Button>
-                </ButtonMenu>
-                </div>
-                <div hidden={!has_pos}>  
-                <ButtonMenu>   
-                  <Button onClick={() => sendTriggerMsg(namespace + "/set_as_position_source")}>{"Position"}</Button>
-                </ButtonMenu>
-                </div>
+                <Columns equalWidth={true}>
+                  <Column>
+                      <div hidden={!has_loc}>    
+                      <ButtonMenu>   
+                        <Button onClick={() => sendTriggerMsg(namespace + "/set_as_location_source")}>{"Location "}</Button>
+                      </ButtonMenu>
+                      </div>
+                      <div hidden={!has_pos}>  
+                      <ButtonMenu>   
+                        <Button onClick={() => sendTriggerMsg(namespace + "/set_as_position_source")}>{"Position"}</Button>
+                      </ButtonMenu>
+                      </div>
 
-                </Column>
-                <Column>
+                      </Column>
+                      <Column>
 
-                <div hidden={!has_head}>    
-                <ButtonMenu>   
-                  <Button onClick={() => sendTriggerMsg(namespace + "/set_as_heading_source")}>{"Heading"}</Button>
-                </ButtonMenu>
-                </div>
+                      <div hidden={!has_head}>    
+                      <ButtonMenu>   
+                        <Button onClick={() => sendTriggerMsg(namespace + "/set_as_heading_source")}>{"Heading"}</Button>
+                      </ButtonMenu>
+                      </div>
 
-                <div hidden={!has_alt}>    
-                <ButtonMenu>   
-                  <Button onClick={() => sendTriggerMsg(namespace + "/set_as_altitude_source")}>{"Altitude"}</Button>
-                </ButtonMenu>
-                </div>
+                      <div hidden={!has_alt}>    
+                      <ButtonMenu>   
+                        <Button onClick={() => sendTriggerMsg(namespace + "/set_as_altitude_source")}>{"Altitude"}</Button>
+                      </ButtonMenu>
+                      </div>
 
-                </Column>
-                <Column>
+                      </Column>
+                      <Column>
 
-                <div hidden={!has_orien}>    
-                <ButtonMenu>   
-                  <Button onClick={() => sendTriggerMsg(namespace + "/set_as_orientation_source")}>{"Orientation"}</Button>
-                </ButtonMenu>
-                </div>
+                      <div hidden={!has_orien}>    
+                      <ButtonMenu>   
+                        <Button onClick={() => sendTriggerMsg(namespace + "/set_as_orientation_source")}>{"Orientation"}</Button>
+                      </ButtonMenu>
+                      </div>
 
-                <div hidden={!has_depth}>    
-                <ButtonMenu>   
-                  <Button onClick={() => sendTriggerMsg(namespace + "/set_as_depth_source")}>{"Depth"}</Button>
-                </ButtonMenu>
-                </div>
+                      <div hidden={!has_depth}>    
+                      <ButtonMenu>   
+                        <Button onClick={() => sendTriggerMsg(namespace + "/set_as_depth_source")}>{"Depth"}</Button>
+                      </ButtonMenu>
+                      </div>
 
-                </Column>
-                </Columns>
-
+                      </Column>
+                      </Columns>
+          </div>
 
           <Columns>
                   <Column>

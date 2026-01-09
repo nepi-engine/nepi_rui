@@ -306,17 +306,6 @@ class NepiDeviceIDX extends Component {
               <div style={{ width: "68%" }}>
 
 
-                          <NepiDeviceInfo
-                                deviceNamespace={namespace}
-                                status_topic={"/status"}
-                                status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
-                                name_update_topic={"/update_device_name"}
-                                name_reset_topic={"/reset_device_name"}
-                                title={"NepiDeviceIDXInfo"}
-                            />
-
-
-
 
                             {this.renderImageViewer()}
 
@@ -328,6 +317,15 @@ class NepiDeviceIDX extends Component {
                           />
 
 
+                          <NepiDeviceInfo
+                                deviceNamespace={namespace}
+                                status_topic={"/status"}
+                                status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
+                                name_update_topic={"/update_device_name"}
+                                name_reset_topic={"/reset_device_name"}
+                                title={"NepiDeviceIDXInfo"}
+                            />
+                            
                         <NepiSystemMessages
                         messagesNamespace={namespace.replace('/idx','') + '/messages'}
                         title={"NepiSystemMessages"}

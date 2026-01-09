@@ -93,7 +93,9 @@ class NepiIFNavPoseViewer extends Component {
       yaw: message.yaw_deg,
       x_m: message.x_m,
       y_m: message.y_m,
-      z_m: message.z_m
+      z_m: message.z_m,
+      pan: message.pan_deg,
+      tilt: message.tilt_deg
     }
         
     this.setState({
@@ -204,6 +206,8 @@ class NepiIFNavPoseViewer extends Component {
           const roll = navpose_data ? navpose_data.roll : null
           const pitch = navpose_data ? navpose_data.pitch : null
           const yaw = navpose_data ? navpose_data.yaw : null
+          const pan = navpose_data ? navpose_data.pan : null
+          const tilt = navpose_data ? navpose_data.tilt : null
           return (
               <Columns>
                 <Column>
@@ -269,6 +273,16 @@ class NepiIFNavPoseViewer extends Component {
                       value={round(yaw, 2)}
                     />
                   </Label>
+
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                  <Label title={"Pan Degs"}>
+                    <Input
+                      disabled
+                      style={{ width: "45%", float: "left" }}
+                      value={round(pan, 2)}
+                    />
+                  </Label>
       {/*
                   <Label title={"Ref. Frame"}>
                     <Input
@@ -292,18 +306,28 @@ class NepiIFNavPoseViewer extends Component {
                       value={round(x_m, 2)}
                     />
                   </Label>
-                  <Label title={"Y (North) Meters"}>
+                  <Label title={"Y Meters"}>
                     <Input
                       disabled
                       style={{ width: "45%", float: "left" }}
                       value={round(y_m, 2)}
                     />
                   </Label>
-                  <Label title={"Z (Up) Meters"}>
+                  <Label title={"Z Meters"}>
                     <Input
                       disabled
                       style={{ width: "45%", float: "left" }}
                       value={round(z_m, 2)}
+                    />
+                  </Label>
+
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                  <Label title={"Tilt Degs"}>
+                    <Input
+                      disabled
+                      style={{ width: "45%", float: "left" }}
+                      value={round(tilt, 2)}
                     />
                   </Label>
 

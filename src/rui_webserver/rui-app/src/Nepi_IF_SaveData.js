@@ -387,42 +387,64 @@ class NepiIFSaveData extends Component {
     return (
       <Section title={"Save Data"}>
 
-            <Columns>
-            <Column>
 
-                    <ButtonMenu >
-                        <Button onClick={this.onSnapshotTriggered}>{"Take Snapshot"}</Button>
-                      </ButtonMenu>
-
-                      <Label title={"Save Data"}>
-                      <Toggle
-                        checked={ (saveDataEnabled === true) }
-                        onClick={() => {this.onChangeBoolSaveDataValue()}}
-                      />
-                    </Label>
+                    <div style={{ display: 'flex' }}>
 
 
-                        <Label title={"Data Save Rate"}>
-                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
-                        </Label>
-                        
+                        <div style={{ width: '10%' }}>
 
-                      <Label title="Show Controls">
+                        <Label title="Show Controls">
                         <Toggle
                           checked={this.state.showControls===true}
                           onClick={this.onClickToggleShowSettings}>
                         </Toggle>
                       </Label>
 
-              </Column>
-              <Column>
 
-              </Column>
-              <Column>
+                        </div>
+                        <div style={{ width: '15%' }}>
+                        </div>
+
+            
+                        <div style={{ width: '15%' }}>
+                   
+
+                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+
+                        
 
 
-            </Column>
-            </Columns>
+                        </div>
+                        <div style={{ width: '15%' }}>
+                        </div>
+
+                        <div style={{ width: '10%' }}>
+                           
+
+                        <Label title={"Save Data"}>
+                      <Toggle
+                        checked={ (saveDataEnabled === true) }
+                        onClick={() => {this.onChangeBoolSaveDataValue()}}
+                      />
+                    </Label>
+
+                        </div>
+                        <div style={{ width: '15%' }}>
+                        </div>
+
+                       <div style={{ width: '10%' }}>
+                           
+
+                       <ButtonMenu >
+                        <Button onClick={this.onSnapshotTriggered}>{"Take Snapshot"}</Button>
+                      </ButtonMenu>
+
+                        </div>
+
+
+                  </div>
+
+
 
 
             <div align={"left"} textAlign={"left"} hidden={this.state.showControls === false}>
@@ -504,18 +526,21 @@ class NepiIFSaveData extends Component {
 
                   </Column>
                 </Columns>
+
+
+                <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None'}>
+
+                <NepiIFConfig
+                      namespace={saveNamespace}
+                      title={"Nepi_IF_Config"}
+                />
+
+                  </div>
+
         
           </div>
 
 
-          <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None'}>
-
-                  <NepiIFConfig
-                        namespace={saveNamespace}
-                        title={"Nepi_IF_Config"}
-                  />
-
-          </div>
 
 
       </Section>

@@ -412,7 +412,18 @@ class NepiControlsLights extends Component {
         <Columns>
           <Column equalWidth = {false} >
 
-          <NepiDeviceInfo
+
+
+                <div id="lsxImageViewer">
+                  <ImageViewer
+                    id="lsxImageViewer"
+                    imageTopic={this.state.imageTopic}
+                    title={this.state.imageText}
+                    show_image_options={show_image_controls}
+                  />
+                </div>
+
+                <NepiDeviceInfo
                   deviceNamespace={namespace}
                   status_topic={"/status"}
                   status_msg_type={"nepi_interfaces/DeviceLSXStatus"}
@@ -420,15 +431,6 @@ class NepiControlsLights extends Component {
                   name_reset_topic={"/reset_device_name"}
                   title={"NepiSensorsImagingInfo"}
               />
-
-                <div id="lsxImageViewer">
-                  <ImageViewer
-                    id="lsxImageViewer"
-                    imageTopic={this.state.imageTopic}
-                    title={this.state.imageText}
-                    hideQualitySelector={false}
-                  />
-                </div>
 
                 <NepiSystemMessages
                     messagesNamespace={namespace.replace('/lsx','') + '/messages'}
