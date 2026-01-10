@@ -1505,9 +1505,9 @@ class ImageViewer extends Component {
 
 
   render() {
-    const show_in_section = (this.props.show_in_section !== undefined)? this.props.show_in_section : true
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
-    if (show_in_section === false){
+    if (make_section === false){
       return (
         <Columns>
         <Column>
