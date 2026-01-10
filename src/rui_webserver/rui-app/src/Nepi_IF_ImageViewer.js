@@ -90,10 +90,13 @@ class ImageViewer extends Component {
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
     this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
+
+    this.renderImageViewer = this.renderImageViewer.bind(this)
     this.renderFilterControls = this.renderFilterControls.bind(this)
     this.renderRenderControls = this.renderRenderControls.bind(this)
     this.renderResOrientControls = this.renderResOrientControls.bind(this)
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
+
     this.renderStats = this.renderStats.bind(this)
     this.getImgStatsText = this.getImgStatsText.bind(this)
 
@@ -101,6 +104,8 @@ class ImageViewer extends Component {
     this.mouseDragEvent = this.mouseDragEvent.bind(this)
     this.mouseUpEvent = this.mouseUpEvent.bind(this)
 
+    this.onKeySaveInputOverlayValue = this.onKeySaveInputOverlayValue.bind(this)
+    this.onUpdateInputOverlayValue = this.onUpdateInputOverlayValue.bind(this)
 
     //this.ZoomViewer = this.ZoomViewer.bind(this)
 
@@ -1084,12 +1089,28 @@ class ImageViewer extends Component {
   }
 
 
+  onUpdateInputOverlayValue(event) {
+    this.setState({ custom_overlay_input: event.target.value })
+    document.getElementById("input_overlay").style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onKeySaveInputOverlayValue(event) {
+    const {sendStringMsg}  = this.props.ros
+    if(event.key === 'Enter'){
+      const value = this.state.custom_overlay_input
+      const namespace = this.state.controls_namespace
+      sendStringMsg(namespace + '/add_overlay_text', value)
+      this.setState({custom_overlay_input: ''})
+    }
+  }
+
   renderOverlayControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
     const namespace = this.state.controls_namespace
-    const show_overlayss = this.props.show_overlayss ? this.props.show_overlayss : true
+    const show_overlays = this.props.show_overlays ? this.props.show_overlays : true
    
-    if (show_overlayss === true && this.state.status_msg !== null && namespace !== null){
+    if (show_overlays === true && this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
       const size_ratio = message.overlay_size_ratio
       const name = message.overlay_img_name
@@ -1105,6 +1126,24 @@ class ImageViewer extends Component {
 
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+
+
+                        <SliderAdjustment
+                            title={"Overlay Size"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={size_ratio}
+                            topic={namespace + "/set_overlay_size_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay size controls"}
+                            unit={"%"}
+                        />
+
+
 
             <Columns>
             <Column>
@@ -1143,21 +1182,16 @@ class ImageViewer extends Component {
                 </Column>
               </Columns>
 
+              <Label title={'Add'}>
+                <Input id="input_overlay" 
+                  value={this.state.custom_overlay_input} 
+                  onChange={this.onUpdateInputOverlayValue} 
+                  onKeyDown= {this.onKeySaveInputOverlayValue} />
+              </Label>
 
-
-              <SliderAdjustment
-                            title={"Overlay Size"}
-                            msgType={"std_msgs/Float32"}
-                            adjustment={size_ratio}
-                            topic={namespace + "/set_overlay_size_ratio"}
-                            scaled={0.01}
-                            min={0}
-                            max={100}
-                            disabled={false}
-                            tooltip={"Overlay size controls"}
-                            unit={"%"}
-                        />
-
+                <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_list")}>{"Clear"}</Button>
+                  </ButtonMenu>
 
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
@@ -1182,7 +1216,6 @@ class ImageViewer extends Component {
     }
 
   }
-
 
   renderCompression(){
     const {
@@ -1261,7 +1294,7 @@ class ImageViewer extends Component {
 
 
 
-  render() {
+  renderImageViewer() {
 
     const namespace = this.props.imageTopic ? this.props.imageTopic : 'None'
     const { sendTriggerMsg } = this.props.ros
@@ -1274,7 +1307,10 @@ class ImageViewer extends Component {
 
     
     return (
-      <Section title={this.props.title}>
+      
+      <Columns>
+      <Column>
+
 
                   <ButtonMenu>
                     <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
@@ -1460,11 +1496,40 @@ class ImageViewer extends Component {
 
         </div>
 
-             
-      </Section>
+        </Column>
+        </Columns>
+      
 
     )
   }
+
+
+  render() {
+    const show_in_section = (this.props.show_in_section !== undefined)? this.props.show_in_section : true
+
+    if (show_in_section === false){
+      return (
+        <Columns>
+        <Column>
+        {this.renderImageViewer()}
+        </Column>
+        </Columns>
+      )
+    }
+    else {
+      return (
+
+      <Section title={this.props.title}>
+
+        {this.renderImageViewer()}
+
+      </Section>
+      )
+
+    }
+  }
+
+
 }
 
 ImageViewer.defaultProps = {

@@ -28,10 +28,12 @@ import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
-import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
+//import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import {onChangeSwitchStateValue } from "./Utilities"
+
+
 
 
 function round(value, decimals = 0) {
@@ -43,7 +45,7 @@ function round(value, decimals = 0) {
 @observer
 
 // Component that contains the PTX controls
-class NepiDevicePTX extends Component {
+class NepiDevicePTXControls extends Component {
   constructor(props) {
     super(props)
 
@@ -211,7 +213,7 @@ class NepiDevicePTX extends Component {
 
   onKeyText(e) {
     const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
-    const namespace = this.state.namespace
+const namespace = this.props.namespace ? this.props.namespace : 'None'
 
     //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
     const ptx_caps = ptxDevices[namespace]
@@ -378,6 +380,33 @@ class NepiDevicePTX extends Component {
     
   }
 
+    // Function for configuring and subscribing to StatusIDX
+    updateListener() {
+      const { namespace } = this.props
+      if (this.state.listener) {
+        this.state.listener.unsubscribe()
+      }
+      var listener = this.props.ros.setupPTXStatusListener(
+        namespace,
+        this.ptxStatusListener
+      )
+      this.setState({ listener: listener, disabled: false })
+  
+    }
+  
+    // Lifecycle method called when compnent updates.
+    // Used to track changes in the topic
+    componentDidUpdate(prevProps, prevState, snapshot) {
+      const { namespace } = this.props
+      if (prevProps.namespace !== namespace){
+        if (namespace !== null) {
+          this.updateListener()
+        } else if (namespace === null){
+          this.setState({ disabled: true })
+        }
+      }
+    }
+
   // Function for configuring and subscribing to ptx/status
   onptxDeviceselected(event) {
     if (this.state.listener) {
@@ -439,6 +468,9 @@ class NepiDevicePTX extends Component {
     return items
   }
 
+  // (Removed duplicate updateListener/componentDidUpdate block)
+
+
 
   onClickToggleShowSettings(){
     const currentVal = this.state.showSettings 
@@ -451,7 +483,7 @@ class NepiDevicePTX extends Component {
 
 onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
   const {publishRangeWindow} = this.props.ros
-  const namespace = this.state.namespace
+  const namespace = this.props.namespace ? this.props.namespace : 'None'
 
   const topic_namespace = namespace + topicName
   var min = -60
@@ -489,7 +521,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
             track_source_connected,
             speed_pan_dps, speed_tilt_dps  } = this.state /*sinPanEnabled ,sinTiltEnabled*/
 
-    const namespace = this.state.namespace
+    const namespace = this.props.namespace ? this.props.namespace : 'None'
     //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
 
     const panPositionDegClean = panPositionDeg + .001
@@ -858,7 +890,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
 
 
-                    {/*
+
                   <div
                       style={{
                         borderTop: "1px solid #050404ff",
@@ -888,8 +920,6 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                       </Columns>
 
                   </div>
-
-                  */}
             </div>
 
 
@@ -967,7 +997,7 @@ renderNavPose(){
     //Unused const show_navpose = this.state.show_navpose
     //Unused const device_selected = (this.state.namespace != null)
 
-    console.log("render namespace : " + namespace)
+    console.log("render namespace controls : " + namespace)
 
     
 
@@ -979,142 +1009,14 @@ renderNavPose(){
 
                 
 
-                <div id="ptxImageViewer">
-                  <ImageViewer
-                    id="ptxImageViewer"
-                    imageTopic={this.state.imageTopic}
-                    title={this.state.imageText}
-                    show_image_options={false}
-                  />
-                </div>
-                <SliderAdjustment
-                  disabled={!has_abs_pos}
-                  title={"Pan"}
-                  msgType={"std_msgs/Float32"}
-                  adjustment={panGoalRatio}
-                  topic={namespace + "/goto_pan_ratio"}
-                  scaled={0.01}
-                  min={0}
-                  max={100}
-                  tooltip={"Pan as a percentage (0%=min, 100%=max)"}
-                  unit={"%"}
-                  noTextBox={true}
-                  noLabel={true}
-                />
-
-              <div hidden={(has_timed_pos === false)}>
-
-              <ButtonMenu>
-
-                  <Button 
-                    buttonDownAction={() => onPTXJogPan(namespace,  1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25C0'}
-                    </Button>
-                  <Button 
-                    buttonDownAction={() => onPTXJogPan(namespace, - 1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25B6'}
-                  </Button>
-                  <Button 
-                    buttonDownAction={() => onPTXJogTilt(namespace, 1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25B2'}
-                  </Button>
-                  <Button 
-                    buttonDownAction={() => onPTXJogTilt(namespace, -1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25BC'}
-                  </Button>
-
-                </ButtonMenu>
 
 
-                </div>
+            { namespace?
+              this.renderControlPanel()
+              : null
 
 
-
-                <ButtonMenu>
-
-                  <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
-                  
-                </ButtonMenu>
-
-                {this.renderNavPose()}
-
-
-                <div hidden={(namespace === null)}>
-                      <NepiDeviceInfo
-                            deviceNamespace={namespace}
-                            status_topic={"/status"}
-                            status_msg_type={"nepi_interfaces/DevicePTXStatus"}
-                            name_update_topic={"/update_device_name"}
-                            name_reset_topic={"/reset_device_name"}
-                            title={"NepiSensorsImagingInfo"}
-                        />
-                </div>
-
-            <NepiSystemMessages
-              messagesNamespace={namespace.replace('/ptx','') + '/messages'}
-              title={"NepiSystemMessages"}
-              />
-
-          </Column>
-          <Column style={{flex: 0.05}}>
-
-          <div style={{ height: '0px' }}></div>
-
-            <SliderAdjustment
-              disabled={!has_abs_pos}
-              title={"Tilt"}
-              msgType={"std_msgs/Float32"}
-              adjustment={tiltGoalRatio}
-              topic={namespace + "/goto_tilt_ratio"}
-              scaled={0.01}
-              min={0}
-              max={100}
-              tooltip={"Tilt as a percentage (0%=min, 100%=max)"}
-              unit={"%"}
-              vertical={true}
-              verticalHeight={tiltSliderHeight}
-              noTextBox={true}
-              noLabel={true}
-            />
-          </Column>
-          <Column>
-            <Label title={"Device"}>
-              <Select
-                onChange={this.onptxDeviceselected}
-                value={namespace}
-              >
-                {this.createPTXOptions(ptxDevices)}
-              </Select>
-            </Label>
-            <Label title={"Select Image"}>
-              <Select
-                id="ptxImageTopicSelect"
-                onChange={this.onImageTopicSelected}
-                value={this.state.imageTopic}
-              >
-              {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
-
-
-            <div align={"left"} textAlign={"left"} hidden={namespace == null}>
-              
-                  <NepiIFConfig
-                        namespace={namespace}
-                        title={"Nepi_IF_SaveConif"}
-                  />
-
-            </div>
-
-            <NepiDevicePTXControls
-                namespace={namespace}
-                title={"NepiDevicePTXControls"}
-            />
-
+            }
 
             <div hidden={(namespace == null)}>
               <NepiIFSettings
@@ -1131,4 +1033,4 @@ renderNavPose(){
   }
 }
 
-export default NepiDevicePTX
+export default NepiDevicePTXControls
