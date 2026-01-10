@@ -1487,7 +1487,7 @@ class ImageViewer extends Component {
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
 
                                 <NavPoseViewer
-                                  namespace={(show_navpose === true)? navpose_namespace : null}
+                                  namespace={navpose_namespace}
                                   make_section={false}
                                   title={"IDX NavPose Data"}
                                 />
