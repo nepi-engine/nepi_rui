@@ -151,6 +151,7 @@ class ImageViewerSelector extends Component {
 
   renderImageViewerSelector() {
     const sel_image = this.state.sel_image
+    const sel_image_text = this.state.sel_image_text
     const image_options = this.getImagesListOptions()
     const images_list = this.state.images_list
     const hide_images_list = !this.state.viewableList && !this.state.connected
@@ -172,9 +173,7 @@ class ImageViewerSelector extends Component {
               textAlign: "center",
               padding: `${Styles.vars.spacing.xs}`,
               color: Styles.vars.colors.black,
-              backgroundColor: (image.props.value !== sel_image) ?
-                Styles.vars.colors.white :
-                (images_list.includes(image.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+              backgroundColor: (image.props.value !== sel_image) ? Styles.vars.colors.grey0 : Styles.vars.colors.blue
               cursor: "pointer",
               }}>
               <body image-topic ={image} style={{color: Styles.vars.colors.black}}>{image}</body>
