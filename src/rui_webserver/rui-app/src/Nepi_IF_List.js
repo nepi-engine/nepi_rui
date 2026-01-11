@@ -197,9 +197,43 @@ import Button, { ButtonMenu } from "./Button"
     return (
       <React.Fragment>
 
+
       <ButtonMenu>
         <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/refresh_list")}>{"Refresh"}</Button>
       </ButtonMenu>
+      
+      </React.Fragment>
+    )
+  }
+
+
+  renderRemoveItemControl() {
+    const { sendTriggerMsg } = this.props.ros
+
+    return (
+      <React.Fragment>
+
+      <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/remove_item")}>{"Remove"}</Button>
+      </ButtonMenu>
+
+      
+      </React.Fragment>
+    )
+  }
+
+  renderAddItemControl() {
+    const { sendTriggerMsg } = this.props.ros
+
+    return (
+      <React.Fragment>
+
+<Label title={'Add'}>
+                <Input id="input_overlay" 
+                  value={this.state.custom_overlay_input} 
+                  onChange={this.onUpdateInputOverlayValue} 
+                  onKeyDown= {this.onKeySaveInputOverlayValue} />
+              </Label>
 
       
       </React.Fragment>
@@ -322,7 +356,7 @@ import Button, { ButtonMenu } from "./Button"
     }
     const selected_item = this.state.selected_item
     const list_options = this.getListOptions()
-    const active_list_list = this.state.active_list_list
+    const active_list = this.state.active_list
     const hide_list_list = !this.state.viewableList && !this.state.connected
     return (
 
@@ -343,7 +377,7 @@ import Button, { ButtonMenu } from "./Button"
               color: Styles.vars.colors.black,
               backgroundColor: (list.props.value === selected_item) ?
                 Styles.vars.colors.green :
-                (active_list_list.includes(list.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                (active_list.includes(list.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
               cursor: "pointer",
               }}>
               <body list-topic ={list} style={{color: Styles.vars.colors.black}}>{list}</body>

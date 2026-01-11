@@ -43,146 +43,178 @@ class ImageViewerSelector extends Component {
     this.state = {
 
 
-      viewableList: false,
+      hide_list: true,
 
       images_list: [],
       images_list_names: [],
       filter_list: [],
-      sel_image: 'None',
-      sel_image_index: -1,
-      sel_image_text: 'None',
+      selected_image: 'None',
+      selected_image_index: -1,
+      selected_image_text: 'None',
 
-      connected: false
+      connected: true
     }
     this.renderImageViewerSelector = this.renderImageViewerSelector.bind(this)
     this.renderButtonControls = this.renderButtonControls.bind(this)
   
-    this.getImagesListOptions = this.getImagesListOptions.bind(this)
-    this.toggleViewableImages = this.toggleViewableImages.bind(this)
-    this.onToggleImageSelection = this.onToggleImageSelection.bind(this)
+    this.getListMenu = this.getListMenu.bind(this)
+    this.toggleViewableList = this.toggleViewableList.bind(this)
+    this.onToggleListSelection = this.onToggleListSelection.bind(this)
 
   }
 
 
-  toggleViewableImages() {
-    const set = !this.state.viewableList
-    this.setState({viewableList: set})
-    if (set === true){
-      this.setState({sel_image: 'None',
-        sel_image_index: -1,
-        sel_image_text: 'None'})
+  toggleViewableList() {
+    const show_list = (this.state.hide_list === true && this.state.connected === true)
+    if (show_list === false){
+      this.setState({hide_list: !show_list,
+        selected_image: 'None',
+      })
+    }
+    else {
+      this.setState({hide_list: !show_list
+      })
+
     }
   }
 
-  // Function for creating image topic options.
-  getImagesListOptions() {
-    const imageTopics = this.props.images_list ? this.props.images_list : this.props.ros.imageTopics
 
+  // Function for creating list menu options.
+  getListMenu() {
+    // Update Class List
+    const imageTopics = this.props.images_list ? this.props.images_list : this.props.ros.imageTopics
     const image_filters = this.props.image_filters ? this.props.image_filters : []
     const image_options = this.props.image
     var images = imageTopics  
-    const names = createShortValuesFromNamespaces(imageTopics)
     var items = []
-    var item_names = []
-    var menu_items = []
+    
     if (images.length > 0){
       for (var i = 0; i < images.length; i++) {
         if (image_filters.indexOf(images[i]) === -1 ){
           items.push(images[i])
-          item_names.push(names[i])
-          menu_items.push(<Option value={images[i]}>{names[i]}</Option>)
+
         }
      }
     }
 
+    // Update Class Variables
+    var selected_image = this.state.selected_image
+    var selected_ind = this.state.selected_image_index
+    var selected_text = this.state.selected_image_text
+    const names = createShortValuesFromNamespaces(items)
 
-    if (menu_items.length == 0){
-      menu_items.push(<Option value={'None'}>{'None'}</Option>)
+    const images_list = this.state.images_list
+    if (JSON.stringify(images_list) !== JSON.stringify(items)) {
+      const ind = items.indexOf(selected_image)
+      if (selected_ind !== ind || selected_text !== names[ind]) {
+        this.setState({
+          selected_image_index: ind,
+          selected_image_text: names[ind]})
+        }      
+      this.setState({images_list: items, images_list_names: names})
     }
 
-
-    const sel_image = this.state.sel_image
-    const sel_ind = this.state.sel_image_index
-    const sel_text = this.state.sel_image_text
-    if (items.indexOf(sel_image) === -1 && this.state.viewableList === false) {
+    if (items.indexOf(selected_image) === -1 ) {
       if (items.length > 0) {
-        this.setState({sel_image: items[0],
-                       sel_image_index: 0,
-                      sel_image_text: item_names[0]})
+        this.setState({selected_image: items[0],
+                       selected_image_index: 0,
+                      selected_image_text: names[0]})
       }
       else {
-        this.setState({sel_image: 'None',
-          sel_image_index: -1,
-          sel_image_text: 'None'})
+        this.setState({selected_image: 'None',
+          selected_image_index: -1,
+          selected_image_text: 'None'})
       }
     }
     else {
-      const ind = items.indexOf(sel_image)
-      if (sel_ind !== ind || sel_text !== names[ind]) {
+      const ind = items.indexOf(selected_image)
+      if (selected_ind !== ind || selected_text !== names[ind]) {
         this.setState({
-          sel_image_index: ind,
-          sel_image_text: names[ind]})
+          selected_image_index: ind,
+          selected_image_text: names[ind]})
         }
     }
 
 
-    const images_list = this.state.images_list
-    if (JSON.stringify(images_list) !== JSON.stringify(items)) {
-      
-      this.setState({images_list: items, images_list_names: item_names})
+    // Create Menu List
+    var menu_items = []
+    const item_names = createShortValuesFromNamespaces(items)
+         
+    if (items.length > 0){
+      for (var i = 0; i < items.length; i++) {
+        if (image_filters.indexOf(items[i]) === -1 ){
+          menu_items.push(<Option value={items[i]}>{item_names[i]}</Option>)
+        }
+      }
+    }
+    if (menu_items.length == 0){
+      menu_items.push(<Option value={'None'}>{'None'}</Option>)
     }
 
     return menu_items
+
   }
 
 
 
-  onToggleImageSelection(event){
+  onToggleListSelection(event){
     const image = event.target.value
     const text = event.target.text
     const images_list = this.state.images_list
     const index = images_list.indexOf(image)
-    this.setState({sel_image: image,
-                    sel_image_index: index,
-                  sel_image_text: text})
-    this.setState({viewableList: false})
+    this.setState({selected_image: image,
+                    selected_image_index: index,
+                  selected_image_text: text})
+    this.setState({hide_list: true})
 
   }
 
   renderImageViewerSelector() {
-    const sel_image = this.state.sel_image
-    const sel_image_text = this.state.sel_image_text
-    const image_options = this.getImagesListOptions()
-    const images_list = this.state.images_list
-    const hide_images_list = !this.state.viewableList && !this.state.connected
+    const hide_list = (this.state.hide_list === true || this.state.connected === false)
+    const menu_options = this.getListMenu()
+    const selected_item = this.state.selected_image
+    const selected_name = this.state.selected_name
+    const active_list = []
+
+    const show_controls = menu_options.length > 0
     return (
+      <React.Fragment>
 
+          {show_controls === true ?
 
-       <Columns>
-        <Column>
-        
-        <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <Columns>
+                  <Column>
+                  
+                  <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-          <div onClick={this.toggleViewableImages} style={{backgroundColor: Styles.vars.colors.grey0}}>
-            <Select style={{width: "10px"}}/>
-          </div>
-          <div hidden={hide_images_list}>
-          {image_options.map((image) =>
-          <div onClick={this.onToggleImageSelection}
-            style={{
-              textAlign: "center",
-              padding: `${Styles.vars.spacing.xs}`,
-              color: Styles.vars.colors.black,
-              backgroundColor: (image.props.value !== sel_image) ? Styles.vars.colors.grey0 : Styles.vars.colors.blue,
-              cursor: "pointer",
-              }}>
-              <body image-topic ={image} style={{color: Styles.vars.colors.black}}>{image}</body>
-          </div>
-          )}
-          </div>
+                    <div onClick={this.toggleViewableList} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                      <Select style={{width: "10px"}}/>
+                    </div>
 
-        </Column>
-      </Columns>
+                    <div hidden={hide_list}>
+                        {menu_options.map((list) =>
+                        <div onClick={this.onToggleListSelection}
+                          style={{
+                            textAlign: "center",
+                            padding: `${Styles.vars.spacing.xs}`,
+                            color: Styles.vars.colors.black,
+                            backgroundColor: (list.props.value === selected_item) ?
+                              Styles.vars.colors.green :
+                              (active_list.includes(list.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                            cursor: "pointer",
+                            }}>
+                            <body list-topic ={list} style={{color: Styles.vars.colors.black}}>{list}</body>
+                        </div>
+                        )}
+                    </div>
+
+                </Column>
+                </Columns>
+              :
+                null
+        }
+
+      </React.Fragment>
 
     )
   }
@@ -192,7 +224,7 @@ class ImageViewerSelector extends Component {
   stepItem(step){
     const images_list = this.state.images_list
     const images_list_names = this.state.images_list_names
-    var index = this.state.sel_img_index
+    var index = this.state.selected_image_index
     index = index + step
     if (index < 0){
       index = images_list.length - 1
@@ -201,31 +233,37 @@ class ImageViewerSelector extends Component {
       index = 0
     }
 
-    this.setState({sel_image_index: index,
-                 sel_image: images_list[index],
-                 sel_image_text: images_list_names[index]})
-    this.setState({viewableList: false})
+    this.setState({selected_image_index: index,
+                 selected_image: images_list[index],
+                 selected_image_text: images_list_names[index]})
+    this.setState({hide_list: true})
 
   }
 
   renderButtonControls() {
     const { sendTriggerMsg } = this.props.ros
-
+    const images_list = this.state.images_list
+    const show_controls = images_list.length > 0
     return (
       <React.Fragment>
 
-          <ButtonMenu>
+          {show_controls === true ?
+                <ButtonMenu>
 
-                <Button 
-                  buttonUpAction={() => this.stepItem(-1)}>
-                  {'\u25C0'}
-                  </Button>
-                <Button 
-                  buttonUpAction={() => this.stepItem(1)}>
-                  {'\u25B6'}
-                </Button>
-             
-          </ButtonMenu>
+                      <Button 
+                        buttonUpAction={() => this.stepItem(-1)}>
+                        {'\u25C0'}
+                        </Button>
+                      <Button 
+                        buttonUpAction={() => this.stepItem(1)}>
+                        {'\u25B6'}
+                      </Button>
+                  
+                </ButtonMenu>
+                :
+                null
+
+          }
       
       </React.Fragment>
     )
@@ -234,8 +272,8 @@ class ImageViewerSelector extends Component {
 
   renderImageViewer() {
 
-    const imageTopic = this.state.sel_image
-    const title = this.state.sel_image_text
+    const imageTopic = this.state.selected_image
+    const title = this.state.selected_image_text
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
     
@@ -259,6 +297,7 @@ class ImageViewerSelector extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const hide_image = this.state.hide_list === false
 
     if (make_section === false){
       return (
@@ -273,15 +312,16 @@ class ImageViewerSelector extends Component {
                 <div style={{ width: '50%' }}>
                   {}
                 </div>
-
-                <div style={{ width: '20%' }}>
+                
+                <div style={{ width: '20%' }} hidden={hide_image}>
                   {this.renderButtonControls()}
                 </div>
         </div>
 
 
-
-        {this.renderImageViewer()}
+        <div  hidden={hide_image}>
+          {this.renderImageViewer()}
+        </div>
         </Column>
         </Columns>
       )

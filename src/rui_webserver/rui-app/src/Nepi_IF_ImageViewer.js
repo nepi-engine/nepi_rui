@@ -1305,16 +1305,32 @@ class ImageViewer extends Component {
     const show_navpose = this.state.show_navpose 
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace  + "/navpose"
 
+    const title_text = this.props.title ? this.props.title : ""
     
     return (
       
       <Columns>
       <Column>
+              <div style={{ display: 'flex' }}>
+                        <div style={{ width: '80%' }}>
+                              <Label title={title_text}>
+                            </Label>
+                        </div>
+
+                        <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+                        <div style={{ width: '10%' }}>
+                            <ButtonMenu>
+                              <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
+                            </ButtonMenu>
+                        </div>
+
+                  </div>
 
 
-                  <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
-                  </ButtonMenu>
+
 
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
 
@@ -1506,7 +1522,7 @@ class ImageViewer extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-
+    const title_text = this.props.title ? this.props.title : ""
     if (make_section === false){
       return (
         <Columns>
@@ -1519,7 +1535,7 @@ class ImageViewer extends Component {
     else {
       return (
 
-      <Section title={this.props.title}>
+      <Section>
 
         {this.renderImageViewer()}
 
