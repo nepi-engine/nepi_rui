@@ -19,10 +19,8 @@ import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
 import Label from "./Label"
 import RangeAdjustment from "./RangeAdjustment"
-import { SliderAdjustment} from "./AdjustmentWidgets"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
-import Input from "./Input"
 import Select, { Option } from "./Select"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
@@ -56,7 +54,8 @@ class ImageViewerSelector extends Component {
 
       connected: false
     }
-    this.renderImageViewerSelection = this.renderImageViewerSelection.bind(this)
+    this.renderImageViewerSelector = this.renderImageViewerSelector.bind(this)
+    this.renderButtonControls = this.renderButtonControls.bind(this)
   
     this.getImagesListOptions = this.getImagesListOptions.bind(this)
     this.toggleViewableImages = this.toggleViewableImages.bind(this)
@@ -68,6 +67,11 @@ class ImageViewerSelector extends Component {
   toggleViewableImages() {
     const set = !this.state.viewableList
     this.setState({viewableList: set})
+    if (set === true){
+      this.setState({sel_image: 'None',
+        sel_image_index: -1,
+        sel_image_text: 'None'})
+    }
   }
 
   // Function for creating image topic options.
@@ -83,7 +87,7 @@ class ImageViewerSelector extends Component {
     var menu_items = []
     if (images.length > 0){
       for (var i = 0; i < images.length; i++) {
-        if (image_filters.index(images[i]) == -1 ){
+        if (image_filters.indexOf(images[i]) === -1 ){
           items.push(images[i])
           item_names.push(names[i])
           menu_items.push(<Option value={images[i]}>{names[i]}</Option>)
@@ -98,7 +102,9 @@ class ImageViewerSelector extends Component {
 
 
     const sel_image = this.state.sel_image
-    if (items.index(sel_image) == -1 ) {
+    const sel_ind = this.state.sel_image_index
+    const sel_text = this.state.sel_image_text
+    if (items.indexOf(sel_image) === -1 && this.state.viewableList === false) {
       if (items.length > 0) {
         this.setState({sel_image: items[0],
                        sel_image_index: 0,
@@ -111,15 +117,17 @@ class ImageViewerSelector extends Component {
       }
     }
     else {
-      const ind = items.index(sel_image)
-      this.setState({sel_image: 'None',
-        sel_image_index: ind,
-        sel_image_text: names[ind]})
+      const ind = items.indexOf(sel_image)
+      if (sel_ind !== ind || sel_text !== names[ind]) {
+        this.setState({
+          sel_image_index: ind,
+          sel_image_text: names[ind]})
+        }
     }
 
 
     const images_list = this.state.images_list
-    if (images_list !== items) {
+    if (JSON.stringify(images_list) !== JSON.stringify(items)) {
       
       this.setState({images_list: items, images_list_names: item_names})
     }
@@ -133,14 +141,15 @@ class ImageViewerSelector extends Component {
     const image = event.target.value
     const text = event.target.text
     const images_list = this.state.images_list
-    const index = images_list.index(image)
+    const index = images_list.indexOf(image)
     this.setState({sel_image: image,
                     sel_image_index: index,
                   sel_image_text: text})
+    this.setState({viewableList: false})
 
   }
 
-  renderImageViewerSelection() {
+  renderImageViewerSelector() {
     const sel_image = this.state.sel_image
     const image_options = this.getImagesListOptions()
     const images_list = this.state.images_list
@@ -150,6 +159,7 @@ class ImageViewerSelector extends Component {
 
        <Columns>
         <Column>
+        
         <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
           <div onClick={this.toggleViewableImages} style={{backgroundColor: Styles.vars.colors.grey0}}>
@@ -162,8 +172,8 @@ class ImageViewerSelector extends Component {
               textAlign: "center",
               padding: `${Styles.vars.spacing.xs}`,
               color: Styles.vars.colors.black,
-              backgroundColor: (image.props.value === sel_image) ?
-                Styles.vars.colors.green :
+              backgroundColor: (image.props.value !== sel_image) ?
+                Styles.vars.colors.white :
                 (images_list.includes(image.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
               cursor: "pointer",
               }}>
@@ -180,6 +190,48 @@ class ImageViewerSelector extends Component {
 
 
 
+  stepItem(step){
+    const images_list = this.state.images_list
+    const images_list_names = this.state.images_list_names
+    var index = this.state.sel_img_index
+    index = index + step
+    if (index < 0){
+      index = images_list.length - 1
+    }
+    else if ( index >= images_list.length ){
+      index = 0
+    }
+
+    this.setState({sel_image_index: index,
+                 sel_image: images_list[index],
+                 sel_image_text: images_list_names[index]})
+    this.setState({viewableList: false})
+
+  }
+
+  renderButtonControls() {
+    const { sendTriggerMsg } = this.props.ros
+
+    return (
+      <React.Fragment>
+
+          <ButtonMenu>
+
+                <Button 
+                  buttonUpAction={() => this.stepItem(-1)}>
+                  {'\u25C0'}
+                  </Button>
+                <Button 
+                  buttonUpAction={() => this.stepItem(1)}>
+                  {'\u25B6'}
+                </Button>
+             
+          </ButtonMenu>
+      
+      </React.Fragment>
+    )
+  }
+  
 
   renderImageViewer() {
 
@@ -213,7 +265,23 @@ class ImageViewerSelector extends Component {
       return (
         <Columns>
         <Column>
-        {this.renderImageViewerSelector()}
+
+        <div style={{ display: 'flex' }}>
+              <div style={{ width: '30%' }}>
+                {this.renderImageViewerSelector()}
+              </div>
+
+                <div style={{ width: '50%' }}>
+                  {}
+                </div>
+
+                <div style={{ width: '20%' }}>
+                  {this.renderButtonControls()}
+                </div>
+        </div>
+
+
+
         {this.renderImageViewer()}
         </Column>
         </Columns>
@@ -224,7 +292,19 @@ class ImageViewerSelector extends Component {
 
       <Section>
 
-        {this.renderImageViewerSelector()}
+          <div style={{ display: 'flex' }}>
+              <div style={{ width: '30%' }}>
+                {this.renderImageViewerSelector()}
+              </div>
+
+                <div style={{ width: '50%' }}>
+                  {}
+                </div>
+
+                <div style={{ width: '20%' }}>
+                  {this.renderButtonControls()}
+                </div>
+        </div>
         {this.renderImageViewer()}
 
       </Section>

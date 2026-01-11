@@ -13,7 +13,7 @@ import Section from "./Section"
 import Button, { ButtonMenu } from "./Button"
 import { Column, Columns } from "./Columns"
 
-import NepiIF3DTransform from "./Nepi_IF_3DTransform"
+//import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
 @inject("ros")
 @observer
@@ -112,6 +112,7 @@ class NepiDeviceNPXControls extends Component {
                       </Columns>
           </div>
 
+{/*
           <Columns>
                   <Column>
 
@@ -124,7 +125,7 @@ class NepiDeviceNPXControls extends Component {
 
                   </Column>
             </Columns>
-
+*/}
 
 
         </Section>

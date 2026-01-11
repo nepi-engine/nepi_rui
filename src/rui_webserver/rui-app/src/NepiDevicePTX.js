@@ -143,14 +143,12 @@ class NepiDevicePTX extends Component {
 
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
-    this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
-    this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onptxDeviceselected = this.onptxDeviceselected.bind(this)
     this.ptxStatusListener = this.ptxStatusListener.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
     this.createPTXOptions = this.createPTXOptions.bind(this)
     this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
-    this.onClickToggleShowTransform = this.onClickToggleShowTransform.bind(this)
+    //this.onClickToggleShowTransform = this.onClickToggleShowTransform.bind(this)
 
     this.onEnterSendScanRangeWindowValue = this.onEnterSendScanRangeWindowValue.bind(this)
   }
@@ -287,33 +285,10 @@ class NepiDevicePTX extends Component {
   }
 
   // Add the missing toggle method
-  onClickToggleShowTransform() {
-    this.setState({ showTransform: !this.state.showTransform })
-  }
+  //onClickToggleShowTransform() {
+  //  this.setState({ showTransform: !this.state.showTransform })
+  //}
 
-  // Function for creating image topic options.
-  createImageTopicsOptions() {
-    var items = []
-    items.push(<Option>{"None"}</Option>) 
-    const { imageTopics } = this.props.ros
-    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
-    for (var i = 0; i < imageTopics.length; i++) {
-      items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
-    }
-    return items
-  }
-
-  // Handler for Image topic selection
-  onImageTopicSelected(event) {
-    var ind = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[ind].text
-    var value = event.target.value
-
-    this.setState({
-      imageTopic: value,
-      imageText: text === "None" ? null : text,
-    })
-  }
 
   
   // Callback for handling ROS Status3DX messages
@@ -1091,15 +1066,7 @@ renderNavPose(){
                 {this.createPTXOptions(ptxDevices)}
               </Select>
             </Label>
-            <Label title={"Select Image"}>
-              <Select
-                id="ptxImageTopicSelect"
-                onChange={this.onImageTopicSelected}
-                value={this.state.imageTopic}
-              >
-              {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
+   
 
 
             <div align={"left"} textAlign={"left"} hidden={namespace == null}>
