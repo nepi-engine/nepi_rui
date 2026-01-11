@@ -23,6 +23,7 @@ import {createShortValuesFromNamespaces} from "./Utilities"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewer from "./Nepi_IF_ImageViewer"
+import ImageViewerSelector from "./NepiSelectorImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 //Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -980,7 +981,7 @@ renderNavPose(){
                 
 
                 <div id="ptxImageViewer">
-                  <ImageViewer
+                  <ImageViewerSelector
                     id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}

@@ -23,6 +23,7 @@ import { SliderAdjustment} from "./AdjustmentWidgets"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Input from "./Input"
+import Select, { Option } from "./Select"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import {  onChangeSwitchStateValue } from "./Utilities"
@@ -89,9 +90,12 @@ class ImageViewerSelector extends Component {
         }
      }
     }
+
+
     if (menu_items.length == 0){
       menu_items.push(<Option value={'None'}>{'None'}</Option>)
     }
+
 
     const sel_image = this.state.sel_image
     if (items.index(sel_image) == -1 ) {
@@ -106,8 +110,14 @@ class ImageViewerSelector extends Component {
           sel_image_text: 'None'})
       }
     }
+    else {
+      const ind = items.index(sel_image)
+      this.setState({sel_image: 'None',
+        sel_image_index: ind,
+        sel_image_text: names[ind]})
+    }
 
-    
+
     const images_list = this.state.images_list
     if (images_list !== items) {
       
@@ -145,7 +155,7 @@ class ImageViewerSelector extends Component {
           <div onClick={this.toggleViewableImages} style={{backgroundColor: Styles.vars.colors.grey0}}>
             <Select style={{width: "10px"}}/>
           </div>
-          <div hidden={hide_images_images}>
+          <div hidden={hide_images_list}>
           {image_options.map((image) =>
           <div onClick={this.onToggleImageSelection}
             style={{
@@ -171,54 +181,25 @@ class ImageViewerSelector extends Component {
 
 
 
-  renderImageViewerSelection() {
+  renderImageViewer() {
 
-    const namespace = this.state.sel_image
-    const image_text = this.props.title ? this.props.title : this.state.sel_image_text
-
-    const { sendTriggerMsg } = this.props.ros
+    const imageTopic = this.state.sel_image
+    const title = this.props.title ? this.props.title : this.state.sel_image_text
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
-    const show_status = this.state.show_status
-    const show_controls = this.state.show_controls
-    const show_renders = this.state.show_renders
-    const show_navpose = this.state.show_navpose 
-    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace  + "/navpose"
-
-    const show_image_select = true //this.state.show_image_select
-
-    show_controls: false,
-    show_status: false,
-    show_renders: false,
-    controls_namespace: null,
-    has_overlay: false,
-    show_overlays: false,
-    has_navpose: false,
-    show_navpose: false,
-    hasInitialized: false,
-    shouldUpdate: true,
-    streamWidth: null,
-    streamHeight: null,
-    streamSize: 0,
-    currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
-    status_listenter: null,
-    status_msg: null,
-    pixel: null,
-    mouse_drag: false,
-
-    custom_overlay_input: '',
+    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
     
     
     return (
 
-
       <ImageViewer
-      id="ptxImageViewer"
-      imageTopic={this.state.imageTopic}
-      title={this.state.imageText}
-      show_image_options={false}
+      id="imageViewer"
+      imageTopic={imageTopic}
+      title={title}
+      show_image_options={show_image_options}
+      navpose_namespace={navpose_namespace}
+      make_section={false}
     />
 
-              
 
     )
   }
@@ -226,13 +207,14 @@ class ImageViewerSelector extends Component {
 
 
   render() {
-    const show_in_section = (this.props.show_in_section !== undefined)? this.props.show_in_section : true
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
-    if (show_in_section === false){
+    if (make_section === false){
       return (
         <Columns>
         <Column>
         {this.renderImageViewerSelector()}
+        {this.renderImageViewer()}
         </Column>
         </Columns>
       )
@@ -240,9 +222,10 @@ class ImageViewerSelector extends Component {
     else {
       return (
 
-      <Section title={this.props.title}>
+      <Section>
 
         {this.renderImageViewerSelector()}
+        {this.renderImageViewer()}
 
       </Section>
       )
