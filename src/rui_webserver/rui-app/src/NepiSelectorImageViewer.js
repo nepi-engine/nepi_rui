@@ -235,7 +235,7 @@ class ImageViewerSelector extends Component {
   renderImageViewer() {
 
     const imageTopic = this.state.sel_image
-    const title = this.props.title ? this.props.title : this.state.sel_image_text
+    const title = this.state.sel_image_text
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
     
