@@ -173,7 +173,7 @@ class ImageViewerSelector extends Component {
               textAlign: "center",
               padding: `${Styles.vars.spacing.xs}`,
               color: Styles.vars.colors.black,
-              backgroundColor: (image.props.value !== sel_image) ? Styles.vars.colors.grey0 : Styles.vars.colors.blue
+              backgroundColor: (image.props.value !== sel_image) ? Styles.vars.colors.grey0 : Styles.vars.colors.blue,
               cursor: "pointer",
               }}>
               <body image-topic ={image} style={{color: Styles.vars.colors.black}}>{image}</body>
