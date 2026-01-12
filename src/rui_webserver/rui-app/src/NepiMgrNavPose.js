@@ -20,7 +20,7 @@ import Label from "./Label"
 import Input from "./Input"
 import { Column, Columns } from "./Columns"
 import {
-  //Unused round,
+  round,
   //Unused createShortUniqueValues,
   onUpdateSetStateValue,
   onEnterSetStateFloatValue,
@@ -209,8 +209,11 @@ class MgrNavPose extends Component {
     this.getMgrNamespace = this.getMgrNamespace.bind(this)
 
     this.renderMgrFixedControls = this.renderMgrFixedControls.bind(this)
+    this.renderMgrTranformControls = this.renderMgrTranformControls.bind(this)
     this.renderMgrTopicControls = this.renderMgrTopicControls.bind(this)
 
+    this.onUpdateSetTransformValue = this.onUpdateSetTransformValue.bind(this)
+    this.onEnterSetTranformValue = this.onEnterSetTranformValue.bind(this)
     this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
     this.sendTransformClearMessage = this.sendTransformClearMessage.bind(this)
 
@@ -259,35 +262,49 @@ class MgrNavPose extends Component {
   // Callback for handling ROS StatusNPX messages
   statusListener(message) {
     const last_status_msg = this.state.status_msg
+
     this.setState({
       status_msg: message, 
       connected: true
     })
 
-    var has_changed = false
     const comp_infos = message.comp_infos
-    const last_comp_infos = (last_status_msg != null) ?
-                         last_status_msg.comp_infos : message.comp_infos
+
+    var last_comp_info = null
+    var last_transform_msg = null
+    var test = null
+
     for (var i = 0; i < comp_infos.length; i++) {
+    
       const comp_info = comp_infos[i]
       const name = comp_info.name
-      const last_comp_info = last_comp_infos[i]
+      const transform_msg = comp_info.transform
 
-      const fixed = comp_info.fixed
-      const last_fixed = last_comp_info.fixed
-      has_changed = (last_status_msg == null) ? true :
-                            (last_fixed !== fixed)
-      if (has_changed === true){
-        this.setState({
-          [name + '_fixed']: fixed
-        })
+
+      var needs_update = false
+      var tf_needs_update = false
+      if (last_status_msg == null){ 
+        needs_update = true 
+      }
+      else {
+        last_comp_info = last_status_msg.comp_infos[i]
+        
+
+        last_transform_msg = last_comp_info.transform
+        test = (last_transform_msg.translate_vector.x !== transform_msg.translate_vector.x)
+
+        if ( (test === true) || (last_transform_msg.translate_vector.x !== transform_msg.translate_vector.x) ||
+              (last_transform_msg.translate_vector.y !== transform_msg.translate_vector.y) ||
+                (last_transform_msg.translate_vector.z !== transform_msg.translate_vector.z) ||
+                  (last_transform_msg.rotate_vector.x !== transform_msg.rotate_vector.x) ||
+                    (last_transform_msg.rotate_vector.y !== transform_msg.rotate_vector.y) ||
+                      (last_transform_msg.rotate_vector.z !== transform_msg.rotate_vector.z) ||
+                        (last_transform_msg.heading_offset !== transform_msg.heading_offset) ) { 
+          tf_needs_update = true 
+        }
       }
       
-      const transform_msg = comp_info.transform
-      const last_transform_msg = last_comp_info.transform
-      has_changed = (last_status_msg == null) ? true :
-                           (last_transform_msg !== transform_msg)
-      if (has_changed === true){
+      if ((needs_update === true) || (tf_needs_update == true)) {  
         this.state.transformsDict[name]['transform_msg'] = transform_msg
         this.state.transformsDict[name]['transformTX'] = transform_msg.translate_vector.x
         this.state.transformsDict[name]['transformTY'] = transform_msg.translate_vector.y
@@ -474,7 +491,7 @@ class MgrNavPose extends Component {
 
   sendTransformUpdateMessage(name){
     const {sendFrame3DTransformUpdateMsg} = this.props.ros
-    const namespace = this.state.namespace + "/set_3d_transform"
+    const namespace = this.state.namespace + "/set_transform"
     const TX = parseFloat(this.state.transformsDict[name]['transformTX'])
     const TY = parseFloat(this.state.transformsDict[name]['transformTY'])
     const TZ = parseFloat(this.state.transformsDict[name]['transformTZ'])
@@ -488,7 +505,7 @@ class MgrNavPose extends Component {
 
   sendTransformClearMessage(name){
     const {sendStringMsg} = this.props.ros
-    const namespace = this.state.namespace + "/clear_3d_transform"
+    const namespace = this.state.namespace + "/clear_transform"
     sendStringMsg(namespace,name)
   }
 
@@ -525,7 +542,9 @@ class MgrNavPose extends Component {
     const comp_info = comp_infos[idx]
     const name = comp_info.name
     const name_text = name.toUpperCase()
+
     const topic = (comp_info.topic !== '') ? comp_info.topic : 'None'
+    const fixed = (topic === 'Fixed')
 
     return (
       <React.Fragment>
@@ -569,11 +588,8 @@ class MgrNavPose extends Component {
               <Column />
             </Columns>
 
-            {/* Always render BOTH panes:
-                - Fixed controls are always visible and Update Fix will force Fixed
-                - Topic controls show live info & transforms when a non-Fixed topic is selected
-            */}
-            {this.renderMgrFixedControls(name, comp_info)}
+            
+            
             {this.renderMgrTopicControls(name, comp_info)}
 
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }} />
@@ -582,6 +598,142 @@ class MgrNavPose extends Component {
       </React.Fragment>
     )
   }
+
+
+
+  onUpdateSetTransformValue(event,comp_name) {
+    const key = event.target.id
+    const value = event.target.value
+    this.state.transformsDict[comp_name][key] = value
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+
+  onEnterSetTranformValue(event, comp_name) {
+    if(event.key === 'Enter'){
+      const key = event.target.id
+      const value = parseFloat(event.target.value)
+      if (!isNaN(value)){
+        this.state.transformsDict[comp_name][key] = value
+      }
+      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+    }
+  }
+
+  renderMgrTranformControls(name, comp_info) {
+    //Unused const namespace = this.state.namespace
+    const status_msg = this.state.status_msg
+    
+    if (status_msg == null){
+      return (
+        <Columns>
+          <Column />
+        </Columns>
+      )
+    } else {
+      const topic = (comp_info.topic !== '') ? comp_info.topic : 'None'
+      //Unused const msg = comp_info.topic_msg
+      //Unused const con = comp_info.connected
+      const rate = round(comp_info.avg_rate,3)
+      const time = round(comp_info.last_time,3)
+      const topic_selected = topic !== 'None' && topic !== 'Fixed' && topic !== ''
+      const show_fixed = topic !== 'None' && topic === 'Fixed'
+      const show_transform = topic !== 'None' && topic !== 'Fixed' && topic !== ''
+      const this_transform = this.state.transformsDict[name]
+
+      return (
+        <Columns>
+          <Column>
+
+
+              <div align={"left"} textAlign={"left"} hidden={show_transform === false}>
+                <Columns>
+                  <Column>
+                    <Label title={"X (m)"}>
+                      <Input
+                        value={this_transform.transformTX}
+                        id="transformTX"
+                        onChange={(event) => this.onUpdateSetTransformValue(event,name)}
+                        onKeyDown={(event) => this.onEnterSetTranformValue(event,name)}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+
+                    <Label title={"Y (m)"}>
+                      <Input
+                        value={this_transform.transformTY}
+                        id="transformTY"
+                        onChange={(event) => this.onUpdateSetTransformValue(event,name)}
+                        onKeyDown={(event) => this.onEnterSetTranformValue(event,name)}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+
+                    <Label title={"Z (m)"}>
+                      <Input
+                        value={this_transform.transformTZ}
+                        id="transformTZ"
+                        onChange={(event) => this.onUpdateSetTransformValue(event,name)}
+                        onKeyDown={(event) => this.onEnterSetTranformValue(event,name)}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+                  </Column>
+
+                  <Column>
+                    <Label title={"Roll (deg)"}>
+                      <Input
+                        value={this_transform.transformRX}
+                        id="transformRX"
+                        onChange={(event) => this.onUpdateSetTransformValue(event,name)}
+                        onKeyDown={(event) => this.onEnterSetTranformValue(event,name)}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+
+                    <Label title={"Pitch (deg)"}>
+                      <Input
+                        value={this_transform.transformRY}
+                        id="transformRY"
+                        onChange={(event) => this.onUpdateSetTransformValue(event,name)}
+                        onKeyDown={(event) => this.onEnterSetTranformValue(event,name)}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+
+                    <Label title={"Yaw (deg)"}>
+                      <Input
+                        value={this_transform.transformRZ}
+                        id="transformRZ"
+                        onChange={(event) => this.onUpdateSetTransformValue(event,name)}
+                        onKeyDown={(event) => this.onEnterSetTranformValue(event,name)}
+                        style={{ width: "80%" }}
+                      />
+                    </Label>
+                  </Column>
+                </Columns>
+
+                <Columns>
+                  <Column>
+                    <ButtonMenu>
+                      <Button onClick={() => this.sendTransformUpdateMessage(name)}>{"Update Transform"}</Button>
+                    </ButtonMenu>
+                  </Column>
+                  <Column>
+                    <ButtonMenu>
+                      <Button onClick={() => this.sendTransformClearMessage(name)}>{"Clear Transform"}</Button>
+                    </ButtonMenu>
+                  </Column>
+                </Columns>
+      
+            </div>
+          </Column>
+        </Columns>
+      )
+    }
+  }
+
 
   renderMgrFixedControls(name, comp_info) {
     //Unused const {sendTriggerMsg, sendNavPoseMsg} = this.props.ros
@@ -961,6 +1113,7 @@ class MgrNavPose extends Component {
     }
   }
 
+
   renderMgrTopicControls(name, comp_info) {
     //Unused const namespace = this.state.namespace
     const status_msg = this.state.status_msg
@@ -975,10 +1128,11 @@ class MgrNavPose extends Component {
       const topic = (comp_info.topic !== '') ? comp_info.topic : 'None'
       //Unused const msg = comp_info.topic_msg
       //Unused const con = comp_info.connected
-      const rate = comp_info.avg_rate
-      const time = comp_info.last_time
+      const rate = round(comp_info.avg_rate,3)
+      const time = round(comp_info.last_time,3)
       const topic_selected = topic !== 'None' && topic !== 'Fixed' && topic !== ''
-      const show_transform = this.state.showTransformsDict[name]
+      const show_fixed = topic !== 'None' && topic === 'Fixed'
+      const show_transform = topic !== 'None' && topic !== 'Fixed' && topic !== ''
       const this_transform = this.state.transformsDict[name]
 
       return (
@@ -991,101 +1145,30 @@ class MgrNavPose extends Component {
             <div align={"left"} textAlign={"left"} hidden={!topic_selected}>
               <Columns>
                 <Column>
-                  <pre style={{ height: "200px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-{("\nReceive Rate: " + rate + 
-  "\nLast Pub Time Sec: " + time)}
+                  <pre style={{ height: "80px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
+                      {("\nAvg Receive Rate: " + rate + 
+                        "\nLast Receive Time Sec: " + time)}
                   </pre>
 
-                  <Label title="Show 3D Transform">
-                    <Toggle
-                      checked={show_transform === true}
-                      onClick={(event) => onUpdateSetStateValue.bind(this)('showTransformsDict.' + name)}>
-                    </Toggle>
-                  </Label>
+                  </Column>
+                  </Columns>
+
+                  <Columns>
+                  <Column>
+
+
                 </Column>
-                <Column />
               </Columns>
 
-              <div align={"left"} textAlign={"left"} hidden={!show_transform}>
-                <Columns>
-                  <Column>
-                    <Label title={"X (m)"}>
-                      <Input
-                        value={this_transform.transformTX}
-                        id="XTranslation"
-                        onChange={(event) => onUpdateSetStateValue.bind(this)(event,'transformsDict.' + name + ".transformTX")}
-                        onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event,'transformsDict.' + name + ".transformTX")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
+              { (show_fixed === true) ?
+                this.renderMgrFixedControls(name, comp_info)
+                : null }
 
-                    <Label title={"Y (m)"}>
-                      <Input
-                        value={this_transform.transformTY}
-                        id="YTranslation"
-                        onChange={(event) => onUpdateSetStateValue.bind(this)(event,'transformsDict.' + name + ".transformTY")}
-                        onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event,'transformsDict.' + name + ".transformTY")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
+              { (show_transform === true) ?
+                this.renderMgrTranformControls(name, comp_info)
+                : null }
 
-                    <Label title={"Z (m)"}>
-                      <Input
-                        value={this_transform.transformTZ}
-                        id="ZTranslation"
-                        onChange={(event) => onUpdateSetStateValue.bind(this)(event,'transformsDict.' + name + ".transformTZ")}
-                        onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event,'transformsDict.' + name + ".transformTZ")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-                  </Column>
 
-                  <Column>
-                    <Label title={"Roll (deg)"}>
-                      <Input
-                        value={this_transform.transformRX}
-                        id="XRotation"
-                        onChange={(event) => onUpdateSetStateValue.bind(this)(event,'transformsDict.' + name + ".transformRX")}
-                        onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event,'transformsDict.' + name + ".transformRX")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-
-                    <Label title={"Pitch (deg)"}>
-                      <Input
-                        value={this_transform.transformRY}
-                        id="YRotation"
-                        onChange={(event) => onUpdateSetStateValue.bind(this)(event,'transformsDict.' + name + ".transformRY")}
-                        onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event,'transformsDict.' + name + ".transformRY")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-
-                    <Label title={"Yaw (deg)"}>
-                      <Input
-                        value={this_transform.transformRZ}
-                        id="ZRotation"
-                        onChange={(event) => onUpdateSetStateValue.bind(this)(event,'transformsDict.' + name + ".transformRZ")}
-                        onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event,'transformsDict.' + name + ".transformRZ")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-                  </Column>
-                </Columns>
-
-                <Columns>
-                  <Column>
-                    <ButtonMenu>
-                      <Button onClick={() => this.sendTransformUpdateMessage(name)}>{"Update Transform"}</Button>
-                    </ButtonMenu>
-                  </Column>
-                  <Column>
-                    <ButtonMenu>
-                      <Button onClick={() => this.sendTransformClearMessage(name)}>{"Clear Transform"}</Button>
-                    </ButtonMenu>
-                  </Column>
-                </Columns>
-              </div>  
             </div>
           </Column>
         </Columns>
