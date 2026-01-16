@@ -109,7 +109,7 @@ class ImageViewerSelector extends Component {
     }
 
     const item_names = createShortValuesFromNamespaces(items)
-    var sorted_names = item_names
+    var sorted_names = item_names.slice()
     sorted_names.sort()
     var sorted_items = []
     var sorted_index = 0
@@ -126,7 +126,7 @@ class ImageViewerSelector extends Component {
     var selected_image = this.state.selected_image
     var selected_ind = this.state.selected_image_index
     var selected_text = this.state.selected_image_text
-    const names = createShortValuesFromNamespaces(items)
+    const names = createShortValuesFromNamespaces(sorted_items)
     var updated_image = null
     const images_list = this.state.images_list
     if (JSON.stringify(images_list) !== JSON.stringify(sorted_items)) {
