@@ -78,7 +78,7 @@ class ImageViewer extends Component {
       show_renders: false,
       controls_namespace: null,
       has_overlay: false,
-      show_overlayss: false,
+      show_overlays: false,
       has_navpose: false,
       show_navpose: false,
       hasInitialized: false,
@@ -1229,13 +1229,13 @@ class ImageViewer extends Component {
   }
 
   renderCompression(){
-    const {
-      streamingImageQuality
-    } = this.props.ros
+    const currentStreamingImageQuality = this.state.currentStreamingImageQuality
     const hideQualitySelector = this.props.hideQualitySelector ? this.props.hideQualitySelector: false
-
-
-    if (streamingImageQuality !== this.state.currentStreamingImageQuality)
+    const streamingImageQuality = this.props.streamingImageQuality ? 
+                (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : this.state.currentStreamingImageQuality
+                : this.state.currentStreamingImageQuality
+    
+    if (currentStreamingImageQuality !== streamingImageQuality)
     {
       this.setState({currentStreamingImageQuality: streamingImageQuality})
     }

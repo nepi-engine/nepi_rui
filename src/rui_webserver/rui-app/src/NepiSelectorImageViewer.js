@@ -108,26 +108,41 @@ class ImageViewerSelector extends Component {
      }
     }
 
+    const item_names = createShortValuesFromNamespaces(items)
+    var sorted_names = item_names
+    sorted_names.sort()
+    var sorted_items = []
+    var sorted_index = 0
+    if (sorted_names.length > 0){
+      for (var i = 0; i < sorted_names.length; i++) {
+      
+        sorted_index = item_names.indexOf(sorted_names[i])
+        sorted_items.push(items[sorted_index])
+        
+      }
+    }
+
     // Update Class Variables
     var selected_image = this.state.selected_image
     var selected_ind = this.state.selected_image_index
     var selected_text = this.state.selected_image_text
     const names = createShortValuesFromNamespaces(items)
-
+    var updated_image = null
     const images_list = this.state.images_list
-    if (JSON.stringify(images_list) !== JSON.stringify(items)) {
-      const ind = items.indexOf(selected_image)
+    if (JSON.stringify(images_list) !== JSON.stringify(sorted_items)) {
+      const ind = sorted_items.indexOf(selected_image)
       if (selected_ind !== ind || selected_text !== names[ind]) {
         this.setState({
           selected_image_index: ind,
           selected_image_text: names[ind]})
         }      
-      this.setState({images_list: items, images_list_names: names})
+      this.setState({images_list: sorted_items, images_list_names: names})
+     
     }
 
-    if (items.indexOf(selected_image) === -1 ) {
-      if (items.length > 0) {
-        this.setState({selected_image: items[0],
+    if (sorted_items.indexOf(selected_image) === -1 ) {
+      if (sorted_items.length > 0) {
+        this.setState({selected_image: sorted_items[0],
                        selected_image_index: 0,
                       selected_image_text: names[0]})
       }
@@ -136,31 +151,42 @@ class ImageViewerSelector extends Component {
           selected_image_index: -1,
           selected_image_text: 'None'})
       }
+      updated_image = selected_image
     }
     else {
-      const ind = items.indexOf(selected_image)
+      const ind = sorted_items.indexOf(selected_image)
       if (selected_ind !== ind || selected_text !== names[ind]) {
         this.setState({
           selected_image_index: ind,
           selected_image_text: names[ind]})
         }
+        updated_image = selected_image
     }
+
+    const {sendStringMsg} = this.props.ros
+    const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
+    if (select_updated_namespace != null && updated_image != null){
+      sendStringMsg(select_updated_namespace,updated_image)
+    }
+
+
 
 
     // Create Menu List
     var menu_items = []
-    const item_names = createShortValuesFromNamespaces(items)
-         
-    if (items.length > 0){
-      for (var i = 0; i < items.length; i++) {
-        if (image_filters.indexOf(items[i]) === -1 ){
-          menu_items.push(<Option value={items[i]}>{item_names[i]}</Option>)
+    if (sorted_items.length > 0){
+      for (var i = 0; i < sorted_items.length; i++) {
+        if (image_filters.indexOf(sorted_items[i]) === -1 ){
+          menu_items.push(<Option value={sorted_items[i]}>{sorted_names[i]}</Option>)
         }
       }
     }
     if (menu_items.length == 0){
       menu_items.push(<Option value={'None'}>{'None'}</Option>)
     }
+
+
+
 
     return menu_items
 
@@ -173,6 +199,11 @@ class ImageViewerSelector extends Component {
     const text = event.target.text
     const images_list = this.state.images_list
     const index = images_list.indexOf(image)
+    const {sendStringMsg} = this.props.ros
+    const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
+    if (select_updated_namespace != null){
+      sendStringMsg(select_updated_namespace,image)
+    }
     this.setState({selected_image: image,
                     selected_image_index: index,
                   selected_image_text: text})
@@ -187,7 +218,10 @@ class ImageViewerSelector extends Component {
     const selected_name = this.state.selected_name
     const active_list = []
 
-    const show_controls = menu_options.length > 0
+
+    const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
+    const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
+    const show_controls = (menu_options.length > 0) && (show_selector === true )
     return (
       <React.Fragment>
 
@@ -254,7 +288,12 @@ class ImageViewerSelector extends Component {
   renderButtonControls() {
     const { sendTriggerMsg } = this.props.ros
     const images_list = this.state.images_list
-    const show_controls = images_list.length > 0
+    
+
+
+    const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
+    const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
+    const show_controls = (images_list.length > 0) && (show_buttons === true )
     return (
       <React.Fragment>
 
@@ -287,6 +326,9 @@ class ImageViewerSelector extends Component {
     const title = this.state.selected_image_text
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
+    const streamingImageQuality = this.props.streamingImageQuality ? 
+                (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
+                : null
     
     
     return (
@@ -298,6 +340,7 @@ class ImageViewerSelector extends Component {
       show_image_options={show_image_options}
       navpose_namespace={navpose_namespace}
       make_section={false}
+      streamingImageQuality={streamingImageQuality}
     />
 
 
@@ -309,6 +352,7 @@ class ImageViewerSelector extends Component {
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const hide_image = this.state.hide_list === false
+
 
     if (make_section === false){
       return (

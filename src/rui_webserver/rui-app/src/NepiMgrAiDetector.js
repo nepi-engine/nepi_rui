@@ -1042,7 +1042,7 @@ renderDetectorSettings() {
                   items.push(<Option value={img_topic}>{img_text}</Option>)
               }
               else if (detector_ns){
-                const det_img_topic = detector_ns + "/detection_image"
+                const det_img_topic = detector_ns + "/all/detection_image"
                 img_text = "All"
                 items.push(<Option value={det_img_topic}>{img_text}</Option>)
                 if (sel_img === ""){

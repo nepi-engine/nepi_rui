@@ -231,7 +231,13 @@ class ROSConnectionStore {
       has_depth: false,
       time_depth: moment.utc().unix(),
       // Depth should be provided in positive meters
-      depth_m: 0.0
+      depth_m: 0.0,
+
+      has_pan_tilt: false,
+      time_pan_tilt: moment.utc().unix(),
+      // Pan and Titl should be provided in ENU frame
+      pan_deg: 0.0,
+      tilt_deg: 0.0
   }
   
 
