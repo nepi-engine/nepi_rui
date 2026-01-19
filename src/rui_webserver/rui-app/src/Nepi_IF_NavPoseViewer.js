@@ -92,7 +92,8 @@ class NepiIFNavPoseViewer extends Component {
     console.log("navposeListener msg: " + message)
     //Unused const last_navpose_msg = this.state.navpose_msg
     const navpose_data = {
-      frame_3d: message.frame_3d,
+      navpose_frame: message.navpose_frame,
+      navpose_description: message.navpose_description,
       frame_nav: message.frame_nav,
       frame_alt: message.frame_alt,
       latitude: message.latitude,
@@ -146,22 +147,28 @@ class NepiIFNavPoseViewer extends Component {
       this.state.navposeListener.unsubscribe()
     }
     
-    var navposeListener = this.props.ros.setupStatusListener(
-      navposeTopic,
-      "nepi_interfaces/NavPose",
-      this.navposeListener 
-    )
-    
+    if (namespace !== 'None'){
+      var navposeListener = this.props.ros.setupStatusListener(
+        navposeTopic,
+        "nepi_interfaces/NavPose",
+        this.navposeListener 
+      )
+      
+      this.setState({ 
+        navposeListener: navposeListener,
+      })
+    }
     this.setState({ 
-      navposeListener: navposeListener,
       nav_needs_update: false 
     })
+    
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.props.namespace
+    const namespace = (this.props.namespace != undefined) ? this.props.namespace : 'None'
+    const navpose_data = (this.props.navpose_data != undefined) ? this.props.navpose_data : null
     if (prevState.namespace !== namespace){
       if (namespace != null) {
         this.setState({
@@ -204,7 +211,7 @@ class NepiIFNavPoseViewer extends Component {
 
     }
     else {
-          //Unused const frame_3d = navpose_data ? navpose_data.frame_3d : null
+          //Unused const navpose_frame = navpose_data ? navpose_data.navpose_frame : null
           const frame_nav = navpose_data ? navpose_data.frame_nav : null
           const frame_alt = navpose_data ? navpose_data.frame_alt : null
           const lat = navpose_data ? navpose_data.latitude : null

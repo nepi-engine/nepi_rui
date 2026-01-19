@@ -52,22 +52,24 @@ class NepiDashboardData extends Component {
       saveSettingsFilePrefix: "",
       currDeviceId: "",
       allowFileDeletion: false,
-      saveFreq: this.props.ros.saveFreqHz,
+      saveRate: this.props.ros.saveRateHz,
 
       viewableSaves: false,
       selected_save: 'NONE'
 
     }
-
+    this.getBaseNamespace = this.getBaseNamespace.bind(this)
 
     this.renderMgrSystemStatus = this.renderMgrSystemStatus.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
     this.renderDeleteData = this.renderDeleteData.bind(this)
 
-    this.onUpdateSaveFreqText = this.onUpdateSaveFreqText.bind(this)
-    this.onKeySaveFreqText = this.onKeySaveFreqText.bind(this);
+    this.onUpdateSaveRateText = this.onUpdateSaveRateText.bind(this)
+    this.onKeySaveRateText = this.onKeySaveRateText.bind(this);
     this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(this)
     this.onKeySaveSettingFilePrefix = this.onKeySaveSettingFilePrefix.bind(this)
+    this.onUpdateSaveSettingFileSubfolder = this.onUpdateSaveSettingFileSubfolder.bind(this)
+    this.onKeySaveSettingFileSubfolder = this.onKeySaveSettingFileSubfolder.bind(this)
     this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
     this.onToggleSaveData = this.onToggleSaveData.bind(this)
     this.onToggleSaveUTC = this.onToggleSaveUTC.bind(this)
@@ -75,7 +77,14 @@ class NepiDashboardData extends Component {
     
   }
 
-
+  getBaseNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var baseNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      baseNamespace = "/" + namespacePrefix + "/" + deviceId 
+    }
+    return baseNamespace
+  }
 
 
   renderMgrSystemStatus() {
@@ -104,15 +113,16 @@ class NepiDashboardData extends Component {
   }
 
 
-  onUpdateSaveFreqText(e) {
-    this.setState({saveFreq: e.target.value})
+  onUpdateSaveRateText(e) {
+    this.setState({saveRate: e.target.value})
     document.getElementById(e.target.id).style.color = Styles.vars.colors.red
   }
 
-  onKeySaveFreqText(e) {
-    const {onChangeSaveFreqAll} = this.props.ros
+  onKeySaveRateText(e) {
+    const {updateSaveDataRate} = this.props.ros
+    const namespace = this.getBaseNamespace()
     if(e.key === 'Enter'){
-      onChangeSaveFreqAll(this.state.saveFreq)
+      updateSaveDataRate(namespace, 'Active', this.state.saveRate)
       document.getElementById(e.target.id).style.color = Styles.vars.colors.black
     }
   }
@@ -122,13 +132,33 @@ class NepiDashboardData extends Component {
     document.getElementById("file_prefix_input").style.color = Styles.vars.colors.red
   }
 
-  onKeySaveSettingFilePrefix(e) {
-    const {saveSettingsFilePrefix} = this.props.ros
-    if(e.key === 'Enter'){
-      saveSettingsFilePrefix({newFilePrefix: this.state.saveSettingsFilePrefix})
-      document.getElementById("file_prefix_input").style.color = Styles.vars.colors.black
+  onKeySaveSettingFilePrefix(event) {
+    const { sendStringMsg } = this.props.ros
+    const key = event.key
+    const value = event.target.value
+    const namespace = this.getBaseNamespace()
+    if(key === 'Enter'){
+      sendStringMsg(namespace + '/save_data_prefix',value)
+      document.getElementById("file_input_prefix").style.color = Styles.vars.colors.black
     }
   }
+
+  onUpdateSaveSettingFileSubfolder(e) {
+    this.setState({ saveSettingsFileSubfolder: e.target.value })
+    document.getElementById("file_subfolder_input").style.color = Styles.vars.colors.red
+  }
+
+  onKeySaveSettingFileSubfolder(event) {
+    const { sendStringMsg} = this.props.ros
+    const key = event.key
+    const value = event.target.value
+    const namespace = this.getBaseNamespace()
+    if(key === 'Enter'){
+      sendStringMsg(namespace + '/save_data_subfolder',value)
+      document.getElementById("file_input_subfolder").style.color = Styles.vars.colors.black
+    }
+  }
+
 
   onToggleDataDeletion(e) {
     this.setState({ allowFileDeletion: e.target.checked})
@@ -146,6 +176,14 @@ class NepiDashboardData extends Component {
     onToggleSaveUTCAll(checked)
   }
 
+  onToggleLogNavPose(e){
+    const {onChangeSaveRateAll} = this.props.ros
+    const checked = e.target.checked
+    onChangeSaveRateAll(checked)
+  }
+
+
+
   renderSaveData() {
     const { systemStatusDiskRate } = this.props.ros
     return (
@@ -153,12 +191,13 @@ class NepiDashboardData extends Component {
         <Label title={"Save All Data (Save all enabled data products)"}>
           <Toggle id={"toggle_save_data"} onClick={this.onToggleSaveData} />
         </Label>
-        <Label title={"Save Freq. (Hz)"}>
-          <Input id="saveFreqInput" value={this.state.saveFreq} onChange={this.onUpdateSaveFreqText} onKeyDown= {this.onKeySaveFreqText} />
+        <Label title={"Save Rate (Hz)"}>
+          <Input id="saveRateInput" value={this.state.saveRate} onChange={this.onUpdateSaveRateText} onKeyDown= {this.onKeySaveRateText} />
         </Label>
-        <Label title={"Data Rate"}>
+        <Label title={"Disk Usage Rate"}>
           <Input disabled value={roundWithSuffix(systemStatusDiskRate, 3, "MB/s")} />
         </Label>
+
         <Label title={"File Name Prefix"}>
           <Input
             id={"file_prefix_input"}
@@ -167,8 +206,20 @@ class NepiDashboardData extends Component {
             onKeyDown={this.onKeySaveSettingFilePrefix}
           />
         </Label>
+        <Label title={"File Save Subfolder"}>
+          <Input
+            id={"file_subfolder_input"}
+            value={this.state.saveSettingsFileSubfolder}
+            onChange={this.onUpdateSaveSettingFileSubfolder}
+            onKeyDown={this.onKeySaveSettingFileSubfolder}
+          />
+        </Label>
         <Label title={"Use UTC Timezone"}>
           <Toggle id={"toggle_utc"} onClick={this.onToggleSaveUTC} />
+        </Label>
+
+        <Label title={"Log NavPose"}>
+          <Toggle id={"toggle_log_navpose"} onClick={this.onToggleLogNavPose} />
         </Label>
       </Section>
     )

@@ -191,7 +191,7 @@ class ROSConnectionStore {
   @observable clockPPS = false
 
   @observable blankNavPose = {
-      frame_3d: 'nepi_frame',
+      navpose_frame: 'nepi_frame',
       frame_nav: 'ENU',
       frame_altitude: 'WGS84',
       frame_depth: 'MSL',
@@ -1571,16 +1571,6 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
 
  
   @action.bound
-  updateSaveDataPrefix(namespace,saveDataPrefix) {
-    this.publishMessage({
-      name: namespace + "/save_data_prefix",
-      messageType: "std_msgs/String",
-      data: {'data':saveDataPrefix},
-      noPrefix: true
-    })
-  }
-
-  @action.bound
   updateSaveDataRate(namespace,data_product,rate_hz) {
     this.publishMessage({
       name: namespace + "/save_data_rate",
@@ -2491,10 +2481,19 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
     })
   }
 
+    @action.bound
+  onToggleLogNavPoseEnable(value) {
+      this.publishMessage({
+      name: "log_navpose_enable",
+      messageType: "std_msgs/Bool",
+      data: {data: value},
+      noPrefix: true
+    })
+  }
 
 
   @action.bound
-  onChangeSaveFreqAll(rate) {
+  onChangeSaveRateAll(rate) {
     let freq = parseFloat(rate)
 
     if (isNaN(freq)) {

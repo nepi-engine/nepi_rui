@@ -169,13 +169,13 @@ class NepiMgrTargets extends Component {
 
     if (this.state.update_transform === true){
         this.setState({
-          transformTX: message.frame_3d_transform.translate_vector.x,
-          transformTY: message.frame_3d_transform.translate_vector.y,
-          transformTZ: message.frame_3d_transform.translate_vector.z,
-          transformRX: message.frame_3d_transform.rotate_vector.x,
-          transformRY: message.frame_3d_transform.rotate_vector.y,
-          transformRZ: message.frame_3d_transform.rotate_vector.z,
-          transformHO: message.frame_3d_transform.heading_offset,
+          transformTX: message.navpose_frame_transform.translate_vector.x,
+          transformTY: message.navpose_frame_transform.translate_vector.y,
+          transformTZ: message.navpose_frame_transform.translate_vector.z,
+          transformRX: message.navpose_frame_transform.rotate_vector.x,
+          transformRY: message.navpose_frame_transform.rotate_vector.y,
+          transformRZ: message.navpose_frame_transform.rotate_vector.z,
+          transformHO: message.navpose_frame_transform.heading_offset,
       })
     }
     this.setState({
@@ -301,7 +301,7 @@ class NepiMgrTargets extends Component {
   sendTransformUpdateMessage(){
     const {sendFrame3DTransformMsg} = this.props.ros
     const appNamespace = this.getAppNamespace()
-    const namespace = appNamespace + "/set_frame_3d_transform"
+    const namespace = appNamespace + "/set_navpose_frame_transform"
     const TX = parseFloat(this.state.transformTX)
     const TY = parseFloat(this.state.transformTY)
     const TZ = parseFloat(this.state.transformTZ)
@@ -319,7 +319,7 @@ class NepiMgrTargets extends Component {
   sendClearTransformUpdateMessage(){
     const {sendClearFrame3DTransformMsg} = this.props.ros
     const appNamespace = this.getAppNamespace()
-    const namespace = appNamespace + "/set_frame_3d_transform"
+    const namespace = appNamespace + "/set_navpose_frame_transform"
     const transformList = [0,0,0,0,0,0,0]
     sendClearFrame3DTransformMsg(namespace,transformList)
     this.setState({

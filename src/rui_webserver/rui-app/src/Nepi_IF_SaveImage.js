@@ -42,7 +42,7 @@ function roundWithSuffix(value, decimals, suffix) {
 @observer
 
 // Component that contains the Save Data Controls
-class NepiIFSaveData extends Component {
+class NepiIFSaveImage extends Component {
   constructor(props) {
     super(props)
 
@@ -111,7 +111,6 @@ class NepiIFSaveData extends Component {
 
   // CAllback for handling ROS Status messages
   saveStatusListener(message) {
-
     const do_updates = ((this.state.saveDirPrefix !== message.filename_prefix) ||  (this.state.saveDataSubfolder !== message.save_subfolder))
 
     this.setState({
@@ -338,6 +337,7 @@ class NepiIFSaveData extends Component {
 
   }
 
+
   onChangeBoolUtcTzValue(e){
     const {sendBoolMsg}  = this.props.ros
     const enabled = e.target.checked
@@ -363,7 +363,6 @@ class NepiIFSaveData extends Component {
       document.getElementById("input_rate").style.color = Styles.vars.colors.black
     }
   }
-
 
 
   onUpdateInputSaveDataPrefixValue(event) {
@@ -420,63 +419,64 @@ class NepiIFSaveData extends Component {
 
   render() {
     const saveDataEnabled = this.getSaveDataValue()
-    const dataProdcutSources = this.getSaveNamesList()
-    const selectedDataProducts = this.getSelectedDataProducts()
+    const saveNavEnabled = this.getSaveNavValue()
     const diskUsage = this.getDiskUsageRate()
-    const saveUtcTz = this.state.saveUtcTz
     const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
+    const show_save_options = (this.props.show_save_options != undefined) ? this.props.show_save_options : false
 
     
     return (
-      <Section title={"Save Data"}>
 
-
+      <React.Fragment>
                     <div style={{ display: 'flex' }}>
 
 
-                        <div style={{ width: '10%' }}>
-
-                        <Label title="Show Controls">
-                        <Toggle
-                          checked={this.state.showControls===true}
-                          onClick={this.onClickToggleShowSettings}>
-                        </Toggle>
-                      </Label>
-
-
-                        </div>
                         <div style={{ width: '15%' }}>
-                        </div>
-
-            
-                        <div style={{ width: '15%' }}>
-                   
 
                           <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
 
-                        
-
-
-                        </div>
-                        <div style={{ width: '15%' }}>
                         </div>
 
                         <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+            
+
+                        <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+
+                        <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+                        <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+
+
+                        <div style={{ width: '10%' }}>
                            
-
-                        <Label title={"Save Data"}>
-                      <Toggle
-                        checked={ (saveDataEnabled === true) }
-                        onClick={() => {this.onChangeBoolSaveDataValue()}}
-                      />
-                    </Label>
+                             <Label title={"Save Data"}>
+                            <Toggle
+                              checked={ (saveDataEnabled === true) }
+                              onClick={() => {this.onChangeBoolSaveDataValue()}}
+                            />
+                          </Label>
 
                         </div>
-                        <div style={{ width: '15%' }}>
+
+
+
+                        <div style={{ width: '10%' }}>
+                          {}
                         </div>
+
 
                        <div style={{ width: '10%' }}>
-                           
 
                        <ButtonMenu >
                         <Button onClick={this.onSnapshotTriggered}>{"Take Snapshot"}</Button>
@@ -484,129 +484,80 @@ class NepiIFSaveData extends Component {
 
                         </div>
 
-
                   </div>
 
 
 
 
-            <div align={"left"} textAlign={"left"} hidden={this.state.showControls === false}>
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-              
-                <Columns>
-                  <Column>
+                    <div style={{ display: 'flex' }} hidden={show_save_options === false}>
 
 
-                        <Label title={"Use UTC Time"}>
-                            <Toggle
-                              checked={ (saveUtcTz) }
-                              onClick={this.onChangeBoolUtcTzValue}
-                            />
-                          </Label>
+                        <div style={{ width: '25%' }}>
 
-                          <Label title={"Set Save Rate (Hz)"}>
+                            <Label title={"Set Save Prefix"}>
+                              <Input id="input_prefix" 
+                                  value={this.state.saveDataPrefix} 
+                                  onChange={this.onUpdateInputSaveDataPrefixValue} 
+                                  onKeyDown= {this.onKeySaveInputSaveDataPrefixValue} />
+                            </Label>
+
+                        </div>
+
+
+                        <div style={{ width: '5%' }}>
+                          {}
+                        </div>
+
+                        <div style={{ width: '25%' }}>
+
+                                <Label title={"Set Save Subfolder"}>
+                                  <Input id="input_subfolder" 
+                                      value={this.state.saveDataSubfolder} 
+                                      onChange={this.onUpdateInputSaveDataSubfolderValue} 
+                                      onKeyDown= {this.onKeySaveInputSaveDataSubfolderValue} />
+                                </Label>
+
+                        </div>
+
+                        <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+                        <div style={{ width: '15%' }} hidden={this.state.hasNavpose === false}>
+                            <Label title={"Log NavPose"}>
+                                <Toggle
+                                  checked={ (this.state.logNavPose === true) }
+                                  onClick={() => {this.onChangeBoolSaveNavValue()}}
+                                />
+                              </Label>
+
+                        </div>
+
+                        <div style={{ width: '5%' }}>
+                          {}
+                        </div>
+            
+                        <div style={{ width: '20%' }}>
+                        <Label title={"Set Save Rate (Hz)"}>
                             <Input id="input_rate" 
                                 value={this.state.saveDataRate} 
                                 onChange={this.onUpdateInputSaveDataRateValue} 
                                 onKeyDown= {this.onKeySaveInputSaveDataRateValue} />
                         </Label>
 
-                        <Label title={"Set Save Prefix"}>
-                          <Input id="input_prefix" 
-                              value={this.state.saveDataPrefix} 
-                              onChange={this.onUpdateInputSaveDataPrefixValue} 
-                              onKeyDown= {this.onKeySaveInputSaveDataPrefixValue} />
-                        </Label>
-
-
-                        <Label title={"Set Save Subfolder"}>
-                          <Input id="input_subfolder" 
-                              value={this.state.saveDataSubfolder} 
-                              onChange={this.onUpdateInputSaveDataSubfolderValue} 
-                              onKeyDown= {this.onKeySaveInputSaveDataSubfolderValue} />
-                        </Label>
-
-
-                        <Label title={"Selected Message Topics"}>
-                          <div onClick={this.doNothing} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                            <Select style={{width: "10px"}}/>
-                          </div>
-
-                            {dataProdcutSources.map((data_product) =>
-                            <div onClick={this.onToggleDataProductSelection}
-                                style={{
-                                    textAlign: "center",
-                                    padding: `${Styles.vars.spacing.xs}`,
-                                    color: Styles.vars.colors.black,
-                                    backgroundColor: (selectedDataProducts.includes(data_product))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                                    cursor: "pointer",
-                                  }}>
-                                  <body data-product={data_product} style={{color: Styles.vars.colors.black}}>{data_product}</body>
-                            </div>
-                            )}
-                        </Label>
-
-                        <div hidden={this.state.hasNavpose === false}>
-                          <Label title={"Log NavPose"}>
-                            <Toggle
-                              checked={ (this.state.logNavPose === true) }
-                              onClick={() => {this.onChangeBoolSaveNavValue()}}
-                            />
-                          </Label>
-
                         </div>
 
-      
-
-                  </Column>
-                  <Column>
-
-                        <Label title={""}>
-                        </Label>
-                        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                        <Label title={"Saving"}>
-                          <BooleanIndicator value={(this.getSaveDataValue() === true)} />
-                        </Label>
 
 
-                        <Label title={"Example Filename"}>
-                        </Label>
 
-                        <pre style={{ height: "100px", overflowY: "auto" }}>
-                          {this.state.exp_filename}
-                        </pre>
-
-                        <Label title={"Data Product Save Settings"}>
-                        </Label>
-
-                        <pre style={{ height: "400px", overflowY: "auto" }}>
-                          {this.getSaveConfigString()}
-                        </pre>
-
-                  </Column>
-                </Columns>
-
-
-                <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None'}>
-
-                <NepiIFConfig
-                      namespace={saveNamespace}
-                      title={"Nepi_IF_Config"}
-                />
-
+                 
                   </div>
 
-        
-          </div>
 
-
-
-
-      </Section>
+      </React.Fragment>
     )
   }
 
 }
-export default NepiIFSaveData
+export default NepiIFSaveImage

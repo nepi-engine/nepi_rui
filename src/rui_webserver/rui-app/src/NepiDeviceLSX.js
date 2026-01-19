@@ -30,12 +30,11 @@ import Input from "./Input"
 import Toggle from "react-toggle"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
-import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
 import {onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
 import {createShortValuesFromNamespaces} from "./Utilities"
@@ -56,8 +55,6 @@ class NepiControlsLights extends Component {
     this.state = {
 		
 	  lsxNamespace: null,
-      imageTopic: null,
-      imageText: null,
 
       lxsIdentifier: null,
       lsxSerialNum: null,
@@ -86,6 +83,9 @@ class NepiControlsLights extends Component {
       listener: null,
       disabled: true,
 
+      imageTopic: null,
+      imageText: null,
+
       connected: false,
 
       currentIDXNamespace: null
@@ -93,8 +93,6 @@ class NepiControlsLights extends Component {
 
     }
 
-    this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
-    this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onlsxDeviceselected = this.onlsxDeviceselected.bind(this)
     this.lsxStatusListener = this.lsxStatusListener.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
@@ -107,42 +105,12 @@ class NepiControlsLights extends Component {
       currentIDXNamespace: null,
       connected: false,
       disabled: true,
-      imageTopic: null,
-      imageText: null
     })
     if (this.state.listener) {
       this.state.listener.unsubscribe()
     }
   }
 
-  // Function for creating image topic options.
-  createImageTopicsOptions() {
-    var items = []
-    items.push(<Option>{"None"}</Option>) 
-    const { imageTopics } = this.props.ros
-    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
-    if (!imageTopics) {
-      return items
-    }
-    for (var i = 0; i < imageTopics.length; i++) {
-      items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
-    }
-    return items
-  }
-
-  // Handler for Image topic selection
-  onImageTopicSelected(event) {
-    var idx = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[idx].text
-    var value = event.target.value
-
-    this.setState({
-      imageTopic: value,
-      imageText: text === "None" ? null : text,
-    })
-  }
-
-  
   // Callback for handling ROS Status3DX messages
   lsxStatusListener(message) {
 
@@ -392,19 +360,8 @@ class NepiControlsLights extends Component {
             </Label>
             </div>
 
-            <Columns>
-                  <Column>
 
-                          <NepiIF3DTransform
-                              namespace={namespace}
-                              supports_updates={true}
-                              title={"Nepi_IF_3DTransform"}
-                          />
-
-                  </Column>
-              </Columns>
-
-               </Section>
+      </Section>
     )
   }
 
@@ -425,9 +382,9 @@ class NepiControlsLights extends Component {
 
 
 
-                <div id="lsxImageViewer">
-                  <ImageViewer
-                    id="lsxImageViewer"
+                <div id="ptxImageViewer">
+                  <ImageViewerSelector
+                    id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
                     show_image_options={false}
@@ -460,15 +417,7 @@ class NepiControlsLights extends Component {
                 {this.createLSXOptions(lsxDevices)}
               </Select>
             </Label>
-            <Label title={"Select Image"}>
-              <Select
-                id="lsxImageTopicSelect"
-                onChange={this.onImageTopicSelected}
-                value={this.state.imageTopic}
-              >
-              {this.createImageTopicsOptions()}
-              </Select>
-            </Label>
+
 
             <div hidden={namespace === null}>    
 

@@ -88,7 +88,7 @@ class MgrNavPose extends Component {
       depth_fixed: false,
       pan_tilt_fixed: false,
       
-      fixed_npData_frame_3d: 'nepi_frame',
+      fixed_npData_navpose_frame: 'nepi_frame',
       fixed_npData_frame_nav: 'ENU',
       fixed_npData_frame_altitude: 'WGS84',
       fixed_npData_frame_depth: 'MSL',
@@ -331,7 +331,7 @@ class MgrNavPose extends Component {
   navposeListener(message) {
     //Unused const last_navpose_msg = this.state.navpose_msg
     const navpose_data = {
-      frame_3d: message.frame_3d,
+      navpose_frame: message.navpose_frame,
       frame_nav: message.frame_nav,
       frame_alt: message.frame_alt,
       latitude: message.latitude,

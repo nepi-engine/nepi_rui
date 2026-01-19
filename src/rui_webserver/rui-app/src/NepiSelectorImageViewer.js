@@ -59,6 +59,7 @@ class ImageViewerSelector extends Component {
       images_list: [],
       images_list_names: [],
       filter_list: [],
+      id: '0',
       selected_image: 'None',
       selected_image_index: -1,
       selected_image_text: 'None',
@@ -76,7 +77,7 @@ class ImageViewerSelector extends Component {
 
 
   toggleViewableList() {
-    const show_list = (this.state.hide_list === true && this.state.connected === true)
+    const show_list = ((this.state.hide_list === true) && (this.state.connected === true))
     if (show_list === false){
       this.setState({hide_list: !show_list,
         selected_image: 'None',
@@ -98,14 +99,19 @@ class ImageViewerSelector extends Component {
     const image_options = this.props.image
     var images = imageTopics  
     var items = []
-    
+    var push_item = true
     if (images.length > 0){
       for (var i = 0; i < images.length; i++) {
-        if (image_filters.indexOf(images[i]) === -1 ){
-          items.push(images[i])
-
+        push_item = true
+        for (var i2 = 0; i2 < image_filters.length; i2++) {
+          if (images[i].indexOf(image_filters[i2]) !== -1 ){
+            push_item = false
+          }
         }
-     }
+        if (push_item === true){
+          items.push(images[i])
+        }
+      }
     }
 
     const item_names = createShortValuesFromNamespaces(items)
@@ -123,50 +129,74 @@ class ImageViewerSelector extends Component {
     }
 
     // Update Class Variables
+    const id = this.props.id
+    //var selected_image = this.props.imageTopic != undefined ? this.props.imageTopic : this.state.selected_image
     var selected_image = this.state.selected_image
-    var selected_ind = this.state.selected_image_index
-    var selected_text = this.state.selected_image_text
-    const names = createShortValuesFromNamespaces(sorted_items)
-    var updated_image = null
-    const images_list = this.state.images_list
-    if (JSON.stringify(images_list) !== JSON.stringify(sorted_items)) {
-      const ind = sorted_items.indexOf(selected_image)
-      if (selected_ind !== ind || selected_text !== names[ind]) {
-        this.setState({
-          selected_image_index: ind,
-          selected_image_text: names[ind]})
-        }      
-      this.setState({images_list: sorted_items, images_list_names: names})
-     
-    }
 
-    if (sorted_items.indexOf(selected_image) === -1 ) {
-      if (sorted_items.length > 0) {
-        this.setState({selected_image: sorted_items[0],
-                       selected_image_index: 0,
-                      selected_image_text: names[0]})
+    const class_id = this.state.id
+    if ((id === class_id) || (selected_image === 'None')){
+      if ((selected_image === 'None') && (this.props.imageTopic != undefined)) {
+        selected_image = this.props.imageTopic
+      } 
+      var selected_ind = this.state.selected_image_index
+      var selected_text = this.state.selected_image_text
+      const names = createShortValuesFromNamespaces(sorted_items)
+      var index = 0
+      var index_changed = false
+      var index_name = ''
+      var index_name_changed = false
+      var updated_image = null
+      const images_list = this.state.images_list
+      if (JSON.stringify(images_list) !== JSON.stringify(sorted_items)) {
+        index = sorted_items.indexOf(selected_image)
+        if (selected_ind !== index || selected_text !== names[index]) {
+          this.setState({
+            id: id,
+            selected_image_index: index,
+            selected_image_text: names[index]})
+          }      
+        this.setState({images_list: sorted_items, images_list_names: names})
+      
+      }
+
+      if (sorted_items.indexOf(selected_image) === -1 ) {
+        if (sorted_items.length > 0) {
+          this.setState({id: id,
+                        selected_image: sorted_items[0],
+                        selected_image_index: 0,
+                        selected_image_text: names[0]})
+          updated_image = selected_image
+        }
+        else {
+          this.setState({
+            id: id,
+            selected_image: 'None',
+            selected_image_index: -1,
+            selected_image_text: 'None'})
+          updated_image = selected_image
+        }
+        
       }
       else {
-        this.setState({selected_image: 'None',
-          selected_image_index: -1,
-          selected_image_text: 'None'})
+        index = sorted_items.indexOf(selected_image)
+        index_changed = (selected_ind !== index) 
+        index_name = names[index]
+        index_name_changed = (selected_text !== index_name)
+        if ( index_changed || index_name_changed ) {
+          this.setState({
+            id: id,
+            selected_image_index: index,
+            selected_image_text: index_name})
+          updated_image = selected_image
+          }
+          
       }
-      updated_image = selected_image
-    }
-    else {
-      const ind = sorted_items.indexOf(selected_image)
-      if (selected_ind !== ind || selected_text !== names[ind]) {
-        this.setState({
-          selected_image_index: ind,
-          selected_image_text: names[ind]})
-        }
-        updated_image = selected_image
-    }
 
-    const {sendStringMsg} = this.props.ros
-    const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
-    if (select_updated_namespace != null && updated_image != null){
-      sendStringMsg(select_updated_namespace,updated_image)
+      const {sendStringMsg} = this.props.ros
+      const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
+      if ((select_updated_namespace != null) && (updated_image != null)){
+        sendStringMsg(select_updated_namespace,updated_image)
+      }
     }
 
 
@@ -195,6 +225,7 @@ class ImageViewerSelector extends Component {
 
 
   onToggleListSelection(event){
+    const id = this.props.id
     const image = event.target.value
     const text = event.target.text
     const images_list = this.state.images_list
@@ -204,7 +235,8 @@ class ImageViewerSelector extends Component {
     if (select_updated_namespace != null){
       sendStringMsg(select_updated_namespace,image)
     }
-    this.setState({selected_image: image,
+    this.setState({id: id,
+                    selected_image: image,
                     selected_image_index: index,
                   selected_image_text: text})
     this.setState({hide_list: true})
@@ -212,7 +244,7 @@ class ImageViewerSelector extends Component {
   }
 
   renderImageViewerSelector() {
-    const hide_list = (this.state.hide_list === true || this.state.connected === false)
+    const hide_list = ((this.state.hide_list === true) || (this.state.connected === false))
     const menu_options = this.getListMenu()
     const selected_item = this.state.selected_image
     const selected_name = this.state.selected_name
@@ -329,7 +361,7 @@ class ImageViewerSelector extends Component {
     const streamingImageQuality = this.props.streamingImageQuality ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
                 : null
-    
+    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
     
     return (
 
@@ -341,6 +373,7 @@ class ImageViewerSelector extends Component {
       navpose_namespace={navpose_namespace}
       make_section={false}
       streamingImageQuality={streamingImageQuality}
+      show_save_controls={show_save_controls}
     />
 
 

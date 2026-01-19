@@ -922,7 +922,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                           <Column>
 
                                   <NepiIF3DTransform
-                                      namespace={namespace + '/frame_3d_transform'}
+                                      namespace={namespace + '/navpose_frame_transform'}
                                       supports_updates={true}
                                       title={"Nepi_IF_3DTransform"}
                                   />

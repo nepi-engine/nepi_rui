@@ -41,7 +41,6 @@ import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
 import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
-import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import {onChangeSwitchStateValue } from "./Utilities"
 
@@ -60,7 +59,6 @@ class NepiDevicePTX extends Component {
     super(props)
 
     this.state = {
-      showTransform: false,
 
       imageTopic: null,
       imageText: null,
@@ -159,7 +157,6 @@ class NepiDevicePTX extends Component {
     this.renderControlPanel = this.renderControlPanel.bind(this)
     this.createPTXOptions = this.createPTXOptions.bind(this)
     this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
-    //this.onClickToggleShowTransform = this.onClickToggleShowTransform.bind(this)
 
     this.onEnterSendScanRangeWindowValue = this.onEnterSendScanRangeWindowValue.bind(this)
   }
@@ -294,12 +291,6 @@ class NepiDevicePTX extends Component {
 
     }
   }
-
-  // Add the missing toggle method
-  //onClickToggleShowTransform() {
-  //  this.setState({ showTransform: !this.state.showTransform })
-  //}
-
 
   
   // Callback for handling ROS Status3DX messages
@@ -843,40 +834,6 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                 </div>
 
 
-
-
-                    {/*
-                  <div
-                      style={{
-                        borderTop: "1px solid #050404ff",
-                        marginTop: Styles.vars.spacing.medium,
-                        marginBottom: Styles.vars.spacing.xs,
-                      }}
-                    />
-                    <Label title="Show 3D Transform">
-                      <Toggle
-                        checked={this.state.showTransform}
-                        onClick={this.onClickToggleShowTransform}>
-                      </Toggle>
-                    </Label>
-
-                    <div hidden={ this.state.showTransform === false}>
-
-                        <Columns>
-                          <Column>
-
-                                  <NepiIF3DTransform
-                                      namespace={namespace + '/frame_3d_transform'}
-                                      supports_updates={true}
-                                      title={"Nepi_IF_3DTransform"}
-                                  />
-
-                          </Column>
-                      </Columns>
-
-                  </div>
-
-                  */}
             </div>
 
 

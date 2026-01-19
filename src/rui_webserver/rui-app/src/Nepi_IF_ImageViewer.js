@@ -37,6 +37,7 @@ import Input from "./Input"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
+import NepiIFSaveImage from "./Nepi_IF_SaveImage"
 
 import {  onChangeSwitchStateValue } from "./Utilities"
 
@@ -397,7 +398,7 @@ class ImageViewer extends Component {
     const status_msg = this.state.status_msg
     var msg = ""
     if (status_msg !== null){
-      const frame_3d = status_msg.frame_3d
+      const navpose_frame = status_msg.navpose_frame
       const encoding = status_msg.encoding
       const width_px = round(status_msg.width_px, 0)
       const height_px = round(status_msg.height_px, 0)
@@ -405,7 +406,7 @@ class ImageViewer extends Component {
       const height_deg = round(status_msg.height_deg, 0)
       const perspective = status_msg.perspective
 
-      msg = ("\n\n3D Frame: " + frame_3d + 
+      msg = ("\n\n3D Frame: " + navpose_frame + 
       "\n\nEncoding: " + encoding + 
       "\n\nWidth/Height (Pixals): " + width_px.replace('.','') + ':' + height_px.replace('.','') +
       "\n\nWidth/Height (Deg): " + width_deg.replace('.','') + ':' + height_deg.replace('.','') +
@@ -1315,6 +1316,7 @@ class ImageViewer extends Component {
     const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace  + "/navpose"
+    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
 
     const title_text = this.props.title ? this.props.title : ""
     
@@ -1344,7 +1346,14 @@ class ImageViewer extends Component {
 
 
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
+      <div align={"left"} textAlign={"left"} hidden={(show_save_controls === false || namespace === 'None')}>
 
+                    <NepiIFSaveImage
+                    namespace={namespace + '/save_data'}
+                    make_section={false}
+                  />
+
+      </div>
 
       <div align={"left"} textAlign={"left"} hidden={(show_image_options === false || namespace === 'None')}>
 

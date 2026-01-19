@@ -105,7 +105,7 @@ class NepiDeviceNPX extends Component {
       x_m: message.x_m,
       y_m: message.y_m,
       z_m: message.z_m,
-      frame_3d: message.frame_3d,
+      navpose_frame: message.navpose_frame,
       frame_id: message.frame_id
     }
         
@@ -341,6 +341,7 @@ updateNavposeListener() {
                     {this.renderDeviceSelection()}
 
 
+{/*
                     <div hidden={(!deviceSelected)}>
                       <NepiDeviceNPXControls
                           namespace={namespace}
@@ -348,7 +349,7 @@ updateNavposeListener() {
                           title={"NepiDeviceNPXControls"}
                       />
                     </div>
-
+*/}
 
                     <div hidden={(!deviceSelected && this.state.show_settings)}>
                       <NepiIFSettings

@@ -83,7 +83,7 @@ class NepiDeviceIDXControls extends Component {
       listener: null,
 
       disabled: false,
-      frame_3d: null,
+      navpose_frame: null,
   
       avail_pantilt_topics: [],
       pantilt_mounted: false,
@@ -128,8 +128,8 @@ class NepiDeviceIDXControls extends Component {
       rangeMin: message.range_window_ratios.start_range,
       rangeLimitMinM: message.min_range_m,
       rangeLimitMaxM: message.max_range_m,
-      frame_3d: message.frame_3d,
-      transform_msg: message.frame_3d_transform,
+      navpose_frame: message.navpose_frame,
+      transform_msg: message.navpose_frame_transform,
       avail_pantilt_topics: message.avail_pantilt_topics,
       pantilt_mounted: message.pantilt_mounted,
       sel_pantilt_name: message.sel_pantilt_name,
@@ -495,7 +495,7 @@ class NepiDeviceIDXControls extends Component {
                       <Column>
 
                               <NepiIF3DTransform
-                                  namespace={namespace + '/frame_3d_transform'}
+                                  namespace={namespace + '/navpose_frame_transform'}
                                   supports_updates={true}
                                   title={"Nepi_IF_3DTransform"}
                               />
@@ -510,7 +510,7 @@ class NepiDeviceIDXControls extends Component {
                         <Column>
                         <div align={"left"} textAlign={"left"}>
                             <Label title={"Data Output Frame"}>
-                            <Input value = {this.state.frame_3d} />
+                            <Input value = {this.state.navpose_frame} />
                             </Label>
                           </div>
                         </Column>
