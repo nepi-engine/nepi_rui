@@ -34,7 +34,7 @@ import NepiDeviceControls from "./NepiDeviceRBX-Controls"
 import NepiDeviceMessages from "./NepiDeviceRBX-Info"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import ImageViewerSelector from "./NepiSelectorImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -590,15 +590,15 @@ class NepiDeviceRBX extends Component {
   renderImageViewer() {
     return (
       <React.Fragment>
-        <Columns>
-          <Column equalWidth={false}>
-            <ImageViewer
-              imageTopic={this.state.image_topic}
-              title={""}
-              show_image_options={false}
-            />
-          </Column>
-        </Columns>
+
+                <div id="rbxImageViewer">
+                  <ImageViewerSelector
+                    id="rbxImageViewer"
+                    imageTopic={this.state.imageTopic}
+                    title={this.state.imageText}
+                    show_image_options={true}
+                  />
+                </div>
       </React.Fragment>
     )
   }

@@ -30,7 +30,7 @@ import Input from "./Input"
 import Toggle from "react-toggle"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
+import ImageViewerSelector from "./NepiSelectorImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
@@ -382,9 +382,9 @@ class NepiControlsLights extends Component {
 
 
 
-                <div id="ptxImageViewer">
+                <div id="lsxImageViewer">
                   <ImageViewerSelector
-                    id="ptxImageViewer"
+                    id="lsxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
                     show_image_options={false}
