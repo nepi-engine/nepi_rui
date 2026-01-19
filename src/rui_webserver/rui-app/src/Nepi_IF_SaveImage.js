@@ -83,6 +83,8 @@ class NepiIFSaveImage extends Component {
 
 
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
+    this.getSaveNavValue = this.getSaveNavValue.bind(this)
+    this.getSaveNavRate = this.getSaveNavRate.bind(this)
     this.onChangeBoolSaveDataValue = this.onChangeBoolSaveDataValue.bind(this)
     this.onChangeBoolSaveNavValue = this.onChangeBoolSaveNavValue.bind(this)
     this.onChangeBoolUtcTzValue = this.onChangeBoolUtcTzValue.bind(this)
@@ -317,6 +319,16 @@ class NepiIFSaveImage extends Component {
   }
 
 
+  getSaveNavValue(){
+    const saveData = (this.state.saveDataEnabled === true)
+    return saveData
+  }
+
+  getSaveNavRate(){
+    const saveData = (this.state.saveDataEnabled === true)
+    return saveData
+  }
+
   onChangeBoolSaveDataValue(){
     const {sendBoolMsg}  = this.props.ros
     const enabled = (this.state.saveDataEnabled === false)
@@ -420,6 +432,7 @@ class NepiIFSaveImage extends Component {
   render() {
     const saveDataEnabled = this.getSaveDataValue()
     const saveNavEnabled = this.getSaveNavValue()
+    const saveNavRate = this.getSaveNavRate()
     const diskUsage = this.getDiskUsageRate()
     const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
     const show_save_options = (this.props.show_save_options != undefined) ? this.props.show_save_options : false
