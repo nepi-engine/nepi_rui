@@ -31,6 +31,7 @@ import Styles from "./Styles"
 import Select, { Option } from "./Select"
 import Input from "./Input"
 
+import {onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
@@ -49,10 +50,10 @@ class NepiIFSaveData extends Component {
     // these states track the values through the components Save Data Status messages
     this.state = {
       saveNamespace: 'None',
-      capabilities: null,
       saveRatesMsg: "",
       hasNavpose: false,
-      logNavPose: false,
+      logNavEnabled: false,
+      logNavRate: 0.0,
       saveDataPrefix: "",
       saveDataSubfolder: "",
       saveUtcTz: false,
@@ -62,6 +63,9 @@ class NepiIFSaveData extends Component {
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
+      saveAll: false,
+
+      show_active_settings: true,
 
       showControls: this.props.showControls ? this.props.showControls : false,
 
@@ -69,7 +73,7 @@ class NepiIFSaveData extends Component {
       saveStatusListener: null
     }
 
-
+    this.getAllNamespace = this.getAllNamespace.bind(this)
     this.updateSaveStatusListener = this.updateSaveStatusListener.bind(this)
     this.saveStatusListener = this.saveStatusListener.bind(this)
 
@@ -77,6 +81,7 @@ class NepiIFSaveData extends Component {
     this.getSaveNamesList = this.getSaveNamesList.bind(this)
     this.getSaveRatesList = this.getSaveRatesList.bind(this)
     this.getSaveConfigString = this.getSaveConfigString.bind(this)
+    this.getActiveConfigString = this.getActiveConfigString.bind(this)
     this.getSaveRateValue = this.getSaveRateValue.bind(this)
     this.getSaveRateData = this.getSaveRateData.bind(this)
     this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
@@ -84,39 +89,51 @@ class NepiIFSaveData extends Component {
 
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
     this.onChangeBoolSaveDataValue = this.onChangeBoolSaveDataValue.bind(this)
-    this.onChangeBoolSaveNavValue = this.onChangeBoolSaveNavValue.bind(this)
+    this.onChangeBoolLogNavValue = this.onChangeBoolLogNavValue.bind(this)
     this.onChangeBoolUtcTzValue = this.onChangeBoolUtcTzValue.bind(this)
-    this.onUpdateInputSaveDataRateValue = this.onUpdateInputSaveDataRateValue.bind(this)
-    this.onKeySaveInputSaveDataRateValue = this.onKeySaveInputSaveDataRateValue.bind(this)
+    this.onUpdateSaveDataRateValue = this.onUpdateSaveDataRateValue.bind(this)
+    this.onKeySaveDataRateValue = this.onKeySaveDataRateValue.bind(this)
+    this.onUpdateLogNavRateValue = this.onUpdateLogNavRateValue.bind(this)
+    this.onKeyLogNavRateValue = this.onKeyLogNavRateValue.bind(this)
     this.onUpdateInputSaveDataPrefixValue = this.onUpdateInputSaveDataPrefixValue.bind(this)
     this.onKeySaveInputSaveDataPrefixValue = this.onKeySaveInputSaveDataPrefixValue.bind(this)
     this.onUpdateInputSaveDataSubfolderValue = this.onUpdateInputSaveDataSubfolderValue.bind(this)
     this.onKeySaveInputSaveDataSubfolderValue = this.onKeySaveInputSaveDataSubfolderValue.bind(this)
     this.onToggleDataProductSelection = this.onToggleDataProductSelection.bind(this)
     this.sendSaveRateUpdate = this.sendSaveRateUpdate.bind(this)
+    this.sendLogRateUpdate = this.sendLogRateUpdate.bind(this)
     
     this.updateSelectedDataProducts = this.updateSelectedDataProducts.bind(this)
     this.getSelectedDataProducts = this.getSelectedDataProducts.bind(this)
     this.getDiskUsageRate = this.getDiskUsageRate.bind(this)
 
-    this.updateCapabilities = this.updateCapabilities.bind(this)
 
     this.convertStrListToMenuList = this.convertStrListToMenuList.bind(this)
     
     this.doNothing = this.doNothing.bind(this)
 
     this.onSnapshotTriggered = this.onSnapshotTriggered.bind(this)
+    this.renderSaveData = this.renderSaveData.bind(this)
 
+  }
+
+  getAllNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var allNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      allNamespace = "/" + namespacePrefix + "/" + deviceId + '/save_data'
+    }
+    return allNamespace
   }
 
   // CAllback for handling ROS Status messages
   saveStatusListener(message) {
-
     const do_updates = ((this.state.saveDirPrefix !== message.filename_prefix) ||  (this.state.saveDataSubfolder !== message.save_subfolder))
 
     this.setState({
       saveRatesMsg: message.save_data_rates,
-      logNavPose: message.log_navpose_enabled,
+      logNavEnabled: message.log_navposes_enabled,
+      logNavRate: message.log_navposes_rate,
       saveUtcTz: message.save_data_utc,
       exp_filename: message.example_filename,
       saveDataEnabled: message.save_data_enabled
@@ -134,7 +151,10 @@ class NepiIFSaveData extends Component {
 
   // Function for configuring and subscribing to Status
   updateSaveStatusListener() {
-    const saveNamespace = this.props.saveNamespace 
+    const allNamespace = this.getAllNamespace()
+    const saveAll = this.state.saveAll
+    const propNamespace = this.props.saveNamespace ? this.props.saveNamespace : 'None'
+    const saveNamespace = (saveAll === true) ? allNamespace : propNamespace
     if (this.state.saveStatusListener) {
       this.state.saveStatusListener.unsubscribe()
     }
@@ -152,10 +172,13 @@ class NepiIFSaveData extends Component {
   // Lifecycle method cAlled when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const saveNamespace = this.props.saveNamespace ? this.props.saveNamespace : 'None'
+    const allNamespace = this.getAllNamespace()
+    const saveAll = this.state.saveAll
+    const propNamespace = this.props.saveNamespace ? this.props.saveNamespace : 'None'
+    const saveNamespace = (saveAll === true) ? allNamespace : propNamespace
     const namespace_updated = (prevState.saveNamespace !== saveNamespace && saveNamespace !== 'None')
   
-    if ((namespace_updated) && !saveNamespace.includes("null")) {
+    if ((namespace_updated) && !saveNamespace.includes("null") ) {
       this.updateSaveStatusListener()
     }
   }
@@ -170,30 +193,8 @@ class NepiIFSaveData extends Component {
 
 
 
-  // Function for creating settings options list from capabilities
-  updateCapabilities() {
-    const {saveDataCaps} = this.props.ros
-    const saveNamespace = this.props.saveNamespace
-    var capabilities = null
-    if (saveDataCaps){
-      capabilities = saveDataCaps[saveNamespace]
-    }    
-    if (capabilities != null && this.state.saveNamespace !== saveNamespace){
-      this.setState({
-        capabilities: capabilities,
-        hasNavpose: capabilities.hasNavpose
-      })
-    }
-    else if (capabilities == null) {
-      this.setState({
-        capabilities: null,
-      })
-    }
-    this.setState({saveNamespace:  saveNamespace})
-  }
 
-
-  // Function for creating configs options list from capabilities
+  // Function for creating configs options list from status msg
   updateSaveLists() {
     var saveRatesMsg = this.state.saveRatesMsg
     var NamesList = []
@@ -238,15 +239,107 @@ class NepiIFSaveData extends Component {
 
 
   getSaveConfigString() {
-    const namesList = this.state.saveNamesList
-    const ratesList = this.state.saveRatesList
+    const {saveDataNamespaces , saveDataCaps} = this.props.ros
+    const { namespacePrefix, deviceId} = this.props.ros
+    const base_namespace = '/' + namespacePrefix + '/' + deviceId + '/'
+    const allNamespace = this.getAllNamespace()
+    const saveNamespace = this.state.saveNamespace
+    const isAllNamespace = (saveNamespace === allNamespace)
+    var topic = ''
+    var topic_name = ''
+    var namesList = []
+    var ratesList = []
     var configsStr = ""
     var entryStr
     var configsStrList = [""]
-    for (let ind = 0; ind < namesList.length; ind++) {
-      if (namesList[ind] !== "None" && namesList[ind] !== "All" ){
-        entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
-        configsStrList.push(entryStr)
+    if (isAllNamespace === true){
+      for (let i = 0; i < saveDataNamespaces.length; i++) {
+        topic = saveDataNamespaces[i]
+        topic_name = topic.replace
+        namesList = []
+        ratesList = []
+        for (let i2 = 0; i2 < saveDataCaps.length; i2++) {
+            namesList = saveDataCaps[i2].data_product
+            ratesList = saveDataCaps[i2].save_rate_hz
+
+            for (let ind = 0; ind < namesList.length; ind++) {
+              if (topic !== "None" && topic !== allNamespace ){
+                
+                  entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                  configsStrList.push(entryStr)
+                
+              }
+            }
+        }
+      }
+    } 
+    else {
+
+      namesList = this.state.saveNamesList
+      ratesList = this.state.saveRatesList
+
+      for (let ind = 0; ind < namesList.length; ind++) {
+        if (namesList[ind] !== "None" && namesList[ind] !== "All" ){
+         
+            entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+            configsStrList.push(entryStr)
+        
+        }
+      }
+    }
+    configsStr = configsStrList.join("")
+    return configsStr
+  }
+
+
+
+  getActiveConfigString() {
+    const {saveDataNamespaces , saveDataCaps} = this.props.ros
+    const { namespacePrefix, deviceId} = this.props.ros
+    const base_namespace = '/' + namespacePrefix + '/' + deviceId + '/'
+    const allNamespace = this.getAllNamespace()
+    const saveNamespace = this.state.saveNamespace
+    const isAllNamespace = (saveNamespace === allNamespace)
+    var topic = ''
+    var topic_name = ''
+    var namesList = []
+    var ratesList = []
+    var configsStr = ""
+    var entryStr
+    var configsStrList = [""]
+    if (isAllNamespace === true){
+      for (let i = 0; i < saveDataNamespaces.length; i++) {
+        topic = saveDataNamespaces[i]
+        topic_name = topic.replace
+        namesList = []
+        ratesList = []
+        for (let i2 = 0; i2 < saveDataCaps.length; i2++) {
+            namesList = saveDataCaps[i2].data_product
+            ratesList = saveDataCaps[i2].save_rate_hz
+
+            for (let ind = 0; ind < namesList.length; ind++) {
+              if (topic !== "None" && topic !== allNamespace ){
+                if (ratesList[ind] > 0){
+                  entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                  configsStrList.push(entryStr)
+                }
+              }
+            }
+        }
+      }
+    } 
+    else {
+
+      namesList = this.state.saveNamesList
+      ratesList = this.state.saveRatesList
+
+      for (let ind = 0; ind < namesList.length; ind++) {
+        if (namesList[ind] !== "None" && namesList[ind] !== "All" ){
+          if (ratesList[ind] > 0){
+            entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+            configsStrList.push(entryStr)
+          }
+        }
       }
     }
     configsStr = configsStrList.join("")
@@ -268,6 +361,13 @@ class NepiIFSaveData extends Component {
     const {updateSaveDataRate}  = this.props.ros
     if (isNaN(rate) === false){
       updateSaveDataRate(this.state.saveNamespace,data_product,rate)
+    }
+  }
+
+sendLogRateUpdate(rate) {
+    const {sendFloatMsg}  = this.props.ros
+    if (isNaN(rate) === false){
+      sendFloatMsg(this.state.saveNamespace + '/log_navposes_rate',rate)
     }
   }
 
@@ -317,26 +417,33 @@ class NepiIFSaveData extends Component {
     return saveData
   }
 
-
   onChangeBoolSaveDataValue(){
     const {sendBoolMsg}  = this.props.ros
+    const saveAll = this.state.saveAll
+    const allNamespace = this.getAllNamespace()
     const enabled = (this.state.saveDataEnabled === false)
     const saveDataRate = this.state.saveDataRate
     const rate = parseFloat(saveDataRate)
-    this.sendSaveRateUpdate('Active',rate)
-    sendBoolMsg(this.state.saveNamespace + '/save_data_enable',enabled)
+    if ((saveAll === false) && (this.state.saveNamespace !== allNamespace)) {
+      this.sendSaveRateUpdate('Active',rate)
+      sendBoolMsg(this.state.saveNamespace + '/save_data_enable',enabled)
+    }
+    else {
+      sendBoolMsg(allNamespace + '/save_data_enable',enabled)
+    }
 
   }
 
-  onChangeBoolSaveNavValue(){
+  onChangeBoolLogNavValue(){
     const {sendBoolMsg}  = this.props.ros
-    const enabled = (this.state.logNavPose === false)
-    const saveDataRate = this.state.saveDataRate
-    const rate = parseFloat(saveDataRate)
-    this.sendSaveRateUpdate('Active',rate)
-    sendBoolMsg(this.state.saveNamespace + '/log_navpose_enable',enabled)
+    const enabled = (this.state.logNavEnabled === false)
+    const logNavRate = this.state.logNavRate
+    const rate = parseFloat(logNavRate)
+    this.sendLogRateUpdate(rate)
+    sendBoolMsg(this.state.saveNamespace + '/log_navposes_enable',enabled)
 
   }
+
 
   onChangeBoolUtcTzValue(e){
     const {sendBoolMsg}  = this.props.ros
@@ -345,13 +452,13 @@ class NepiIFSaveData extends Component {
   }
 
 
-  onUpdateInputSaveDataRateValue(event) {
+  onUpdateSaveDataRateValue(event) {
     this.setState({ saveDataRate: event.target.value })
-    document.getElementById("input_rate").style.color = Styles.vars.colors.red
+    document.getElementById("save_rate").style.color = Styles.vars.colors.red
     this.render()
   }
 
-  onKeySaveInputSaveDataRateValue(event) {
+  onKeySaveDataRateValue(event) {
     const saveDataRate = this.state.saveDataRate
     //Unused const rate = parseFloat(saveDataRate)
     if(event.key === 'Enter'){
@@ -360,7 +467,28 @@ class NepiIFSaveData extends Component {
         this.setState({saveDataRate: event.target.value })
         this.sendSaveRateUpdate('Active',rate)
       }
-      document.getElementById("input_rate").style.color = Styles.vars.colors.black
+      document.getElementById("save_rate").style.color = Styles.vars.colors.black
+    }
+  }
+
+
+
+  onUpdateLogNavRateValue(event) {
+    this.setState({ saveDataRate: event.target.value })
+    document.getElementById("log_rate").style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onKeyLogNavRateValue(event) {
+    const saveDataRate = this.state.saveDataRate
+    //Unused const rate = parseFloat(saveDataRate)
+    if(event.key === 'Enter'){
+      const rate = parseFloat(event.target.value)
+      if (!isNaN(rate)){
+        this.setState({saveDataRate: event.target.value })
+        this.sendSaveRateUpdate('Active',rate)
+      }
+      document.getElementById("log_rate").style.color = Styles.vars.colors.black
     }
   }
 
@@ -415,78 +543,112 @@ class NepiIFSaveData extends Component {
 
   onSnapshotTriggered(){
     const { sendTriggerMsg} = this.props.ros
-    sendTriggerMsg(this.state.saveNamespace + '/snapshot_trigger')
+    
+    const saveAll = this.state.saveAll
+    const allNamespace = this.getAllNamespace()
+    if ((saveAll === false) && (this.state.saveNamespace !== allNamespace)) {
+      sendTriggerMsg(this.state.saveNamespace + '/snapshot_trigger')
+    }
+    else {
+      sendTriggerMsg(allNamespace + '/snapshot_trigger')
+    }
   }
 
-  render() {
+  renderSaveData() {
+
+    const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
     const saveDataEnabled = this.getSaveDataValue()
+    const isNavposeMgr = (saveNamespace.indexOf('navpose_mgr') !== -1)
+    const allNamespace = this.getAllNamespace()
+    const isAllNamespace = (saveNamespace === allNamespace)
     const dataProdcutSources = this.getSaveNamesList()
     const selectedDataProducts = this.getSelectedDataProducts()
     const diskUsage = this.getDiskUsageRate()
     const saveUtcTz = this.state.saveUtcTz
-    const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
 
+
+    const always_show_controls = (this.props.always_show_controls != undefined) ? this.props.always_show_controls : false
+    if (always_show_controls === true){
+      this.setState({showControls: true})
+    }
     
+    const showControls = this.state.showControls
+    const saveAll = this.state.saveAll
+    const show_active_settings = this.state.show_active_settings
     return (
-      <Section title={"Save Data"}>
 
-
+      <React.Fragment>
                     <div style={{ display: 'flex' }}>
 
 
-                        <div style={{ width: '10%' }}>
-
-                        <Label title="Show Controls">
-                        <Toggle
-                          checked={this.state.showControls===true}
-                          onClick={this.onClickToggleShowSettings}>
-                        </Toggle>
-                      </Label>
-
-
-                        </div>
                         <div style={{ width: '15%' }}>
+                              <div  hidden={always_show_controls === false}>
+                                <Label title="Save Controls">
+                                <Toggle
+                                  checked={showControls===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("showControls",showControls)}>
+                                </Toggle>
+                            </Label>
+                            </div>
+                        </div>
+
+                        <div style={{ width: '5%' }}>
+                          {}
+                        </div>
+
+
+                        <div style={{ width: '15%' }}>
+                              <div  hidden={isAllNamespace === true}>
+                                      <Label title="Save All">
+                                      <Toggle
+                                        checked={saveAll===true}
+                                        onClick={() => onChangeSwitchStateValue.bind(this)("saveAll",saveAll)}>
+                                      </Toggle>
+                                  </Label>
+                              </div>
+                        </div>
+
+                        <div style={{ width: '5%' }}>
+                          {}
+                        </div>
+
+
+                        <div style={{ width: '15%' }}>
+                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+                        </div>
+
+                         
+
+                        <div style={{ width: '10%' }}>
+                          {}
                         </div>
 
             
-                        <div style={{ width: '15%' }}>
-                   
 
-                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
-
-                        
-
-
-                        </div>
-                        <div style={{ width: '15%' }}>
+                        <div style={{ width: '15%' }} hidden={this.state.hasNavpose === false}>
+                          <Label title={"Save"}>
+                            <Toggle
+                              checked={ (saveDataEnabled === true) }
+                              onClick={() => {this.onChangeBoolSaveDataValue()}}
+                            />
+                          </Label>
                         </div>
 
-                        <div style={{ width: '10%' }}>
+
+                        <div style={{ width: '5%' }}>
+                          {}
+                        </div>
+
+
+                        <div style={{ width: '15%' }}>
                            
-
-                        <Label title={"Save Data"}>
-                      <Toggle
-                        checked={ (saveDataEnabled === true) }
-                        onClick={() => {this.onChangeBoolSaveDataValue()}}
-                      />
-                    </Label>
-
-                        </div>
-                        <div style={{ width: '15%' }}>
-                        </div>
-
-                       <div style={{ width: '10%' }}>
-                           
-
                        <ButtonMenu >
-                        <Button onClick={this.onSnapshotTriggered}>{"Take Snapshot"}</Button>
+                        <Button onClick={this.onSnapshotTriggered}>{"Snapshot"}</Button>
                       </ButtonMenu>
 
                         </div>
 
-
                   </div>
-
 
 
 
@@ -498,18 +660,11 @@ class NepiIFSaveData extends Component {
                   <Column>
 
 
-                        <Label title={"Use UTC Time"}>
-                            <Toggle
-                              checked={ (saveUtcTz) }
-                              onClick={this.onChangeBoolUtcTzValue}
-                            />
-                          </Label>
-
                           <Label title={"Set Save Rate (Hz)"}>
-                            <Input id="input_rate" 
+                            <Input id="save_rate" 
                                 value={this.state.saveDataRate} 
-                                onChange={this.onUpdateInputSaveDataRateValue} 
-                                onKeyDown= {this.onKeySaveInputSaveDataRateValue} />
+                                onChange={this.onUpdateSaveDataRateValue} 
+                                onKeyDown= {this.onKeySaveDataRateValue} />
                         </Label>
 
                         <Label title={"Set Save Prefix"}>
@@ -528,6 +683,14 @@ class NepiIFSaveData extends Component {
                         </Label>
 
 
+                        <Label title={"Use UTC Time"}>
+                            <Toggle
+                              checked={ (saveUtcTz) }
+                              onClick={this.onChangeBoolUtcTzValue}
+                            />
+                          </Label>
+
+                  <div  hidden={isAllNamespace === true}>
                         <Label title={"Selected Message Topics"}>
                           <div onClick={this.doNothing} style={{backgroundColor: Styles.vars.colors.grey0}}>
                             <Select style={{width: "10px"}}/>
@@ -547,17 +710,29 @@ class NepiIFSaveData extends Component {
                             )}
                         </Label>
 
-                        <div hidden={this.state.hasNavpose === false}>
-                          <Label title={"Log NavPose"}>
-                            <Toggle
-                              checked={ (this.state.logNavPose === true) }
-                              onClick={() => {this.onChangeBoolSaveNavValue()}}
-                            />
-                          </Label>
+                        <div hidden={((isNavposeMgr === true) )}>
+
+                                <Label title={"Log NavPose"}>
+                                  <Toggle
+                                    checked={ (this.state.logNavEnabled === true) }
+                                    onClick={() => {this.onChangeBoolLogNavValue()}}
+                                  />
+                                </Label>
+
+                                <Label title={"Log Nav Rate (Hz)"}>
+                                  <Input id="log_rate" 
+                                      value={this.state.logNavRate} 
+                                      onChange={this.onUpdateLogNavRateValue} 
+                                      onKeyDown= {this.onKeyLogNavRateValue} />
+                              </Label>
 
                         </div>
 
-      
+                  </div>
+
+
+
+              
 
                   </Column>
                   <Column>
@@ -567,7 +742,7 @@ class NepiIFSaveData extends Component {
                         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                         <Label title={"Saving"}>
-                          <BooleanIndicator value={(this.getSaveDataValue() === true)} />
+                          <BooleanIndicator value={(saveDataEnabled === true)} />
                         </Label>
 
 
@@ -578,35 +753,94 @@ class NepiIFSaveData extends Component {
                           {this.state.exp_filename}
                         </pre>
 
-                        <Label title={"Data Product Save Settings"}>
+                        <Label title="Filter Active">
+                            <Toggle
+                              checked={show_active_settings===true}
+                              onClick={() => onChangeSwitchStateValue.bind(this)("show_active_settings",show_active_settings)}>
+                            </Toggle>
+                        </Label>
+
+                  <div  hidden={show_active_settings === true}>
+
+
+
+                        <Label title={"All Data Save Settings"}>
                         </Label>
 
                         <pre style={{ height: "400px", overflowY: "auto" }}>
                           {this.getSaveConfigString()}
                         </pre>
 
+              </div>
+
+
+                  <div  hidden={show_active_settings === false}>
+
+
+                        <Label title={"Active Data Save Settings"}>
+                        </Label>
+
+                        <pre style={{ height: "400px", overflowY: "auto" }}>
+                          {this.getActiveConfigString()}
+                        </pre>
+
+              </div>
+
+
                   </Column>
                 </Columns>
 
 
-                <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None'}>
+
+                <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None' || isAllNamespace === true}>
 
                 <NepiIFConfig
                       namespace={saveNamespace}
                       title={"Nepi_IF_Config"}
                 />
 
-                  </div>
+                </div>
 
-        
+
+
+
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
           </div>
+          
 
 
-
-
-      </Section>
+      </React.Fragment>
     )
   }
 
+  render() {
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+
+    if (make_section === false){
+      return (
+        <Columns>
+        <Column>
+        {this.renderSaveData()}
+        </Column>
+        </Columns>
+      )
+    }
+    else {
+      return (
+
+      <Section>
+
+        {this.renderSaveData()}
+
+      </Section>
+      )
+
+    }
+  }
+
+
 }
+
 export default NepiIFSaveData

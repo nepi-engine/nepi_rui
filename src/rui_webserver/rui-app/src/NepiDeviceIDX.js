@@ -30,8 +30,10 @@ import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
+import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
+
+
 
 
 @inject("ros")
@@ -318,6 +320,10 @@ class NepiDeviceIDX extends Component {
                               title={"Nepi_IF_SaveData"}
                           />
 
+                          <NepiIFNavPoseViewer
+                            namespace={namespace  + "/navpose"}
+                            title={"NavPose Data"}
+                          />
 
                           <NepiDeviceInfo
                                 deviceNamespace={namespace}

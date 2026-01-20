@@ -70,15 +70,15 @@ class NepiIFNavPoseViewer extends Component {
 
 
     this.renderNavPose = this.renderNavPose.bind(this)
-    this.statusListener = this.statusListener.bind(this)
-    this.dataListener = this.dataListener.bind(this)
+    this.navposeStatusListener = this.navposeStatusListener.bind(this)
+    this.navposeDataListener = this.navposeDataListener.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.updateNavposeListener = this.updateNavposeListener.bind(this)
 
   }
 
   // Callback for handling ROS StatusNPX messages
-  statusListener(message) {
+  navposeStatusListener(message) {
     const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
     const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
     var status_msg = null
@@ -100,9 +100,9 @@ class NepiIFNavPoseViewer extends Component {
     })
   }
 
-  dataListener(message) {
-    //console.log("=====dataListener called=====" + message)
-    //console.log("dataListener msg: " + message)
+  navposeDataListener(message) {
+    //console.log("=====navposeDataListener called=====" + message)
+    //console.log("navposeDataListener msg: " + message)
     //Unused const last_navpose_msg = this.state.navpose_msg
 
     const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
@@ -168,17 +168,17 @@ class NepiIFNavPoseViewer extends Component {
 
     if (namespace !== 'None' && namespace != null){
       if (is_navposes === true) {
-        statusListener = this.props.ros.setupSaveDataStatusListener(
+        statusListener = this.props.ros.setupStatusListener(
           navposeTopic,
           "nepi_interfaces/NavPosesStatus",
-          this.statusListener 
+          this.navposeStatusListener 
         )
       }
       else {
-        statusListener = this.props.ros.setupSaveDataStatusListener(
+        statusListener = this.props.ros.setupStatusListener(
           navposeTopic,
           "nepi_interfaces/NavPoseStatus",
-          this.statusListener 
+          this.navposeStatusListener 
         )
       }
       
@@ -202,17 +202,17 @@ class NepiIFNavPoseViewer extends Component {
     var dataListener = null
     if (namespace !== 'None' && namespace != null){
       if (is_navposes === true) {
-        dataListener = this.props.ros.setupSaveDataStatusListener(
+        dataListener = this.props.ros.dataListener(
           navposeTopic,
           "nepi_interfaces/NavPoses",
-          this.dataListener 
+          this.navposeDataListener 
         )
       }
       else {
-        dataListener = this.props.ros.setupSaveDataStatusListener(
+        dataListener = this.props.ros.dataListener(
           navposeTopic,
           "nepi_interfaces/NavPose",
-          this.dataListener 
+          this.navposeDataListener 
         )
 
       }

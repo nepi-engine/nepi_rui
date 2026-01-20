@@ -43,7 +43,7 @@ import {
 
 
 //Unused import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import NepiIFSettings from "./Nepi_IF_Settings"
+//import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import NepiIFConfig from "./Nepi_IF_Config"

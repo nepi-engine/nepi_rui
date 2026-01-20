@@ -356,11 +356,12 @@ class ImageViewerSelector extends Component {
 
     const imageTopic = this.state.selected_image
     const title = this.state.selected_image_text
-    const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
+    
     const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
     const streamingImageQuality = this.props.streamingImageQuality ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
                 : null
+    const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
     
     return (
@@ -370,10 +371,11 @@ class ImageViewerSelector extends Component {
       imageTopic={imageTopic}
       title={title}
       show_image_options={show_image_options}
+      show_save_controls={show_save_controls}
       navpose_namespace={navpose_namespace}
       make_section={false}
       streamingImageQuality={streamingImageQuality}
-      show_save_controls={show_save_controls}
+
     />
 
 

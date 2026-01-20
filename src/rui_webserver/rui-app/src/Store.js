@@ -519,7 +519,7 @@ class ROSConnectionStore {
     var newSaveDataNamespaces = []
     for (var i = 0; i < this.topicNames.length; i++) {
       if (this.topicTypes[i] === "nepi_interfaces/SaveDataStatus"){
-        newSaveDataNamespaces.push(this.topicNames[i].replace('/save_data/status',''))
+        newSaveDataNamespaces.push(this.topicNames[i].replace('/status',''))
       }
     }
 

@@ -36,8 +36,9 @@ import Styles from "./Styles"
 import Input from "./Input"
 
 import NepiIFConfig from "./Nepi_IF_Config"
-import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
-import NepiIFSaveImage from "./Nepi_IF_SaveImage"
+import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
+
 
 import {  onChangeSwitchStateValue } from "./Utilities"
 
@@ -93,6 +94,8 @@ class ImageViewer extends Component {
       pixel: null,
       mouse_drag: false,
 
+      save_data_topic: '',
+      navpose_topic: '',
 
       filter_list_viewable: false,
 
@@ -302,7 +305,9 @@ class ImageViewer extends Component {
   // Callback for handling ROS Status messages
   statusListener(message) {
     this.setState({
-      status_msg: message
+      status_msg: message,
+      save_data_topic: message.save_data_topic,
+      navpose_topic: message.navpose_topic
     })    
 
   }
@@ -1348,8 +1353,8 @@ class ImageViewer extends Component {
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
       <div align={"left"} textAlign={"left"} hidden={(show_save_controls === false || namespace === 'None')}>
 
-                    <NepiIFSaveImage
-                    namespace={namespace + '/save_data'}
+                    <NepiIFSaveData
+                    namespace={this.state.save_data_topic}
                     make_section={false}
                   />
 
@@ -1522,11 +1527,10 @@ class ImageViewer extends Component {
 
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
 
-                                <NavPoseViewer
-                                  namespace={navpose_namespace}
-                                  make_section={false}
-                                  title={"IDX NavPose Data"}
-                                />
+                      <NepiIFNavPoseViewer
+                        namespace={this.state.navpose_topic}
+                        title={"NavPose Data"}
+                      />
 
                     </div>
 

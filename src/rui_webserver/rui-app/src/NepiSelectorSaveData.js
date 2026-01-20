@@ -20,6 +20,7 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
+import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 
@@ -44,6 +45,9 @@ class SaveDataSelector extends Component {
     }
 
     this.onChangeSaveSelection = this.onChangeSaveSelection.bind(this)
+    this.renderSelector = this.renderSelector.bind(this)
+    this.renderSaveData = this.renderSaveData.bind(this)
+    this.renderSaveDataSelector = this.renderSaveDataSelector.bind(this)
 
     
   }
@@ -52,7 +56,7 @@ class SaveDataSelector extends Component {
     const { namespacePrefix, deviceId} = this.props.ros
     var allNamespace = null
     if (namespacePrefix !== null && deviceId !== null){
-      allNamespace = "/" + namespacePrefix + "/" + deviceId
+      allNamespace = "/" + namespacePrefix + "/" + deviceId  + '/save_data'
     }
     return allNamespace
   }
@@ -61,8 +65,8 @@ class SaveDataSelector extends Component {
     const { namespacePrefix, deviceId} = this.props.ros
     const allNamespace = this.getAllNamespace()
     var items = []
-    //items.push(<Option value={"All"}>{"All"}</Option>)
-    items.push(<Option value={"None"}>{"None"}</Option>)
+    items.push(<Option value={allNamespace}>{"All"}</Option>)
+    //items.push(<Option value={"None"}>{"None"}</Option>)
     const saveData_topics = this.props.ros.saveDataNamespaces
     var shortname = ''
     var topic = ""
@@ -110,8 +114,12 @@ class SaveDataSelector extends Component {
   }
 
 
-  renderApplication() {
-    const node_namespace = this.state.selected_topic
+  renderSaveData() {
+    const all_namespace = this.getAllNamespace()
+    if ((this.state.selected_topic === 'None') && all_namespace != null){
+      this.setState({selected_topic: all_namespace})
+    } 
+    const selected_topic = this.state.selected_topic
 
     return (
       <React.Fragment>
@@ -120,7 +128,7 @@ class SaveDataSelector extends Component {
         <Column>
 
         <NepiIFSaveData
-        saveNamespace={node_namespace + '/save_data'}
+        saveNamespace={selected_topic}
         showSettings = {true}
         title={"NepiIFSaveData.js"}
         />
@@ -134,7 +142,7 @@ class SaveDataSelector extends Component {
 
 
 
-  render() {
+  renderSaveDataSelector() {
     const node_namespace = this.state.selected_topic.replace("/save_data_status", "")
     const hide_app = this.state.selected_topic === "None"
     return (
@@ -154,12 +162,37 @@ class SaveDataSelector extends Component {
           <label style={{fontWeight: 'bold'}}>
             {node_namespace}
           </label>
-          {this.renderApplication()}
+          {this.renderSaveData()}
         </div>
       </div>
 
     )
   }
+
+  render() {
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    if (make_section === false){
+      return (
+        <Columns>
+        <Column>
+        {this.renderSaveDataSelector()}
+        </Column>
+        </Columns>
+      )
+    }
+    else {
+      return (
+
+      <Section>
+
+        {this.renderSaveDataSelector()}
+
+      </Section>
+      )
+
+    }
+  }
+
 
 }
 
