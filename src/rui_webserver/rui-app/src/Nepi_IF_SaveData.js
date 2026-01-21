@@ -582,7 +582,7 @@ sendLogRateUpdate(rate) {
 
 
                         <div style={{ width: '15%' }}>
-                              <div  hidden={always_show_controls === false}>
+                              <div  hidden={always_show_controls === true}>
                                 <Label title="Save Controls">
                                 <Toggle
                                   checked={showControls===true}
@@ -625,7 +625,7 @@ sendLogRateUpdate(rate) {
 
             
 
-                        <div style={{ width: '15%' }} hidden={this.state.hasNavpose === false}>
+                        <div style={{ width: '15%' }}>
                           <Label title={"Save"}>
                             <Toggle
                               checked={ (saveDataEnabled === true) }
@@ -817,8 +817,17 @@ sendLogRateUpdate(rate) {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const saveNamespace = this.state.saveNamespace
+    if (saveNamespace === 'None'){
+      return (
+        <Columns>
+        <Column>
 
-    if (make_section === false){
+        </Column>
+        </Columns>
+      )
+    }
+    else if (make_section === false){
       return (
         <Columns>
         <Column>
