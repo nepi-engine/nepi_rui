@@ -48,7 +48,7 @@ function round(value, decimals = 0) {
 
 @inject("ros")
 @observer
-class PTXImageViewerSelector extends Component {
+class NepiDevicePTXImageViewer extends Component {
   constructor(props) {
     super(props)
 
@@ -561,4 +561,4 @@ class PTXImageViewerSelector extends Component {
   }
 }
 
-export default PTXImageViewerSelector
+export default NepiDevicePTXImageViewer
