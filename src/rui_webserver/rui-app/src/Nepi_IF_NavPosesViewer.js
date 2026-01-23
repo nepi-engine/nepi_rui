@@ -45,7 +45,7 @@ class NepiIFNavPoseViewer extends Component {
 
 
       mgrName: "navpose_mgr",
-      namespace: null,
+      navposesNamespace: null,
       base_namespace: null,
 
       show_navpose: this.props.show_navpose ? this.props.show_navpose : true,
@@ -79,25 +79,28 @@ class NepiIFNavPoseViewer extends Component {
 
   // Callback for handling ROS StatusNPX messages
   navposeStatusListener(message) {
-    const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
-    const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
-    var status_msg = null
-    var frames_list = null
-    var frame_index = 0
-    if (is_navposes === true){
-      frames_list = message.navpose_frames
-      frame_index = frames_list.indexOf(selected_frame)
-      if ( frame_index !== -1  && selected_frame !== 'None'){
-        status_msg = message.navpose_statuses[frame_index]
+
+    if (message.navposes_topic === this.state.navposesNamespace) {
+      const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
+      const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
+      var status_msg = null
+      var frames_list = null
+      var frame_index = 0
+      if (is_navposes === true){
+        frames_list = message.navpose_frames
+        frame_index = frames_list.indexOf(selected_frame)
+        if ( frame_index !== -1  && selected_frame !== 'None'){
+          status_msg = message.navpose_statuses[frame_index]
+        }
       }
+      else {
+        status_msg = message
+      }
+      this.setState({
+        status_msg: status_msg, 
+        connected: true
+      })
     }
-    else {
-      status_msg = message
-    }
-    this.setState({
-      status_msg: status_msg, 
-      connected: true
-    })
   }
 
   navposeDataListener(message) {
@@ -158,15 +161,15 @@ class NepiIFNavPoseViewer extends Component {
 
   updateStatusListener() {
       //console.log("=====updateStatusListener called=====");
-      const namespace = this.state.namespace 
-      const navposeTopic = namespace + '/status'
+      const navposesNamespace = this.state.navposesNamespace 
+      const navposeTopic = navposesNamespace + '/status'
       const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
       var statusListener = null
       if (this.state.statusListener) {
         this.state.statusListener.unsubscribe()
       }
 
-    if (namespace !== 'None' && namespace != null){
+    if (navposesNamespace !== 'None' && navposesNamespace != null){
       if (is_navposes === true) {
         statusListener = this.props.ros.setupStatusListener(
           navposeTopic,
@@ -193,24 +196,23 @@ class NepiIFNavPoseViewer extends Component {
   }
 
   updateNavposeListener() {
-    const namespace = this.state.namespace
-    const navposeTopic = namespace
+    const navposesNamespace = this.state.navposesNamespace
     const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
     if (this.state.dataListener) {
       this.state.dataListener.unsubscribe()
     }
     var dataListener = null
-    if (namespace !== 'None' && namespace != null){
+    if (navposesNamespace !== 'None' && navposesNamespace != null){
       if (is_navposes === true) {
         dataListener = this.props.ros.dataListener(
-          navposeTopic,
+          navposesNamespace,
           "nepi_interfaces/NavPoses",
           this.navposeDataListener 
         )
       }
       else {
         dataListener = this.props.ros.dataListener(
-          navposeTopic,
+          navposesNamespace,
           "nepi_interfaces/NavPose",
           this.navposeDataListener 
         )
@@ -231,16 +233,16 @@ class NepiIFNavPoseViewer extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var namespace = (this.props.namespace != undefined) ? this.props.namespace : null
-    if (prevState.namespace !== namespace ){
-      if (namespace != null) {
+    var navposesNamespace = (this.props.navposesNamespace != undefined) ? this.props.navposesNamespace : null
+    if (prevState.navposesNamespace !== navposesNamespace ){
+      if (navposesNamespace != null) {
         this.setState({
-          namespace: namespace,
+          navposesNamespace: navposesNamespace,
         })
         this.updateStatusListener()
         this.updateNavposeListener()
       } 
-      else if (namespace == null){
+      else if (navposesNamespace == null){
         this.setState({ disabled: true })
       }
     }

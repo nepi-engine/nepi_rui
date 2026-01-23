@@ -145,25 +145,27 @@ class NepiIFSaveData extends Component {
   saveStatusListener(message) {
     const do_updates = ((this.state.saveDirPrefix !== message.filename_prefix) ||  (this.state.saveDataSubfolder !== message.save_subfolder))
 
-    this.setState({
-      saveRatesMsg: message.save_data_rates,
-      saveAllEnabled: message.save_all_enabled,
-      saveAllRate: message.save_all_rate,
-      logNavEnabled: message.log_navposes_enabled,
-      logNavRate: message.log_navposes_rate,
-      saveUtcTz: message.save_data_utc,
-      exp_filename: message.example_filename,
-      saveDataEnabled: message.save_data_enabled
-    })
-
-    if (do_updates === true) {
+    if (message.save_data_topic === this.state.saveNamespace){
       this.setState({
-        saveDataPrefix: message.filename_prefix,
-        saveDataSubfolder: message.save_subfolder,
+        saveRatesMsg: message.save_data_rates,
+        saveAllEnabled: message.save_all_enabled,
+        saveAllRate: message.save_all_rate,
+        logNavEnabled: message.log_navposes_enabled,
+        logNavRate: message.log_navposes_rate,
+        saveUtcTz: message.save_data_utc,
+        exp_filename: message.example_filename,
+        saveDataEnabled: message.save_data_enabled
       })
+
+      if (do_updates === true) {
+        this.setState({
+          saveDataPrefix: message.filename_prefix,
+          saveDataSubfolder: message.save_subfolder,
+        })
+      }
+      this.updateSaveLists()
+      this.updateSelectedDataProducts()
     }
-    this.updateSaveLists()
-    this.updateSelectedDataProducts()
   }
 
   // Function for configuring and subscribing to Status
@@ -338,16 +340,20 @@ class NepiIFSaveData extends Component {
         ratesList = []
         if (topic !== "None" && topic !== allNamespace ){
                 save_rates_list = saveDataCaps[topic].save_data_rates
-                for (i2 = 0; i2 < save_rates_list.length; i2++) {
-                    namesList.push(save_rates_list[i2].data_product)
-                    ratesList.push(save_rates_list[i2].save_rate_hz)
-                }
-                shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
-                configsStrList.push(shortname + '\n')
-                for (let ind = 0; ind < namesList.length; ind++) {
-                      entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
-                      configsStrList.push(entryStr)
-                  
+                if (save_rates_list != undefined){
+                  for (i2 = 0; i2 < save_rates_list.length; i2++) {
+                      namesList.push(save_rates_list[i2].data_product)
+                      ratesList.push(round(save_rates_list[i2].save_rate_hz,2))
+                  }
+                  shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
+                  configsStrList.push(shortname + '\n')
+                  configsStrList.push('----------------------\n')
+                  for (let ind = 0; ind < namesList.length; ind++) {
+                        entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                        configsStrList.push(entryStr)
+                    
+                  }
+                  configsStrList.push('\n')
                 }
         }
       }
@@ -399,18 +405,20 @@ class NepiIFSaveData extends Component {
         save_rates_list = saveDataCaps[topic].save_data_rates
         if (topic !== "None" && topic !== allNamespace ){
                 save_rates_list = saveDataCaps[topic].save_data_rates
-                for (i2 = 0; i2 < save_rates_list.length; i2++) {
-                    namesList.push(save_rates_list[i2].data_product)
-                    ratesList.push(save_rates_list[i2].save_rate_hz)
-                }
-                shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
-                configsStrList.push(shortname + '\n')
-                for (let ind = 0; ind < namesList.length; ind++) {
-                  if (ratesList[ind] > 0){
-                      entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
-                      configsStrList.push(entryStr)
+                if (save_rates_list != undefined){
+                  for (i2 = 0; i2 < save_rates_list.length; i2++) {
+                      namesList.push(save_rates_list[i2].data_product)
+                      ratesList.push(round(save_rates_list[i2].save_rate_hz,2))
                   }
-                  
+                  shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
+                  configsStrList.push(shortname + '\n')
+                  for (let ind = 0; ind < namesList.length; ind++) {
+                    if (ratesList[ind] > 0){
+                        entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                        configsStrList.push(entryStr)
+                    }
+                    
+                  }
                 }
         }
       }
@@ -869,10 +877,6 @@ sendLogRateUpdate(rate) {
                   </Column>
                   <Column>
 
-                        <Label title={""}>
-                        </Label>
-                        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
                         <Label title={"Saving"}>
                           <BooleanIndicator value={(saveDataEnabled === true)} />
                         </Label>
@@ -884,6 +888,8 @@ sendLogRateUpdate(rate) {
                         <pre style={{ height: "100px", overflowY: "auto" }}>
                           {this.state.exp_filename}
                         </pre>
+
+                      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                         <Label title="Filter Active">
                             <Toggle
@@ -912,7 +918,7 @@ sendLogRateUpdate(rate) {
                         <Label title={"Active Data Save Settings"}>
                         </Label>
 
-                        <pre style={{ height: "400px", overflowY: "auto" }}>
+                        <pre style={{ height: "200px", overflowY: "auto" }}>
                           {this.getActiveConfigString()}
                         </pre>
 

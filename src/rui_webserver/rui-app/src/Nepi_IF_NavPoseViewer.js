@@ -79,28 +79,33 @@ class NepiIFNavPoseViewer extends Component {
 
   // Callback for handling ROS StatusNPX messages
   statusListener(message) {
-    const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
-    const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
-    var status_msg = null
-    var frames_list = null
-    var frame_index = 0
-    if (is_navposes === true){
-      frames_list = message.navpose_frames
-      frame_index = frames_list.indexOf(selected_frame)
-      if ( frame_index !== -1  && selected_frame !== 'None'){
-        status_msg = message.navpose_statuses[frame_index]
+
+    if (message.navpose_topic === this.state.navposeNamespace) {
+      const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
+      const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
+      var status_msg = null
+      var frames_list = null
+      var frame_index = 0
+      if (is_navposes === true){
+        frames_list = message.navpose_frames
+        frame_index = frames_list.indexOf(selected_frame)
+        if ( frame_index !== -1  && selected_frame !== 'None'){
+          status_msg = message.navpose_statuses[frame_index]
+        }
       }
+      else {
+        status_msg = message
+      }
+      this.setState({
+        status_msg: status_msg, 
+        connected: true
+      })
+    
     }
-    else {
-      status_msg = message
-    }
-    this.setState({
-      status_msg: status_msg, 
-      connected: true
-    })
   }
 
   dataListener(message) {
+    
     //console.log("=====dataListener called=====" + message)
     //console.log("dataListener msg: " + message)
     //Unused const last_navpose_msg = this.state.navpose_msg

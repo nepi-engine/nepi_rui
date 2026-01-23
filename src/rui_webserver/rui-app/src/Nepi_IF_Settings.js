@@ -93,36 +93,35 @@ class Nepi_IF_Settings extends Component {
 
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
-    const last_values_list = this.state.settingsValuesList
-    const lastCaps = this.state.capabilities
-    const settings = message.settings_list
-    const capabilities = message.setting_caps_list
-    var namesList = []
-    var typesList = []
-    var valuesList = []
-    for (let ind = 0; ind < settings.length; ind++){
-      namesList.push(settings[ind].name_str)
-      typesList.push(settings[ind].type_str)
-      valuesList.push(settings[ind].value_str)
+    if (message.settings_topic === this.state.settingsNamespace){
+      const last_values_list = this.state.settingsValuesList
+      const lastCaps = this.state.capabilities
+      const settings = message.settings_list
+      const capabilities = message.setting_caps_list
+      var namesList = []
+      var typesList = []
+      var valuesList = []
+      for (let ind = 0; ind < settings.length; ind++){
+        namesList.push(settings[ind].name_str)
+        typesList.push(settings[ind].type_str)
+        valuesList.push(settings[ind].value_str)
+      }
+      const count = namesList.length
+
+      
+
+      this.setState({
+                    capabilities: capabilities,
+                    settingsNamesList:namesList,
+                    settingsTypesList:typesList,
+                    settingsValuesList:valuesList,
+                    settingsCount: count
+      })
+
+      if (lastCaps !== capabilities){
+        this.updateCapabilities(capabilities) 
+      }
     }
-    const count = namesList.length
-
-    
-
-    this.setState({
-                  capabilities: capabilities,
-                   settingsNamesList:namesList,
-                   settingsTypesList:typesList,
-                   settingsValuesList:valuesList,
-                   settingsCount: count
-    })
-
-    if (lastCaps !== capabilities){
-      this.updateCapabilities(capabilities) 
-    }
-
-    
-
 
   }
 
