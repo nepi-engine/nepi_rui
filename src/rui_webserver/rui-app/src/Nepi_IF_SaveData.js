@@ -693,7 +693,7 @@ sendLogRateUpdate(rate) {
 
 
                         <div style={{ width: '15%' }}>
-                              <div  hidden={always_show_controls === true}>
+                              <div  hidden={always_show_controls === false}>
                                 <Label title="Save Controls">
                                 <Toggle
                                   checked={showControls===true}
@@ -736,7 +736,7 @@ sendLogRateUpdate(rate) {
 
             
 
-                        <div style={{ width: '15%' }}>
+                        <div style={{ width: '15%' }} hidden={this.state.hasNavpose === false}>
                           <Label title={"Save"}>
                             <Toggle
                               checked={ (save_enabled === true) }

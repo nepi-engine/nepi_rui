@@ -573,352 +573,90 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
     return (
       <React.Fragment>
 
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
-         </label>
 
-
-
-        <Label title={""}>
+        <Label title={"PT Auto CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
         </Label>
 
-
-
-        <div hidden={(has_abs_pos === false)}>
-
-            <Label title={"Present Position"}>
-              <Input
-                disabled
-                style={{ width: "45%", float: "left" }}
-                value={round(panPositionDegClean, 2)}
-              />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(tiltPositionDegClean, 2)}
-              />
-            </Label>
-
-
-            <Label title={"Current Speed (Deg/Sec)"}>
-              <Input
-                disabled
-                style={{ width: "45%", float: "left" }}
-                value={round(speed_pan_dps, 0)}
-              />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(speed_tilt_dps, 0)}
-              />
-            </Label>
-
+        <Label title={"Enable Auto Scan"}>
+        <div hidden={(hide_auto_pan === true)}>
+          <div style={{ display: "inline-block", width: "45%", float: "left" }}>
+            <Toggle style={{justifyContent: "flex-left"}} checked={autoPanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_pan_enable",!autoPanEnabled)} />
+          </div>
           </div>
 
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-        <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+          <div hidden={(hide_auto_tilt === true)}>
+          <div style={{ display: "inline-block", width: "45%", float: "right" }}>
+            <Toggle style={{justifyContent: "flex-right"}} checked={autoTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_auto_tilt_enable",!autoTiltEnabled)} />
+          </div>
+          </div>
         </Label>
 
 
 
+        <div hidden={(autoPanEnabled === false && autoTiltEnabled === false)}>
+
+            <Label title={"Min Scan Limits"}>
+
+              <Input id="scan_pan_min" 
+                  value={this.state.panScanMin} 
+                  style={{ width: "45%", float: "left" }}
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"panScanMin")} 
+                  onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_pan_window","min",Number(this.state.panScanMax))} />
+
+              <Input id="scan_tilt_min" 
+                  value={this.state.tiltScanMin} 
+                  style={{ width: "45%" }}
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"tiltScanMin")} 
+                  onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_tilt_window","min",Number(this.state.tiltScanMax))} />
+
+              
+            </Label>
 
 
 
-          <div hidden={(has_abs_pos === false)}>
 
-            <Label title={"GoTo Position"}>
-              <Input
-                disabled={!has_abs_pos}
-                id={"PTXPanGoto"}
+
+            <Label title={"Max Scan Limits"}>
+
+              <Input id="scan_pan_max" 
+                value={this.state.panScanMax} 
                 style={{ width: "45%", float: "left" }}
-                value={this.state.panGotoDeg}
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-              />
-              <Input
-                disabled={!has_abs_pos}
-                id={"PTXTiltGoto"}
-                style={{ width: "45%" }}
-                value={this.state.tiltGotoDeg}
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-              />
+                onChange={(event) => onUpdateSetStateValue.bind(this)(event,"panScanMax")} 
+                onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_pan_window","max",Number(this.state.panScanMin))} />     
+
+
+              <Input id="scan_tilt_max" 
+                  value={this.state.tiltScanMax} 
+                  style={{ width: "45%" }}
+                  onChange={(event) => onUpdateSetStateValue.bind(this)(event,"tiltScanMax")} 
+                  onKeyDown= {(event) => this.onEnterSendScanRangeWindowValue(event,"/set_auto_tilt_window","max",Number(this.state.tiltScanMin))} />                      
             </Label>
 
         </div>
 
-        <div hidden={(has_homing === false)}>
-
-        <ButtonMenu>
-          <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
-        </ButtonMenu>
-
-      </div>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
+        <Label title={"Enable Tracking"}>
+        <div hidden={(hide_track_pan === true)}>
+          <div style={{ display: "inline-block", width: "45%", float: "left" }}>
+            <Toggle style={{justifyContent: "flex-left"}} checked={trackPanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_track_pan_enable",!trackPanEnabled)} />
+          </div>
+          </div>
 
-        <Columns>
-          <Column>
-
-            <Label title="PT SETUP">
-                    <Toggle
-                      checked={this.state.showSettings===true}
-                      onClick={this.onClickToggleShowSettings}>
-                    </Toggle>
-                  </Label>
-
-
-             
-          </Column>
-          <Column>
- 
-
-          </Column>
-        </Columns>
-
-
-        <div hidden={(this.state.showSettings === false)}>
-
-
-                  <Label title={""}>
-                    <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-                    <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
-                  </Label>
-
-                    <Label title={"Reverse Control"}>
-                      <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-                        <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
-                      </div>
-                      <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-                        <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
-                      </div>
-                    </Label>
-
-
-                  <div hidden={(has_speed_control === false)}>
-
-                  <SliderAdjustment
-                    disabled={!has_speed_control}
-                    title={"Speed"}
-                    msgType={"std_msgs/Float32"}
-                    adjustment={speedRatio}
-                    topic={namespace + "/set_speed_ratio"}
-                    scaled={0.01}
-                    min={0}
-                    max={100}
-                    tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-                    unit={"%"}
-                  />
-
-                  </div>
+          <div hidden={(hide_track_tilt === true)}>
+          <div style={{ display: "inline-block", width: "45%", float: "right" }}>
+            <Toggle style={{justifyContent: "flex-right"}} checked={trackTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_track_tilt_enable",!trackTiltEnabled)} />
+          </div>
+          </div>
+        </Label>
 
 
 
-
-
-
-                  <div hidden={(has_abs_pos === false)}>
-
-                          <Label title={"Hard Limit Min"}>
-                            <Input
-                              disabled={true}
-                              id={"PTXPanHardStopMin"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panHardStopMin}
-                            />
-                            <Input
-                              disabled={true}
-                              id={"PTXTiltHardStopMin"}
-                              style={{ width: "45%" }}
-                              value={tiltHardStopMin}
-                            />
-                          </Label>
-
-                          <Label title={"Hard Limit Max"}>
-                            <Input
-                              disabled={true}
-                              id={"PTXPanHardStopMax"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panHardStopMax}
-                            />
-                            <Input
-                              disabled={true}
-                              id={"PTXTiltHardStopMax"}
-                              style={{ width: "45%" }}
-                              value={tiltHardStopMax}
-                            />
-                          </Label>
-
-
-                          <Label title={"Soft Limit Min"}>
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXPanSoftStopMin"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panSoftStopMin}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXTiltSoftStopMin"}
-                              style={{ width: "45%" }}
-                              value={tiltSoftStopMin}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                          </Label>
-                          <Label title={"Soft Limit Max"}>
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXPanSoftStopMax"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panSoftStopMax}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXTiltSoftStopMax"}
-                              style={{ width: "45%" }}
-                              value={tiltSoftStopMax}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                          </Label>
-
-                  </div>
-
-
-                  <div hidden={(has_homing === false)}>
-
-                  <Label title={"Home Position"}>
-                    <Input
-                      disabled={!has_homing}
-                      id={"PTXPanHomePos"}
-                      style={{ width: "45%", float: "left" }}
-                      value={panHomePos}
-                      onChange= {this.onUpdateText}
-                      onKeyDown= {this.onKeyText}
-                    />
-                    <Input
-                      disabled={!has_homing}
-                      id={"PTXTiltHomePos"}
-                      style={{ width: "45%" }}
-                      value={tiltHomePos}
-                      onChange= {this.onUpdateText}
-                      onKeyDown= {this.onKeyText}
-                    />
-                  </Label>
-
-
-                  <ButtonMenu>
-                    <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(namespace)}>{"Set Home Here"}</Button>
-                  </ButtonMenu>
-
-                </div>
-
-
-
-
-
-                  <div
-                      style={{
-                        borderTop: "1px solid #050404ff",
-                        marginTop: Styles.vars.spacing.medium,
-                        marginBottom: Styles.vars.spacing.xs,
-                      }}
-                    />
-                    <Label title="Show 3D Transform">
-                      <Toggle
-                        checked={this.state.showTransform}
-                        onClick={this.onClickToggleShowTransform}>
-                      </Toggle>
-                    </Label>
-
-                    <div hidden={ this.state.showTransform === false}>
-
-                        <Columns>
-                          <Column>
-
-                                  <NepiIF3DTransform
-                                      namespace={namespace + '/navpose_frame_transform'}
-                                      supports_updates={true}
-                                      title={"Nepi_IF_3DTransform"}
-                                  />
-
-                          </Column>
-                      </Columns>
-
-                  </div>
-            </div>
-
-
-            </React.Fragment>
+        </React.Fragment>
     )
   }
-
-
-renderNavPose(){
-  const show_navpose = this.state.show_navpose
-  const namespace = this.state.namespace ? this.state.namespace : 'None'
-  //Unused const make_section = this.props.make_section ? this.props.make_section : true
-  //console.log("show navpose: " + show_navpose)
-  //console.log("renderNavPose namespace : " + namespace)
-  if (namespace == null || namespace === 'None'){
-    return(
-  
-      <Columns>
-      <Column>
-
-      </Column>
-      </Columns>
-  
-    )
-  }
-  else{
-    return (
-
-      <Section>
-            <Columns>
-            <Column>
-                  <Label title="Show NavPose">
-                      <Toggle
-                        checked={this.state.show_navpose===true}
-                        onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
-                      </Toggle>
-                    </Label>            
-
-                    </Column>
-                    <Column>
-
-                    </Column>
-                    <Column>
-
-                    </Column>
-                    </Columns>
-                    <div align={"left"} textAlign={"left"} hidden={!this.state.show_navpose}>
-
-                  <NavPoseViewer
-                    namespace={(show_navpose === true) ? namespace  + "/navpose": null}
-                    make_section={false}
-                    title={"PTX NavPose Data"}
-                  />
-                  </div>
-
-                </Section>
-              )  
-            }
-          }
-
 
 
 
@@ -937,10 +675,8 @@ renderNavPose(){
     //Unused const device_selected = (this.state.namespace != null)
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
-
     
     if (make_section === false){
-
     return (
       <React.Fragment>
         <Columns>
@@ -958,53 +694,39 @@ renderNavPose(){
 
             }
 
-            <div hidden={(namespace == null)}>
-              <NepiIFSettings
-                settingsNamespace={namespace + '/settings'}
-                title={"Nepi_IF_Settings"}
-              />
-            </div>
-
-
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+  
           </Column>
         </Columns>
+
       </React.Fragment>
     )
   }
   else {
     return (
-
-    <Section>
-
-    <Columns>
-    <Column equalWidth = {false} >
+      <Section>
+      <Columns>
+      <Column equalWidth = {false} >
 
 
-          
+            
 
 
 
-      { namespace?
-        this.renderControlPanel()
-        : null
+        { namespace?
+          this.renderControlPanel()
+          : null
 
 
-      }
+        }
 
-      <div hidden={(namespace == null)}>
-        <NepiIFSettings
-          settingsNamespace={namespace + '/settings'}
-          title={"Nepi_IF_Settings"}
-        />
-      </div>
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-
-    </Column>
-  </Columns>
-  </Section>
+      </Column>
+    </Columns>
+    </Section>
     )
-  }  
   }
 }
-
+}
 export default NepiDevicePTXControls
