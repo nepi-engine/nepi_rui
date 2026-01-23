@@ -32,15 +32,19 @@ import Button, { ButtonMenu } from "./Button"
 import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
 import {createShortValuesFromNamespaces} from "./Utilities"
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
+
 //import ImageViewer from "./Nepi_IF_ImageViewer"
-import PTXImageViewerSelector from "./NepiDevicePTX-SelectorImageViewer"
+import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
+import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
+
+
+import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import NepiIFSettings from "./Nepi_IF_Settings"
 //Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
-import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
+
 import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import {onChangeSwitchStateValue } from "./Utilities"
 
@@ -529,7 +533,7 @@ renderNavPose(){
                 
 
                 <div id="ptxImageViewer">
-                  <PTXImageViewerSelector
+                  <NepiDevicePTXImageViewer
                     id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
