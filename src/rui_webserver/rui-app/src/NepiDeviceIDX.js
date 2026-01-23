@@ -54,8 +54,8 @@ class NepiDeviceIDX extends Component {
 
       data_topic: null,
       data_product: 'None',
-      imageTopic: 'None',
-      imageText: 'None',      
+      image_topic: 'None',
+      image_text: 'None',      
       
       // IDX Sensor topic to subscribe to and update
       namespace: null,
@@ -110,8 +110,8 @@ class NepiDeviceIDX extends Component {
         namespaceText: namespace_text,
         data_topic: autoSelectedImgTopic,
         data_product: autoSelectedImgTopicText,
-        imageTopic: autoSelectedImgTopic,
-        imageText: autoSelectedImgTopicText
+        image_topic: autoSelectedImgTopic,
+        image_text: autoSelectedImgTopicText
       })
   }
 
@@ -122,8 +122,8 @@ class NepiDeviceIDX extends Component {
       namespaceText: "No sensor selected",
       data_topic: "None",
       data_product: "None",
-      imageTopic: "None",
-      imageText: "None"        
+      image_topic: "None",
+      image_text: "None"        
     })
   }
 
@@ -168,23 +168,23 @@ class NepiDeviceIDX extends Component {
     var text = event.nativeEvent.target[index].text
     var value = event.target.value
 
-    var img_topic = null
-    var img_text = 'None'
+    var image_topic = null
+    var image_text = 'None'
     if (text !== 'None') {
-      img_topic = value
-      img_text = text
+      image_topic = value
+      image_text = text
     }
 
-    if (img_topic != null && text.indexOf('image') === -1){
-      img_topic = img_topic + '/' + text + '_image'
-      img_text = text + '_image'
+    if (image_topic != null && text.indexOf('image') === -1){
+      image_topic = image_topic + '/' + text + '_image'
+      image_text = text + '_image'
     }
 
     this.setState({
       data_topic: value,
       data_product: text,
-      imageTopic: img_topic,
-      imageText: img_text
+      image_topic: image_topic,
+      image_text: image_text
     })
   }
 
@@ -269,8 +269,8 @@ class NepiDeviceIDX extends Component {
   }
 
   renderImageViewer() {
-    const image_topic = this.state.imageTopic
-    const image_text = this.state.imageText
+    const image_topic = this.state.image_topic
+    const image_text = this.state.image_text
     return (
       <React.Fragment>
         <Columns>
@@ -279,7 +279,7 @@ class NepiDeviceIDX extends Component {
           {image_topic && image_topic !== 'None' &&
 
             <ImageViewer
-              imageTopic={image_topic}
+              image_topic={image_topic}
               title={image_text}
               hideQualitySelector={false}
               show_save_controls={false}
@@ -319,7 +319,7 @@ class NepiDeviceIDX extends Component {
                           <NepiIFSaveData
                               saveNamespace={namespace + '/save_data'}
                               title={"Nepi_IF_SaveData"}
-                              show_topic_selector={false}
+                              show_topic_selector={true}
                           />
                           : null}
 {/*
@@ -336,7 +336,7 @@ class NepiDeviceIDX extends Component {
                                 name_reset_topic={"/reset_device_name"}
                                 title={"NepiDeviceIDXInfo"}
                             />
-*/}
+
 
                         {(namespace != 'None') ?
                         <NepiSystemMessages
@@ -345,7 +345,7 @@ class NepiDeviceIDX extends Component {
                         />
                         : null}
 
-
+*/}
 
 
               </div>

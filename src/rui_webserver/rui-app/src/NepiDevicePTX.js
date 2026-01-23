@@ -541,7 +541,7 @@ renderNavPose(){
 
                 {this.renderNavPose()}
 
-
+{/*
                 <div hidden={(namespace === null)}>
                       <NepiDeviceInfo
                             deviceNamespace={namespace}
@@ -557,7 +557,7 @@ renderNavPose(){
               messagesNamespace={namespace.replace('/ptx','') + '/messages'}
               title={"NepiSystemMessages"}
               />
-
+*/}
      
           </Column>
           <Column>

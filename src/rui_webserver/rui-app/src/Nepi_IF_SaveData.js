@@ -339,8 +339,8 @@ class NepiIFSaveData extends Component {
         if (topic !== "None" && topic !== allNamespace ){
                 save_rates_list = saveDataCaps[topic].save_data_rates
                 for (i2 = 0; i2 < save_rates_list.length; i2++) {
-                    namesList = save_rates_list[i2].data_product
-                    ratesList = save_rates_list[i2].save_rate_hz
+                    namesList.push(save_rates_list[i2].data_product)
+                    ratesList.push(save_rates_list[i2].save_rate_hz)
                 }
                 shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
                 configsStrList.push(shortname + '\n')
@@ -387,8 +387,11 @@ class NepiIFSaveData extends Component {
     var entryStr
     var configsStrList = [""]
     var save_rates_list = {}
+    var i = 0
+    var i2 = 0
+    var shortname
     if (isAllNamespace === true){
-      for (let i = 0; i < saveDataNamespaces.length; i++) {
+      for (i = 0; i < saveDataNamespaces.length; i++) {
         topic = saveDataNamespaces[i]
         topic_name = topic.replace
         namesList = []
@@ -397,8 +400,8 @@ class NepiIFSaveData extends Component {
         if (topic !== "None" && topic !== allNamespace ){
                 save_rates_list = saveDataCaps[topic].save_data_rates
                 for (i2 = 0; i2 < save_rates_list.length; i2++) {
-                    namesList = save_rates_list[i2].data_product
-                    ratesList = save_rates_list[i2].save_rate_hz
+                    namesList.push(save_rates_list[i2].data_product)
+                    ratesList.push(save_rates_list[i2].save_rate_hz)
                 }
                 shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
                 configsStrList.push(shortname + '\n')
@@ -681,7 +684,7 @@ sendLogRateUpdate(rate) {
       this.setState({showControls: true})
     }
     
-    const showControls = this.state.showControls
+    const showControls = (always_show_controls === true || this.state.showControls === true)
     const show_active_settings = this.state.show_active_settings
 
     const saveAll = this.state.saveAll
@@ -693,7 +696,7 @@ sendLogRateUpdate(rate) {
 
 
                         <div style={{ width: '15%' }}>
-                              <div  hidden={always_show_controls === false}>
+                              <div  hidden={always_show_controls === true}>
                                 <Label title="Save Controls">
                                 <Toggle
                                   checked={showControls===true}
@@ -736,7 +739,7 @@ sendLogRateUpdate(rate) {
 
             
 
-                        <div style={{ width: '15%' }} hidden={this.state.hasNavpose === false}>
+                        <div style={{ width: '15%' }}>
                           <Label title={"Save"}>
                             <Toggle
                               checked={ (save_enabled === true) }

@@ -56,11 +56,11 @@ class ImageViewerSelector extends Component {
 
       hide_list: true,
 
-      images_list: [],
-      images_list_names: [],
+      image_topics: [],
+      image_topics_names: [],
       filter_list: [],
       id: '0',
-      selected_image: (this.props.ImageTopic != undefined) ? this.props.ImageTopic : 'None',
+      selected_image: (this.props.image_topic != undefined) ? this.props.image_topic : 'None',
       selected_image_index: -1,
       selected_image_text: (this.props.title != undefined) ? this.props.title : 'None',
 
@@ -95,19 +95,22 @@ class ImageViewerSelector extends Component {
   // Function for creating list menu options.
   getListMenu() {
     // Update Class List
-    const imageTopics = this.props.images_list ? this.props.images_list : this.props.ros.imageTopics
-    const image_filters = this.props.image_filters ? this.props.image_filters : []
-    const image_options = this.props.image
-    var images = imageTopics  
+    const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : this.props.ros.image_topics
+    const exclude_filters = (this.props.exclude_filters != undefined) ? this.props.exclude_filters : []
+    const include_filters = (this.props.include_filters != undefined) ? this.props.include_filters : []
+    var images = image_topics  
     var items = []
     var push_item = true
     if (images.length > 0){
       for (var i = 0; i < images.length; i++) {
         push_item = true
-        for (var i2 = 0; i2 < image_filters.length; i2++) {
-          if (images[i].indexOf(image_filters[i2]) !== -1 ){
+        for (var i2 = 0; i2 < exclude_filters.length; i2++) {
+          if (images[i].indexOf(exclude_filters[i2]) !== -1 ){
             push_item = false
           }
+          if (include_filters.length > 0 && images[i].indexOf(include_filters[i2]) === -1) {
+            push_item = false
+          } 
         }
         if (push_item === true){
           items.push(images[i])
@@ -131,13 +134,13 @@ class ImageViewerSelector extends Component {
 
     // Update Class Variables
     const id = this.props.id
-    //var selected_image = this.props.imageTopic != undefined ? this.props.imageTopic : this.state.selected_image
+    //var selected_image = this.props.image_topic != undefined ? this.props.image_topic : this.state.selected_image
     var selected_image = this.state.selected_image
 
     const class_id = this.state.id
     if ((id === class_id) || (selected_image === 'None')){
-      if ((selected_image === 'None') && (this.props.imageTopic != undefined)) {
-        selected_image = this.props.imageTopic
+      if ((selected_image === 'None') && (this.props.image_topic != undefined)) {
+        selected_image = this.props.image_topic
       } 
       var selected_ind = this.state.selected_image_index
       var selected_text = this.state.selected_image_text
@@ -147,8 +150,8 @@ class ImageViewerSelector extends Component {
       var index_name = ''
       var index_name_changed = false
       var updated_image = null
-      const images_list = this.state.images_list
-      if (JSON.stringify(images_list) !== JSON.stringify(sorted_items)) {
+      const image_topics = this.state.image_topics
+      if (JSON.stringify(image_topics) !== JSON.stringify(sorted_items)) {
         index = sorted_items.indexOf(selected_image)
         if (selected_ind !== index || selected_text !== names[index]) {
           this.setState({
@@ -156,7 +159,7 @@ class ImageViewerSelector extends Component {
             selected_image_index: index,
             selected_image_text: names[index]})
           }      
-        this.setState({images_list: sorted_items, images_list_names: names})
+        this.setState({image_topics: sorted_items, image_topics_names: names})
       
       }
 
@@ -207,7 +210,7 @@ class ImageViewerSelector extends Component {
     var menu_items = []
     if (sorted_items.length > 0){
       for (var i = 0; i < sorted_items.length; i++) {
-        if (image_filters.indexOf(sorted_items[i]) === -1 ){
+        if (exclude_filters.indexOf(sorted_items[i]) === -1 ){
           menu_items.push(<Option value={sorted_items[i]}>{sorted_names[i]}</Option>)
         }
       }
@@ -229,10 +232,10 @@ class ImageViewerSelector extends Component {
     const id = this.props.id
     const image = event.target.value
     const text = event.target.text
-    const images_list = this.state.images_list
-    const index = images_list.indexOf(image)
+    const image_topics = this.state.image_topics
+    const index = image_topics.indexOf(image)
     const {sendStringMsg} = this.props.ros
-    const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
+    const select_updated_namespace = (this.props.select_updated_namespace != undefined) ? this.props.select_updated_namespace : null
     if (select_updated_namespace != null){
       sendStringMsg(select_updated_namespace,image)
     }
@@ -300,33 +303,33 @@ class ImageViewerSelector extends Component {
 
 
   stepItem(step){
-    const images_list = this.state.images_list
-    const images_list_names = this.state.images_list_names
+    const image_topics = this.state.image_topics
+    const image_topics_names = this.state.image_topics_names
     var index = this.state.selected_image_index
     index = index + step
     if (index < 0){
-      index = images_list.length - 1
+      index = image_topics.length - 1
     }
-    else if ( index >= images_list.length ){
+    else if ( index >= image_topics.length ){
       index = 0
     }
 
     this.setState({selected_image_index: index,
-                 selected_image: images_list[index],
-                 selected_image_text: images_list_names[index]})
+                 selected_image: image_topics[index],
+                 selected_image_text: image_topics_names[index]})
     this.setState({hide_list: true})
 
   }
 
   renderButtonControls() {
     const { sendTriggerMsg } = this.props.ros
-    const images_list = this.state.images_list
+    const image_topics = this.state.image_topics
     
 
 
     const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
     const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
-    const show_controls = (images_list.length > 0) && (show_buttons === true )
+    const show_controls = (image_topics.length > 0) && (show_buttons === true )
     return (
       <React.Fragment>
 
@@ -355,14 +358,14 @@ class ImageViewerSelector extends Component {
 
   renderImageViewer() {
 
-    const imageTopic = this.state.selected_image
+    const image_topic = this.state.selected_image
     const title = this.state.selected_image_text
     
     const image_index = (this.props.image_index != undefined) ? this.props.image_index : 0
-    const mouse_event_topic = (this.props.mouse_event_topic != undefined) ? this.props.mouse_event_topic : ''
-    const image_selection_topic = (this.props.image_selection_topic != undefined) ? this.props.image_selection_topic : ''
+    const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : [null,null,null,null]
+    const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
 
-    const streamingImageQuality = this.props.streamingImageQuality ? 
+    const streamingImageQuality = (this.props.streamingImageQuality != undefined) ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
                 : null
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
@@ -372,11 +375,11 @@ class ImageViewerSelector extends Component {
 
       <ImageViewer
       id="imageViewer"
-      imageTopic={imageTopic}
+      image_topic={image_topic}
       title={title}
       image_index={image_index}
-      mouse_event_topic={mouse_event_topic}
-      image_selection_topic={image_selection_topic}
+      mouse_event_callback={mouse_event_callback}
+      selection_callback={selection_callback}
       show_image_options={show_image_options}
       show_save_controls={show_save_controls}
       make_section={false}

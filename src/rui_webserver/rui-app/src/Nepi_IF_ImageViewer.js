@@ -74,13 +74,13 @@ class ImageViewer extends Component {
     super(props)
 
     this.state = {
-      imageTopic: null,
+      image_topic: null,
       
       image_topic: 'None',
       prev_image_topic: 'None',
       image_index: 0,
-      mouse_event_topic: '',
-      image_selection_topic: '',
+      mouse_event_callback: '',
+      selection_callback: '',
       pixel: null,
       mouse_drag: false,
 
@@ -105,9 +105,6 @@ class ImageViewer extends Component {
       streamSize: 0,
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
       status_listenter: null,
-
-
-      filter_list_viewable: false,
 
       connected: false
     }
@@ -153,12 +150,13 @@ class ImageViewer extends Component {
 
   // Function for configuring and subscribing to Status
   updateStatusListener() {
-    const statusTopic = this.props.status_topic ? this.props.status_topic : this.props.imageTopic
-    const prev_image_topic = (this.state.imageTopic != null) ? this.state.imageTopic : 'None'
+    const image_topic = (this.props.image_topic != undefined) ? this.props.image_topic : "None"
+    const status_topic = (this.props.status_topic != undefined) ? this.props.status_topic : image_topic
+    const prev_image_topic = (this.state.image_topic != null) ? this.state.image_topic : 'None'
     const image_index = (this.props.image_index != undefined) ? this.props.image_index : 0
-    const mouse_event_topic = (this.props.mouse_event_topic != undefined) ? this.props.mouse_event_topic : ''
-    const image_selection_topic = (this.props.image_selection_topic != undefined) ? this.props.image_selection_topic : ''
-    const statusNamespace = statusTopic + '/status'
+    const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
+    const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : null
+    const statusNamespace = status_topic + '/status'
     if (this.state.status_listenter) {
       this.state.status_listenter.unsubscribe()
       this.setState({status_msg: null,
@@ -166,29 +164,30 @@ class ImageViewer extends Component {
       })
 
     }
-    var status_listenter = this.props.ros.setupStatusListener(
-          statusNamespace,
-          "nepi_interfaces/ImageStatus",
-          this.statusListener
-        )
+    if (image_topic != 'None'){
+      var status_listenter = this.props.ros.setupStatusListener(
+            statusNamespace,
+            "nepi_interfaces/ImageStatus",
+            this.statusListener
+          )
+    }
     this.setState({ status_listenter: status_listenter,
-                    imageTopic: this.props.imageTopic,
+                    image_topic: image_topic,
                     prev_image_topic: prev_image_topic,
-                    image_topic: this.props.imageTopic,
                     image_index: image_index,
-                    mouse_event_topic: mouse_event_topic,
-                    image_selection_topic: image_selection_topic
+                    mouse_event_callback: mouse_event_callback,
+                    selection_callback: selection_callback
     })
 
-    if (prev_image_topic != this.props.imageTopic && image_selection_topic != ''){
-      this.props.ros.sendImageSelectionMsg(image_selection_topic, image_index, this.props.imageTopic , prev_image_topic)
+    if (prev_image_topic != image_topic && selection_callback != null){
+      this.props.ros.sendImageSelectionMsg(selection_callback, image_index, image_topic , prev_image_topic)
 
     }
   }
 
 
   updateImageSource() {
-    if (this.props.imageTopic) {
+    if (this.props.image_topic) {
       if (!this.image) {
         this.image = new Image() // EXPERIMENT -- Only create a new Image when strictly required
       }
@@ -211,22 +210,22 @@ class ImageViewer extends Component {
     }
     if (this.image) {
       const { streamingImageQuality } = this.props.ros
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic + '&quality=' + streamingImageQuality
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&quality=' + streamingImageQuality
     }
   }
 
   // Lifecycle method called when the props change.
   // Used to track changes in the image topic value
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { imageTopic } = this.props
+    const { image_topic } = this.props
     const size = this.state.streamSize
     const width = (this.image) ? this.image.width : 0
     const height = (this.image) ? this.image.height : 0
     const got_size = width * height
     const size_changed = (size !== got_size)
-    if (prevProps.imageTopic !== imageTopic || size_changed === true || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
+    if (prevProps.image_topic !== image_topic || size_changed === true || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
       this.updateImageSource()
-      if (prevProps.imageTopic !== imageTopic) {
+      if (prevProps.image_topic !== image_topic) {
         this.updateStatusListener()
       }
     }
@@ -376,7 +375,7 @@ class ImageViewer extends Component {
 
   mouseDragEvent(canvas,event){
       const {sendImageDragMsg} = this.props.ros
-      const namespace = this.state.imageTopic
+      const namespace = this.state.image_topic
       //const rect = canvas.getBoundingClientRect()
 
       const is_drag = this.state.mouse_drag
@@ -393,8 +392,8 @@ class ImageViewer extends Component {
               const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
               sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
               const mouse_drag = {x1,y1,r,g,b,a}
-              if (this.state.mouse_event_topic !== '' && this.state.status_msg != null){
-                  this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+              if (this.state.mouse_event_callback !== '' && this.state.status_msg != null){
+                  this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_callback ,
                                                       this.state.image_topic,
                                                       this.state.image_index,
                                                       null,
@@ -410,7 +409,7 @@ class ImageViewer extends Component {
 
   mouseUpEvent(canvas,event){
       const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
-      const namespace = this.state.imageTopic
+      const namespace = this.state.image_topic
       //const rect = canvas.getBoundingClientRect()
 
       const [x2,y2] = this.getPixelLoc(canvas, event)
@@ -430,8 +429,8 @@ class ImageViewer extends Component {
           //const cur_ms = Date.now()
           //const last_click_ms = this.state.last_click_ms
           sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
-          if (this.state.mouse_event_topic !== '' && this.state.status_msg != null){
-              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+          if (this.state.mouse_event_callback !== '' && this.state.status_msg != null){
+              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_callback ,
                                                   this.state.image_topic,
                                                   this.state.image_index,
                                                   mouse_click,
@@ -448,8 +447,8 @@ class ImageViewer extends Component {
         const wt = Math.max(canvas.width, canvas.height) * 0.05
         if (dx > wt && dy > wt){
           sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
-          if (this.state.mouse_event_topic !== '' && this.state.status_msg != null){
-              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+          if (this.state.mouse_event_callback !== '' && this.state.status_msg != null){
+              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_callback ,
                                                   this.state.image_topic,
                                                   this.state.image_index,
                                                   null, 
@@ -622,7 +621,7 @@ class ImageViewer extends Component {
 
   renderFilterControls() {
 
-    const namespace = this.state.imageTopic
+    const namespace = this.state.image_topic
     const show_filters = this.props.show_filters ? this.props.show_filters : true
 
     const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
@@ -789,7 +788,7 @@ class ImageViewer extends Component {
 
   renderRenderControls() {
 
-    const namespace = this.state.imageTopic
+    const namespace = this.state.image_topic
     const show_renders = this.props.show_renders ? this.props.show_renders : true
 
     const { imageCaps, sendTriggerMsg } = this.props.ros
@@ -1000,7 +999,7 @@ class ImageViewer extends Component {
 
   renderResOrientControls() {
 
-    const namespace = this.state.imageTopic
+    const namespace = this.state.image_topic
     const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
 
     const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
@@ -1183,7 +1182,7 @@ class ImageViewer extends Component {
     const {sendStringMsg}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.custom_overlay_input
-      const namespace = this.state.imageTopic
+      const namespace = this.state.image_topic
       sendStringMsg(namespace + '/add_overlay_text', value)
       this.setState({custom_overlay_input: ''})
     }
@@ -1191,7 +1190,7 @@ class ImageViewer extends Component {
 
   renderOverlayControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
-    const namespace = this.state.imageTopic
+    const namespace = this.state.image_topic
     const show_overlays = this.props.show_overlays ? this.props.show_overlays : true
    
     if (show_overlays === true && this.state.status_msg !== null && namespace !== null){
@@ -1380,7 +1379,7 @@ class ImageViewer extends Component {
 
   renderImageViewer() {
 
-    const namespace = this.props.imageTopic ? this.props.imageTopic : 'None'
+    const namespace = this.props.image_topic ? this.props.image_topic : 'None'
     const { sendTriggerMsg } = this.props.ros
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const show_status = this.state.show_status

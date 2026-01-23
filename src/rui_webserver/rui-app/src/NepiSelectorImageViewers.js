@@ -19,7 +19,6 @@ import Styles from "./Styles"
 import Toggle from "react-toggle"
 
 import ImageViewerSelector from "./NepiSelectorImageViewer"
-import NepiIFConfig from "./Nepi_IF_Config"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 import {createShortValuesFromNamespaces, onChangeSwitchStateValue} from "./Utilities"
@@ -35,7 +34,7 @@ class ImageViewersSelector extends Component {
 
     this.state = {
 
-      topics: ['None','None','None','None'],
+      image_topics: ['None','None','None','None'],
       num_windows: 1,
 
       needs_update: false,
@@ -180,15 +179,13 @@ class ImageViewersSelector extends Component {
     }
 
     const num_windows = (this.props.num_windows != undefined) ? this.props.num_windows : this.state.num_windows
-    const topics = (this.props.ImageTopics != undefined) ? this.props.ImageTopics : [null,null,null,null]
-    const topics_text = (this.props.topics_text != undefined) ? this.props.topics_text : [null,null,null,null]
-    const image_filters = (this.props.image_filters != undefined) ? this.props.image_filters : []
-    const select_updated_namespaces = (this.props.select_updated_namespaces != undefined) ? this.props.select_updated_namespaces : [null,null,null,null]
+    const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : [null,null,null,null]
+    const titles = (this.props.titles != undefined) ? this.props.titles : [null,null,null,null]
+    const exclude_filters = (this.props.exclude_filters != undefined) ? this.props.exclude_filters : []
+    const include_filters = (this.props.include_filters != undefined) ? this.props.include_filters : []
+    const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : [null,null,null,null]
+    const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
     const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
-
-    const mouse_event_topic = (this.props.mouse_event_topic != undefined) ? this.props.mouse_event_topic : ''
-    const image_selection_topic = (this.props.image_selection_topic != undefined) ? this.props.image_selection_topic : ''
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
     const has_col_2 = (num_windows > 1) ? true : false
@@ -207,18 +204,18 @@ class ImageViewersSelector extends Component {
                         <div id="Image1Viewer">
                           <ImageViewerSelector
                             id="Image1Viewer"
-                            imageTopic={topics[0]}
-                            title={topics_text[0]}
+                            image_topic={image_topics[0]}
+                            title={titles[0]}
                             show_image_options={show_image_controls}
-                            select_updated_namespace={select_updated_namespaces[0]}
                             streamingImageQuality={streamingImageQuality}
-                            image_filters={image_filters}
+                            exclude_filters={exclude_filters}
+                            include_filters={include_filters}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
-                            mouse_event_topic={mouse_event_topic}
-                            image_selection_topic={image_selection_topic}
+                            mouse_event_callback={mouse_event_callback}
+                            selection_callback={selection_callback[0]}
                             make_section={false}
-                            show_save_controls={show_save_controls}
+                            show_save_controls={false}
                           />
                         </div>
 
@@ -226,16 +223,18 @@ class ImageViewersSelector extends Component {
                           <div id="Image3Viewer">
                             <ImageViewerSelector
                               id="Image3Viewer"
-                              imageTopic={topics[2]}
-                              title={topics_text[2]}
+                              image_topic={image_topics[2]}
+                              title={titles[2]}
                               show_image_options={show_image_controls}
-                              select_updated_namespace={select_updated_namespaces[2]}
+                              select_updated_namespace={selection_callback[2]}
                               streamingImageQuality={streamingImageQuality}
-                              image_filters={image_filters}
+                              exclude_filters={exclude_filters}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
+                              mouse_event_callback={mouse_event_callback}
+                              selection_callback={selection_callback[0]}
                               make_section={false}
-                              show_save_controls={show_save_controls}
+                              show_save_controls={false}
                             />
                           </div>        
                         : null
@@ -249,16 +248,18 @@ class ImageViewersSelector extends Component {
                           <div id="Image2Viewer">
                             <ImageViewerSelector
                               id="Image2Viewer"
-                              imageTopic={topics[1]}
-                              title={topics_text[1]}
+                              image_topic={image_topics[1]}
+                              title={titles[1]}
                               show_image_options={show_image_controls}
-                              select_updated_namespace={select_updated_namespaces[1]}
+                              select_updated_namespace={selection_callback[1]}
                               streamingImageQuality={streamingImageQuality}
-                              image_filters={image_filters}
+                              exclude_filters={exclude_filters}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
+                              mouse_event_callback={mouse_event_callback}
+                              selection_callback={selection_callback[0]}
                              make_section={false}
-                             show_save_controls={show_save_controls}
+                             show_save_controls={false}
                             />
                           </div>          
                         : null
@@ -268,16 +269,18 @@ class ImageViewersSelector extends Component {
                           <div id="Image4Viewer">
                             <ImageViewerSelector
                               id="Image4Viewer"
-                              imageTopic={topics[3]}
-                              title={topics_text[3]}
+                              image_topic={image_topics[3]}
+                              title={titles[3]}
                               show_image_options={show_image_controls}
-                              select_updated_namespace={select_updated_namespaces[3]}
+                              select_updated_namespace={selection_callback[3]}
                               streamingImageQuality={streamingImageQuality}
-                              image_filters={image_filters}
+                              exclude_filters={exclude_filters}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
+                              mouse_event_callback={mouse_event_callback}
+                              selection_callback={selection_callback[0]}
                              make_section={false}
-                             show_save_controls={show_save_controls}
+                             show_save_controls={false}
                             />
                           </div>          
                         : null
@@ -295,8 +298,7 @@ class ImageViewersSelector extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const hide_image = this.state.hide_list === false
-
+    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
 
     if (make_section === false){
       return (
@@ -305,6 +307,16 @@ class ImageViewersSelector extends Component {
               {this.renderImageControls()}
 
             {this.renderImageWindows()}
+
+            <div align={"left"} textAlign={"left"} 
+            >
+                        {(show_save_controls === true) ?
+                          <NepiIFSaveData
+                          make_section={false}
+                        />
+                      : null }
+
+            </div>
 
         </Column>
         </Columns>
@@ -318,6 +330,16 @@ class ImageViewersSelector extends Component {
               {this.renderImageControls()}
 
             {this.renderImageWindows()}
+
+            <div align={"left"} textAlign={"left"} 
+            >
+                        {(show_save_controls === true) ?
+                          <NepiIFSaveData
+                          make_section={false}
+                        />
+                      : null }
+
+            </div>
 
       </Section>
       )
