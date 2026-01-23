@@ -31,7 +31,7 @@ import Styles from "./Styles"
 import Select, { Option } from "./Select"
 import Input from "./Input"
 
-import {onChangeSwitchStateValue} from "./Utilities"
+import {onChangeSwitchStateValue, round} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
