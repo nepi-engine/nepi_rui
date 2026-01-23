@@ -187,6 +187,9 @@ class ImageViewersSelector extends Component {
     const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
 
+    const mouse_event_topic = (this.props.mouse_event_topic != undefined) ? this.props.mouse_event_topic : ''
+    const image_selection_topic = (this.props.image_selection_topic != undefined) ? this.props.image_selection_topic : ''
+
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
     const has_col_2 = (num_windows > 1) ? true : false
     const colFlexSize_1 = (has_col_2 === false)? "100%" : "50%"
@@ -212,6 +215,8 @@ class ImageViewersSelector extends Component {
                             image_filters={image_filters}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
+                            mouse_event_topic={mouse_event_topic}
+                            image_selection_topic={image_selection_topic}
                             make_section={false}
                             show_save_controls={show_save_controls}
                           />

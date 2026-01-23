@@ -60,9 +60,9 @@ class ImageViewerSelector extends Component {
       images_list_names: [],
       filter_list: [],
       id: '0',
-      selected_image: 'None',
+      selected_image: (this.props.ImageTopic != undefined) ? this.props.ImageTopic : 'None',
       selected_image_index: -1,
-      selected_image_text: 'None',
+      selected_image_text: (this.props.title != undefined) ? this.props.title : 'None',
 
       connected: true
     }
@@ -74,6 +74,7 @@ class ImageViewerSelector extends Component {
     this.onToggleListSelection = this.onToggleListSelection.bind(this)
 
   }
+
 
 
   toggleViewableList() {
@@ -357,7 +358,10 @@ class ImageViewerSelector extends Component {
     const imageTopic = this.state.selected_image
     const title = this.state.selected_image_text
     
-    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
+    const image_index = (this.props.image_index != undefined) ? this.props.image_index : 0
+    const mouse_event_topic = (this.props.mouse_event_topic != undefined) ? this.props.mouse_event_topic : ''
+    const image_selection_topic = (this.props.image_selection_topic != undefined) ? this.props.image_selection_topic : ''
+
     const streamingImageQuality = this.props.streamingImageQuality ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
                 : null
@@ -370,9 +374,11 @@ class ImageViewerSelector extends Component {
       id="imageViewer"
       imageTopic={imageTopic}
       title={title}
+      image_index={image_index}
+      mouse_event_topic={mouse_event_topic}
+      image_selection_topic={image_selection_topic}
       show_image_options={show_image_options}
       show_save_controls={show_save_controls}
-      navpose_namespace={navpose_namespace}
       make_section={false}
       streamingImageQuality={streamingImageQuality}
 

@@ -50,8 +50,11 @@ class NepiIFSaveData extends Component {
     // these states track the values through the components Save Data Status messages
     this.state = {
       saveNamespace: 'None',
+      lastSaveNamespace: 'None',
       saveRatesMsg: "",
       hasNavpose: false,
+      saveAllEnabled: false,
+      saveAllRate: 0.0,
       logNavEnabled: false,
       logNavRate: 0.0,
       saveDataPrefix: "",
@@ -63,19 +66,29 @@ class NepiIFSaveData extends Component {
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
+
       saveAll: false,
 
       show_active_settings: true,
 
       showControls: this.props.showControls ? this.props.showControls : false,
 
-      needs_update: true,
+      updateNamespace: null,
       saveStatusListener: null
     }
 
     this.getAllNamespace = this.getAllNamespace.bind(this)
     this.updateSaveStatusListener = this.updateSaveStatusListener.bind(this)
     this.saveStatusListener = this.saveStatusListener.bind(this)
+
+
+    this.onChangeTopicSelection = this.onChangeTopicSelection.bind(this)
+
+    this.renderSaveBar = this.renderSaveBar.bind(this)
+    this.renderTopicSelector = this.renderTopicSelector.bind(this)
+    this.renderSaveControls = this.renderSaveControls.bind(this)
+    this.renderControlOptions = this.renderControlOptions.bind(this)
+
 
     this.updateSaveLists = this.updateSaveLists.bind(this)
     this.getSaveNamesList = this.getSaveNamesList.bind(this)
@@ -89,6 +102,7 @@ class NepiIFSaveData extends Component {
 
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
     this.onChangeBoolSaveDataValue = this.onChangeBoolSaveDataValue.bind(this)
+    this.onChangeBoolSaveAllValue = this.onChangeBoolSaveAllValue.bind(this)
     this.onChangeBoolLogNavValue = this.onChangeBoolLogNavValue.bind(this)
     this.onChangeBoolUtcTzValue = this.onChangeBoolUtcTzValue.bind(this)
     this.onUpdateSaveDataRateValue = this.onUpdateSaveDataRateValue.bind(this)
@@ -113,7 +127,8 @@ class NepiIFSaveData extends Component {
     this.doNothing = this.doNothing.bind(this)
 
     this.onSnapshotTriggered = this.onSnapshotTriggered.bind(this)
-    this.renderSaveData = this.renderSaveData.bind(this)
+    this.renderSaveBar = this.renderSaveBar.bind(this)
+    this.renderSaveControls = this.renderSaveControls.bind(this)
 
   }
 
@@ -132,6 +147,8 @@ class NepiIFSaveData extends Component {
 
     this.setState({
       saveRatesMsg: message.save_data_rates,
+      saveAllEnabled: message.save_all_enabled,
+      saveAllRate: message.save_all_rate,
       logNavEnabled: message.log_navposes_enabled,
       logNavRate: message.log_navposes_rate,
       saveUtcTz: message.save_data_utc,
@@ -152,20 +169,19 @@ class NepiIFSaveData extends Component {
   // Function for configuring and subscribing to Status
   updateSaveStatusListener() {
     const allNamespace = this.getAllNamespace()
-    const saveAll = this.state.saveAll
-    const propNamespace = this.props.saveNamespace ? this.props.saveNamespace : 'None'
-    const saveNamespace = (saveAll === true) ? allNamespace : propNamespace
+    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace != 'None') ? this.state.saveNamespace :
+                                (this.props.saveNamespace != undefined && this.props.saveNamespace != 'None' && this.props.saveNamespace != 'None/save_data') ? 
+                                 this.props.saveNamespace : allNamespace
     if (this.state.saveStatusListener) {
       this.state.saveStatusListener.unsubscribe()
     }
-    if (saveNamespace !== 'None'){
+    if (saveNamespace != '' &&  saveNamespace !== 'None'){
       var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
             saveNamespace,
             this.saveStatusListener
           )
-      this.setState({ saveNamespace: saveNamespace})
-      this.setState({ saveStatusListener: saveStatusListener,
-        needs_update: false})
+      this.setState({ saveNamespace: saveNamespace, updateNamespace: null})
+      this.setState({ saveStatusListener: saveStatusListener})
     }
   }
 
@@ -173,13 +189,16 @@ class NepiIFSaveData extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const allNamespace = this.getAllNamespace()
-    const saveAll = this.state.saveAll
-    const propNamespace = this.props.saveNamespace ? this.props.saveNamespace : 'None'
-    const saveNamespace = (saveAll === true) ? allNamespace : propNamespace
-    const namespace_updated = (prevState.saveNamespace !== saveNamespace && saveNamespace !== 'None')
+    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace != 'None') ? this.state.saveNamespace :
+                                (this.props.saveNamespace != undefined && this.props.saveNamespace != 'None' && this.props.saveNamespace != 'None/save_data') ? 
+                                 this.props.saveNamespace : allNamespace
+    const needs_update = ((this.state.saveNamespace !== saveNamespace && saveNamespace !== 'None'))
   
-    if ((namespace_updated) && !saveNamespace.includes("null") ) {
+    if ((needs_update) && !saveNamespace.includes("null") ) {
       this.updateSaveStatusListener()
+    }
+    if (saveNamespace == 'None' && allNamespace != null){
+      this.setState({saveNamespace: allNamespace})
     }
   }
 
@@ -192,6 +211,61 @@ class NepiIFSaveData extends Component {
   }
 
 
+  createTopicOptions() {
+    const { namespacePrefix, deviceId} = this.props.ros
+    const allNamespace = this.getAllNamespace()
+    var items = []
+    items.push(<Option value={allNamespace}>{"All"}</Option>)
+    //items.push(<Option value={"None"}>{"None"}</Option>)
+    const saveData_topics = this.props.ros.saveDataNamespaces
+    var shortname = ''
+    var topic = ""
+    for (var i = 0; i < saveData_topics.length; i++) {
+      topic = saveData_topics[i]
+      if (topic !== allNamespace && topic.indexOf("None") === -1) {
+        shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')
+        items.push(<Option value={topic}>{shortname}</Option>)
+      }
+    }
+    const saveNamespace = this.state.saveNamespace
+    return items    
+  }
+
+
+  onChangeTopicSelection(event){
+    this.setState({lastSaveNamespace: this.saveNamespace})
+    const selNamespace = event.target.value
+    this.setState({saveNamespace: selNamespace,
+                   needs_update: true
+    })
+  }
+
+  renderTopicSelector() {
+    const saveTopics = this.createTopicOptions()
+
+    return (
+      <React.Fragment>
+
+      <Columns>
+        <Column>
+
+        <label style={{fontWeight: 'bold'}}>
+            {"Select Save Topic"}
+          </label>
+
+
+            <Select onChange={this.onChangeTopicSelection}
+            id="topicSelecor"
+            value={this.state.saveNamespace}>
+              {saveTopics}
+            </Select>
+
+      </Column>
+      </Columns>
+
+      </React.Fragment>
+    )
+  }
 
 
   // Function for creating configs options list from status msg
@@ -252,24 +326,29 @@ class NepiIFSaveData extends Component {
     var configsStr = ""
     var entryStr
     var configsStrList = [""]
+    var i = 0
+    var i2 = 0
+    var save_rates_list = []
+    var shortname = ''
     if (isAllNamespace === true){
-      for (let i = 0; i < saveDataNamespaces.length; i++) {
+      for (i = 0; i < saveDataNamespaces.length; i++) {
         topic = saveDataNamespaces[i]
         topic_name = topic.replace
         namesList = []
         ratesList = []
-        for (let i2 = 0; i2 < saveDataCaps.length; i2++) {
-            namesList = saveDataCaps[i2].data_product
-            ratesList = saveDataCaps[i2].save_rate_hz
-
-            for (let ind = 0; ind < namesList.length; ind++) {
-              if (topic !== "None" && topic !== allNamespace ){
-                
-                  entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
-                  configsStrList.push(entryStr)
-                
-              }
-            }
+        if (topic !== "None" && topic !== allNamespace ){
+                save_rates_list = saveDataCaps[topic].save_data_rates
+                for (i2 = 0; i2 < save_rates_list.length; i2++) {
+                    namesList = save_rates_list[i2].data_product
+                    ratesList = save_rates_list[i2].save_rate_hz
+                }
+                shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
+                configsStrList.push(shortname + '\n')
+                for (let ind = 0; ind < namesList.length; ind++) {
+                      entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                      configsStrList.push(entryStr)
+                  
+                }
         }
       }
     } 
@@ -307,24 +386,29 @@ class NepiIFSaveData extends Component {
     var configsStr = ""
     var entryStr
     var configsStrList = [""]
+    var save_rates_list = {}
     if (isAllNamespace === true){
       for (let i = 0; i < saveDataNamespaces.length; i++) {
         topic = saveDataNamespaces[i]
         topic_name = topic.replace
         namesList = []
         ratesList = []
-        for (let i2 = 0; i2 < saveDataCaps.length; i2++) {
-            namesList = saveDataCaps[i2].data_product
-            ratesList = saveDataCaps[i2].save_rate_hz
-
-            for (let ind = 0; ind < namesList.length; ind++) {
-              if (topic !== "None" && topic !== allNamespace ){
-                if (ratesList[ind] > 0){
-                  entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
-                  configsStrList.push(entryStr)
+        save_rates_list = saveDataCaps[topic].save_data_rates
+        if (topic !== "None" && topic !== allNamespace ){
+                save_rates_list = saveDataCaps[topic].save_data_rates
+                for (i2 = 0; i2 < save_rates_list.length; i2++) {
+                    namesList = save_rates_list[i2].data_product
+                    ratesList = save_rates_list[i2].save_rate_hz
                 }
-              }
-            }
+                shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
+                configsStrList.push(shortname + '\n')
+                for (let ind = 0; ind < namesList.length; ind++) {
+                  if (ratesList[ind] > 0){
+                      entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                      configsStrList.push(entryStr)
+                  }
+                  
+                }
         }
       }
     } 
@@ -419,19 +503,43 @@ sendLogRateUpdate(rate) {
 
   onChangeBoolSaveDataValue(){
     const {sendBoolMsg}  = this.props.ros
+    const saveNamespace = this.state.saveNamespace
     const saveAll = this.state.saveAll
     const allNamespace = this.getAllNamespace()
     const enabled = (this.state.saveDataEnabled === false)
     const saveDataRate = this.state.saveDataRate
     const rate = parseFloat(saveDataRate)
-    if ((saveAll === false) && (this.state.saveNamespace !== allNamespace)) {
+    if (saveAll === false) {
       this.sendSaveRateUpdate('Active',rate)
-      sendBoolMsg(this.state.saveNamespace + '/save_data_enable',enabled)
+      sendBoolMsg(this.state.saveNamespace + '/save_data_enable',enabled)      
     }
     else {
       sendBoolMsg(allNamespace + '/save_data_enable',enabled)
     }
 
+  }
+
+
+  onChangeBoolSaveAllValue(){
+    const {sendBoolMsg}  = this.props.ros
+    const saveNamespace = this.state.saveNamespace
+    const lastSaveNamespace = (this.state.lastSaveNamespace != 'None') ? this.state.lastSaveNamespace : saveNamespace
+    const saveAll = this.state.saveAll
+    const enabled = (saveAll === false)
+    const allNamespace = this.getAllNamespace()
+    if (enabled === false ) {
+      sendBoolMsg(allNamespace + '/save_data_enable',false)
+      this.setState({lastSaveNamespace: lastSaveNamespace,
+                    updateNamespace: lastSaveNamespace
+      })          
+    }
+    else {
+      this.setState({lastSaveNamespace: saveNamespace,
+                   updateNamespace: allNamespace
+      })             
+    }
+    
+    this.setState({saveAll: enabled})
   }
 
   onChangeBoolLogNavValue(){
@@ -546,7 +654,7 @@ sendLogRateUpdate(rate) {
     
     const saveAll = this.state.saveAll
     const allNamespace = this.getAllNamespace()
-    if ((saveAll === false) && (this.state.saveNamespace !== allNamespace)) {
+    if ((saveAll === false)) {
       sendTriggerMsg(this.state.saveNamespace + '/snapshot_trigger')
     }
     else {
@@ -554,7 +662,7 @@ sendLogRateUpdate(rate) {
     }
   }
 
-  renderSaveData() {
+  renderSaveBar() {
 
     const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
     const saveDataEnabled = this.getSaveDataValue()
@@ -565,7 +673,8 @@ sendLogRateUpdate(rate) {
     const selectedDataProducts = this.getSelectedDataProducts()
     const diskUsage = this.getDiskUsageRate()
     const saveUtcTz = this.state.saveUtcTz
-
+    const saveAllEnabled = this.state.saveAllEnabled
+    const saveAllRate = this.state.saveAllRate
 
     const always_show_controls = (this.props.always_show_controls != undefined) ? this.props.always_show_controls : false
     if (always_show_controls === true){
@@ -573,11 +682,13 @@ sendLogRateUpdate(rate) {
     }
     
     const showControls = this.state.showControls
-    const saveAll = this.state.saveAll
     const show_active_settings = this.state.show_active_settings
+
+    const saveAll = this.state.saveAll
+    const save_enabled = saveDataEnabled
     return (
 
-      <React.Fragment>
+      <React.Fragment> 
                     <div style={{ display: 'flex' }}>
 
 
@@ -598,14 +709,14 @@ sendLogRateUpdate(rate) {
 
 
                         <div style={{ width: '15%' }}>
-                              <div  hidden={isAllNamespace === true}>
-                                      <Label title="Save All">
-                                      <Toggle
-                                        checked={saveAll===true}
-                                        onClick={() => onChangeSwitchStateValue.bind(this)("saveAll",saveAll)}>
-                                      </Toggle>
+                          
+                                      <Label title="Enable All">
+                                        <Toggle
+                                          checked={ (saveAll === true) }
+                                          onClick={() => {this.onChangeBoolSaveAllValue()}}
+                                        />
                                   </Label>
-                              </div>
+        
                         </div>
 
                         <div style={{ width: '5%' }}>
@@ -628,7 +739,7 @@ sendLogRateUpdate(rate) {
                         <div style={{ width: '15%' }}>
                           <Label title={"Save"}>
                             <Toggle
-                              checked={ (saveDataEnabled === true) }
+                              checked={ (save_enabled === true) }
                               onClick={() => {this.onChangeBoolSaveDataValue()}}
                             />
                           </Label>
@@ -651,10 +762,28 @@ sendLogRateUpdate(rate) {
                   </div>
 
 
+      </React.Fragment>
+    )
+  }
 
-            <div align={"left"} textAlign={"left"} hidden={this.state.showControls === false}>
+  renderSaveControls() {
+    const allNamespace = this.getAllNamespace()
+    const saveNamespace = this.state.saveNamespace
+    const saveDataEnabled = this.getSaveDataValue()
+    const isNavposeMgr = (saveNamespace.indexOf('navpose_mgr') !== -1)
+    const isAllNamespace = (saveNamespace === allNamespace)
+    const dataProdcutSources = this.getSaveNamesList()
+    const selectedDataProducts = this.getSelectedDataProducts()
+    const diskUsage = this.getDiskUsageRate()
+    const saveUtcTz = this.state.saveUtcTz
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+    
+    const show_active_settings = this.state.show_active_settings
+    return (
+
+      <React.Fragment>
+        
+
               
                 <Columns>
                   <Column>
@@ -807,18 +936,25 @@ sendLogRateUpdate(rate) {
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-          </div>
-          
+         
 
 
       </React.Fragment>
     )
   }
 
-  render() {
-    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+
+ renderControlOptions() {
     const saveNamespace = this.state.saveNamespace
-    if (saveNamespace === 'None'){
+    const always_show_controls = (this.props.always_show_controls != undefined) ? this.props.always_show_controls : false
+    if (always_show_controls === true && this.state.showControls === false){
+      this.setState({showControls: true})
+    }
+    const showControls = this.state.showControls
+    const show_control_options = (this.props.show_control_options != undefined) ? this.props.show_control_options : true
+    const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
+
+    if (saveNamespace === 'None' || showControls === false || show_control_options === false){
       return (
         <Columns>
         <Column>
@@ -827,11 +963,45 @@ sendLogRateUpdate(rate) {
         </Columns>
       )
     }
-    else if (make_section === false){
+    else {
+      return (
+
+        <React.Fragment>
+
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: '20%' }} hidden={show_topic_selector === false}>
+            {this.renderTopicSelector()}
+          </div>
+
+          <div style={{ width: '5%' }}>
+            {}
+          </div>
+
+          <div  style={{ width: '75%' }}>
+
+            <label style={{fontWeight: 'bold'}}>
+              {saveNamespace}
+            </label>
+            {this.renderSaveControls()}
+          </div>
+        </div>
+        </React.Fragment>
+      )
+    }
+ }
+
+
+
+
+  render() {
+    const make_section = (this.props.make_section != undefined) ? this.props.make_section : true
+    if (make_section === false){
       return (
         <Columns>
         <Column>
-        {this.renderSaveData()}
+        {this.renderSaveBar()}
+         {this.renderControlOptions()}
         </Column>
         </Columns>
       )
@@ -841,7 +1011,8 @@ sendLogRateUpdate(rate) {
 
       <Section>
 
-        {this.renderSaveData()}
+        {this.renderSaveBar()}
+        {this.renderControlOptions()}
 
       </Section>
       )

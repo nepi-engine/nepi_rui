@@ -282,6 +282,7 @@ class NepiDeviceIDX extends Component {
               imageTopic={image_topic}
               title={image_text}
               hideQualitySelector={false}
+              show_save_controls={false}
             />
           }
 
@@ -314,12 +315,14 @@ class NepiDeviceIDX extends Component {
                             {this.renderImageViewer()}
 
 
-
+                          {(namespace != 'None') ?
                           <NepiIFSaveData
                               saveNamespace={namespace + '/save_data'}
                               title={"Nepi_IF_SaveData"}
+                              show_topic_selector={false}
                           />
-
+                          : null}
+{/*
                           <NepiIFNavPoseViewer
                             namespace={namespace  + "/navpose"}
                             title={"NavPose Data"}
@@ -333,11 +336,14 @@ class NepiDeviceIDX extends Component {
                                 name_reset_topic={"/reset_device_name"}
                                 title={"NepiDeviceIDXInfo"}
                             />
-                            
+*/}
+
+                        {(namespace != 'None') ?
                         <NepiSystemMessages
                         messagesNamespace={namespace.replace('/idx','') + '/messages'}
                         title={"NepiSystemMessages"}
                         />
+                        : null}
 
 
 
@@ -356,17 +362,21 @@ class NepiDeviceIDX extends Component {
                     {this.renderDeviceSelection()}
 
 
-
+                          {(namespace != 'None') ?
                           <NepiDeviceIDXControls
                               namespace={namespace}
                               dataProduct={data_product}
                               title={"NepiDeviceIDXControls"}
-                          />
+                        />
+                        : null}
 
+                        
+                          {(namespace != 'None') ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
                             title={"Nepi_IF_Settings"}
-                          />
+                        />
+                        : null}
 
 
 

@@ -29,7 +29,7 @@ import Button, { ButtonMenu } from "./Button"
 import { Option } from "./Select"
 import Styles from "./Styles"
 
-import SaveDataSelector from "./NepiSelectorSaveData"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
 
@@ -59,6 +59,7 @@ class NepiDashboardData extends Component {
 
     }
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
+    this.getAllNamespace = this.getAllNamespace.bind(this)
 
     this.renderMgrSystemStatus = this.renderMgrSystemStatus.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
@@ -86,6 +87,14 @@ class NepiDashboardData extends Component {
     return baseNamespace
   }
 
+  getAllNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var allNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      allNamespace = "/" + namespacePrefix + "/" + deviceId + '/save_data'
+    }
+    return allNamespace
+  }
 
   renderMgrSystemStatus() {
     const {
@@ -276,8 +285,10 @@ class NepiDashboardData extends Component {
 
       <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-      <SaveDataSelector
-        title={"SaveDataSelector"}
+        <NepiIFSaveData
+        saveNamespace={this.getAllNamespace()}
+        always_show_controls={true}
+        make_section={true}
         />
 
     </React.Fragment>

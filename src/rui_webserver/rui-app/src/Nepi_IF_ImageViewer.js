@@ -74,11 +74,26 @@ class ImageViewer extends Component {
     super(props)
 
     this.state = {
+      imageTopic: null,
+      
+      image_topic: 'None',
+      prev_image_topic: 'None',
+      image_index: 0,
+      mouse_event_topic: '',
+      image_selection_topic: '',
+      pixel: null,
+      mouse_drag: false,
+
+      save_data_topic: '',
+      navpose_topic: '',
+
+      status_msg: null,
+
+
       has_status: false,
       show_controls: false,
       show_status: false,
       show_renders: false,
-      controls_namespace: null,
       has_overlay: false,
       show_overlays: false,
       has_navpose: false,
@@ -90,12 +105,7 @@ class ImageViewer extends Component {
       streamSize: 0,
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
       status_listenter: null,
-      status_msg: null,
-      pixel: null,
-      mouse_drag: false,
 
-      save_data_topic: '',
-      navpose_topic: '',
 
       filter_list_viewable: false,
 
@@ -128,6 +138,142 @@ class ImageViewer extends Component {
     this.updateStatusListener = this.updateStatusListener.bind(this)
 
   }
+
+
+
+  // Callback for handling ROS Status messages
+  statusListener(message) {
+    this.setState({
+      status_msg: message,
+      save_data_topic: message.save_data_topic,
+      navpose_topic: message.navpose_topic
+    })    
+
+  }
+
+  // Function for configuring and subscribing to Status
+  updateStatusListener() {
+    const statusTopic = this.props.status_topic ? this.props.status_topic : this.props.imageTopic
+    const prev_image_topic = (this.state.imageTopic != null) ? this.state.imageTopic : 'None'
+    const image_index = (this.props.image_index != undefined) ? this.props.image_index : 0
+    const mouse_event_topic = (this.props.mouse_event_topic != undefined) ? this.props.mouse_event_topic : ''
+    const image_selection_topic = (this.props.image_selection_topic != undefined) ? this.props.image_selection_topic : ''
+    const statusNamespace = statusTopic + '/status'
+    if (this.state.status_listenter) {
+      this.state.status_listenter.unsubscribe()
+      this.setState({status_msg: null,
+                    image_topic: 'None'
+      })
+
+    }
+    var status_listenter = this.props.ros.setupStatusListener(
+          statusNamespace,
+          "nepi_interfaces/ImageStatus",
+          this.statusListener
+        )
+    this.setState({ status_listenter: status_listenter,
+                    imageTopic: this.props.imageTopic,
+                    prev_image_topic: prev_image_topic,
+                    image_topic: this.props.imageTopic,
+                    image_index: image_index,
+                    mouse_event_topic: mouse_event_topic,
+                    image_selection_topic: image_selection_topic
+    })
+
+    if (prev_image_topic != this.props.imageTopic && image_selection_topic != ''){
+      this.props.ros.sendImageSelectionMsg(image_selection_topic, image_index, this.props.imageTopic , prev_image_topic)
+
+    }
+  }
+
+
+  updateImageSource() {
+    if (this.props.imageTopic) {
+      if (!this.image) {
+        this.image = new Image() // EXPERIMENT -- Only create a new Image when strictly required
+      }
+      this.image.crossOrigin = "Anonymous"
+      this.image.onload = () => {
+        const { width, height } = this.image
+        this.setState(
+          {
+            hasInitialized: true,
+            connected: false,
+            streamWidth: width,
+            streamHeight: height,
+            streamSize: width * height
+          },
+          () => {
+            requestAnimationFrame(this.updateFrame)
+          }
+        )
+      }
+    }
+    if (this.image) {
+      const { streamingImageQuality } = this.props.ros
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic + '&quality=' + streamingImageQuality
+    }
+  }
+
+  // Lifecycle method called when the props change.
+  // Used to track changes in the image topic value
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const { imageTopic } = this.props
+    const size = this.state.streamSize
+    const width = (this.image) ? this.image.width : 0
+    const height = (this.image) ? this.image.height : 0
+    const got_size = width * height
+    const size_changed = (size !== got_size)
+    if (prevProps.imageTopic !== imageTopic || size_changed === true || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
+      this.updateImageSource()
+      if (prevProps.imageTopic !== imageTopic) {
+        this.updateStatusListener()
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    this.setState({ shouldUpdate: false })
+    if (this.image) {
+      this.image.src = null
+    }
+  }
+
+  componentDidMount() {
+    this.updateImageSource()
+    this.updateStatusListener()
+  }
+
+
+
+  onCanvasRef(ref) {
+    this.canvas = ref
+    if (ref != null){
+          this.canvas.addEventListener('mousedown', (e) => {
+          this.mouseDownEvent(this.canvas, e)
+          })
+
+          this.canvas.addEventListener('mousemove', (e) => {
+          this.mouseDragEvent(this.canvas, e)
+          })
+
+          this.canvas.addEventListener('mouseup', (e) => {
+          this.mouseUpEvent(this.canvas, e)
+          })
+      }
+
+    //this.updateImageSource()
+  }
+
+
+
+  onChangeImageQuality(quality) {
+    this.props.ros.onChangeStreamingImageQuality(quality)
+    this.setState({currentStreamingImageQuality: quality})
+    this.updateImageSource()
+
+  }
+
 
   updateFrame() {
     const square_canvas = this.props.squareCanvas ? this.props.squareCanvas : false
@@ -222,13 +368,15 @@ class ImageViewer extends Component {
       const [x,y] = this.getPixelLoc(canvas, event)
       const [r,g,b,a] = this.getPixelColor(canvas,x, y)
       this.setState({pixel: [x,y,r,g,b,a], mouse_drag: true})
-      console.log("x coords: " + x + ", y coords: " + y);
+
+
+      //console.log("x coords: " + x + ", y coords: " + y);
   }
 
 
   mouseDragEvent(canvas,event){
       const {sendImageDragMsg} = this.props.ros
-      const namespace = this.state.controls_namespace
+      const namespace = this.state.imageTopic
       //const rect = canvas.getBoundingClientRect()
 
       const is_drag = this.state.mouse_drag
@@ -244,14 +392,25 @@ class ImageViewer extends Component {
             if (dx > pt && dy > pt){
               const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
               sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
+              const mouse_drag = {x1,y1,r,g,b,a}
+              if (this.state.mouse_event_topic !== '' && this.state.status_msg != null){
+                  this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+                                                      this.state.image_topic,
+                                                      this.state.image_index,
+                                                      null,
+                                                      mouse_drag, 
+                                                      null, 
+                                                      this.state.status_msg
+                                                      )
             }
           }
       }
+    }
   }
 
   mouseUpEvent(canvas,event){
       const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
-      const namespace = this.state.controls_namespace
+      const namespace = this.state.imageTopic
       //const rect = canvas.getBoundingClientRect()
 
       const [x2,y2] = this.getPixelLoc(canvas, event)
@@ -259,8 +418,11 @@ class ImageViewer extends Component {
       this.setState({pixel: null, mouse_drag: false})
       if (pixel !== null){
         const [x1,y1,r,g,b,a] = pixel
+        const mouse_click = {x1,y1,r,g,b,a}
+        const mouse_window = {x1,x2,y1,y2}
         const dx = Math.abs(x2 - x1) 
         const dy = Math.abs(y2 - y1) 
+
 
         const pt = 5
         if (dx < pt && dy < pt){
@@ -268,6 +430,17 @@ class ImageViewer extends Component {
           //const cur_ms = Date.now()
           //const last_click_ms = this.state.last_click_ms
           sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
+          if (this.state.mouse_event_topic !== '' && this.state.status_msg != null){
+              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+                                                  this.state.image_topic,
+                                                  this.state.image_index,
+                                                  mouse_click,
+                                                  null, 
+                                                  null, 
+                                                  this.state.status_msg
+                                                  )
+
+          }
 
           //this.setState({last_click_ms: cur_ms})
         }
@@ -275,125 +448,19 @@ class ImageViewer extends Component {
         const wt = Math.max(canvas.width, canvas.height) * 0.05
         if (dx > wt && dy > wt){
           sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
-        }
+          if (this.state.mouse_event_topic !== '' && this.state.status_msg != null){
+              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+                                                  this.state.image_topic,
+                                                  this.state.image_index,
+                                                  null, 
+                                                  null, 
+                                                  mouse_window,
+                                                  this.state.status_msg
+                                                  )
 
-
-      }
-      
-    
-  }
-
-  onCanvasRef(ref) {
-    this.canvas = ref
-    if (ref != null){
-          this.canvas.addEventListener('mousedown', (e) => {
-          this.mouseDownEvent(this.canvas, e)
-          })
-
-          this.canvas.addEventListener('mousemove', (e) => {
-          this.mouseDragEvent(this.canvas, e)
-          })
-
-          this.canvas.addEventListener('mouseup', (e) => {
-          this.mouseUpEvent(this.canvas, e)
-          })
-      }
-
-    //this.updateImageSource()
-  }
-
-  // Callback for handling ROS Status messages
-  statusListener(message) {
-    this.setState({
-      status_msg: message,
-      save_data_topic: message.save_data_topic,
-      navpose_topic: message.navpose_topic
-    })    
-
-  }
-
-  // Function for configuring and subscribing to Status
-  updateStatusListener() {
-    const namespace = this.props.status_namespace ? this.props.status_namespace : this.props.imageTopic
-    const statusNamespace = namespace + '/status'
-    if (this.state.status_listenter) {
-      this.state.status_listenter.unsubscribe()
-      this.setState({status_msg: null})
-
-    }
-    var status_listenter = this.props.ros.setupStatusListener(
-          statusNamespace,
-          "nepi_interfaces/ImageStatus",
-          this.statusListener
-        )
-    this.setState({ status_listenter: status_listenter,
-                    controls_namespace: namespace
-    })
-  }
-
-
-  updateImageSource() {
-    if (this.props.imageTopic) {
-      if (!this.image) {
-        this.image = new Image() // EXPERIMENT -- Only create a new Image when strictly required
-      }
-      this.image.crossOrigin = "Anonymous"
-      this.image.onload = () => {
-        const { width, height } = this.image
-        this.setState(
-          {
-            hasInitialized: true,
-            connected: false,
-            streamWidth: width,
-            streamHeight: height,
-            streamSize: width * height
-          },
-          () => {
-            requestAnimationFrame(this.updateFrame)
           }
-        )
+        }
       }
-    }
-    if (this.image) {
-      const { streamingImageQuality } = this.props.ros
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.imageTopic + '&quality=' + streamingImageQuality
-    }
-  }
-
-  // Lifecycle method called when the props change.
-  // Used to track changes in the image topic value
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    const { imageTopic } = this.props
-    const size = this.state.streamSize
-    const width = (this.image) ? this.image.width : 0
-    const height = (this.image) ? this.image.height : 0
-    const got_size = width * height
-    const size_changed = (size !== got_size)
-    if (prevProps.imageTopic !== imageTopic || size_changed === true || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
-      this.updateImageSource()
-      if (prevProps.imageTopic !== imageTopic) {
-        this.updateStatusListener()
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    this.setState({ shouldUpdate: false })
-    if (this.image) {
-      this.image.src = null
-    }
-  }
-
-  componentDidMount() {
-    this.updateImageSource()
-    this.updateStatusListener()
-  }
-
-  onChangeImageQuality(quality) {
-    this.props.ros.onChangeStreamingImageQuality(quality)
-    this.setState({currentStreamingImageQuality: quality})
-    this.updateImageSource()
-
   }
 
 
@@ -555,7 +622,7 @@ class ImageViewer extends Component {
 
   renderFilterControls() {
 
-    const namespace = this.state.controls_namespace
+    const namespace = this.state.imageTopic
     const show_filters = this.props.show_filters ? this.props.show_filters : true
 
     const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
@@ -722,7 +789,7 @@ class ImageViewer extends Component {
 
   renderRenderControls() {
 
-    const namespace = this.state.controls_namespace
+    const namespace = this.state.imageTopic
     const show_renders = this.props.show_renders ? this.props.show_renders : true
 
     const { imageCaps, sendTriggerMsg } = this.props.ros
@@ -933,7 +1000,7 @@ class ImageViewer extends Component {
 
   renderResOrientControls() {
 
-    const namespace = this.state.controls_namespace
+    const namespace = this.state.imageTopic
     const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
 
     const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
@@ -1116,7 +1183,7 @@ class ImageViewer extends Component {
     const {sendStringMsg}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.custom_overlay_input
-      const namespace = this.state.controls_namespace
+      const namespace = this.state.imageTopic
       sendStringMsg(namespace + '/add_overlay_text', value)
       this.setState({custom_overlay_input: ''})
     }
@@ -1124,7 +1191,7 @@ class ImageViewer extends Component {
 
   renderOverlayControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
-    const namespace = this.state.controls_namespace
+    const namespace = this.state.imageTopic
     const show_overlays = this.props.show_overlays ? this.props.show_overlays : true
    
     if (show_overlays === true && this.state.status_msg !== null && namespace !== null){
@@ -1320,10 +1387,9 @@ class ImageViewer extends Component {
     const show_controls = this.state.show_controls
     const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
-    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : namespace  + "/navpose"
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
 
-    const title_text = this.props.title ? this.props.title : ""
+    const title = this.props.title ? this.props.title : ""
     
     return (
       
@@ -1331,7 +1397,7 @@ class ImageViewer extends Component {
       <Column>
               <div style={{ display: 'flex' }}>
                         <div style={{ width: '80%' }}>
-                              <Label title={title_text}>
+                              <Label title={title}>
                             </Label>
                         </div>
 
@@ -1351,12 +1417,14 @@ class ImageViewer extends Component {
 
 
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
-      <div align={"left"} textAlign={"left"} hidden={(show_save_controls === false || namespace === 'None')}>
-
+      <div align={"left"} textAlign={"left"} 
+      >
+                  {(show_save_controls === true && namespace !== 'None') ?
                     <NepiIFSaveData
-                    namespace={this.state.save_data_topic}
+                    saveNamespace={this.state.save_data_topic}
                     make_section={false}
                   />
+                : null }
 
       </div>
 
@@ -1517,19 +1585,21 @@ class ImageViewer extends Component {
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
 
                             {this.renderCompression()}
-
+                            {(show_save_controls === true && namespace !== 'None') ?
                             <NepiIFConfig
                                 namespace={namespace}
                                 title={"Nepi_IF_Config"}
                             />
+                            : null }
 
                     </div>
 
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
 
                       <NepiIFNavPoseViewer
-                        namespace={this.state.navpose_topic}
+                        saveNamespace={this.state.navpose_topic}
                         title={"NavPose Data"}
+                        make_section={false}
                       />
 
                     </div>
@@ -1546,7 +1616,6 @@ class ImageViewer extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title_text = this.props.title ? this.props.title : ""
     if (make_section === false){
       return (
         <Columns>

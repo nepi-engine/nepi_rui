@@ -45,7 +45,7 @@ class NepiIFNavPoseViewer extends Component {
 
 
       mgrName: "navpose_mgr",
-      namespace: null,
+      navposeNamespace: null,
       base_namespace: null,
 
       show_navpose: this.props.show_navpose ? this.props.show_navpose : true,
@@ -158,15 +158,15 @@ class NepiIFNavPoseViewer extends Component {
 
   updateStatusListener() {
       //console.log("=====updateStatusListener called=====");
-      const namespace = this.state.namespace 
-      const navposeTopic = namespace + '/status'
+      const navposeNamespace = this.state.navposeNamespace 
+      const navposeTopic = navposeNamespace + '/status'
       const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
       var statusListener = null
       if (this.state.statusListener) {
         this.state.statusListener.unsubscribe()
       }
 
-    if (namespace !== 'None' && namespace != null){
+    if (navposeNamespace !== 'None' && navposeNamespace != null){
       if (is_navposes === true) {
         statusListener = this.props.ros.setupSaveDataStatusListener(
           navposeTopic,
@@ -193,14 +193,14 @@ class NepiIFNavPoseViewer extends Component {
   }
 
   updateNavposeListener() {
-    const namespace = this.state.namespace
-    const navposeTopic = namespace
+    const navposeNamespace = this.state.navposeNamespace
+    const navposeTopic = navposeNamespace
     const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
     if (this.state.dataListener) {
       this.state.dataListener.unsubscribe()
     }
     var dataListener = null
-    if (namespace !== 'None' && namespace != null){
+    if (navposeNamespace !== 'None' && navposeNamespace != null){
       if (is_navposes === true) {
         dataListener = this.props.ros.setupSaveDataStatusListener(
           navposeTopic,
@@ -231,16 +231,16 @@ class NepiIFNavPoseViewer extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var namespace = (this.props.namespace != undefined) ? this.props.namespace : null
-    if (prevState.namespace !== namespace ){
-      if (namespace != null) {
+    var navposeNamespace = (this.props.navposeNamespace != undefined) ? this.props.navposeNamespace : null
+    if (prevState.navposeNamespace !== navposeNamespace ){
+      if (navposeNamespace != null) {
         this.setState({
-          namespace: namespace,
+          navposeNamespace: navposeNamespace,
         })
         this.updateStatusListener()
         this.updateNavposeListener()
       } 
-      else if (namespace == null){
+      else if (navposeNamespace == null){
         this.setState({ disabled: true })
       }
     }
@@ -424,8 +424,8 @@ class NepiIFNavPoseViewer extends Component {
         const navpose_data = this.state.navpose_data
         const make_section = this.props.make_section !== undefined ? this.props.make_section : true;
         const view_title = this.props.title  ? this.props.title : "NavPose Data";
-        const namespace = this.state.namespace
-        if (navpose_data == null || namespace == null) {
+        const navposeNamespace = this.state.navposeNamespace
+        if (navpose_data == null || navposeNamespace == null) {
     
           return(
             <Columns>
