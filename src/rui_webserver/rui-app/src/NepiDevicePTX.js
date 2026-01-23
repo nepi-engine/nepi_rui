@@ -533,7 +533,7 @@ renderNavPose(){
                 
 
                 <div id="ptxImageViewer">
-                  <PTXImageViewerSelector
+                  <NepiDevicePTXImageViewer
                     id="ptxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
