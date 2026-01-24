@@ -128,7 +128,8 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const settingsNamespace = (this.props.settingsNamespace != undefined) ? this.props.settingsNamespace  + '/settings': 'None'
+    const settingsNamespace = (this.props.settingsNamespace != undefined) ? (this.props.settingsNamespace !== 'None') ? 
+                              this.props.settingsNamespace  + '/settings': 'None' : 'None'
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
       this.setState({settingsListener: null})
@@ -156,10 +157,9 @@ class Nepi_IF_Settings extends Component {
         this.settingsStatusListener
       )
 
-      
+    }
       this.setState({settingsNamespace: settingsNamespace, updatedNamespace: settingsNamespace})
       this.setState({ settingsListener: settingsListener})
-    }
     
   }
 
@@ -167,8 +167,9 @@ class Nepi_IF_Settings extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const settingsNamespace = this.props.settingsNamespace + '/settings'
-    if (settingsNamespace !== this.state.settingsNamespace || settingsNamespace != this.state.updatedNamespace) {
+    const settingsNamespace = (this.props.settingsNamespace != undefined) ? (this.props.settingsNamespace !== 'None') ? 
+                              this.props.settingsNamespace  + '/settings': 'None' : 'None'
+    if (settingsNamespace !== prevState.settingsNamespace) {
       this.updateSettingsListener()
     }
   }
@@ -180,6 +181,10 @@ class Nepi_IF_Settings extends Component {
       this.state.settingsListener.unsubscribe()
     }
   }
+
+    componentDidMount() {
+    this.updateStatusListener()
+    }
 
 
   // Function for creating settings options list from capabilities
@@ -506,10 +511,10 @@ class Nepi_IF_Settings extends Component {
 
   render() {
     const make_section = this.props.make_section ? this.props.make_section : true
-    const settingsNamespace = this.state.settingsNamespace ? this.state.settingsNamespace  + '/settings' : 'None'
-    if (settingsNamespace != this.state.settingsNamespace){
-      this.setState({updatedNamespace: settingsNamespace})
-    }
+    const settingsNamespace = this.state.settingsNamespace ? this.state.settingsNamespace : 'None'
+    // if (settingsNamespace.replace('/settings','') != this.props.settingsNamespace){
+    //   this.setState({updatedNamespace: this.state.settingsNamespace  + '/settings'})
+    // }
     if (settingsNamespace !== 'None' && make_section === true){
       return (
         <Section title={"Device Settings"}>
