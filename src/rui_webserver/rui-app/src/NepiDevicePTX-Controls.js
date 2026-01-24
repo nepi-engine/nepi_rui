@@ -32,15 +32,7 @@ import Button, { ButtonMenu } from "./Button"
 import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
 import {createShortValuesFromNamespaces} from "./Utilities"
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import ImageViewer from "./Nepi_IF_ImageViewer"
-import NepiIFSettings from "./Nepi_IF_Settings"
-
-
-import {onChangeSwitchStateValue } from "./Utilities"
-
-
-
+import NepiIFConfig from "./Nepi_IF_Config"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -57,7 +49,7 @@ class NepiDevicePTXControls extends Component {
 
     this.state = {
       
-      ptx_namespace : null,
+      namespace : null,
 
       panHomePos : null,
       tiltHomePos : null,
@@ -95,16 +87,16 @@ class NepiDevicePTXControls extends Component {
 
   getNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
-    var ptx_namespace = null
+    var namespace = null
     if (namespacePrefix !== null && deviceId !== null){
-      if (this.props.ptx_namespace != undefined){
-        ptx_namespace = this.props.ptx_namespace
+      if (this.props.namespace != undefined){
+        namespace = this.props.namespace
       }
       else{
-        ptx_namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
+        namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
       }
     }
-    return ptx_namespace
+    return namespace
   }
 
   // Callback for handling ROS Status3DX messages
@@ -152,8 +144,8 @@ class NepiDevicePTXControls extends Component {
   }
   
   // Function for configuring and subscribing to Status
-  updateStatusListener(ptx_namespace) {
-    const statusNamespace = ptx_namespace + '/status'
+  updateStatusListener(namespace) {
+    const statusNamespace = namespace + '/status'
     if (this.state.statusListner) {
       this.state.statusListner.unsubscribe()
       this.setState({status_msg: null,
@@ -168,7 +160,7 @@ class NepiDevicePTXControls extends Component {
                     tiltSoftStopMax : null
       })
     }
-    if (ptx_namespace != null && ptx_namespace !== 'None' && ptx_namespace.indexOf('null') === -1){
+    if (namespace != null && namespace !== 'None' && namespace.indexOf('null') === -1){
         var statusListner = this.props.ros.setupStatusListener(
               statusNamespace,
               "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
@@ -176,7 +168,7 @@ class NepiDevicePTXControls extends Component {
             )
     }
     this.setState({ 
-      ptx_namespace: ptx_namespace,
+      namespace: namespace,
       statusListner: statusListner,
     })
 
@@ -185,11 +177,11 @@ class NepiDevicePTXControls extends Component {
 // Lifecycle method called when compnent updates.
 // Used to track changes in the topic
 componentDidUpdate(prevProps, prevState, snapshot) {
-  const ptx_namespace = this.getNamespace()
-  const namespace_updated = (this.state.ptx_namespace !== ptx_namespace && ptx_namespace !== null)
+  const namespace = this.getNamespace()
+  const namespace_updated = (this.state.namespace !== namespace && namespace !== null)
   if (namespace_updated) {
-    if (ptx_namespace != null){
-      this.updateStatusListener(ptx_namespace)
+    if (namespace != null){
+      this.updateStatusListener(namespace)
     } 
   }
 }
@@ -267,12 +259,12 @@ componentDidMount(){
 
   onKeyText(e) {
     const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
-    const ptx_namespace = (this.props.ptx_namespace != undefined) ? this.props.ptx_namespace : 'None'
+    const namespace = (this.props.namespace != undefined) ? this.props.namespace : 'None'
 
     const ptxDevicesList = Object.keys(ptxDevices)
     var has_sep_pan_tilt = false
-    if (ptxDevicesList.indexOf(ptx_namespace) !== -1){
-      const ptx_caps = ptxDevices[ptx_namespace]
+    if (ptxDevicesList.indexOf(namespace) !== -1){
+      const ptx_caps = ptxDevices[namespace]
       has_sep_pan_tilt = ptx_caps && (ptx_caps.has_sep_pan_tilt === true)
     }
     var panElement = null
@@ -290,7 +282,7 @@ componentDidMount(){
         tiltElement = document.getElementById("PTXTiltHomePos")
         clearElementStyleModified(tiltElement)
                 
-        onSetPTXHomePos(ptx_namespace, Number(panElement.value), Number(tiltElement.value))
+        onSetPTXHomePos(namespace, Number(panElement.value), Number(tiltElement.value))
 
       }
       else if ((e.target.id === "PTXPanSoftStopMin") || (e.target.id === "PTXPanSoftStopMax") ||
@@ -308,7 +300,7 @@ componentDidMount(){
         tiltMaxElement = document.getElementById("PTXTiltSoftStopMax")
         clearElementStyleModified(tiltMaxElement)
 
-        onSetPTXSoftStopPos(ptx_namespace, Number(panMinElement.value), Number(panMaxElement.value), 
+        onSetPTXSoftStopPos(namespace, Number(panMinElement.value), Number(panMaxElement.value), 
                             Number(tiltMinElement.value), Number(tiltMaxElement.value))
       }
       else if (e.target.id === "PTXPanGoto") 
@@ -318,10 +310,10 @@ componentDidMount(){
           clearElementStyleModified(panElement)
                         
           if (has_sep_pan_tilt === true){
-            onSetPTXGotoPanPos(ptx_namespace, Number(panElement.value))
+            onSetPTXGotoPanPos(namespace, Number(panElement.value))
           }
           else {
-            onSetPTXGotoPos(ptx_namespace, Number(panElement.value),Number(tiltElement.value))
+            onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
           }
           
         }
@@ -332,10 +324,10 @@ componentDidMount(){
             tiltElement = document.getElementById("PTXTiltGoto")
             clearElementStyleModified(tiltElement)
             if (has_sep_pan_tilt === true){
-              onSetPTXGotoTiltPos(ptx_namespace, Number(tiltElement.value))
+              onSetPTXGotoTiltPos(namespace, Number(tiltElement.value))
             }
             else {
-              onSetPTXGotoPos(ptx_namespace, Number(panElement.value),Number(tiltElement.value))
+              onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
             }                    
             
           }
@@ -377,9 +369,9 @@ componentDidMount(){
 
 onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
   const {publishRangeWindow} = this.props.ros
-  const ptx_namespace = this.props.ptx_namespace ? this.props.ptx_namespace : 'None'
+  const namespace = this.props.namespace ? this.props.namespace : 'None'
 
-  const topic_namespace = ptx_namespace + topicName
+  const topic_namespace = namespace + topicName
   var min = -60
   var max = 60
   if(event.key === 'Enter'){
@@ -403,10 +395,10 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
   renderControlPanel() {
     const { ptxDevices, sendBoolMsg, onPTXGoHome, onPTXSetHomeHere } = this.props.ros
-    const ptx_namespace = this.props.ptx_namespace ? this.props.ptx_namespace : 'None'
+    const namespace = this.props.namespace ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
 
-    if (ptx_namespace !== 'None' && status_msg == null){
+    if (namespace !== 'None' && status_msg == null){
       return (
         <Columns>
           <Column>
@@ -427,8 +419,8 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
           var has_speed_control = false
           var has_homing = false
           //Unused var has_set_home =
-          if (ptxDevicesList.indexOf(ptx_namespace) !== -1){
-            const ptx_caps = ptxDevices[ptx_namespace]
+          if (ptxDevicesList.indexOf(namespace) !== -1){
+            const ptx_caps = ptxDevices[namespace]
             has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
             has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
             has_speed_control = ptx_caps && (ptx_caps.has_adjustable_speed)
@@ -550,7 +542,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
               <div hidden={(has_homing === false)}>
 
               <ButtonMenu>
-                <Button disabled={!has_homing} onClick={() => onPTXGoHome(ptx_namespace)}>{"Go Home"}</Button>
+                <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
               </ButtonMenu>
 
             </div>
@@ -589,10 +581,10 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
                           <Label title={"Reverse Control"}>
                             <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-                              <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(ptx_namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
+                              <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
                             </div>
                             <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-                              <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(ptx_namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
+                              <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
                             </div>
                           </Label>
 
@@ -604,7 +596,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                           title={"Speed"}
                           msgType={"std_msgs/Float32"}
                           adjustment={speedRatio}
-                          topic={ptx_namespace + "/set_speed_ratio"}
+                          topic={namespace + "/set_speed_ratio"}
                           scaled={0.01}
                           min={0}
                           max={100}
@@ -715,10 +707,20 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
 
                         <ButtonMenu>
-                          <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(ptx_namespace)}>{"Set Home Here"}</Button>
+                          <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(namespace)}>{"Set Home Here"}</Button>
                         </ButtonMenu>
 
                       </div>
+
+
+                      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                            <NepiIFConfig
+                                namespace={namespace}
+                                title={"Nepi_IF_Conig"}
+                          />
+
+
 
                   </div>
 
@@ -731,10 +733,19 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const status_msg = this.state.status_msg
+    if (status_msg == null){
+      return (
+        <Columns>
+        <Column>
+       
+        </Column>
+        </Columns>
+      )
 
 
-    
-    if (make_section === false){
+    }
+    else if (make_section === false){
 
       return (
 
@@ -750,11 +761,10 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
     else {
       return (
 
-          <Section>
+          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
 
 
               {this.renderControlPanel()}
-
 
         </Section>
      )

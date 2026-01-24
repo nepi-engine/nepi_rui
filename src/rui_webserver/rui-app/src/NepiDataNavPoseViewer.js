@@ -298,7 +298,7 @@ updateNavposeListener() {
                       />
 
                     <NepiSystemMessages
-                    messagesNamespace={namespace}
+                    namespace={namespace}
                     title={"NepiSystemMessages"}
                     />
 

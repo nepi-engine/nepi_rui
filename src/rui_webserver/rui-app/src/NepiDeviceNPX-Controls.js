@@ -21,10 +21,10 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Button, { ButtonMenu } from "./Button"
+//import Button, { ButtonMenu } from "./Button"
 import { Column, Columns } from "./Columns"
-
-//import NepiIF3DTransform from "./Nepi_IF_3DTransform"
+import Styles from "./Styles"
+import NepiIFConfig from "./Nepi_IF_Config"
 
 @inject("ros")
 @observer
@@ -36,54 +36,111 @@ class NepiDeviceNPXControls extends Component {
 
     // these states track the values through NPX Status messages
     this.state = {
+
+      namespace: null,
+      status_msg: null,
       frame3D: null,
       age_filter_s: null
     }
 
-
+    this.renderControlPanel = this.renderControlPanel.bind(this)
   }
 
 
-  renderControls() {
+  renderControlPanel() {
     const { npxDevices, sendTriggerMsg} = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : null
-    const message = this.props.status_msg ? this.props.status_msg : null
     const capabilities = npxDevices[namespace] ? npxDevices[namespace] : null
+    const status_msg = this.state.status_msg
 
+    if (namespace != null && capabilities != null && status_msg != null){
+      //Unused const update_rate = status_msg.update_rate
+      //Unused const navpose_frame = status_msg.navpose_frame
+      //Unused const frame_nav = status_msg.frame_nav
+      //Unused const frame_altitude = status_msg.frame_altitude
+      //Unused const frame_depth = status_msg.frame_depth
+      const has_loc = status_msg.has_location
+      const has_head = status_msg.has_heading
+      const has_orien = status_msg.has_orientation
+      const has_pos = status_msg.has_position
+      const has_alt = status_msg.has_altitude
+      const has_depth = status_msg.has_depth
 
-    if (namespace != null && capabilities != null && message != null){
-      //Unused const update_rate = message.update_rate
-      //Unused const navpose_frame = message.navpose_frame
-      //Unused const frame_nav = message.frame_nav
-      //Unused const frame_altitude = message.frame_altitude
-      //Unused const frame_depth = message.frame_depth
-      const has_loc = message.has_location
-      const has_head = message.has_heading
-      const has_orien = message.has_orientation
-      const has_pos = message.has_position
-      const has_alt = message.has_altitude
-      const has_depth = message.has_depth
-
-      const has_transform = message.has_transform
-      const updates = message.supports_updates
+      const has_transform = status_msg.has_transform
+      const updates = status_msg.supports_updates
     
       return (
-        <Section title={"NavPose Controls"}>
-  
-        </Section>
+          <React.Fragment>
+
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                  <NepiIFConfig
+                      namespace={namespace}
+                      title={"Nepi_IF_Conig"}
+                />
+
+
+          </React.Fragment>
+        )
+    }
+    else {
+
+      return (
+        <Columns>
+        <Column>
+       
+        </Column>
+        </Columns>
       )
     }
   }
 
+
   render() {
-    return (
-      <Columns>
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+
+    const status_msg = this.state.status_msg
+    if (status_msg == null){
+      return (
+        <Columns>
         <Column>
-          {this.renderControls()}
+       
         </Column>
-      </Columns>
-    )
+        </Columns>
+      )
+
+
+    }
+    else if (make_section === false){
+
+      return (
+
+          <Columns>
+            <Column >
+
+              { this.renderControlPanel()}
+
+
+            </Column>
+          </Columns>
+      )
+    }
+    else {
+      return (
+
+          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
+
+              {this.renderControlPanel()}
+
+
+        </Section>
+     )
+   }
+
   }
+
+
 }
 
 export default NepiDeviceNPXControls

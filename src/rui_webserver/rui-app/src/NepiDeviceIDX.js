@@ -314,7 +314,7 @@ class NepiDeviceIDX extends Component {
 
                         {(namespace != 'None') ?
                         <NepiSystemMessages
-                        messagesNamespace={namespace.replace('/idx','') + '/messages'}
+                        namespace={namespace.replace('/idx','') + '/messages'}
                         title={"NepiSystemMessages"}
                         />
                         : null}
@@ -340,13 +340,14 @@ class NepiDeviceIDX extends Component {
                           <NepiDeviceIDXControls
                               namespace={namespace}
                               dataProduct={data_product}
+                              title={ "Publish Controls"}
                         />
                         : null}
 
                         
                           {(namespace != 'None') ?
                           <NepiIFSettings
-                            settingsNamespace={namespace + '/settings'}
+                            namespace={namespace}
                         />
                         : null}
 

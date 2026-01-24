@@ -43,8 +43,8 @@ class Nepi_IF_Settings extends Component {
     // these states track the values through  Status messages
     this.state = {
 
-      settingsNamespace: 'None',
-      updatedNamespace: 'None',
+      namespace: 'None',
+      status_msg: null,
       capabilities: null,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
@@ -94,7 +94,7 @@ class Nepi_IF_Settings extends Component {
 
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
-    if (message.settings_topic === this.state.settingsNamespace){
+    if (message.settings_topic === this.state.namespace){
       const last_values_list = this.state.settingsValuesList
       const lastCaps = this.state.capabilities
       const settings = message.settings_list
@@ -128,12 +128,13 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const settingsNamespace = (this.props.settingsNamespace != undefined) ? (this.props.settingsNamespace !== 'None') ? 
-                              this.props.settingsNamespace  + '/settings': 'None' : 'None'
+    const namespace = (this.props.namespace != undefined) ? (this.props.namespace !== 'None') ? 
+                              this.props.namespace  + '/settings': 'None' : 'None'
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
       this.setState({settingsListener: null})
       this.setState({capSettingsNamesList: [],
+        status_msg: null,
         capSettingsTypesList: [],
         capSettingsOptionsLists: [],
         settingsNamesList: [],
@@ -151,15 +152,17 @@ class Nepi_IF_Settings extends Component {
         selectedSettingInput: ""
         })
     }
-    if (settingsNamespace !== 'None'){
+    if (namespace !== 'None'){
       const settingsListener = this.props.ros.setupSettingsStatusListener(
-        settingsNamespace + '/status',
+        namespace + '/status',
         this.settingsStatusListener
       )
+      this.setState({ settingsListener: settingsListener})
 
     }
-      this.setState({settingsNamespace: settingsNamespace, updatedNamespace: settingsNamespace})
-      this.setState({ settingsListener: settingsListener})
+    
+    this.setState({namespace: namespace})
+      
     
   }
 
@@ -167,9 +170,9 @@ class Nepi_IF_Settings extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const settingsNamespace = (this.props.settingsNamespace != undefined) ? (this.props.settingsNamespace !== 'None') ? 
-                              this.props.settingsNamespace  + '/settings': 'None' : 'None'
-    if (settingsNamespace !== prevState.settingsNamespace) {
+    const namespace = (this.props.namespace != undefined) ? (this.props.namespace !== 'None') ? 
+                              this.props.namespace  + '/settings': 'None' : 'None'
+    if (namespace !== prevState.namespace) {
       this.updateSettingsListener()
     }
   }
@@ -183,7 +186,7 @@ class Nepi_IF_Settings extends Component {
   }
 
     componentDidMount() {
-    this.updateStatusListener()
+    this.updateSettingsListener()
     }
 
 
@@ -277,7 +280,7 @@ class Nepi_IF_Settings extends Component {
   onChangeBoolSettingValue(){
     const {updateSetting}  = this.props.ros
     const value = (this.getSettingValue(this.state.selectedSettingName) === "True") ? "False" : "True" 
-    updateSetting(this.state.settingsNamespace,
+    updateSetting(this.state.namespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -285,7 +288,7 @@ class Nepi_IF_Settings extends Component {
     const {updateSetting}  = this.props.ros
     const ind = event.nativeEvent.target.selectedIndex
     const value = event.nativeEvent.target[ind].text
-    updateSetting(this.state.settingsNamespace,
+    updateSetting(this.state.namespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -299,7 +302,7 @@ class Nepi_IF_Settings extends Component {
     const {updateSetting}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.selectedSettingInput
-      updateSetting(this.state.settingsNamespace,
+      updateSetting(this.state.namespace,
         this.state.selectedSettingName,this.state.selectedSettingType,value)
       document.getElementById("input_setting").style.color = Styles.vars.colors.black
       this.updateSelectedSettingInfo()
@@ -489,14 +492,14 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderConfigs(){
-    const settingsNamespace = this.state.settingsNamespace
+    const namespace = this.state.namespace
     return(
       <Columns>
       <Column>
 
 
           <NepiIFConfig
-                        namespace={settingsNamespace}
+                        namespace={namespace}
                         title={"Nepi_IF_Config"}
           />
 
@@ -511,18 +514,19 @@ class Nepi_IF_Settings extends Component {
 
   render() {
     const make_section = this.props.make_section ? this.props.make_section : true
-    const settingsNamespace = this.state.settingsNamespace ? this.state.settingsNamespace : 'None'
-    // if (settingsNamespace.replace('/settings','') != this.props.settingsNamespace){
-    //   this.setState({updatedNamespace: this.state.settingsNamespace  + '/settings'})
+    const namespace = this.state.namespace ? this.state.namespace : 'None'
+    const status_msg = this.state.status_msg
+    // if (namespace.replace('/settings','') != this.props.namespace){
+    //   this.setState({updatedNamespace: this.state.namespace  + '/settings'})
     // }
-    if (settingsNamespace !== 'None' && make_section === true){
+    if (namespace !== 'None' && status_msg != null && make_section === true){
       return (
         <Section title={"Device Settings"}>
           {this.renderSettings()}
         </Section>
       )
     }
-    else if (settingsNamespace !== 'None' && make_section === false) {
+    else if (namespace !== 'None' && status_msg != null  && make_section === false) {
       return (
 
 

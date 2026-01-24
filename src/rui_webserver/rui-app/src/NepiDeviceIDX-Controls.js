@@ -94,7 +94,7 @@ class NepiDeviceIDXControls extends Component {
 
 
     
-
+    this.renderControlPanel = this.renderControlPanel.bind(this)
 
 
     this.updateListener = this.updateListener.bind(this)
@@ -157,12 +157,13 @@ class NepiDeviceIDXControls extends Component {
     const { namespace } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
+      this.setState({ status_msg: null,  disabled: true })
     }
     var listener = this.props.ros.setupIDXStatusListener(
       namespace,
       this.statusListener
     )
-    this.setState({ listener: listener, disabled: false })
+    this.setState({ listener: listener, namespace: namespace, disabled: false })
 
   }
 
@@ -170,7 +171,7 @@ class NepiDeviceIDXControls extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { namespace } = this.props
-    if (prevProps.namespace !== namespace){
+    if (this.state.namespace !== namespace){
       if (namespace !== null) {
         this.updateListener()
       } else if (namespace === null){
@@ -222,7 +223,7 @@ class NepiDeviceIDXControls extends Component {
     )
   }
 
-  render() {
+  renderControlPanel() {
     const { idxDevices, sendBoolMsg } = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : 'None'
     var capabilities = null
@@ -275,9 +276,8 @@ class NepiDeviceIDXControls extends Component {
         const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
         return (
 
-          <Section title={"Publish Controls"}>
 
-
+        <React.Fragment>
 
                   {/*
                   <div hidden={this.state.rtsp_url === ""}>
@@ -493,23 +493,65 @@ class NepiDeviceIDXControls extends Component {
                       />
 
 
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                    <NepiIFConfig
+                        namespace={namespace}
+                        title={"Nepi_IF_Conig"}
+                  />
+
+
         </div>
 
-          <div align={"left"} textAlign={"left"}>
-            
-            <NepiIFConfig
-                namespace={namespace}
-                title={"Nepi_IF_Conig"}
-          />
 
-      </div>
-
-          </Section>
+          </React.Fragment>
         )
       }
     }
   }
 
+
+  render() {
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+
+    const status_msg = this.state.status_msg
+    if (status_msg == null){
+      return (
+        <Columns>
+        <Column>
+       
+        </Column>
+        </Columns>
+      )
+
+
+    }
+    else if (make_section === false){
+
+      return (
+
+          <Columns>
+            <Column >
+
+              { this.renderControlPanel()}
+
+
+            </Column>
+          </Columns>
+      )
+    }
+    else {
+      return (
+
+          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
+
+              {this.renderControlPanel()}
+
+
+        </Section>
+     )
+    }
+  }
 
 }
 export default NepiDeviceIDXControls

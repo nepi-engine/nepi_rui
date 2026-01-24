@@ -30,7 +30,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-
+import NepiIFConfig from "./Nepi_IF_Config"
 
 import {convertStrToStrList, onEnterSetStateFloatValue, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
 
@@ -44,6 +44,9 @@ class NepiDeviceControls extends Component {
 
     // these states track the values through  Status messages
     this.state = {
+
+      rbx_namespace: 'None',
+      status_msg: null,
       show_process_controls: true,
 
       current_lat: null,
@@ -111,6 +114,7 @@ class NepiDeviceControls extends Component {
 
     }
 
+    this.renderControlPanel = this.renderControlPanel.bind(this)
 
     this.updateControlsStatusListener = this.updateControlsStatusListener.bind(this)
     this.controlsStatusListener = this.controlsStatusListener.bind(this)
@@ -126,6 +130,7 @@ class NepiDeviceControls extends Component {
   controlsStatusListener(message) {
     const {rbxDevices} = this.props.ros
     this.setState({
+      status_msg: message,
       current_lat: message.current_lat ,
       current_long: message.current_long ,
       current_altitude: message.current_altitude ,
@@ -217,20 +222,24 @@ class NepiDeviceControls extends Component {
     const namespace = this.props.rbxNamespace
     if (this.state.controlsStatusListener ) {
       this.state.controlsStatusListener.unsubscribe()
+      this.setState({status_msg: null})
     }
-    var listener = this.props.ros.setupStatusListener(
-          namespace + "/status",
-          "nepi_interfaces/DeviceRBXStatus",
-          this.controlsStatusListener
-        )
-    this.setState({ controlsStatusListener : listener})
+    if (namespace != 'None'){
+      var listener = this.props.ros.setupStatusListener(
+            namespace + "/status",
+            "nepi_interfaces/DeviceRBXStatus",
+            this.controlsStatusListener
+          )
+      this.setState({ controlsStatusListener : listener})
+    }
+    this.setState({rbx_namespace: namespace})
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { rbxNamespace } = this.props
-    if (prevProps.rbxNamespace !== rbxNamespace && rbxNamespace !== null) {
+    if (this.state.rbx_namespace !== rbxNamespace && rbxNamespace !== null) {
       if (rbxNamespace.indexOf('null') === -1){
         this.updateControlsStatusListener()
         this.render()
@@ -272,12 +281,12 @@ class NepiDeviceControls extends Component {
   }
 
 
-  render() {
+  renderControlPanel() {
     const {  sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
     const namespace = this.props.rbxNamespace
     return (
-      <Section title={"Process Controls"}>
+     <React.Fragment>
 
 {/*
           <Columns>
@@ -295,7 +304,7 @@ class NepiDeviceControls extends Component {
             </Column>
             </Columns>
 */}
-        <div hidden={!this.state.show_process_controls}>
+    
 
        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -681,11 +690,64 @@ class NepiDeviceControls extends Component {
 
 
 
-        </div>
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-      </Section>
+                  <NepiIFConfig
+                      namespace={namespace}
+                      title={"Nepi_IF_Conig"}
+                />
+
+
+
+
+
+    </React.Fragment>
     )
   }
+
+ 
+  render() {
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+
+    const status_msg = this.state.status_msg
+    if (status_msg == null){
+      return (
+        <Columns>
+        <Column>
+       
+        </Column>
+        </Columns>
+      )
+
+
+    }
+    else if (make_section === false){
+
+      return (
+
+          <Columns>
+            <Column >
+
+              { this.renderControlPanel()}
+
+            </Column>
+          </Columns>
+      )
+    }
+    else {
+      return (
+
+          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
+
+
+              {this.renderControlPanel()}
+
+
+        </Section>
+     )
+    }
+  }
+ 
 
 }
 export default NepiDeviceControls

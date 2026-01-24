@@ -373,7 +373,7 @@ class ImageViewerSelector extends Component {
     const streamingImageQuality = (this.props.streamingImageQuality != undefined) ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
                 : null
-    const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
+    const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
     const save_data_topic = this.props.save_data_topic
     
@@ -386,7 +386,7 @@ class ImageViewerSelector extends Component {
       image_index={image_index}
       mouse_event_callback={mouse_event_callback}
       selection_callback={selection_callback}
-      show_image_options={show_image_options}
+      show_image_controls={show_image_controls}
       show_save_controls={show_save_controls}
       save_data_topic={save_data_topic}
       make_section={false}

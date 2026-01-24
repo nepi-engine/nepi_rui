@@ -19,18 +19,18 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-import Toggle from "react-toggle"
+//import Toggle from "react-toggle"
 
-import Section from "./Section"
+//import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
-import { SliderAdjustment } from "./AdjustmentWidgets"
+//import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
-import Input from "./Input"
-import Styles from "./Styles"
-import Button, { ButtonMenu } from "./Button"
-import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
-import {createShortValuesFromNamespaces} from "./Utilities"
+//import Input from "./Input"
+//import Styles from "./Styles"
+//import Button, { ButtonMenu } from "./Button"
+//import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
+
 
 
 import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
@@ -39,7 +39,7 @@ import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 
 import NepiIFSettings from "./Nepi_IF_Settings"
 //Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiIFConfig from "./Nepi_IF_Config"
+
 
 //import {onChangeSwitchStateValue } from "./Utilities"
 
@@ -58,7 +58,7 @@ class NepiDevicePTX extends Component {
     super(props)
 
     this.state = {
-      ptx_namespace: null,
+      namespace: null,
 
 
     }
@@ -88,14 +88,14 @@ class NepiDevicePTX extends Component {
     var value = event.target.value
 
     if (value != 'None'){
-      this.setState({ ptx_namespace: value })
+      this.setState({ namespace: value })
 
       var statusListener = this.props.ros.setupPTXStatusListener(
           value,
           this.ptxStatusListener
         )
     }
-    this.setState({ ptx_namespace: value, statusListener: statusListener })
+    this.setState({ namespace: value, statusListener: statusListener })
   }
 
   // Lifecycle method called just before the component umounts.
@@ -138,7 +138,7 @@ class NepiDevicePTX extends Component {
 
   render() {
     const { ptxDevices } = this.props.ros
-    const ptx_namespace = (this.state.ptx_namespace !== null) ? this.state.ptx_namespace : 'None'
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const connected = (this.state.status_msg != null)
 
     return (
@@ -152,8 +152,8 @@ class NepiDevicePTX extends Component {
                 <div id="ptxImageViewer">
                   <NepiDevicePTXImageViewer
                     id="ptxImageViewer"
-                    show_image_options={false}
-                    ptx_namespace={ptx_namespace}
+                    show_image_controls={false}
+                    namespace={namespace}
                   />
                 </div>
 
@@ -163,7 +163,7 @@ class NepiDevicePTX extends Component {
             <Label title={"Select PanTilt"}>
               <Select
                 onChange={this.onptxDeviceselected}
-                value={ptx_namespace}
+                value={namespace}
               >
                 {this.createPTXOptions(ptxDevices)}
               </Select>
@@ -171,33 +171,26 @@ class NepiDevicePTX extends Component {
    
 
 
-            <div align={"left"} textAlign={"left"}>
-              { (connected === true) ?
-                  <NepiIFConfig
-                        ptx_namespace={ptx_namespace}
-                        title={"Nepi_IF_SaveConif"}
-                  />
-            : null}
+
 
 {/*
             { (connected === true) ?
             <NepiDevicePTXControls
-                ptx_namespace={ptx_namespace}
+                namespace={namespace}
                 make_section = {true}
-                title={"NepiDevicePTXControls"}
+                title={"Pan Tilt Controls"}
             />
             : null}
 */}
 
            { (connected === true) ?
               <NepiIFSettings
-                settingsNamespace={ptx_namespace + '/settings'}
+                namespace={namespace}
                 title={"Nepi_IF_Settings"}
               />
             : null}
 
 
-          </div>
           </Column>
         </Columns>
       </React.Fragment>

@@ -130,7 +130,7 @@ class NepiMessagesSelector extends Component {
         <Column>
 
         <NepiSystemMessages
-        messagesNamespace={msg_namespace}
+        namespace={msg_namespace}
         hide_control={true}
         title={"NepiSystemMessages"}
         />

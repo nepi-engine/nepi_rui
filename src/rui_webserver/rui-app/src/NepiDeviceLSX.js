@@ -29,7 +29,6 @@ import Label from "./Label"
 import Input from "./Input"
 import Toggle from "react-toggle"
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewerSelector from "./NepiSelectorImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -37,7 +36,7 @@ import NepiSystemMessages from "./Nepi_IF_Messages"
 
 
 import {onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
-import {createShortValuesFromNamespaces} from "./Utilities"
+//import {createShortValuesFromNamespaces} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -387,21 +386,13 @@ class NepiControlsLights extends Component {
                     id="lsxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
-                    show_image_options={false}
+                    show_image_controls={false}
                   />
                 </div>
 
-                <NepiDeviceInfo
-                  deviceNamespace={namespace}
-                  status_topic={"/status"}
-                  status_msg_type={"nepi_interfaces/DeviceLSXStatus"}
-                  name_update_topic={"/update_device_name"}
-                  name_reset_topic={"/reset_device_name"}
-                  title={"NepiSensorsImagingInfo"}
-              />
 
                 <NepiSystemMessages
-                    messagesNamespace={namespace.replace('/lsx','') + '/messages'}
+                    namespace={namespace.replace('/lsx','') + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -447,7 +438,7 @@ class NepiControlsLights extends Component {
             
 
             <NepiIFSettings
-            settingsNamespace={namespace + '/settings'}
+            namespace={namespace}
             title={"Nepi_IF_Settings"}
           />
 

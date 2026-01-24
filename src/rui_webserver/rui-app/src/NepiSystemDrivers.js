@@ -383,7 +383,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
     const check_topic = namespace + "/settings/status"
     const {topicNames} = this.props.ros
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
-    const settings_namespace = topic_publishing ? namespace + '/settings' : "None"
+    const settings_namespace = topic_publishing ? namespace : "None"
 
 
     return (
@@ -490,7 +490,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
 
           <NepiIFSettings
-            settingsNamespace={settings_namespace}
+            namespace={settings_namespace}
             make_section={false}
             title={"Nepi_IF_Settings"}
           />

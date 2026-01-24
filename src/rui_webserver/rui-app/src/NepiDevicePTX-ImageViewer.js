@@ -25,7 +25,6 @@ import { observer, inject } from "mobx-react"
 //import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 import Section from "./Section"
-//import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
 
 import { Column, Columns } from "./Columns"
@@ -51,7 +50,7 @@ class NepiDevicePTXImageViewer extends Component {
 
     this.state = {
 
-      ptx_namespace: null,
+      namespace: null,
 
       status_msg: null,  
       statusListener: null
@@ -66,16 +65,16 @@ class NepiDevicePTXImageViewer extends Component {
 
   getNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
-    var ptx_namespace = null
+    var namespace = null
     if (namespacePrefix !== null && deviceId !== null){
-      if (this.props.ptx_namespace != undefined){
-        ptx_namespace = this.props.ptx_namespace
+      if (this.props.namespace != undefined){
+        namespace = this.props.namespace
       }
       else{
-        ptx_namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
+        namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
       }
     }
-    return ptx_namespace
+    return namespace
   }
 
   // Callback for handling ROS Status3DX messages
@@ -86,14 +85,14 @@ class NepiDevicePTXImageViewer extends Component {
   }
   
   // Function for configuring and subscribing to Status
-  updateStatusListener(ptx_namespace) {
-    const statusNamespace = ptx_namespace + '/status'
+  updateStatusListener(namespace) {
+    const statusNamespace = namespace + '/status'
     if (this.state.statusListner) {
       this.state.statusListner.unsubscribe()
       this.setState({status_msg: null,
     })
     }
-    if (ptx_namespace != null && ptx_namespace !== 'None' && ptx_namespace.indexOf('null') === -1){
+    if (namespace != null && namespace !== 'None' && namespace.indexOf('null') === -1){
         var statusListner = this.props.ros.setupStatusListener(
               statusNamespace,
               "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
@@ -101,7 +100,7 @@ class NepiDevicePTXImageViewer extends Component {
             )
     }
     this.setState({ 
-      ptx_namespace: ptx_namespace,
+      namespace: namespace,
       statusListner: statusListner,
     })
 
@@ -110,11 +109,11 @@ class NepiDevicePTXImageViewer extends Component {
 // Lifecycle method called when compnent updates.
 // Used to track changes in the topic
 componentDidUpdate(prevProps, prevState, snapshot) {
-  const ptx_namespace = this.getNamespace()
-  const namespace_updated = (this.state.ptx_namespace !== ptx_namespace && ptx_namespace !== null)
+  const namespace = this.getNamespace()
+  const namespace_updated = (this.state.namespace !== namespace && namespace !== null)
   if (namespace_updated) {
-    if (ptx_namespace != null){
-      this.updateStatusListener(ptx_namespace)
+    if (namespace != null){
+      this.updateStatusListener(namespace)
     } 
   }
 }
@@ -143,7 +142,7 @@ componentDidMount(){
 
   render() {
     const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
-    const ptx_namespace = (this.props.ptx_namespace !== null) ? this.props.ptx_namespace : 'None'
+    const namespace = (this.props.namespace !== null) ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
     var panGoalRatio = 0.5
     var tiltGoalRatio = 0.5
@@ -156,8 +155,8 @@ componentDidMount(){
     const ptxDevicesList = Object.keys(ptxDevices)
     var has_abs_pos = false
     var has_timed_pos = false
-    if (ptxDevicesList.indexOf(ptx_namespace) !== -1){
-      const ptx_caps = ptxDevices[ptx_namespace]
+    if (ptxDevicesList.indexOf(namespace) !== -1){
+      const ptx_caps = ptxDevices[namespace]
       has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
       has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
     }
@@ -176,7 +175,11 @@ componentDidMount(){
 
                 
           <div id={'ptxImageViewer'}>
-          {this.ImageViewer()}
+            <ImageViewer
+              hideQualitySelector={true}
+              show_save_data={false}
+              show_control_options={false}
+            />
           </div>
 
 
@@ -186,7 +189,7 @@ componentDidMount(){
                   title={"Pan"}
                   msgType={"std_msgs/Float32"}
                   adjustment={panGoalRatio}
-                  topic={ptx_namespace + "/goto_pan_ratio"}
+                  topic={namespace + "/goto_pan_ratio"}
                   scaled={0.01}
                   min={0}
                   max={100}
@@ -201,23 +204,23 @@ componentDidMount(){
               <ButtonMenu>
 
                   <Button 
-                    buttonDownAction={() => onPTXJogPan(ptx_namespace,  1)}
-                    buttonUpAction={() => onPTXStop(ptx_namespace)}>
+                    buttonDownAction={() => onPTXJogPan(namespace,  1)}
+                    buttonUpAction={() => onPTXStop(namespace)}>
                     {'\u25C0'}
                     </Button>
                   <Button 
-                    buttonDownAction={() => onPTXJogPan(ptx_namespace, - 1)}
-                    buttonUpAction={() => onPTXStop(ptx_namespace)}>
+                    buttonDownAction={() => onPTXJogPan(namespace, - 1)}
+                    buttonUpAction={() => onPTXStop(namespace)}>
                     {'\u25B6'}
                   </Button>
                   <Button 
-                    buttonDownAction={() => onPTXJogTilt(ptx_namespace, 1)}
-                    buttonUpAction={() => onPTXStop(ptx_namespace)}>
+                    buttonDownAction={() => onPTXJogTilt(namespace, 1)}
+                    buttonUpAction={() => onPTXStop(namespace)}>
                     {'\u25B2'}
                   </Button>
                   <Button 
-                    buttonDownAction={() => onPTXJogTilt(ptx_namespace, -1)}
-                    buttonUpAction={() => onPTXStop(ptx_namespace)}>
+                    buttonDownAction={() => onPTXJogTilt(namespace, -1)}
+                    buttonUpAction={() => onPTXStop(namespace)}>
                     {'\u25BC'}
                   </Button>
 
@@ -230,7 +233,7 @@ componentDidMount(){
 
                 <ButtonMenu>
 
-                  <Button onClick={() => onPTXStop(ptx_namespace)}>{"STOP"}</Button>
+                  <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
                   
                 </ButtonMenu>
 
@@ -244,7 +247,7 @@ componentDidMount(){
               title={"Tilt"}
               msgType={"std_msgs/Float32"}
               adjustment={tiltGoalRatio}
-              topic={ptx_namespace + "/goto_tilt_ratio"}
+              topic={namespace + "/goto_tilt_ratio"}
               scaled={0.01}
               min={0}
               max={100}

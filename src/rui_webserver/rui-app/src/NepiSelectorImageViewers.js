@@ -206,7 +206,7 @@ class ImageViewersSelector extends Component {
                             id="Image1Viewer"
                             image_topic={image_topics[0]}
                             title={titles[0]}
-                            show_image_options={show_image_controls}
+                            show_image_controls={show_image_controls}
                             streamingImageQuality={streamingImageQuality}
                             exclude_filters={exclude_filters}
                             include_filters={include_filters}
@@ -225,7 +225,7 @@ class ImageViewersSelector extends Component {
                               id="Image3Viewer"
                               image_topic={image_topics[2]}
                               title={titles[2]}
-                              show_image_options={show_image_controls}
+                              show_image_controls={show_image_controls}
                               select_updated_namespace={selection_callback[2]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}
@@ -250,7 +250,7 @@ class ImageViewersSelector extends Component {
                               id="Image2Viewer"
                               image_topic={image_topics[1]}
                               title={titles[1]}
-                              show_image_options={show_image_controls}
+                              show_image_controls={show_image_controls}
                               select_updated_namespace={selection_callback[1]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}
@@ -271,7 +271,7 @@ class ImageViewersSelector extends Component {
                               id="Image4Viewer"
                               image_topic={image_topics[3]}
                               title={titles[3]}
-                              show_image_options={show_image_controls}
+                              show_image_controls={show_image_controls}
                               select_updated_namespace={selection_callback[3]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}

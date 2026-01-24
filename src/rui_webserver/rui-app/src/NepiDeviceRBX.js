@@ -37,7 +37,7 @@ import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewerSelector from "./NepiSelectorImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiIFConfig from "./Nepi_IF_Config"
+
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
 
@@ -163,7 +163,7 @@ class NepiDeviceRBX extends Component {
   
   // Function for configuring and subscribing to Status
   updateInfoListener() {
-    const deviceNamespace = this.state.currentRBXNamespace
+    const namespace = this.state.currentRBXNamespace
 
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
@@ -175,7 +175,7 @@ class NepiDeviceRBX extends Component {
       })
     }
     var listener = this.props.ros.setupStatusListener(
-          deviceNamespace + "/info" ,
+          namespace + "/info" ,
           "nepi_interfaces/DevicRBXInfo",
           this.infoListener
         )
@@ -596,7 +596,7 @@ class NepiDeviceRBX extends Component {
                     id="rbxImageViewer"
                     imageTopic={this.state.imageTopic}
                     title={this.state.imageText}
-                    show_image_options={true}
+                    show_image_controls={true}
                   />
                 </div>
       </React.Fragment>
@@ -625,7 +625,7 @@ class NepiDeviceRBX extends Component {
 
           <div hidden={(!deviceSelected)}>
             <NepiDeviceInfo
-                  deviceNamespace={namespace}
+                  namespace={namespace}
                   status_topic={"/info"}
                   status_msg_type={"nepi_interfaces/RBXInfo"}
                   name_update_topic={"/update_device_name"}
@@ -635,14 +635,14 @@ class NepiDeviceRBX extends Component {
           </div>
           <div hidden={(!deviceSelected && this.state.show_controls)}>
             <NepiDeviceMessages
-                deviceNamespace={namespace}
+                namespace={namespace}
                 title={"Device Messages"}
             />
           </div>
 
 
           <NepiSystemMessages
-                    messagesNamespace={namespace.replace('/rbx','') + '/messages'}
+                    namespace={namespace.replace('/rbx','') + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -654,15 +654,6 @@ class NepiDeviceRBX extends Component {
           {this.renderSetupControls()}
           </div>
 
-          <div hidden={(!deviceSelected)}>
-          <NepiIFConfig
-                        namespace={namespace}
-                        title={"Nepi_IF_Conig"}
-                  />
-
-          </div>
-
-
           <div hidden={(!deviceSelected && this.state.show_controls)}>
             <NepiDeviceControls
                 rbxNamespace={namespace}
@@ -672,7 +663,7 @@ class NepiDeviceRBX extends Component {
 
           <div hidden={(!deviceSelected && this.state.show_settings)}>
             <NepiIFSettings
-              settingsNamespace={namespace + '/settings'}
+              namespace={namespace}
               title={"Nepi_IF_Settings"}
             />
           </div>

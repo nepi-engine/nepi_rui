@@ -261,7 +261,7 @@ updateNavposeListener() {
             </Columns>
 
             <div align={"left"} textAlign={"left"} hidden={!deviceSelected}>
-            <NepiIFConfig
+                  <NepiIFConfig
                         namespace={namespace}
                         title={"Nepi_IF_Conig"}
                   />
@@ -292,7 +292,7 @@ updateNavposeListener() {
 
                     <div hidden={(!deviceSelected)}>
                       <NepiDeviceInfo
-                            deviceNamespace={namespace}
+                            namespace={namespace}
                             status_topic={"npx/status"}
                             status_msg_type={"nepi_interfaces/DeviceNPXStatus"}
                             name_update_topic={"/update_device_name"}
@@ -316,7 +316,7 @@ updateNavposeListener() {
                       />
 
                     <NepiSystemMessages
-                    messagesNamespace={namespace.replace('/npx','') + '/messages'}
+                    namespace={namespace.replace('/npx','') + '/messages'}
                     title={"NepiSystemMessages"}
                     />
 
@@ -353,7 +353,7 @@ updateNavposeListener() {
 
                     <div hidden={(!deviceSelected && this.state.show_settings)}>
                       <NepiIFSettings
-                        settingsNamespace={namespace + '/settings'}
+                        namespace={namespace}
                         title={"Nepi_IF_Settings"}
                       />
                     </div>

@@ -1381,16 +1381,17 @@ class ImageViewer extends Component {
 
     const namespace = this.props.image_topic ? this.props.image_topic : 'None'
     const { sendTriggerMsg } = this.props.ros
-    const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
-    const show_status = this.state.show_status
-    const show_controls = this.state.show_controls
-    const show_renders = this.state.show_renders
-    const show_navpose = this.state.show_navpose 
+    const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
     const show_all_options = (this.props.show_all_options != undefined) ? this.props.show_all_options : true
     const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
     const save_data_topic = (this.props.save_data_topic != undefined) ? this.props.save_data_topic :  this.state.save_data_topic
     const title = this.props.title ? this.props.title : ""
+    const show_status = this.state.show_status
+    const show_controls = this.state.show_controls
+    const show_renders = this.state.show_renders
+    const show_navpose = this.state.show_navpose 
+
     
     return (
       
@@ -1431,7 +1432,7 @@ class ImageViewer extends Component {
 
       </div>
 
-      <div align={"left"} textAlign={"left"} hidden={(show_image_options === false || namespace === 'None')}>
+      <div align={"left"} textAlign={"left"} hidden={(show_image_controls === false || namespace === 'None')}>
 
                 <div style={{ display: 'flex' }}>
                         <div style={{ width: '15%' }}>

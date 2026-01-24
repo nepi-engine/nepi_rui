@@ -323,7 +323,7 @@ class AutomationMgr extends Component {
           </label>
 
         <NepiSystemMessages
-        messagesNamespace={msg_namespace}
+        namespace={msg_namespace}
         title={"NepiSystemMessages"}
         />
 
