@@ -35,13 +35,8 @@ import {createShortValuesFromNamespaces} from "./Utilities"
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
-//Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiIFConfig from "./Nepi_IF_Config"
-import NepiSystemMessages from "./Nepi_IF_Messages"
 
-//import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
-import NepiIF3DTransform from "./Nepi_IF_3DTransform"
-import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
+
 import {onChangeSwitchStateValue } from "./Utilities"
 
 
@@ -61,111 +56,164 @@ class NepiDevicePTXControls extends Component {
     super(props)
 
     this.state = {
-      showTransform: false,
-
-      imageTopic: null,
-      imageText: null,
-
-      ptSerialNum: null,
-      ptHwVersion: null,
-      ptSwVersion: null,
       
-      panPositionDeg: null,
-      tiltPositionDeg: null,
+      ptx_namespace : null,
 
-      panGotoDeg: 0.0,
-      tiltGotoDeg: 0.0,
-
-      panHomePosEdited: null,
-      panHomePosDeg: null,
-      tiltHomePosEdited: null,
-      tiltHomePosDeg: null,
-
-      show_navpose: false,
-
-      showSettings: false,
-
-      panMaxHardstopDeg: null,
-      panMaxHardstopEdited: null,
-      tiltMaxHardstopDeg: null,
-      tiltMaxHardstopEdited: null,
-
-      panMinHardstopDeg: null,
-      panMinHardstopEdited: null,
-      tiltMinHardstopDeg: null,
-      tiltMinHardstopEdited: null,
-      
-      panMaxSoftstopDeg: null,
-      panMaxSoftstopEdited: null,
-      tiltMaxSoftstopDeg: null,
-      tiltMaxSoftstopEdited: null,
-
-      panMinSoftstopDeg: null,
-      panMinSoftstopEdited: null,
-      tiltMinSoftstopDeg: null,
-      tiltMinSoftstopEdited: null,
-
-
-
-      panNowRatio: null,
-      tiltNowRatio: null,
-      panGoalRatio: null,
-      tiltGoalRatio: null,
-      panGoalRatioLast: null,
-      tiltGoalRatioLast: null,
-      panRatio: null,
-      tiltRatio: null,
-      speedRatio: null,
-
-      reversePanEnabled: false,
-      reverseTiltEnabled: false,
-
-      track_source_namespaces: null,
-      track_source_namespace: null,
-      track_source_connected: null,
-
-      autoPanEnabled: false,
-      autoPanMin: -1,
-      autoPanMax: 1,
-      autoTiltEnabled: false,
-      autoTiltMin: -1,
-      autoTiltMax: 1,
-
-      panScanMin: null,
-      panScanMax: null,
-      tiltScanMin: null,
-      tiltScanMax: null,
-      /*
-      sinPanEnabled: false,
-      #sinTiltEnabled: false,
-      */
-
-      speed_pan_dps: 0,
-      speed_tilt_dps: 0,
-
-      namespace : null,
-      
-      listener: null,
-      disabled: true
-
+      panHomePos : null,
+      tiltHomePos : null,
+      panHardStopMin : null,
+      tiltHardStopMin : null,
+      panHardStopMax : null,
+      tiltHardStopMax : null,
+      tiltSoftStopMin : null,
+      panSoftStopMax : null,
+      tiltSoftStopMax : null,
+            
+      statusListener: null,
+      status_msg: null,  
     }
 
-    //this.renderNavPose = this.renderNavPose.bind(this)
-    //this.renderNavPoseInfo = this.renderNavPoseInfo.bind(this)
 
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
     this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
     this.onptxDeviceselected = this.onptxDeviceselected.bind(this)
-    this.ptxStatusListener = this.ptxStatusListener.bind(this)
+
     this.renderControlPanel = this.renderControlPanel.bind(this)
     this.createPTXOptions = this.createPTXOptions.bind(this)
     this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
     this.onClickToggleShowTransform = this.onClickToggleShowTransform.bind(this)
 
     this.onEnterSendScanRangeWindowValue = this.onEnterSendScanRangeWindowValue.bind(this)
+
+    this.getNamespace = this.getNamespace.bind(this)
+    this.updateStatusListener = this.updateStatusListener.bind(this)
+    this.statusListener = this.statusListener.bind(this)
   }
+
+
+  getNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var ptx_namespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      if (this.props.ptx_namespace != undefined){
+        ptx_namespace = this.props.ptx_namespace
+      }
+      else{
+        ptx_namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
+      }
+    }
+    return ptx_namespace
+  }
+
+  // Callback for handling ROS Status3DX messages
+  statusListener(message) {
+    this.setState({
+      status_msg: message
+    })
+
+
+    const panHomePos = round(message.pan_home_pos_deg, 1)
+    const tiltHomePos = round(message.tilt_home_pos_deg, 1)
+    const panHardStopMin = round(message.pan_max_hardstop_deg, 1)
+    const tiltHardStopMin = round(message.tilt_max_hardstop_deg, 1)
+    const panHardStopMax = round(message.pan_min_hardstop_deg, 1)
+    const tiltHardStopMax = round(message.tilt_min_hardstop_deg, 1)
+    const tiltSoftStopMin = round(message.pan_min_softstop_deg, 1)
+    const panSoftStopMax = round(message.pan_max_softstop_deg, 1)
+    const tiltSoftStopMax = round(message.tilt_min_softstop_deg, 1)
+    
+    const needs_update = (
+          panHomePos !== this.state.panHomePos ||
+          tiltHomePos !== this.state.tiltHomePos ||
+          panHardStopMin !== this.state.panHardStopMin ||
+          tiltHardStopMin !== this.state.tiltHardStopMin ||
+          panHardStopMax !== this.state.panHardStopMax ||
+          tiltHardStopMax !== this.state.tiltHardStopMax ||
+          tiltSoftStopMin !== this.state.tiltSoftStopMin ||
+          panSoftStopMax !== this.state.panSoftStopMax ||
+          tiltSoftStopMax !== this.state.tiltSoftStopMax
+    )
+    if (needs_update === true){
+      this.setState({  
+          panHomePos : null,
+          tiltHomePos : tiltHomePos,
+          panHardStopMin : panHardStopMin,
+          tiltHardStopMin : tiltHardStopMin,
+          panHardStopMax : panHardStopMax,
+          tiltHardStopMax : tiltHardStopMax,
+          tiltSoftStopMin : tiltSoftStopMin,
+          panSoftStopMax : panSoftStopMax,
+          tiltSoftStopMax : tiltSoftStopMax
+      })
+    }
+
+  }
+  
+  // Function for configuring and subscribing to Status
+  updateStatusListener(ptx_namespace) {
+    const statusNamespace = ptx_namespace + '/status'
+    if (this.state.statusListner) {
+      this.state.statusListner.unsubscribe()
+      this.setState({status_msg: null,
+                    panHomePos : null,
+                    tiltHomePos : null,
+                    panHardStopMin : null,
+                    tiltHardStopMin : null,
+                    panHardStopMax : null,
+                    tiltHardStopMax : null,
+                    tiltSoftStopMin : null,
+                    panSoftStopMax : null,
+                    tiltSoftStopMax : null
+      })
+    }
+    if (ptx_namespace != null && ptx_namespace !== 'None' && ptx_namespace.indexOf('null') === -1){
+        var statusListner = this.props.ros.setupStatusListener(
+              statusNamespace,
+              "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
+              this.statusListner
+            )
+    }
+    this.setState({ 
+      ptx_namespace: ptx_namespace,
+      statusListner: statusListner,
+    })
+
+}
+  
+// Lifecycle method called when compnent updates.
+// Used to track changes in the topic
+componentDidUpdate(prevProps, prevState, snapshot) {
+  const ptx_namespace = this.getNamespace()
+  const namespace_updated = (this.state.ptx_namespace !== ptx_namespace && ptx_namespace !== null)
+  if (namespace_updated) {
+    if (ptx_namespace != null){
+      this.updateStatusListener(ptx_namespace)
+    } 
+  }
+}
+
+componentDidMount(){
+  this.setState({needs_update: true})
+}
+  // Lifecycle method called just before the component umounts.
+  // Used to unsubscribe to Status3DX message
+
+
+
+  // Lifecycle method called just before the component umounts.
+  // Used to unsubscribe to Status3DX message
+  componentWillUnmount() {
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
+      this.setState({statusListener : null})
+    }
+  }
+
+
+
+
 
   onUpdateText(e) {
     var panElement = null
@@ -182,8 +230,7 @@ class NepiDevicePTXControls extends Component {
       tiltElement = document.getElementById("PTXTiltHomePos")
       setElementStyleModified(tiltElement)
       
-      this.setState({panHomePosEdited: panElement.value,
-                     tiltHomePosEdited: tiltElement.value})
+
     }
     else if ((e.target.id === "PTXPanSoftStopMin") || (e.target.id === "PTXPanSoftStopMax") ||
              (e.target.id === "PTXTiltSoftStopMin") || (e.target.id === "PTXTiltSoftStopMax"))
@@ -200,23 +247,19 @@ class NepiDevicePTXControls extends Component {
       tiltMaxElement = document.getElementById("PTXTiltSoftStopMax")
       setElementStyleModified(tiltMaxElement)
 
-      this.setState({panMinSoftstopEdited: panMinElement.value, panMaxSoftstopEdited: panMaxElement.value, 
-                     tiltMinSoftstopEdited: tiltMinElement.value, tiltMaxSoftstopEdited: tiltMaxElement.value})
     }
     else if (e.target.id === "PTXPanGoto") 
       {
         panElement = document.getElementById("PTXPanGoto")
         setElementStyleModified(panElement)
              
-        this.setState({panGotoDeg: panElement.value})
       }
         
     else if  (e.target.id === "PTXTiltGoto")
         {
           tiltElement = document.getElementById("PTXTiltGoto")
           setElementStyleModified(tiltElement)
-               
-          this.setState({tiltGotoDeg: tiltElement.value})                 
+                           
           
         }
 
@@ -224,11 +267,14 @@ class NepiDevicePTXControls extends Component {
 
   onKeyText(e) {
     const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
-const namespace = this.props.namespace ? this.props.namespace : 'None'
+    const ptx_namespace = (this.props.ptx_namespace != undefined) ? this.props.ptx_namespace : 'None'
 
-    //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
-    const ptx_caps = ptxDevices[namespace]
-    const has_sep_pan_tilt = ptx_caps && (ptx_caps.has_seperate_pan_tilt_control)
+    const ptxDevicesList = Object.keys(ptxDevices)
+    var has_sep_pan_tilt = false
+    if (ptxDevicesList.indexOf(ptx_namespace) !== -1){
+      const ptx_caps = ptxDevices[ptx_namespace]
+      has_sep_pan_tilt = ptx_caps && (ptx_caps.has_sep_pan_tilt === true)
+    }
     var panElement = null
     var tiltElement = null
     var panMinElement = null
@@ -244,8 +290,8 @@ const namespace = this.props.namespace ? this.props.namespace : 'None'
         tiltElement = document.getElementById("PTXTiltHomePos")
         clearElementStyleModified(tiltElement)
                 
-        onSetPTXHomePos(namespace, Number(panElement.value), Number(tiltElement.value))
-        this.setState({panHomePosEdited:null, tiltHomePosEdited:null})
+        onSetPTXHomePos(ptx_namespace, Number(panElement.value), Number(tiltElement.value))
+
       }
       else if ((e.target.id === "PTXPanSoftStopMin") || (e.target.id === "PTXPanSoftStopMax") ||
                (e.target.id === "PTXTiltSoftStopMin") || (e.target.id === "PTXTiltSoftStopMax"))
@@ -262,9 +308,8 @@ const namespace = this.props.namespace ? this.props.namespace : 'None'
         tiltMaxElement = document.getElementById("PTXTiltSoftStopMax")
         clearElementStyleModified(tiltMaxElement)
 
-        onSetPTXSoftStopPos(namespace, Number(panMinElement.value), Number(panMaxElement.value), 
+        onSetPTXSoftStopPos(ptx_namespace, Number(panMinElement.value), Number(panMaxElement.value), 
                             Number(tiltMinElement.value), Number(tiltMaxElement.value))
-        this.setState({panMaxSoftstopEdited: null, panMinSoftstopEdited: null, tiltMaxSoftstopEdited: null, tiltMinSoftstopEdited: null})
       }
       else if (e.target.id === "PTXPanGoto") 
         {
@@ -273,10 +318,10 @@ const namespace = this.props.namespace ? this.props.namespace : 'None'
           clearElementStyleModified(panElement)
                         
           if (has_sep_pan_tilt === true){
-            onSetPTXGotoPanPos(namespace, Number(panElement.value))
+            onSetPTXGotoPanPos(ptx_namespace, Number(panElement.value))
           }
           else {
-            onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
+            onSetPTXGotoPos(ptx_namespace, Number(panElement.value),Number(tiltElement.value))
           }
           
         }
@@ -287,10 +332,10 @@ const namespace = this.props.namespace ? this.props.namespace : 'None'
             tiltElement = document.getElementById("PTXTiltGoto")
             clearElementStyleModified(tiltElement)
             if (has_sep_pan_tilt === true){
-              onSetPTXGotoTiltPos(namespace, Number(tiltElement.value))
+              onSetPTXGotoTiltPos(ptx_namespace, Number(tiltElement.value))
             }
             else {
-              onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
+              onSetPTXGotoPos(ptx_namespace, Number(panElement.value),Number(tiltElement.value))
             }                    
             
           }
@@ -328,175 +373,13 @@ const namespace = this.props.namespace ? this.props.namespace : 'None'
   }
 
   
-  // Callback for handling ROS Status3DX messages
-  ptxStatusListener(message) {
-    const pan_min_ss = this.state.autoPanMin
-    const pan_max_ss = this.state.autoPanMax
-    const tilt_min_ss = this.state.autoTiltMin
-    const tilt_max_ss = this.state.autoTiltMax
-    this.setState({
-      ptSerialNum: message.serial_num,
-      ptHwVersion: message.hw_version,
-      ptSwVersion: message.sw_version,
-      panNowRatio: message.pan_now_ratio,
-      tiltNowRatio: message.tilt_now_ratio,
-      panGoalRatio: message.pan_goal_ratio,
-      tiltGoalRatio: message.tilt_goal_ratio,
-      speedRatio: message.speed_ratio,
-      panPositionDeg: message.pan_now_deg,
-      tiltPositionDeg: message.tilt_now_deg,
-      panHomePosDeg: message.pan_home_pos_deg,
-      tiltHomePosDeg: message.tilt_home_pos_deg,
-      panMaxHardstopDeg: message.pan_max_hardstop_deg,
-      tiltMaxHardstopDeg: message.tilt_max_hardstop_deg,
-      panMinHardstopDeg: message.pan_min_hardstop_deg,
-      tiltMinHardstopDeg: message.tilt_min_hardstop_deg,
-      panMinSoftstopDeg: message.pan_min_softstop_deg,
-      panMaxSoftstopDeg: message.pan_max_softstop_deg,
-      tiltMinSoftstopDeg: message.tilt_min_softstop_deg,
-      tiltMaxSoftstopDeg: message.tilt_max_softstop_deg,
-      reversePanEnabled: message.reverse_pan_enabled,
-      reverseTiltEnabled: message.reverse_tilt_enabled,
-      track_source_namespaces: message.track_source_namespaces,
-      track_source_namespace: message.track_source_namespace,
-      track_source_connected: message.track_source_connected,
-      autoPanEnabled: message.auto_pan_enabled,
-      trackPanEnabled: message.track_pan_enabled,
-      autoPanMin: message.auto_pan_range_window.start_range,
-      autoPanMax: message.auto_pan_range_window.stop_range,
-      autoTiltEnabled: message.auto_tilt_enabled,
-      trackTiltEnabled: message.track_tilt_enabled,
-      autoTiltMin: message.auto_tilt_range_window.start_range,
-      autoTiltMax: message.auto_tilt_range_window.stop_range,
-      /*
-      sinPanEnabled: message.sin_pan_enabled,
-      sinTiltEnabled: message.sin_tilt_enabled,
-      */
-      speed_pan_dps: message.speed_pan_dps,
-      speed_tilt_dps: message.speed_tilt_dps,
-    })
-
-    const scan_limits_changed = (pan_min_ss !== this.state.autoPanMin || pan_max_ss !== this.state.autoPanMax ||
-                              tilt_min_ss !== this.state.autoTiltMin || tilt_max_ss !== this.state.autoTiltMax)
-    if (scan_limits_changed === true){
-      this.setState({panScanMin: message.auto_pan_range_window.start_range,
-                     panScanMax: message.auto_pan_range_window.stop_range
-      })
-    }
-    if (scan_limits_changed === true){
-      this.setState({tiltScanMin: message.auto_tilt_range_window.start_range,
-                     tiltScanMax: message.auto_tilt_range_window.stop_range
-      })
-    }
-    
-  }
-
-    // Function for configuring and subscribing to StatusIDX
-    updateListener() {
-      const { namespace } = this.props
-      if (this.state.listener) {
-        this.state.listener.unsubscribe()
-      }
-      var listener = this.props.ros.setupPTXStatusListener(
-        namespace,
-        this.ptxStatusListener
-      )
-      this.setState({ listener: listener, disabled: false })
-  
-    }
-  
-    // Lifecycle method called when compnent updates.
-    // Used to track changes in the topic
-    componentDidUpdate(prevProps, prevState, snapshot) {
-      const { namespace } = this.props
-      if (prevProps.namespace !== namespace){
-        if (namespace !== null) {
-          this.updateListener()
-        } else if (namespace === null){
-          this.setState({ disabled: true })
-        }
-      }
-    }
-
-  // Function for configuring and subscribing to ptx/status
-  onptxDeviceselected(event) {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
-    }
-
-    var ind = event.nativeEvent.target.selectedIndex
-    var value = event.target.value
-
-    // Handle the "None" option -- always index 0
-    if (ind === 0) {
-      this.setState({ disabled: true })
-      return
-    }
-
-    this.setState({ namespace: value })
-
-    var listener = this.props.ros.setupPTXStatusListener(
-        value,
-        this.ptxStatusListener
-      )
-      
-    this.setState({ namespace: value, listener: listener, disabled: false })
-  }
-
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status3DX message
-  componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
-      this.setState({listener : null})
-    }
-  }
-
-  // Function for creating topic options for Select input
-  createPTXOptions(caps_dictionaries, filter) {
-    const topics = Object.keys(caps_dictionaries)
-    var filteredTopics = topics
-    var i
-    if (filter) {
-      filteredTopics = []
-      for (i = 0; i < topics.length; i++) {
-        // includes does a substring search
-        if (topics[i].includes(filter)) {
-          filteredTopics.push(topics[i])
-        }
-      }
-    }
-
-    var items = []
-    items.push(<Option>{""}</Option>)
-    //var unique_names = createShortUniqueValues(filteredTopics)
-    var device_name = ""
-    for (i = 0; i < filteredTopics.length; i++) {
-      device_name = filteredTopics[i].split('/ptx')[0].split('/').pop()
-      items.push(<Option value={filteredTopics[i]}>{device_name}</Option>)
-    }
-
-    return items
-  }
-
-  // (Removed duplicate updateListener/componentDidUpdate block)
-
-
-
-  onClickToggleShowSettings(){
-    const currentVal = this.state.showSettings 
-    this.setState({showSettings: !currentVal})
-    this.render()
-  }
-
-
 
 
 onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
   const {publishRangeWindow} = this.props.ros
-  const namespace = this.props.namespace ? this.props.namespace : 'None'
+  const ptx_namespace = this.props.ptx_namespace ? this.props.ptx_namespace : 'None'
 
-  const topic_namespace = namespace + topicName
+  const topic_namespace = ptx_namespace + topicName
   var min = -60
   var max = 60
   if(event.key === 'Enter'){
@@ -520,490 +403,362 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
 
   renderControlPanel() {
     const { ptxDevices, sendBoolMsg, onPTXGoHome, onPTXSetHomeHere } = this.props.ros
-    
-    const { //Unused ptSerialNum, ptHwVersion, ptSwVersion,
-            panPositionDeg, tiltPositionDeg, panHomePosDeg, tiltHomePosDeg,
-            panMaxHardstopDeg, tiltMaxHardstopDeg, panMinHardstopDeg, tiltMinHardstopDeg,
-            panMinHardstopEdited, tiltMinHardstopEdited, panMaxHardstopEdited, tiltMaxHardstopEdited,
-            panMaxSoftstopDeg, tiltMaxSoftstopDeg, panMinSoftstopDeg, tiltMinSoftstopDeg,
-            panMinSoftstopEdited, tiltMinSoftstopEdited, panMaxSoftstopEdited, tiltMaxSoftstopEdited,
-            speedRatio, panHomePosEdited, tiltHomePosEdited,
-            reversePanEnabled, reverseTiltEnabled, autoPanEnabled, autoTiltEnabled, trackPanEnabled, trackTiltEnabled, 
-            track_source_connected,
-            speed_pan_dps, speed_tilt_dps  } = this.state /*sinPanEnabled ,sinTiltEnabled*/
+    const ptx_namespace = this.props.ptx_namespace ? this.props.ptx_namespace : 'None'
+    const status_msg = this.state.status_msg
 
-    const namespace = this.props.namespace ? this.props.namespace : 'None'
-    //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
-
-    const panPositionDegClean = panPositionDeg + .001
-    const tiltPositionDegClean = tiltPositionDeg + .001
-
-    const ptx_caps = ptxDevices[namespace]
-    const has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning)
-    //Unused const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning)
-    //Unused const has_sep_pan_tilt = ptx_caps && (ptx_caps.has_seperate_pan_tilt_control)
-    const has_auto_pan = ptx_caps && (ptx_caps.has_auto_pan)
-    const has_auto_tilt = ptx_caps && (ptx_caps.has_auto_tilt)
-    const has_speed_control = ptx_caps && (ptx_caps.has_adjustable_speed)
-    const has_homing = ptx_caps && (ptx_caps.has_homing)
-    //Unused const has_set_home = ptx_caps && (ptx_caps.has_set_home)
-    
-    const panHomePos = (panHomePosEdited === null)? round(panHomePosDeg, 1) : panHomePosEdited
-    const tiltHomePos = (tiltHomePosEdited === null)? round(tiltHomePosDeg, 1) : tiltHomePosEdited
-
-    const panHardStopMin = (panMinHardstopEdited === null)? round(panMinHardstopDeg, 1) : panMinHardstopEdited
-    const tiltHardStopMin = (tiltMinHardstopEdited === null)? round(tiltMinHardstopDeg, 1) : tiltMinHardstopEdited
-    const panHardStopMax = (panMaxHardstopEdited === null)? round(panMaxHardstopDeg, 1) : panMaxHardstopEdited
-    const tiltHardStopMax = (tiltMaxHardstopEdited === null)? round(tiltMaxHardstopDeg, 1) : tiltMaxHardstopEdited
-
-
-    const panSoftStopMin = (panMinSoftstopEdited === null)? round(panMinSoftstopDeg, 1) : panMinSoftstopEdited
-    const tiltSoftStopMin = (tiltMinSoftstopEdited === null)? round(tiltMinSoftstopDeg, 1) : tiltMinSoftstopEdited
-    const panSoftStopMax = (panMaxSoftstopEdited === null)? round(panMaxSoftstopDeg, 1) : panMaxSoftstopEdited
-    const tiltSoftStopMax = (tiltMaxSoftstopEdited === null)? round(tiltMaxSoftstopDeg, 1) : tiltMaxSoftstopEdited
-
-    const hide_auto_pan = ((has_auto_pan === false ))
-    const hide_auto_tilt = ((has_auto_tilt === false ))
-
-    const hide_track_pan = ((track_source_connected === false || hide_auto_pan === true))
-    const hide_track_tilt = ((track_source_connected === false || hide_auto_tilt === true))
-
-    //Unused const {sendTriggerMsg} = this.props.ros
-
-    return (
-      <React.Fragment>
-
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
-         </label>
-
-
-
-        <Label title={""}>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
-        </Label>
-
-
-
-        <div hidden={(has_abs_pos === false)}>
-
-            <Label title={"Present Position"}>
-              <Input
-                disabled
-                style={{ width: "45%", float: "left" }}
-                value={round(panPositionDegClean, 2)}
-              />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(tiltPositionDegClean, 2)}
-              />
-            </Label>
-
-
-            <Label title={"Current Speed (Deg/Sec)"}>
-              <Input
-                disabled
-                style={{ width: "45%", float: "left" }}
-                value={round(speed_pan_dps, 0)}
-              />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(speed_tilt_dps, 0)}
-              />
-            </Label>
-
-          </div>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-        <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
-        </Label>
-
-
-
-
-
-
-          <div hidden={(has_abs_pos === false)}>
-
-            <Label title={"GoTo Position"}>
-              <Input
-                disabled={!has_abs_pos}
-                id={"PTXPanGoto"}
-                style={{ width: "45%", float: "left" }}
-                value={this.state.panGotoDeg}
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-              />
-              <Input
-                disabled={!has_abs_pos}
-                id={"PTXTiltGoto"}
-                style={{ width: "45%" }}
-                value={this.state.tiltGotoDeg}
-                onChange= {this.onUpdateText}
-                onKeyDown= {this.onKeyText}
-              />
-            </Label>
-
-        </div>
-
-        <div hidden={(has_homing === false)}>
-
-        <ButtonMenu>
-          <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
-        </ButtonMenu>
-
-      </div>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-
+    if (ptx_namespace !== 'None' && status_msg == null){
+      return (
         <Columns>
           <Column>
+          
+        </Column>
+      </Columns>
 
-            <Label title="PT SETUP">
-                    <Toggle
-                      checked={this.state.showSettings===true}
-                      onClick={this.onClickToggleShowSettings}>
-                    </Toggle>
-                  </Label>
+      )
 
-
-             
-          </Column>
-          <Column>
- 
-
-          </Column>
-        </Columns>
-
-
-        <div hidden={(this.state.showSettings === false)}>
-
-
-                  <Label title={""}>
-                    <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-                    <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
-                  </Label>
-
-                    <Label title={"Reverse Control"}>
-                      <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-                        <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
-                      </div>
-                      <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-                        <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
-                      </div>
-                    </Label>
-
-
-                  <div hidden={(has_speed_control === false)}>
-
-                  <SliderAdjustment
-                    disabled={!has_speed_control}
-                    title={"Speed"}
-                    msgType={"std_msgs/Float32"}
-                    adjustment={speedRatio}
-                    topic={namespace + "/set_speed_ratio"}
-                    scaled={0.01}
-                    min={0}
-                    max={100}
-                    tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-                    unit={"%"}
-                  />
-
-                  </div>
+    }
+    else {
 
 
 
+          const ptxDevicesList = Object.keys(ptxDevices)
+          var has_abs_pos = false
+          var has_timed_pos = false
+          var has_speed_control = false
+          var has_homing = false
+          //Unused var has_set_home =
+          if (ptxDevicesList.indexOf(ptx_namespace) !== -1){
+            const ptx_caps = ptxDevices[ptx_namespace]
+            has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
+            has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
+            has_speed_control = ptx_caps && (ptx_caps.has_adjustable_speed)
+            has_homing = ptx_caps && (ptx_caps.has_homing)
+            //Unused has_set_home = ptx_caps && (ptx_caps.has_set_home)
+          }
+
+          const reversePanEnabled = status_msg.reverse_pan_enabled
+          const reverseTiltEnabled = status_msg.reverse_tilt_enabled
+
+          const speedRatio = status_msg.speed_ratio
+          const panPosition = status_msg.pan_now_deg
+          const tiltPosition = status_msg.tilt_now_deg
+
+          const speed_pan_dps = status_msg.speed_pan_dps
+          const speed_tilt_dps = status_msg.speed_tilt_dps
+
+
+          const panPositionClean = panPosition + .001
+          const tiltPositionClean = tiltPosition + .001
+
+
+   
+          const panHomePos = this.state.panHomePos
+          const tiltHomePos = this.state.tiltHomePos
+          const panHardStopMin = this.state.panHardStopMin
+          const tiltHardStopMin = this.state.tiltHardStopMin
+          const panHardStopMax = this.state.panHardStopMax
+          const tiltHardStopMax = this.state.tiltHardStopMax
+          const panSoftStopMin = this.state.panSoftStopMin
+          const tiltSoftStopMin = this.state.tiltSoftStopMin
+          const panSoftStopMax = this.state.panSoftStopMax
+          const tiltSoftStopMax = this.state.tiltSoftStopMax   
+
+
+          return (
+            <React.Fragment>
+
+              <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
+              </label>
 
 
 
-                  <div hidden={(has_abs_pos === false)}>
-
-                          <Label title={"Hard Limit Min"}>
-                            <Input
-                              disabled={true}
-                              id={"PTXPanHardStopMin"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panHardStopMin}
-                            />
-                            <Input
-                              disabled={true}
-                              id={"PTXTiltHardStopMin"}
-                              style={{ width: "45%" }}
-                              value={tiltHardStopMin}
-                            />
-                          </Label>
-
-                          <Label title={"Hard Limit Max"}>
-                            <Input
-                              disabled={true}
-                              id={"PTXPanHardStopMax"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panHardStopMax}
-                            />
-                            <Input
-                              disabled={true}
-                              id={"PTXTiltHardStopMax"}
-                              style={{ width: "45%" }}
-                              value={tiltHardStopMax}
-                            />
-                          </Label>
+              <Label title={""}>
+                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+              </Label>
 
 
-                          <Label title={"Soft Limit Min"}>
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXPanSoftStopMin"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panSoftStopMin}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXTiltSoftStopMin"}
-                              style={{ width: "45%" }}
-                              value={tiltSoftStopMin}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                          </Label>
-                          <Label title={"Soft Limit Max"}>
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXPanSoftStopMax"}
-                              style={{ width: "45%", float: "left" }}
-                              value={panSoftStopMax}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                            <Input
-                              disabled={!has_abs_pos}
-                              id={"PTXTiltSoftStopMax"}
-                              style={{ width: "45%" }}
-                              value={tiltSoftStopMax}
-                              onChange= {this.onUpdateText}
-                              onKeyDown= {this.onKeyText}
-                            />
-                          </Label>
 
-                  </div>
+              <div hidden={(has_abs_pos === false)}>
 
-
-                  <div hidden={(has_homing === false)}>
-
-                  <Label title={"Home Position"}>
+                  <Label title={"Present Position"}>
                     <Input
-                      disabled={!has_homing}
-                      id={"PTXPanHomePos"}
+                      disabled
                       style={{ width: "45%", float: "left" }}
-                      value={panHomePos}
-                      onChange= {this.onUpdateText}
-                      onKeyDown= {this.onKeyText}
+                      value={round(panPositionClean, 2)}
                     />
                     <Input
-                      disabled={!has_homing}
-                      id={"PTXTiltHomePos"}
+                      disabled
                       style={{ width: "45%" }}
-                      value={tiltHomePos}
-                      onChange= {this.onUpdateText}
-                      onKeyDown= {this.onKeyText}
+                      value={round(tiltPositionClean, 2)}
                     />
                   </Label>
 
 
-                  <ButtonMenu>
-                    <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(namespace)}>{"Set Home Here"}</Button>
-                  </ButtonMenu>
+                  <Label title={"Current Speed"}>
+                    <Input
+                      disabled
+                      style={{ width: "45%", float: "left" }}
+                      value={round(speed_pan_dps, 0)}
+                    />
+                    <Input
+                      disabled
+                      style={{ width: "45%" }}
+                      value={round(speed_tilt_dps, 0)}
+                    />
+                  </Label>
 
                 </div>
 
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+              <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+              </Label>
 
 
 
 
-                  <div
-                      style={{
-                        borderTop: "1px solid #050404ff",
-                        marginTop: Styles.vars.spacing.medium,
-                        marginBottom: Styles.vars.spacing.xs,
-                      }}
+
+
+                <div hidden={(has_abs_pos === false)}>
+
+                  <Label title={"GoTo Position "}>
+                    <Input
+                      disabled={!has_abs_pos}
+                      id={"PTXPanGoto"}
+                      style={{ width: "45%", float: "left" }}
+                      value={this.state.panGoto}
+                      onChange= {this.onUpdateText}
+                      onKeyDown= {this.onKeyText}
                     />
-                    <Label title="Show 3D Transform">
-                      <Toggle
-                        checked={this.state.showTransform}
-                        onClick={this.onClickToggleShowTransform}>
-                      </Toggle>
-                    </Label>
+                    <Input
+                      disabled={!has_abs_pos}
+                      id={"PTXTiltGoto"}
+                      style={{ width: "45%" }}
+                      value={this.state.tiltGoto}
+                      onChange= {this.onUpdateText}
+                      onKeyDown= {this.onKeyText}
+                    />
+                  </Label>
 
-                    <div hidden={ this.state.showTransform === false}>
+              </div>
 
-                        <Columns>
-                          <Column>
+              <div hidden={(has_homing === false)}>
 
-                                  <NepiIF3DTransform
-                                      namespace={namespace + '/navpose_frame_transform'}
-                                      supports_updates={true}
-                                      title={"Nepi_IF_3DTransform"}
-                                  />
+              <ButtonMenu>
+                <Button disabled={!has_homing} onClick={() => onPTXGoHome(ptx_namespace)}>{"Go Home"}</Button>
+              </ButtonMenu>
 
-                          </Column>
-                      </Columns>
-
-                  </div>
             </div>
 
-
-            </React.Fragment>
-    )
-  }
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-renderNavPose(){
-  const show_navpose = this.state.show_navpose
-  const namespace = this.state.namespace ? this.state.namespace : 'None'
-  //Unused const make_section = this.props.make_section ? this.props.make_section : true
-  //console.log("show navpose: " + show_navpose)
-  //console.log("renderNavPose namespace : " + namespace)
-  if (namespace == null || namespace === 'None'){
-    return(
-  
-      <Columns>
-      <Column>
 
-      </Column>
-      </Columns>
-  
-    )
-  }
-  else{
-    return (
+              <Columns>
+                <Column>
 
-      <Section>
-            <Columns>
-            <Column>
-                  <Label title="Show NavPose">
-                      <Toggle
-                        checked={this.state.show_navpose===true}
-                        onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
-                      </Toggle>
-                    </Label>            
+                  <Label title="PT SETUP">
+                          <Toggle
+                            checked={this.state.showSettings===true}
+                            onClick={this.onClickToggleShowSettings}>
+                          </Toggle>
+                        </Label>
 
-                    </Column>
-                    <Column>
 
-                    </Column>
-                    <Column>
+                  
+                </Column>
+                <Column>
+      
 
-                    </Column>
-                    </Columns>
-                    <div align={"left"} textAlign={"left"} hidden={!this.state.show_navpose}>
+                </Column>
+              </Columns>
 
-                  <NavPoseViewer
-                    namespace={(show_navpose === true) ? namespace  + "/navpose": null}
-                    make_section={false}
-                    title={"PTX NavPose Data"}
-                  />
+
+              <div hidden={(this.state.showSettings === false)}>
+
+
+                        <Label title={""}>
+                          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+                          <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+                        </Label>
+
+                          <Label title={"Reverse Control"}>
+                            <div style={{ display: "inline-block", width: "45%", float: "left" }}>
+                              <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(ptx_namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
+                            </div>
+                            <div style={{ display: "inline-block", width: "45%", float: "right" }}>
+                              <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(ptx_namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
+                            </div>
+                          </Label>
+
+
+                        <div hidden={(has_speed_control === false)}>
+
+                        <SliderAdjustment
+                          disabled={!has_speed_control}
+                          title={"Speed"}
+                          msgType={"std_msgs/Float32"}
+                          adjustment={speedRatio}
+                          topic={ptx_namespace + "/set_speed_ratio"}
+                          scaled={0.01}
+                          min={0}
+                          max={100}
+                          tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                          unit={"%"}
+                        />
+
+                        </div>
+
+
+
+
+
+
+                        <div hidden={(has_abs_pos === false)}>
+
+                                <Label title={"Hard Limit Min"}>
+                                  <Input
+                                    disabled={true}
+                                    id={"PTXPanHardStopMin"}
+                                    style={{ width: "45%", float: "left" }}
+                                    value={panHardStopMin}
+                                  />
+                                  <Input
+                                    disabled={true}
+                                    id={"PTXTiltHardStopMin"}
+                                    style={{ width: "45%" }}
+                                    value={tiltHardStopMin}
+                                  />
+                                </Label>
+
+                                <Label title={"Hard Limit Max"}>
+                                  <Input
+                                    disabled={true}
+                                    id={"PTXPanHardStopMax"}
+                                    style={{ width: "45%", float: "left" }}
+                                    value={panHardStopMax}
+                                  />
+                                  <Input
+                                    disabled={true}
+                                    id={"PTXTiltHardStopMax"}
+                                    style={{ width: "45%" }}
+                                    value={tiltHardStopMax}
+                                  />
+                                </Label>
+
+
+                                <Label title={"Soft Limit Min"}>
+                                  <Input
+                                    disabled={!has_abs_pos}
+                                    id={"PTXPanSoftStopMin"}
+                                    style={{ width: "45%", float: "left" }}
+                                    value={panSoftStopMin}
+                                    onChange= {this.onUpdateText}
+                                    onKeyDown= {this.onKeyText}
+                                  />
+                                  <Input
+                                    disabled={!has_abs_pos}
+                                    id={"PTXTiltSoftStopMin"}
+                                    style={{ width: "45%" }}
+                                    value={tiltSoftStopMin}
+                                    onChange= {this.onUpdateText}
+                                    onKeyDown= {this.onKeyText}
+                                  />
+                                </Label>
+                                <Label title={"Soft Limit Max"}>
+                                  <Input
+                                    disabled={!has_abs_pos}
+                                    id={"PTXPanSoftStopMax"}
+                                    style={{ width: "45%", float: "left" }}
+                                    value={panSoftStopMax}
+                                    onChange= {this.onUpdateText}
+                                    onKeyDown= {this.onKeyText}
+                                  />
+                                  <Input
+                                    disabled={!has_abs_pos}
+                                    id={"PTXTiltSoftStopMax"}
+                                    style={{ width: "45%" }}
+                                    value={tiltSoftStopMax}
+                                    onChange= {this.onUpdateText}
+                                    onKeyDown= {this.onKeyText}
+                                  />
+                                </Label>
+
+                        </div>
+
+
+                        <div hidden={(has_homing === false)}>
+
+                        <Label title={"Home Position"}>
+                          <Input
+                            disabled={!has_homing}
+                            id={"PTXPanHomePos"}
+                            style={{ width: "45%", float: "left" }}
+                            value={panHomePos}
+                            onChange= {this.onUpdateText}
+                            onKeyDown= {this.onKeyText}
+                          />
+                          <Input
+                            disabled={!has_homing}
+                            id={"PTXTiltHomePos"}
+                            style={{ width: "45%" }}
+                            value={tiltHomePos}
+                            onChange= {this.onUpdateText}
+                            onKeyDown= {this.onKeyText}
+                          />
+                        </Label>
+
+
+                        <ButtonMenu>
+                          <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(ptx_namespace)}>{"Set Home Here"}</Button>
+                        </ButtonMenu>
+
+                      </div>
+
                   </div>
 
-                </Section>
-              )  
-            }
-          }
 
-
+                  </React.Fragment>
+          )
+        }
+  }
 
 
   render() {
-    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
-    const { panNowRatio, panGoalRatio, tiltNowRatio, tiltGoalRatio} = this.state
-    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-
-    const ptxImageViewerElement = document.getElementById("ptxImageViewer")
-    const tiltSliderHeight = (ptxImageViewerElement)? ptxImageViewerElement.offsetHeight : "100px"
-
-    const ptx_caps = ptxDevices[namespace]
-    const has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
-    const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
-    //Unused const show_navpose = this.state.show_navpose
-    //Unused const device_selected = (this.state.namespace != null)
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
 
     
     if (make_section === false){
 
-    return (
-      <React.Fragment>
-        <Columns>
-          <Column equalWidth = {false} >
+      return (
+
+          <Columns>
+            <Column >
+
+              { this.renderControlPanel()}
+
+            </Column>
+          </Columns>
+      )
+    }
+    else {
+      return (
+
+          <Section>
 
 
-                
+              {this.renderControlPanel()}
 
 
-
-            { namespace?
-              this.renderControlPanel()
-              : null
-
-
-            }
-
-            <div hidden={(namespace == null)}>
-              <NepiIFSettings
-                settingsNamespace={namespace + '/settings'}
-                title={"Nepi_IF_Settings"}
-              />
-            </div>
-
-
-          </Column>
-        </Columns>
-      </React.Fragment>
-    )
-  }
-  else {
-    return (
-
-    <Section>
-
-    <Columns>
-    <Column equalWidth = {false} >
-
-
-          
-
-
-
-      { namespace?
-        this.renderControlPanel()
-        : null
-
-
-      }
-
-      <div hidden={(namespace == null)}>
-        <NepiIFSettings
-          settingsNamespace={namespace + '/settings'}
-          title={"Nepi_IF_Settings"}
-        />
-      </div>
-
-
-    </Column>
-  </Columns>
-  </Section>
-    )
-  }  
+        </Section>
+     )
+    }
   }
 }
 

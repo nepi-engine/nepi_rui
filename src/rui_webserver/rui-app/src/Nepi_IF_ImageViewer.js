@@ -1387,7 +1387,9 @@ class ImageViewer extends Component {
     const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
-
+    const show_all_options = (this.props.show_all_options != undefined) ? this.props.show_all_options : true
+    const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
+    const save_data_topic = (this.props.save_data_topic != undefined) ? this.props.save_data_topic :  this.state.save_data_topic
     const title = this.props.title ? this.props.title : ""
     
     return (
@@ -1420,8 +1422,10 @@ class ImageViewer extends Component {
       >
                   {(show_save_controls === true && namespace !== 'None') ?
                     <NepiIFSaveData
-                    saveNamespace={this.state.save_data_topic}
+                    saveNamespace={save_data_topic}
                     make_section={false}
+                    show_all_options={show_all_options}
+                    show_topic_selector={show_topic_selector}
                   />
                 : null }
 

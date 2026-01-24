@@ -26,6 +26,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 
 import NepiDashboardData from "./NepiDashboardData"
+import NavPoseMgr from "./NepiMgrNavPose"
 
 import AppRender from "./Nepi_IF_Apps"
 
@@ -201,6 +202,7 @@ class DataSelector extends Component {
           }
         }
       }
+      items.push(<Option value={'NavPose Manager'}>{'NavPose Manager'}</Option>)
       items.push(<Option value={'Data Dashboard'}>{'Data Dashboard'}</Option>)
     }
     return items
@@ -253,6 +255,25 @@ class DataSelector extends Component {
 
     const {appNameList} = this.props.ros
   
+    if (sel_app === "NavPose Manager"){
+      return (
+        <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+            </label>
+            <Columns>
+            <Column>
+
+              <NavPoseMgr
+              title={"NavPose Manager"}
+              />
+
+          </Column>
+          </Columns>  
+        </React.Fragment>
+      )
+    }
+
     if (sel_app === "Data Dashboard"){
       return (
         <React.Fragment>

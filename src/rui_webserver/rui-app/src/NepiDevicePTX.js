@@ -33,20 +33,15 @@ import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValu
 import {createShortValuesFromNamespaces} from "./Utilities"
 
 
-//import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
 import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import NepiIFSettings from "./Nepi_IF_Settings"
 //Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
-import NepiSystemMessages from "./Nepi_IF_Messages"
 
-
-import NavPoseViewer from "./Nepi_IF_NavPoseViewer"
-import {onChangeSwitchStateValue } from "./Utilities"
+//import {onChangeSwitchStateValue } from "./Utilities"
 
 
 function round(value, decimals = 0) {
@@ -63,333 +58,52 @@ class NepiDevicePTX extends Component {
     super(props)
 
     this.state = {
+      ptx_namespace: null,
 
-      imageTopic: null,
-      imageText: null,
-
-      ptSerialNum: null,
-      ptHwVersion: null,
-      ptSwVersion: null,
-      
-      panPositionDeg: null,
-      tiltPositionDeg: null,
-
-      panGotoDeg: 0.0,
-      tiltGotoDeg: 0.0,
-
-      panHomePosEdited: null,
-      panHomePosDeg: null,
-      tiltHomePosEdited: null,
-      tiltHomePosDeg: null,
-
-      show_navpose: false,
-
-      showSettings: false,
-
-      panMaxHardstopDeg: null,
-      panMaxHardstopEdited: null,
-      tiltMaxHardstopDeg: null,
-      tiltMaxHardstopEdited: null,
-
-      panMinHardstopDeg: null,
-      panMinHardstopEdited: null,
-      tiltMinHardstopDeg: null,
-      tiltMinHardstopEdited: null,
-      
-      panMaxSoftstopDeg: null,
-      panMaxSoftstopEdited: null,
-      tiltMaxSoftstopDeg: null,
-      tiltMaxSoftstopEdited: null,
-
-      panMinSoftstopDeg: null,
-      panMinSoftstopEdited: null,
-      tiltMinSoftstopDeg: null,
-      tiltMinSoftstopEdited: null,
-
-
-
-      panNowRatio: null,
-      tiltNowRatio: null,
-      panGoalRatio: null,
-      tiltGoalRatio: null,
-      panGoalRatioLast: null,
-      tiltGoalRatioLast: null,
-      panRatio: null,
-      tiltRatio: null,
-      speedRatio: null,
-
-      reversePanEnabled: false,
-      reverseTiltEnabled: false,
-
-      track_source_namespaces: null,
-      track_source_namespace: null,
-      track_source_connected: null,
-
-      autoPanEnabled: false,
-      autoPanMin: -1,
-      autoPanMax: 1,
-      autoTiltEnabled: false,
-      autoTiltMin: -1,
-      autoTiltMax: 1,
-
-      panScanMin: null,
-      panScanMax: null,
-      tiltScanMin: null,
-      tiltScanMax: null,
-      /*
-      sinPanEnabled: false,
-      #sinTiltEnabled: false,
-      */
-
-      speed_pan_dps: 0,
-      speed_tilt_dps: 0,
-
-      namespace : null,
-      
-      listener: null,
-      disabled: true
 
     }
 
-    //this.renderNavPose = this.renderNavPose.bind(this)
-    //this.renderNavPoseInfo = this.renderNavPoseInfo.bind(this)
-
-    this.onUpdateText = this.onUpdateText.bind(this)
-    this.onKeyText = this.onKeyText.bind(this)
-    this.onptxDeviceselected = this.onptxDeviceselected.bind(this)
-    this.ptxStatusListener = this.ptxStatusListener.bind(this)
+    
     this.createPTXOptions = this.createPTXOptions.bind(this)
-    this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
-
-    this.onEnterSendScanRangeWindowValue = this.onEnterSendScanRangeWindowValue.bind(this)
+    this.onptxDeviceselected = this.onptxDeviceselected.bind(this)
+  
   }
-
-  onUpdateText(e) {
-    var panElement = null
-    var tiltElement = null
-    var panMinElement = null
-    var panMaxElement = null
-    var tiltMinElement = null
-    var tiltMaxElement = null
-    if ((e.target.id === "PTXPanHomePos") || (e.target.id === "PTXTiltHomePos"))
-    {
-      panElement = document.getElementById("PTXPanHomePos")
-      setElementStyleModified(panElement)
-      
-      tiltElement = document.getElementById("PTXTiltHomePos")
-      setElementStyleModified(tiltElement)
-      
-      this.setState({panHomePosEdited: panElement.value,
-                     tiltHomePosEdited: tiltElement.value})
-    }
-    else if ((e.target.id === "PTXPanSoftStopMin") || (e.target.id === "PTXPanSoftStopMax") ||
-             (e.target.id === "PTXTiltSoftStopMin") || (e.target.id === "PTXTiltSoftStopMax"))
-    {
-      panMinElement = document.getElementById("PTXPanSoftStopMin")
-      setElementStyleModified(panMinElement)
-
-      panMaxElement = document.getElementById("PTXPanSoftStopMax")
-      setElementStyleModified(panMaxElement)
-
-      tiltMinElement = document.getElementById("PTXTiltSoftStopMin")
-      setElementStyleModified(tiltMinElement)
-
-      tiltMaxElement = document.getElementById("PTXTiltSoftStopMax")
-      setElementStyleModified(tiltMaxElement)
-
-      this.setState({panMinSoftstopEdited: panMinElement.value, panMaxSoftstopEdited: panMaxElement.value, 
-                     tiltMinSoftstopEdited: tiltMinElement.value, tiltMaxSoftstopEdited: tiltMaxElement.value})
-    }
-    else if (e.target.id === "PTXPanGoto") 
-      {
-        panElement = document.getElementById("PTXPanGoto")
-        setElementStyleModified(panElement)
-             
-        this.setState({panGotoDeg: panElement.value})
-      }
-        
-    else if  (e.target.id === "PTXTiltGoto")
-        {
-          tiltElement = document.getElementById("PTXTiltGoto")
-          setElementStyleModified(tiltElement)
-               
-          this.setState({tiltGotoDeg: tiltElement.value})                 
-          
-        }
-
-  }
-
-  onKeyText(e) {
-    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
-    const namespace = this.state.namespace
-
-    //Unused const ptx_id = namespace? namespace.split('/').slice(-1) : "No Pan/Tilt Selected"
-    const ptx_caps = ptxDevices[namespace]
-    const has_sep_pan_tilt = ptx_caps && (ptx_caps.has_seperate_pan_tilt_control)
-    var panElement = null
-    var tiltElement = null
-    var panMinElement = null
-    var panMaxElement = null
-    var tiltMinElement = null
-    var tiltMaxElement = null
-    if(e.key === 'Enter'){
-      if ((e.target.id === "PTXPanHomePos") || (e.target.id === "PTXTiltHomePos"))
-      {
-        panElement = document.getElementById("PTXPanHomePos")
-        clearElementStyleModified(panElement)
-        
-        tiltElement = document.getElementById("PTXTiltHomePos")
-        clearElementStyleModified(tiltElement)
-                
-        onSetPTXHomePos(namespace, Number(panElement.value), Number(tiltElement.value))
-        this.setState({panHomePosEdited:null, tiltHomePosEdited:null})
-      }
-      else if ((e.target.id === "PTXPanSoftStopMin") || (e.target.id === "PTXPanSoftStopMax") ||
-               (e.target.id === "PTXTiltSoftStopMin") || (e.target.id === "PTXTiltSoftStopMax"))
-      {
-        panMinElement = document.getElementById("PTXPanSoftStopMin")
-        clearElementStyleModified(panMinElement)
-
-        panMaxElement = document.getElementById("PTXPanSoftStopMax")
-        clearElementStyleModified(panMaxElement)
-
-        tiltMinElement = document.getElementById("PTXTiltSoftStopMin")
-        clearElementStyleModified(tiltMinElement)
-
-        tiltMaxElement = document.getElementById("PTXTiltSoftStopMax")
-        clearElementStyleModified(tiltMaxElement)
-
-        onSetPTXSoftStopPos(namespace, Number(panMinElement.value), Number(panMaxElement.value), 
-                            Number(tiltMinElement.value), Number(tiltMaxElement.value))
-        this.setState({panMaxSoftstopEdited: null, panMinSoftstopEdited: null, tiltMaxSoftstopEdited: null, tiltMinSoftstopEdited: null})
-      }
-      else if (e.target.id === "PTXPanGoto") 
-        {
-          panElement = document.getElementById("PTXPanGoto")
-          tiltElement = document.getElementById("PTXTiltGoto")
-          clearElementStyleModified(panElement)
-                        
-          if (has_sep_pan_tilt === true){
-            onSetPTXGotoPanPos(namespace, Number(panElement.value))
-          }
-          else {
-            onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
-          }
-          
-        }
-        else if  (e.target.id === "PTXTiltGoto")
-          {
-            
-            panElement = document.getElementById("PTXPanGoto")
-            tiltElement = document.getElementById("PTXTiltGoto")
-            clearElementStyleModified(tiltElement)
-            if (has_sep_pan_tilt === true){
-              onSetPTXGotoTiltPos(namespace, Number(tiltElement.value))
-            }
-            else {
-              onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
-            }                    
-            
-          }
-
-    }
-  }
-
   
   // Callback for handling ROS Status3DX messages
   ptxStatusListener(message) {
-    const pan_min_ss = this.state.autoPanMin
-    const pan_max_ss = this.state.autoPanMax
-    const tilt_min_ss = this.state.autoTiltMin
-    const tilt_max_ss = this.state.autoTiltMax
     this.setState({
-      ptSerialNum: message.serial_num,
-      ptHwVersion: message.hw_version,
-      ptSwVersion: message.sw_version,
-      panNowRatio: message.pan_now_ratio,
-      tiltNowRatio: message.tilt_now_ratio,
-      panGoalRatio: message.pan_goal_ratio,
-      tiltGoalRatio: message.tilt_goal_ratio,
-      speedRatio: message.speed_ratio,
-      panPositionDeg: message.pan_now_deg,
-      tiltPositionDeg: message.tilt_now_deg,
-      panHomePosDeg: message.pan_home_pos_deg,
-      tiltHomePosDeg: message.tilt_home_pos_deg,
-      panMaxHardstopDeg: message.pan_max_hardstop_deg,
-      tiltMaxHardstopDeg: message.tilt_max_hardstop_deg,
-      panMinHardstopDeg: message.pan_min_hardstop_deg,
-      tiltMinHardstopDeg: message.tilt_min_hardstop_deg,
-      panMinSoftstopDeg: message.pan_min_softstop_deg,
-      panMaxSoftstopDeg: message.pan_max_softstop_deg,
-      tiltMinSoftstopDeg: message.tilt_min_softstop_deg,
-      tiltMaxSoftstopDeg: message.tilt_max_softstop_deg,
-      reversePanEnabled: message.reverse_pan_enabled,
-      reverseTiltEnabled: message.reverse_tilt_enabled,
-      track_source_namespaces: message.track_source_namespaces,
-      track_source_namespace: message.track_source_namespace,
-      track_source_connected: message.track_source_connected,
-      autoPanEnabled: message.auto_pan_enabled,
-      trackPanEnabled: message.track_pan_enabled,
-      autoPanMin: message.auto_pan_range_window.start_range,
-      autoPanMax: message.auto_pan_range_window.stop_range,
-      autoTiltEnabled: message.auto_tilt_enabled,
-      trackTiltEnabled: message.track_tilt_enabled,
-      autoTiltMin: message.auto_tilt_range_window.start_range,
-      autoTiltMax: message.auto_tilt_range_window.stop_range,
-      /*
-      sinPanEnabled: message.sin_pan_enabled,
-      sinTiltEnabled: message.sin_tilt_enabled,
-      */
-      speed_pan_dps: message.speed_pan_dps,
-      speed_tilt_dps: message.speed_tilt_dps,
+      status_msg: message
     })
-
-    const scan_limits_changed = (pan_min_ss !== this.state.autoPanMin || pan_max_ss !== this.state.autoPanMax ||
-                              tilt_min_ss !== this.state.autoTiltMin || tilt_max_ss !== this.state.autoTiltMax)
-    if (scan_limits_changed === true){
-      this.setState({panScanMin: message.auto_pan_range_window.start_range,
-                     panScanMax: message.auto_pan_range_window.stop_range
-      })
-    }
-    if (scan_limits_changed === true){
-      this.setState({tiltScanMin: message.auto_tilt_range_window.start_range,
-                     tiltScanMax: message.auto_tilt_range_window.stop_range
-      })
-    }
     
   }
 
   // Function for configuring and subscribing to ptx/status
   onptxDeviceselected(event) {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
+      this.setState({status_msg: null})
     }
 
     var ind = event.nativeEvent.target.selectedIndex
     var value = event.target.value
 
-    // Handle the "None" option -- always index 0
-    if (ind === 0) {
-      this.setState({ disabled: true })
-      return
+    if (value != 'None'){
+      this.setState({ ptx_namespace: value })
+
+      var statusListener = this.props.ros.setupPTXStatusListener(
+          value,
+          this.ptxStatusListener
+        )
     }
-
-    this.setState({ namespace: value })
-
-    var listener = this.props.ros.setupPTXStatusListener(
-        value,
-        this.ptxStatusListener
-      )
-      
-    this.setState({ namespace: value, listener: listener, disabled: false })
+    this.setState({ ptx_namespace: value, statusListener: statusListener })
   }
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status3DX message
   componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
-      this.setState({listener : null})
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
+      this.setState({statusListener : null})
     }
   }
 
@@ -421,108 +135,11 @@ class NepiDevicePTX extends Component {
   }
 
 
-  onClickToggleShowSettings(){
-    const currentVal = this.state.showSettings 
-    this.setState({showSettings: !currentVal})
-    this.render()
-  }
-
-
-
-
-onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
-  const {publishRangeWindow} = this.props.ros
-  const namespace = this.state.namespace
-
-  const topic_namespace = namespace + topicName
-  var min = -60
-  var max = 60
-  if(event.key === 'Enter'){
-    const value = parseFloat(event.target.value)
-    if (!isNaN(value)){
-      if (entryName === "min"){
-        min = value
-        max = other_val
-      }
-      else if (entryName === "max"){
-        min = other_val
-        max = value
-      }
-      publishRangeWindow(topic_namespace,min,max,false)
-    }
-    document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-  }
-}
-
-
-renderNavPose(){
-  const show_navpose = this.state.show_navpose
-  const namespace = this.state.namespace ? this.state.namespace : 'None'
-  //Unused const make_section = this.props.make_section ? this.props.make_section : true
-  //console.log("show navpose: " + show_navpose)
-  //console.log("renderNavPose namespace : " + namespace)
-  if (namespace == null || namespace === 'None'){
-    return(
-  
-      <Columns>
-      <Column>
-
-      </Column>
-      </Columns>
-  
-    )
-  }
-  else{
-    return (
-
-      <Section>
-            <Columns>
-            <Column>
-                  <Label title="Show NavPose">
-                      <Toggle
-                        checked={this.state.show_navpose===true}
-                        onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
-                      </Toggle>
-                    </Label>            
-
-                    </Column>
-                    <Column>
-
-                    </Column>
-                    <Column>
-
-                    </Column>
-                    </Columns>
-                    <div align={"left"} textAlign={"left"} hidden={!this.state.show_navpose}>
-
-                  <NavPoseViewer
-                    namespace={(show_navpose === true) ? namespace  + "/navpose": null}
-                    make_section={false}
-                    title={"PTX NavPose Data"}
-                  />
-                  </div>
-
-                </Section>
-              )  
-            }
-          }
-
-
-
 
   render() {
-    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
-    const { panNowRatio, panGoalRatio, tiltNowRatio, tiltGoalRatio} = this.state
-    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-
-    const ptxImageViewerElement = document.getElementById("ptxImageViewer")
-    const tiltSliderHeight = (ptxImageViewerElement)? ptxImageViewerElement.offsetHeight : "100px"
-
-    const ptx_caps = ptxDevices[namespace]
-    const has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
-    const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
-    //Unused const show_navpose = this.state.show_navpose
-    //Unused const device_selected = (this.state.namespace != null)
+    const { ptxDevices } = this.props.ros
+    const ptx_namespace = (this.state.ptx_namespace !== null) ? this.state.ptx_namespace : 'None'
+    const connected = (this.state.status_msg != null)
 
     return (
       <React.Fragment>
@@ -535,40 +152,18 @@ renderNavPose(){
                 <div id="ptxImageViewer">
                   <NepiDevicePTXImageViewer
                     id="ptxImageViewer"
-                    imageTopic={this.state.imageTopic}
-                    title={this.state.imageText}
                     show_image_options={false}
-                    ptx_namespace={namespace}
+                    ptx_namespace={ptx_namespace}
                   />
                 </div>
 
 
-                {this.renderNavPose()}
-
-{/*
-                <div hidden={(namespace === null)}>
-                      <NepiDeviceInfo
-                            deviceNamespace={namespace}
-                            status_topic={"/status"}
-                            status_msg_type={"nepi_interfaces/DevicePTXStatus"}
-                            name_update_topic={"/update_device_name"}
-                            name_reset_topic={"/reset_device_name"}
-                            title={"NepiSensorsImagingInfo"}
-                        />
-                </div>
-
-            <NepiSystemMessages
-              messagesNamespace={namespace.replace('/ptx','') + '/messages'}
-              title={"NepiSystemMessages"}
-              />
-*/}
-     
           </Column>
           <Column>
-            <Label title={"Device"}>
+            <Label title={"Select PanTilt"}>
               <Select
                 onChange={this.onptxDeviceselected}
-                value={namespace}
+                value={ptx_namespace}
               >
                 {this.createPTXOptions(ptxDevices)}
               </Select>
@@ -576,30 +171,33 @@ renderNavPose(){
    
 
 
-            <div align={"left"} textAlign={"left"} hidden={namespace == null}>
-              
+            <div align={"left"} textAlign={"left"}>
+              { (connected === true) ?
                   <NepiIFConfig
-                        namespace={namespace}
+                        ptx_namespace={ptx_namespace}
                         title={"Nepi_IF_SaveConif"}
                   />
+            : null}
 
-            </div>
-
+{/*
+            { (connected === true) ?
             <NepiDevicePTXControls
-                namespace={namespace}
+                ptx_namespace={ptx_namespace}
                 make_section = {true}
                 title={"NepiDevicePTXControls"}
             />
+            : null}
+*/}
 
-
-            <div hidden={(namespace == null)}>
+           { (connected === true) ?
               <NepiIFSettings
-                settingsNamespace={namespace + '/settings'}
+                settingsNamespace={ptx_namespace + '/settings'}
                 title={"Nepi_IF_Settings"}
               />
-            </div>
+            : null}
 
 
+          </div>
           </Column>
         </Columns>
       </React.Fragment>

@@ -96,24 +96,29 @@ class ImageViewerSelector extends Component {
   getListMenu() {
     // Update Class List
     const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : this.props.ros.image_topics
-    const exclude_filters = (this.props.exclude_filters != undefined) ? this.props.exclude_filters : []
-    const include_filters = (this.props.include_filters != undefined) ? this.props.include_filters : []
+    const image_exclude_filters = (this.props.image_exclude_filters != undefined) ? this.props.image_exclude_filters : []
+    const image_include_filters = (this.props.image_include_filters != undefined) ? this.props.image_include_filters : []
     var images = image_topics  
     var items = []
     var push_item = true
+    var image = ''
     if (images.length > 0){
       for (var i = 0; i < images.length; i++) {
+        image = images[i]
         push_item = true
-        for (var i2 = 0; i2 < exclude_filters.length; i2++) {
-          if (images[i].indexOf(exclude_filters[i2]) !== -1 ){
+        for (var i2 = 0; i2 < image_exclude_filters.length; i2++) {
+          if (image.indexOf(image_exclude_filters[i2]) !== -1 ){
             push_item = false
           }
-          if (include_filters.length > 0 && images[i].indexOf(include_filters[i2]) === -1) {
-            push_item = false
-          } 
         }
+        for (var i2 = 0; i2 < image_exclude_filters.length; i2++) {
+          if (image.indexOf(image_include_filters[i2]) === -1 ){
+            push_item = false
+          }
+        }
+
         if (push_item === true){
-          items.push(images[i])
+          items.push(image)
         }
       }
     }
@@ -210,7 +215,7 @@ class ImageViewerSelector extends Component {
     var menu_items = []
     if (sorted_items.length > 0){
       for (var i = 0; i < sorted_items.length; i++) {
-        if (exclude_filters.indexOf(sorted_items[i]) === -1 ){
+        if (image_exclude_filters.indexOf(sorted_items[i]) === -1 ){
           menu_items.push(<Option value={sorted_items[i]}>{sorted_names[i]}</Option>)
         }
       }
@@ -370,6 +375,7 @@ class ImageViewerSelector extends Component {
                 : null
     const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
+    const save_data_topic = this.props.save_data_topic
     
     return (
 
@@ -382,6 +388,7 @@ class ImageViewerSelector extends Component {
       selection_callback={selection_callback}
       show_image_options={show_image_options}
       show_save_controls={show_save_controls}
+      save_data_topic={save_data_topic}
       make_section={false}
       streamingImageQuality={streamingImageQuality}
 

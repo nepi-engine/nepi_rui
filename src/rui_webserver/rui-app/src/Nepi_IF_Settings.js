@@ -44,6 +44,7 @@ class Nepi_IF_Settings extends Component {
     this.state = {
 
       settingsNamespace: 'None',
+      updatedNamespace: 'None',
       capabilities: null,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
@@ -127,20 +128,11 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const settingsNamespace = this.props.settingsNamespace ? 
-        (this.props.settingsNamespace !== 'None' ? this.props.settingsNamespace: 'None') : 'None'
+    const settingsNamespace = (this.props.settingsNamespace != undefined) ? this.props.settingsNamespace  + '/settings': 'None'
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
       this.setState({settingsListener: null})
-    }
-    else {
-      if (settingsNamespace !== 'None'){
-        const settingsListener = this.props.ros.setupSettingsStatusListener(
-          settingsNamespace + '/status',
-          this.settingsStatusListener
-        )
-
-        this.setState({capSettingsNamesList: [],
+      this.setState({capSettingsNamesList: [],
         capSettingsTypesList: [],
         capSettingsOptionsLists: [],
         settingsNamesList: [],
@@ -157,19 +149,26 @@ class Nepi_IF_Settings extends Component {
         selectedSettingOptions: [],
         selectedSettingInput: ""
         })
-        this.setState({settingsNamespace: settingsNamespace})
-        this.setState({ settingsListener: settingsListener})
-      }
     }
+    if (settingsNamespace !== 'None'){
+      const settingsListener = this.props.ros.setupSettingsStatusListener(
+        settingsNamespace + '/status',
+        this.settingsStatusListener
+      )
+
+      
+      this.setState({settingsNamespace: settingsNamespace, updatedNamespace: settingsNamespace})
+      this.setState({ settingsListener: settingsListener})
+    }
+    
   }
 
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const settingsNamespace = this.props.settingsNamespace
-    const namespace = this.state.settingsNamespace
-    if (settingsNamespace !== namespace) {
+    const settingsNamespace = this.props.settingsNamespace + '/settings'
+    if (settingsNamespace !== this.state.settingsNamespace || settingsNamespace != this.state.updatedNamespace) {
       this.updateSettingsListener()
     }
   }
@@ -507,7 +506,10 @@ class Nepi_IF_Settings extends Component {
 
   render() {
     const make_section = this.props.make_section ? this.props.make_section : true
-    const settingsNamespace = this.state.settingsNamespace ? this.state.settingsNamespace : 'None'
+    const settingsNamespace = this.state.settingsNamespace ? this.state.settingsNamespace  + '/settings' : 'None'
+    if (settingsNamespace != this.state.settingsNamespace){
+      this.setState({updatedNamespace: settingsNamespace})
+    }
     if (settingsNamespace !== 'None' && make_section === true){
       return (
         <Section title={"Device Settings"}>

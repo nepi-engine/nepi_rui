@@ -35,7 +35,6 @@ import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateV
 
 import NepiIFReset from "./Nepi_IF_Reset"
 import NepiIFConfig from "./Nepi_IF_Config" 
-import NepiIF3DTransform from "./Nepi_IF_3DTransform"
 
 @inject("ros")
 @observer
@@ -487,39 +486,6 @@ class NepiDeviceIDXControls extends Component {
 
                             </Column>
                           </Columns>  
-
-
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                <Columns>
-                      <Column>
-
-                              <NepiIF3DTransform
-                                  namespace={namespace + '/navpose_frame_transform'}
-                                  supports_updates={true}
-                                  title={"Nepi_IF_3DTransform"}
-                              />
-
-                      </Column>
-                  </Columns>
-
-
-                    {/*
-                                
-                      <Columns>
-                        <Column>
-                        <div align={"left"} textAlign={"left"}>
-                            <Label title={"Data Output Frame"}>
-                            <Input value = {this.state.navpose_frame} />
-                            </Label>
-                          </div>
-                        </Column>
-                        <Column>
-
-                        </Column>
-                      </Columns>
-                */}
-
 
                   <NepiIFReset
                             namespace={namespace}

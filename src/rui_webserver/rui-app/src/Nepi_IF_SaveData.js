@@ -213,23 +213,53 @@ class NepiIFSaveData extends Component {
   }
 
 
+
   createTopicOptions() {
     const { namespacePrefix, deviceId} = this.props.ros
+    const show_all_options = (this.props.show_all_options != undefined) ? this.show_all_options : true
+    const save_include_filters = (this.props.save_include_filters != undefined) ? this.save_include_filters : []
+    const save_exclude_filters = (this.props.save_exclude_filters != undefined) ? this.save_exclude_filters : []
     const allNamespace = this.getAllNamespace()
     var items = []
-    items.push(<Option value={allNamespace}>{"All"}</Option>)
+    if (show_all_options === true){
+      items.push(<Option value={allNamespace}>{"All"}</Option>)
+    }
     //items.push(<Option value={"None"}>{"None"}</Option>)
     const saveData_topics = this.props.ros.saveDataNamespaces
+    var shortname_split = []
+    var shortname_base = ''
+    var shortname_desc = ''
     var shortname = ''
     var topic = ""
-    for (var i = 0; i < saveData_topics.length; i++) {
+    var include = true
+    var i
+    var i2
+    for (i = 0; i < saveData_topics.length; i++) {
       topic = saveData_topics[i]
-      if (topic !== allNamespace && topic.indexOf("None") === -1) {
-        shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')
-        items.push(<Option value={topic}>{shortname}</Option>)
+      include = true
+      if (topic !== allNamespace && topic.indexOf("None") === -1){
+        for (var i2 = 0; i2 < save_exclude_filters.length; i2++) {
+          if (topic.indexOf(save_exclude_filters[i2]) !== -1 ){
+            include = false
+          }
+        }
+        for (var i2 = 0; i2 < save_include_filters.length; i2++) {
+          if (topic.indexOf(save_include_filters[i2]) === -1 ){
+            include = false
+          }
+        }
+        if (include === true){
+          shortname_split = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','').split('/')
+          shortname_base = shortname_split[0]
+          shortname_desc = shortname_split[shortname_split.length - 1]
+          shortname = shortname_base
+          if (shortname_desc != shortname){
+            shortname = shortname + '-' + shortname_desc
+          }
+          items.push(<Option value={topic}>{shortname}</Option>)
+        }
       }
     }
-    const saveNamespace = this.state.saveNamespace
     return items    
   }
 
@@ -237,7 +267,7 @@ class NepiIFSaveData extends Component {
   onChangeTopicSelection(event){
     this.setState({lastSaveNamespace: this.saveNamespace})
     const selNamespace = event.target.value
-    this.setState({saveNamespace: selNamespace,
+    this.setState({updateNamespace: selNamespace,
                    needs_update: true
     })
   }
@@ -695,6 +725,8 @@ sendLogRateUpdate(rate) {
     const showControls = (always_show_controls === true || this.state.showControls === true)
     const show_active_settings = this.state.show_active_settings
 
+    const show_all_options = (this.props.show_all_options != undefined) ? this.show_all_options : true
+
     const saveAll = this.state.saveAll
     const save_enabled = saveDataEnabled
     return (
@@ -704,14 +736,14 @@ sendLogRateUpdate(rate) {
 
 
                         <div style={{ width: '15%' }}>
-                              <div  hidden={always_show_controls === true}>
+                            {(always_show_controls === false) ? 
                                 <Label title="Save Controls">
                                 <Toggle
                                   checked={showControls===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("showControls",showControls)}>
                                 </Toggle>
                             </Label>
-                            </div>
+                            : null }
                         </div>
 
                         <div style={{ width: '5%' }}>
@@ -721,12 +753,15 @@ sendLogRateUpdate(rate) {
 
                         <div style={{ width: '15%' }}>
                           
+                                  { (show_all_options === true) ?
                                       <Label title="Enable All">
                                         <Toggle
                                           checked={ (saveAll === true) }
                                           onClick={() => {this.onChangeBoolSaveAllValue()}}
                                         />
                                   </Label>
+                                
+                                  : null }
         
                         </div>
 
@@ -881,14 +916,14 @@ sendLogRateUpdate(rate) {
                           <BooleanIndicator value={(saveDataEnabled === true)} />
                         </Label>
 
-
+{/*
                         <Label title={"Example Filename"}>
                         </Label>
 
                         <pre style={{ height: "100px", overflowY: "auto" }}>
                           {this.state.exp_filename}
                         </pre>
-
+*/}
                       <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                         <Label title="Filter Active">
@@ -955,10 +990,6 @@ sendLogRateUpdate(rate) {
 
  renderControlOptions() {
     const saveNamespace = this.state.saveNamespace
-    const always_show_controls = (this.props.always_show_controls != undefined) ? this.props.always_show_controls : false
-    if (always_show_controls === true && this.state.showControls === false){
-      this.setState({showControls: true})
-    }
     const showControls = this.state.showControls
     const show_control_options = (this.props.show_control_options != undefined) ? this.props.show_control_options : true
     const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
@@ -979,7 +1010,7 @@ sendLogRateUpdate(rate) {
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
         <div style={{ display: 'flex' }}>
-          <div style={{ width: '20%' }} hidden={show_topic_selector === false}>
+          <div style={{ width: '30%' }} hidden={show_topic_selector === false}>
             {this.renderTopicSelector()}
           </div>
 
@@ -987,7 +1018,7 @@ sendLogRateUpdate(rate) {
             {}
           </div>
 
-          <div  style={{ width: '75%' }}>
+          <div  style={{ width: '65%' }}>
 
             <label style={{fontWeight: 'bold'}}>
               {saveNamespace}

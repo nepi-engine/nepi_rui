@@ -53,13 +53,11 @@ class NepiDataNavPose extends Component {
       namespace: null,
       node_namespace: null,
 
-      listener: null,
-
       disabled: false,
 
       connected: false,
       statusListener: null,
-      navposeListener: null,
+
       needs_update: true,
       nav_needs_update: true
     }

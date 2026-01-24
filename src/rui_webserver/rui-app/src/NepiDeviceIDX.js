@@ -26,13 +26,8 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 import NepiDeviceIDXControls from "./NepiDeviceIDX-Controls"
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiSystemMessages from "./Nepi_IF_Messages"
-import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
-
 
 
 
@@ -282,7 +277,8 @@ class NepiDeviceIDX extends Component {
               image_topic={image_topic}
               title={image_text}
               hideQualitySelector={false}
-              show_save_controls={false}
+              show_topic_selector={false}
+              show_all_options={false}
             />
           }
 
@@ -314,29 +310,7 @@ class NepiDeviceIDX extends Component {
 
                             {this.renderImageViewer()}
 
-
-                          {(namespace != 'None') ?
-                          <NepiIFSaveData
-                              saveNamespace={namespace + '/save_data'}
-                              title={"Nepi_IF_SaveData"}
-                              show_topic_selector={true}
-                          />
-                          : null}
 {/*
-                          <NepiIFNavPoseViewer
-                            namespace={namespace  + "/navpose"}
-                            title={"NavPose Data"}
-                          />
-
-                          <NepiDeviceInfo
-                                deviceNamespace={namespace}
-                                status_topic={"/status"}
-                                status_msg_type={"nepi_interfaces/DeviceIDXStatus"}
-                                name_update_topic={"/update_device_name"}
-                                name_reset_topic={"/reset_device_name"}
-                                title={"NepiDeviceIDXInfo"}
-                            />
-
 
                         {(namespace != 'None') ?
                         <NepiSystemMessages
@@ -366,7 +340,6 @@ class NepiDeviceIDX extends Component {
                           <NepiDeviceIDXControls
                               namespace={namespace}
                               dataProduct={data_product}
-                              title={"NepiDeviceIDXControls"}
                         />
                         : null}
 
@@ -374,7 +347,6 @@ class NepiDeviceIDX extends Component {
                           {(namespace != 'None') ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
-                            title={"Nepi_IF_Settings"}
                         />
                         : null}
 

@@ -27,18 +27,15 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import Toggle from "react-toggle"
-import Label from "./Label"
-import RangeAdjustment from "./RangeAdjustment"
+
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
-import Select, { Option } from "./Select"
+
+
+import { SliderAdjustment } from "./AdjustmentWidgets"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
-import {  onChangeSwitchStateValue } from "./Utilities"
 
-import {createShortValuesFromNamespaces} from "./Utilities"
-import { SliderAdjustment } from "./AdjustmentWidgets"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -54,426 +51,132 @@ class NepiDevicePTXImageViewer extends Component {
 
     this.state = {
 
+      ptx_namespace: null,
 
-      hide_list: true,
-
-      images_list: [],
-      images_list_names: [],
-      filter_list: [],
-      id: '0',
-      selected_image: 'None',
-      selected_image_index: -1,
-      selected_image_text: 'None',
-
-      connected: true
+      status_msg: null,  
+      statusListener: null
     }
-    this.renderImageViewerSelector = this.renderImageViewerSelector.bind(this)
-    this.renderButtonControls = this.renderButtonControls.bind(this)
-    this.renderImgSection = this.renderImgSection.bind(this)
 
-    
-    this.getListMenu = this.getListMenu.bind(this)
-    this.toggleViewableList = this.toggleViewableList.bind(this)
-    this.onToggleListSelection = this.onToggleListSelection.bind(this)
 
+    this.getNamespace = this.getNamespace.bind(this)
+    this.updateStatusListener = this.updateStatusListener.bind(this)
+    this.statusListener = this.statusListener.bind(this)
   }
 
 
-  toggleViewableList() {
-    const show_list = ((this.state.hide_list === true) && (this.state.connected === true))
-    if (show_list === false){
-      this.setState({hide_list: !show_list,
-        selected_image: 'None',
-      })
+  getNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var ptx_namespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      if (this.props.ptx_namespace != undefined){
+        ptx_namespace = this.props.ptx_namespace
+      }
+      else{
+        ptx_namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
+      }
     }
-    else {
-      this.setState({hide_list: !show_list
-      })
-
-    }
+    return ptx_namespace
   }
 
-
-  // Function for creating list menu options.
-  getListMenu() {
-    // Update Class List
-    const imageTopics = this.props.images_list ? this.props.images_list : this.props.ros.imageTopics
-    const image_filters = this.props.image_filters ? this.props.image_filters : []
-    const image_options = this.props.image
-    var images = imageTopics  
-    var items = []
-    var push_item = true
-    if (images.length > 0){
-      for (var i = 0; i < images.length; i++) {
-        push_item = true
-        for (var i2 = 0; i2 < image_filters.length; i2++) {
-          if (images[i].indexOf(image_filters[i2]) !== -1 ){
-            push_item = false
-          }
-        }
-        if (push_item === true){
-          items.push(images[i])
-        }
-      }
-    }
-
-    const item_names = createShortValuesFromNamespaces(items)
-    var sorted_names = item_names.slice()
-    sorted_names.sort()
-    var sorted_items = []
-    var sorted_index = 0
-    if (sorted_names.length > 0){
-      for (var i = 0; i < sorted_names.length; i++) {
-      
-        sorted_index = item_names.indexOf(sorted_names[i])
-        sorted_items.push(items[sorted_index])
-        
-      }
-    }
-
-    // Update Class Variables
-    const id = this.props.id
-    //var selected_image = this.props.imageTopic != undefined ? this.props.imageTopic : this.state.selected_image
-    var selected_image = this.state.selected_image
-
-    const class_id = this.state.id
-    if ((id === class_id) || (selected_image === 'None')){
-      if ((selected_image === 'None') && (this.props.imageTopic != undefined)) {
-        selected_image = this.props.imageTopic
-      } 
-      var selected_ind = this.state.selected_image_index
-      var selected_text = this.state.selected_image_text
-      const names = createShortValuesFromNamespaces(sorted_items)
-      var index = 0
-      var index_changed = false
-      var index_name = ''
-      var index_name_changed = false
-      var updated_image = null
-      const images_list = this.state.images_list
-      if (JSON.stringify(images_list) !== JSON.stringify(sorted_items)) {
-        index = sorted_items.indexOf(selected_image)
-        if (selected_ind !== index || selected_text !== names[index]) {
-          this.setState({
-            id: id,
-            selected_image_index: index,
-            selected_image_text: names[index]})
-          }      
-        this.setState({images_list: sorted_items, images_list_names: names})
-      
-      }
-
-      if (sorted_items.indexOf(selected_image) === -1 ) {
-        if (sorted_items.length > 0) {
-          this.setState({id: id,
-                        selected_image: sorted_items[0],
-                        selected_image_index: 0,
-                        selected_image_text: names[0]})
-          updated_image = selected_image
-        }
-        else {
-          this.setState({
-            id: id,
-            selected_image: 'None',
-            selected_image_index: -1,
-            selected_image_text: 'None'})
-          updated_image = selected_image
-        }
-        
-      }
-      else {
-        index = sorted_items.indexOf(selected_image)
-        index_changed = (selected_ind !== index) 
-        index_name = names[index]
-        index_name_changed = (selected_text !== index_name)
-        if ( index_changed || index_name_changed ) {
-          this.setState({
-            id: id,
-            selected_image_index: index,
-            selected_image_text: index_name})
-          updated_image = selected_image
-          }
-          
-      }
-
-      const {sendStringMsg} = this.props.ros
-      const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
-      if ((select_updated_namespace != null) && (updated_image != null)){
-        sendStringMsg(select_updated_namespace,updated_image)
-      }
-    }
-
-
-
-
-    // Create Menu List
-    var menu_items = []
-    if (sorted_items.length > 0){
-      for (var i = 0; i < sorted_items.length; i++) {
-        if (image_filters.indexOf(sorted_items[i]) === -1 ){
-          menu_items.push(<Option value={sorted_items[i]}>{sorted_names[i]}</Option>)
-        }
-      }
-    }
-    if (menu_items.length == 0){
-      menu_items.push(<Option value={'None'}>{'None'}</Option>)
-    }
-
-
-
-
-    return menu_items
-
-  }
-
-
-
-  onToggleListSelection(event){
-    const id = this.props.id
-    const image = event.target.value
-    const text = event.target.text
-    const images_list = this.state.images_list
-    const index = images_list.indexOf(image)
-    const {sendStringMsg} = this.props.ros
-    const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
-    if (select_updated_namespace != null){
-      sendStringMsg(select_updated_namespace,image)
-    }
-    this.setState({id: id,
-                    selected_image: image,
-                    selected_image_index: index,
-                  selected_image_text: text})
-    this.setState({hide_list: true})
-
-  }
-
-  renderImageViewerSelector() {
-    const hide_list = ((this.state.hide_list === true) || (this.state.connected === false))
-    const menu_options = this.getListMenu()
-    const selected_item = this.state.selected_image
-    const selected_name = this.state.selected_name
-    const active_list = []
-
-
-    const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
-    const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
-    const show_controls = (menu_options.length > 0) && (show_selector === true )
-    return (
-      <React.Fragment>
-
-          {show_controls === true ?
-
-                <Columns>
-                  <Column>
-                  
-                  <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                    <div onClick={this.toggleViewableList} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                      <Select style={{width: "10px"}}/>
-                    </div>
-
-                    <div hidden={hide_list}>
-                        {menu_options.map((list) =>
-                        <div onClick={this.onToggleListSelection}
-                          style={{
-                            textAlign: "center",
-                            padding: `${Styles.vars.spacing.xs}`,
-                            color: Styles.vars.colors.black,
-                            backgroundColor: (list.props.value === selected_item) ?
-                              Styles.vars.colors.green :
-                              (active_list.includes(list.props.value)) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                            cursor: "pointer",
-                            }}>
-                            <body list-topic ={list} style={{color: Styles.vars.colors.black}}>{list}</body>
-                        </div>
-                        )}
-                    </div>
-
-                </Column>
-                </Columns>
-              :
-                null
-        }
-
-      </React.Fragment>
-
-    )
-  }
-
-
-
-  stepItem(step){
-    const images_list = this.state.images_list
-    const images_list_names = this.state.images_list_names
-    var index = this.state.selected_image_index
-    index = index + step
-    if (index < 0){
-      index = images_list.length - 1
-    }
-    else if ( index >= images_list.length ){
-      index = 0
-    }
-
-    this.setState({selected_image_index: index,
-                 selected_image: images_list[index],
-                 selected_image_text: images_list_names[index]})
-    this.setState({hide_list: true})
-
-  }
-
-  renderButtonControls() {
-    const { sendTriggerMsg } = this.props.ros
-    const images_list = this.state.images_list
-    
-
-
-    const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
-    const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
-    const show_controls = (images_list.length > 0) && (show_buttons === true )
-    return (
-      <React.Fragment>
-
-          {show_controls === true ?
-                <ButtonMenu>
-
-                      <Button 
-                        buttonUpAction={() => this.stepItem(-1)}>
-                        {'\u25C0'}
-                        </Button>
-                      <Button 
-                        buttonUpAction={() => this.stepItem(1)}>
-                        {'\u25B6'}
-                      </Button>
-                  
-                </ButtonMenu>
-                :
-                null
-
-          }
-      
-      </React.Fragment>
-    )
+  // Callback for handling ROS Status3DX messages
+  statusListener(message) {
+    this.setState({
+      status_msg: message
+    })
   }
   
-
-  renderImageViewer() {
-
-    const imageTopic = this.state.selected_image
-    const title = this.state.selected_image_text
-    
-    const navpose_namespace = this.props.navpose_namespace ? this.props.navpose_namespace : imageTopic  + "/navpose"
-    const streamingImageQuality = this.props.streamingImageQuality ? 
-                (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
-                : null
-    const show_image_options = (this.props.show_image_options !== undefined)? this.props.show_image_options : true
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
-    
-
-    return (
-
-      
-      <ImageViewer
-      id="imageViewer"
-      imageTopic={imageTopic}
-      title={title}
-      show_image_options={show_image_options}
-      show_save_controls={show_save_controls}
-      navpose_namespace={navpose_namespace}
-      make_section={false}
-      streamingImageQuality={streamingImageQuality}
-    />
-
-    )
-  }
-
-
-
-  renderImgSection() {
-    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const hide_image = this.state.hide_list === false
-
-
-    if (make_section === false){
-      return (
-        <Columns>
-        <Column>
-
-        <div style={{ display: 'flex' }}>
-              <div style={{ width: '30%' }}>
-                {this.renderImageViewerSelector()}
-              </div>
-
-                <div style={{ width: '50%' }}>
-                  {}
-                </div>
-                
-                <div style={{ width: '20%' }} hidden={hide_image}>
-                  {this.renderButtonControls()}
-                </div>
-        </div>
-
-
-        <div  hidden={hide_image}>
-          {this.renderImageViewer()}
-        </div>
-        </Column>
-        </Columns>
-      )
+  // Function for configuring and subscribing to Status
+  updateStatusListener(ptx_namespace) {
+    const statusNamespace = ptx_namespace + '/status'
+    if (this.state.statusListner) {
+      this.state.statusListner.unsubscribe()
+      this.setState({status_msg: null,
+    })
     }
-    else {
-      return (
+    if (ptx_namespace != null && ptx_namespace !== 'None' && ptx_namespace.indexOf('null') === -1){
+        var statusListner = this.props.ros.setupStatusListener(
+              statusNamespace,
+              "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
+              this.statusListner
+            )
+    }
+    this.setState({ 
+      ptx_namespace: ptx_namespace,
+      statusListner: statusListner,
+    })
 
-      <Section>
+}
+  
+// Lifecycle method called when compnent updates.
+// Used to track changes in the topic
+componentDidUpdate(prevProps, prevState, snapshot) {
+  const ptx_namespace = this.getNamespace()
+  const namespace_updated = (this.state.ptx_namespace !== ptx_namespace && ptx_namespace !== null)
+  if (namespace_updated) {
+    if (ptx_namespace != null){
+      this.updateStatusListener(ptx_namespace)
+    } 
+  }
+}
 
-          <div style={{ display: 'flex' }}>
-              <div style={{ width: '30%' }}>
-                {this.renderImageViewerSelector()}
-              </div>
+componentDidMount(){
+  this.setState({needs_update: true})
+}
+  // Lifecycle method called just before the component umounts.
+  // Used to unsubscribe to Status3DX message
 
-                <div style={{ width: '50%' }}>
-                  {}
-                </div>
 
-                <div style={{ width: '20%' }}>
-                  {this.renderButtonControls()}
-                </div>
-        </div>
-        {this.renderImageViewer()}
 
-      </Section>
-      )
-
+  // Lifecycle method called just before the component umounts.
+  // Used to unsubscribe to Status3DX message
+  componentWillUnmount() {
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
+      this.setState({statusListener : null})
     }
   }
+
+
+
+
+
 
   render() {
     const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
-    const { panNowRatio, panGoalRatio, tiltNowRatio, tiltGoalRatio} = this.state
-    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const ptx_namespace = (this.props.ptx_namespace !== null) ? this.props.ptx_namespace : 'None'
+    const status_msg = this.state.status_msg
+    var panGoalRatio = 0.5
+    var tiltGoalRatio = 0.5
+    if (status_msg != null){
+      panGoalRatio = status_msg.pan_goal_ratio
+      tiltGoalRatio = status_msg.tilt_goal_ratio
+    }
+   
 
+    const ptxDevicesList = Object.keys(ptxDevices)
+    var has_abs_pos = false
+    var has_timed_pos = false
+    if (ptxDevicesList.indexOf(ptx_namespace) !== -1){
+      const ptx_caps = ptxDevices[ptx_namespace]
+      has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
+      has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
+    }
 
     const ptxImageViewerElement = document.getElementById("ptxImageViewer")
     const tiltSliderHeight = (ptxImageViewerElement)? ptxImageViewerElement.offsetHeight : "100px"
 
-    const ptx_caps = ptxDevices[ptx_namespace]
-    const has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
-    const has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
-    //Unused const show_navpose = this.state.show_navpose
-    //Unused const device_selected = (this.state.ptx_namespace != null)
 
-    console.log("render ptx_namespace : " + ptx_namespace)
 
-    
 
     return (
-      <React.Fragment>
+      <Section>
         <Columns>
           <Column equalWidth = {false} >
 
 
                 
           <div id={'ptxImageViewer'}>
-          {this.renderImgSection()}
+          {this.ImageViewer()}
           </div>
 
 
@@ -556,7 +259,7 @@ class NepiDevicePTXImageViewer extends Component {
         </Column>
         </Columns>
 
-      </React.Fragment>
+      </Section>
     )
   }
 }

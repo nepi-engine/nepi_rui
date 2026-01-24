@@ -32,7 +32,6 @@ import Dashboard from "./NepiDashboard"
 import DevicesSelector from "./NepiSelectorDevices"
 import AutoSelector from "./NepiSelectorAuto"
 import DataSelector from "./NepiSelectorData"
-import NavPoseSelector from "./NepiSelectorNavPose"
 import ProcessSelector from "./NepiSelectorProcess"
 import SystemSelector from "./NepiSelectorSystem"
 
@@ -65,7 +64,6 @@ class App extends Component {
             { path: "/", label: "Dashboard" },
             { path: "/devices_selector", label: "Devices"},
             { path: "/data_selector", label: "Data"},
-            { path: "/navpose_selector", label: "NavPose"},
             { path: "/process_selector", label: "Process"},
             { path: "/auto_selector", label: "Automation"},
             { path: "/system_selector", label: "System"},
@@ -85,7 +83,6 @@ class App extends Component {
           <Route exact path="/" component={Dashboard} />
 
           <Route path="/devices_selector" component={DevicesSelector} />      
-          <Route path="/navpose_selector" component={NavPoseSelector} />
           <Route path="/data_selector" component={DataSelector} /> 
           <Route path="/process_selector" component={ProcessSelector} />
           <Route path="/auto_selector" component={AutoSelector} />
