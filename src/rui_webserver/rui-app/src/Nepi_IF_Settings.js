@@ -30,7 +30,7 @@ import Input from "./Input"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import { createMenuListFromStrList } from "./Utilities"
+import { createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -46,6 +46,8 @@ class Nepi_IF_Settings extends Component {
       namespace: 'None',
       status_msg: null,
       capabilities: null,
+
+      show_settings: false,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
@@ -112,6 +114,7 @@ class Nepi_IF_Settings extends Component {
       
 
       this.setState({
+                    status_msg: message,
                     capabilities: capabilities,
                     settingsNamesList:namesList,
                     settingsTypesList:typesList,
@@ -347,14 +350,29 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderSettings() {
-    const show_all = this.props.show_all ? this.props.show_all : false
+    const show_settings = (this.props.show_settings != undefined) ? this.props.show_settings : this.state.show_settings
     const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
 
     const settingsHeight = this.state.settingsCount * 25
     const settingsHeightStr = settingsHeight.toString() + 'px'
 
 
-    if (show_all === false){
+    if (show_settings === false){
+      return(
+              <Columns>
+                <Column>
+
+                  <Label title="Show Settings">
+                      <Toggle
+                        checked={show_settings===true}
+                        onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",show_settings)}>
+                      </Toggle>
+                  </Label>
+                </Column>
+              </Columns>
+      )
+    }
+    else {
       return (
         <React.Fragment>
           <Columns>
@@ -362,6 +380,15 @@ class Nepi_IF_Settings extends Component {
 
               <Columns>
                 <Column>
+
+                  <Label title="Show Settings">
+                      <Toggle
+                        checked={show_settings===true}
+                        onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",show_settings)}>
+                      </Toggle>
+                  </Label>
+
+
                   <Label title={"Select Setting"}>
                     <Select
                       id="selectedSettingName"
@@ -372,7 +399,9 @@ class Nepi_IF_Settings extends Component {
                     </Select>
                   </Label>
                 </Column>
-                <Column />
+                <Column>
+
+                </Column>
               </Columns>
           
               <Columns>

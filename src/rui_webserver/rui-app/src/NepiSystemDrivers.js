@@ -492,6 +492,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
           <NepiIFSettings
             namespace={settings_namespace}
             make_section={false}
+            show_settings={true}
             title={"Nepi_IF_Settings"}
           />
 

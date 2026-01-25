@@ -79,17 +79,10 @@ class NepiDeviceIDXControls extends Component {
       last_width_deg: null,
       last_height_deg: null,
 
-      listener: null,
 
-      disabled: false,
-      navpose_frame: null,
-  
-      avail_pantilt_topics: [],
-      pantilt_mounted: false,
-      sel_pantilt_name: 'None',
-      sel_pantilt_device_topic: 'None',
-      sel_pantilt_navpose_topic: 'None',
-      sel_pantilt_connected: false
+
+      listener: null,
+      disabled: false
     }
 
 
@@ -97,7 +90,7 @@ class NepiDeviceIDXControls extends Component {
     this.renderControlPanel = this.renderControlPanel.bind(this)
 
 
-    this.updateListener = this.updateListener.bind(this)
+    this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
 
     
@@ -127,14 +120,6 @@ class NepiDeviceIDXControls extends Component {
       rangeMin: message.range_window_ratios.start_range,
       rangeLimitMinM: message.min_range_m,
       rangeLimitMaxM: message.max_range_m,
-      navpose_frame: message.navpose_frame,
-      transform_msg: message.navpose_frame_transform,
-      avail_pantilt_topics: message.avail_pantilt_topics,
-      pantilt_mounted: message.pantilt_mounted,
-      sel_pantilt_name: message.sel_pantilt_name,
-      sel_pantilt_device_topic: message.sel_pantilt_device_topic,
-      sel_pantilt_navpose_topic: message.sel_pantilt_navpose_topic,
-      sel_pantilt_connected: message.sel_pantilt_connected,
     })
     
     if (message.max_framerate !== this.state.last_max_framerate){
@@ -153,7 +138,7 @@ class NepiDeviceIDXControls extends Component {
   }
 
   // Function for configuring and subscribing to StatusIDX
-  updateListener() {
+  updateStatusListener() {
     const { namespace } = this.props
     if (this.state.listener) {
       this.state.listener.unsubscribe()
@@ -171,14 +156,18 @@ class NepiDeviceIDXControls extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { namespace } = this.props
-    if (this.state.namespace !== namespace){
+    if (namespace !== prevState.namespace){
       if (namespace !== null) {
-        this.updateListener()
+        this.updateStatusListener()
       } else if (namespace === null){
         this.setState({ disabled: true })
       }
     }
   }
+
+  componentDidMount() {
+    this.updateStatusListener()
+    }
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to StatusIDX message
@@ -324,7 +313,7 @@ class NepiDeviceIDXControls extends Component {
                             </Column>
                           </Columns>  
 
-
+{/*}
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                   <Columns>
@@ -345,7 +334,7 @@ class NepiDeviceIDXControls extends Component {
 
                     <div hidden={this.state.show_controls===false}>
 
-
+*/}
                     <div align={"left"} textAlign={"left"} hidden={!has_auto_adjust}>
 
 
@@ -487,21 +476,13 @@ class NepiDeviceIDXControls extends Component {
                             </Column>
                           </Columns>  
 
-                  <NepiIFReset
-                            namespace={namespace}
-                            title={"Nepi_IF_Reset"}
-                      />
 
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                     <NepiIFConfig
                         namespace={namespace}
                         title={"Nepi_IF_Conig"}
                   />
 
-
-        </div>
 
 
           </React.Fragment>

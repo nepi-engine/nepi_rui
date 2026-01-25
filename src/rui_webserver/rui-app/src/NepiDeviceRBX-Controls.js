@@ -158,7 +158,7 @@ class NepiDeviceControls extends Component {
       last_error_message: message.last_error_message 
     })
     if (this.state.rbx_capabilities === null){
-      const capabilities = rbxDevices[this.props.rbxNamespace]
+      const capabilities = rbxDevices[this.props.namespace]
       if (capabilities){
         const actions=convertStrToStrList(capabilities.action_options)
         const actions_menu_options=createMenuListFromStrList(actions,false,[],[],[])
@@ -219,7 +219,7 @@ class NepiDeviceControls extends Component {
 
   // Function for configuring and subscribing to Status
   updateControlsStatusListener() {
-    const namespace = this.props.rbxNamespace
+    const namespace = this.props.namespace
     if (this.state.controlsStatusListener ) {
       this.state.controlsStatusListener.unsubscribe()
       this.setState({status_msg: null})
@@ -238,12 +238,10 @@ class NepiDeviceControls extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const { rbxNamespace } = this.props
-    if (this.state.rbx_namespace !== rbxNamespace && rbxNamespace !== null) {
-      if (rbxNamespace.indexOf('null') === -1){
+    const { namespace } = this.props
+    if (namespace !== prevState.namespace){  
         this.updateControlsStatusListener()
         this.render()
-      } 
     }
   }
 
@@ -258,7 +256,7 @@ class NepiDeviceControls extends Component {
   
   sendGoActionIndex(){
   const {sendIntMsg} = this.props.ros
-  const namespace = this.props.rbxNamespace + "/go_action"
+  const namespace = this.props.namespace + "/go_action"
   if (this.state.selected_go_action_index !== null) {
       sendIntMsg(namespace,this.state.selected_go_action_index)
     }
@@ -284,7 +282,7 @@ class NepiDeviceControls extends Component {
   renderControlPanel() {
     const {  sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const namespace = this.props.rbxNamespace
+    const namespace = this.props.namespace
     return (
      <React.Fragment>
 
@@ -690,7 +688,6 @@ class NepiDeviceControls extends Component {
 
 
 
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                   <NepiIFConfig
                       namespace={namespace}

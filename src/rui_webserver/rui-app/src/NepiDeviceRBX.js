@@ -58,6 +58,9 @@ class NepiDeviceRBX extends Component {
 
     this.state = {
 
+      namespace: null,
+      status_msg: null,
+
       show_controls: true,
       show_settings: true,
       show_save_data: true,
@@ -92,9 +95,7 @@ class NepiDeviceRBX extends Component {
       selected_setup_action: null,
       selected_setup_action_index: 0,
 
-
-      currentRBXNamespace: null,
-      currentRBXNamespaceText: "No device selected",
+      namespaceText: "No device selected",
 
       rbxInfoListener: null
     }
@@ -117,6 +118,7 @@ class NepiDeviceRBX extends Component {
   infoListener(message) {
     const {rbxDevices} = this.props.ros
     this.setState({
+      status_msg: message,
       device_name: message.device_name,
       serial_num: message.serial_num,
       hw_version: message.hw_version,
@@ -138,7 +140,7 @@ class NepiDeviceRBX extends Component {
       
     })
     if (this.state.rbx_capabilities === null){
-      const capabilities = rbxDevices[this.state.currentRBXNamespace]
+      const capabilities = rbxDevices[this.state.namespace]
       if (capabilities){
         const states=capabilities.state_options
         const states_menu_options=createMenuListFromStrList(states,false,[],[],[])
@@ -163,7 +165,7 @@ class NepiDeviceRBX extends Component {
   
   // Function for configuring and subscribing to Status
   updateInfoListener() {
-    const namespace = this.state.currentRBXNamespace
+    const namespace = this.state.namespace
 
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
@@ -188,15 +190,12 @@ class NepiDeviceRBX extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState) {
-    const currentRBXNamespace = this.state.currentRBXNamespace
-    if (prevState.currentRBXNamespace !== currentRBXNamespace && currentRBXNamespace !== null) {
-      if (currentRBXNamespace.indexOf('null') === -1)
-        this.setState({currentRBXNamespace: currentRBXNamespace,
-        image_topic: currentRBXNamespace + "/image"
-        })
+    const { namespace } = this.props
+    if (namespace !== prevState.namespace){  
         this.updateInfoListener()
-      } 
+        //this.render()
     }
+  }
 
 
   // Lifecycle method called just before the component umounts.
@@ -231,8 +230,8 @@ class NepiDeviceRBX extends Component {
       items.push(<Option value={filteredTopics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    const { currentRBXNamespace } = this.state
-    if ((currentRBXNamespace != null) && (! filteredTopics.includes(currentRBXNamespace))) {
+    const { namespace } = this.state
+    if ((namespace != null) && (! filteredTopics.includes(namespace))) {
       this.clearTopicRBXSelection()
     }
 
@@ -263,8 +262,8 @@ class NepiDeviceRBX extends Component {
 
   clearTopicRBXSelection() {
     this.setState({
-      currentRBXNamespace: null,
-      currentRBXNamespaceText: "No device selected",
+      namespace: null,
+      namespaceText: "No device selected",
       imageText_0: null,
     })
   }
@@ -283,8 +282,8 @@ class NepiDeviceRBX extends Component {
     }
 
     this.setState({
-      currentRBXNamespace: value,
-      currentRBXNamespaceText: text,
+      namespace: value,
+      namespaceText: text,
     })
   }
 
@@ -308,13 +307,13 @@ class NepiDeviceRBX extends Component {
     const max_m = this.state.error_bound_m
     const max_d = this.state.error_bound_deg
     const min_stab = this.state.error_stabilize_s
-    const namespace = this.state.currentRBXNamespace + "/set_goto_error_bounds"
+    const namespace = this.state.namespace + "/set_goto_error_bounds"
     sendErrorBoundsMsg(namespace,max_m,max_d,min_stab)
   }
 
   sendSetupActionIndex(){
     const {sendIntMsg} = this.props.ros
-    const namespace = this.state.currentRBXNamespace+ "/setup_action"
+    const namespace = this.state.namespace+ "/setup_action"
     if (this.state.selected_setup_action_index !== null) {
         sendIntMsg(namespace,this.state.selected_setup_action_index)
       }
@@ -331,9 +330,9 @@ class NepiDeviceRBX extends Component {
     renderDeviceSelection() {
       const { rbxDevices, sendStringMsg, sendBoolMsg, sendGeoPointMsg } = this.props.ros
       const NoneOption = <Option>None</Option>
-      const deviceSelected = (this.state.currentRBXNamespace != null)
+      const deviceSelected = (this.state.namespace != null)
       const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
-      const namespace = this.state.currentRBXNamespace
+      const namespace = this.state.namespace
       return (
         <React.Fragment>
         <Section title={"Device Slection and Configuration"}>
@@ -532,7 +531,7 @@ class NepiDeviceRBX extends Component {
     const NoneOption = <Option>None</Option>
     const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null)? this.state.states_list[this.state.state_index] : "None"
     const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null)? this.state.modes_list[this.state.mode_index] : "None"
-    const namespace = this.state.currentRBXNamespace
+    const namespace = this.state.namespace
     return (
       <React.Fragment>
       <Section title={"Setup Controls"}>
@@ -605,8 +604,8 @@ class NepiDeviceRBX extends Component {
 
 
   render() {
-    const deviceSelected = (this.state.currentRBXNamespace != null)
-    const namespace = (this.state.currentRBXNamespace !== null) ? this.state.currentRBXNamespace : 'None'
+    const deviceSelected = (this.state.namespace != null)
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     return (
       <Columns>
         <Column>
@@ -656,7 +655,7 @@ class NepiDeviceRBX extends Component {
 
           <div hidden={(!deviceSelected && this.state.show_controls)}>
             <NepiDeviceControls
-                rbxNamespace={namespace}
+                namespace={namespace}
                 title={"Device Controls"}
             />
           </div>

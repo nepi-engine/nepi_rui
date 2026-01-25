@@ -65,7 +65,7 @@ class NepiDevicePTXImageViewer extends Component {
 
   getNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
-    var namespace = null
+    var namespace = 'None'
     if (namespacePrefix !== null && deviceId !== null){
       if (this.props.namespace != undefined){
         namespace = this.props.namespace
@@ -110,19 +110,14 @@ class NepiDevicePTXImageViewer extends Component {
 // Used to track changes in the topic
 componentDidUpdate(prevProps, prevState, snapshot) {
   const namespace = this.getNamespace()
-  const namespace_updated = (this.state.namespace !== namespace && namespace !== null)
-  if (namespace_updated) {
-    if (namespace != null){
+   if (namespace !== prevState.namespace){
       this.updateStatusListener(namespace)
-    } 
   }
 }
 
-componentDidMount(){
-  this.setState({needs_update: true})
-}
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status3DX message
+  componentDidMount() {
+    this.updateStatusListener()
+    }
 
 
 

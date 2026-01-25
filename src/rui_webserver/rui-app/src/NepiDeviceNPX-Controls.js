@@ -73,8 +73,6 @@ class NepiDeviceNPXControls extends Component {
           <React.Fragment>
 
 
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
                   <NepiIFConfig
                       namespace={namespace}
                       title={"Nepi_IF_Conig"}
