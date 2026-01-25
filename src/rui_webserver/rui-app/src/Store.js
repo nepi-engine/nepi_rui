@@ -162,6 +162,7 @@ class ROSConnectionStore {
   @observable systemStatus = null
   @observable systemDebugEnabled = false
   @observable heartbeat = false
+  @observable systemTopics = null
   @observable systemHwType = "Uknown"
   @observable systemHwModel = "Uknown"
   @observable systemInContainer = false
@@ -444,11 +445,31 @@ class ROSConnectionStore {
     //  this.checkROSConnection()
     //}
     //else if (this.ros && !this.topicQueryLock && this.connectedToROS) {
+
     if (this.ros && !this.topicQueryLock && this.connectedToROS) {
       this.topicQueryLock = true
       this.ros.getTopics(result => {
-        this.topicNames = result.topics
-        this.topicTypes = result.types
+        const topics = result.topics
+        const types = result.types
+        var topicNames = []
+        var topicTypes = []
+        var i
+        if (this.systemTopics != null){
+          for (i = 0; i < topics.length; i++) {
+            if (this.systemTopcis.indexOf(topics[i]) !== -1) {
+                topicNames.push(topics[i])
+                topicTypes.push(types[i])
+            }
+          }
+          this.topicNames = topicNames
+          this.topicTypes = topicTypes
+        }
+        else {
+          this.topicNames = topics
+          this.topicTypes = types
+        }
+
+
         var newPrefix = this.updatePrefix()
         var newResetTopics = this.updateResetTopics()
         var newSaveDataNamespaces = this.updateSaveDataNamespaces()
@@ -458,17 +479,17 @@ class ROSConnectionStore {
         this.updateAppStatusList()
         this.updateIDXDevices()
         this.updatePTXDevices()
-		    this.updateLXSDevices()
+        this.updateLXSDevices()
         this.updateRBXDevices()
-        this.updateNPXDevices()
+        this.updateNPXDevices()        
 
         if (newPrefix || newResetTopics || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics) {
           this.initalizeListeners()
         }
-        this.topicQueryLock = false
       })
     }
-
+    this.topicQueryLock = false
+    
     setTimeout(async () => {
       await this.updateTopics()
     }, 2000)
@@ -1028,6 +1049,7 @@ class ROSConnectionStore {
         }, 500)
         this.systemStatus = message
         this.systemDebugEnabled = message.sys_debug_enabled
+        this.systemTopics = message.active_topics
         this.systemHwType = message.hw_type
         this.systemHwModel = message.hw_model
         this.systemInContainer = message.in_container

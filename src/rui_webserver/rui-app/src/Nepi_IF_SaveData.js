@@ -127,8 +127,7 @@ class NepiIFSaveData extends Component {
     this.doNothing = this.doNothing.bind(this)
 
     this.onSnapshotTriggered = this.onSnapshotTriggered.bind(this)
-    this.renderSaveBar = this.renderSaveBar.bind(this)
-    this.renderSaveControls = this.renderSaveControls.bind(this)
+
 
   }
 
@@ -174,7 +173,7 @@ class NepiIFSaveData extends Component {
     const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace != 'None') ? this.state.saveNamespace :
                                 (this.props.saveNamespace != undefined && this.props.saveNamespace != 'None' && this.props.saveNamespace != 'None/save_data') ? 
                                  this.props.saveNamespace : allNamespace
-    if (this.state.saveStatusListener) {
+    if (this.state.saveStatusListener != null) {
       this.state.saveStatusListener.unsubscribe()
     }
     if (saveNamespace != '' &&  saveNamespace !== 'None'){

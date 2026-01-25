@@ -45,7 +45,7 @@ class NepiDeviceControls extends Component {
     // these states track the values through  Status messages
     this.state = {
 
-      rbx_namespace: 'None',
+      namespace: 'None',
       status_msg: null,
       show_process_controls: true,
 
@@ -220,9 +220,9 @@ class NepiDeviceControls extends Component {
   // Function for configuring and subscribing to Status
   updateControlsStatusListener() {
     const namespace = this.props.namespace
-    if (this.state.controlsStatusListener ) {
-      this.state.controlsStatusListener.unsubscribe()
-      this.setState({status_msg: null})
+    if (this.state.statusListener != null) {
+      this.state.statusListener.unsubscribe()
+      this.setState({ status_msg: null, statusListener: null})
     }
     if (namespace != 'None'){
       var listener = this.props.ros.setupStatusListener(
@@ -232,7 +232,7 @@ class NepiDeviceControls extends Component {
           )
       this.setState({ controlsStatusListener : listener})
     }
-    this.setState({rbx_namespace: namespace})
+    this.setState({namespace: namespace})
   }
 
   // Lifecycle method called when compnent updates.

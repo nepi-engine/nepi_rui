@@ -24,653 +24,203 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
-import Button, { ButtonMenu } from "./Button"
-import Toggle from "react-toggle"
 
-import Input from "./Input"
-import Styles from "./Styles"
 
-import NepiDeviceControls from "./NepiDeviceRBX-Controls"
-import NepiDeviceMessages from "./NepiDeviceRBX-Info"
-
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import ImageViewerSelector from "./NepiSelectorImageViewer"
+import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFSaveData from "./Nepi_IF_SaveData"
 
-import NepiSystemMessages from "./Nepi_IF_Messages"
-
-
-import NepiIF3DTransform from "./Nepi_IF_3DTransform"
-
-import {  createShortValuesFromNamespaces, createMenuListFromStrList, onDropdownSelectedSendIndex,
-  onUpdateSetStateValue, onEnterSendFloatValue} from "./Utilities"
-
+//import NepiDeviceRBXControls from "./NepiDeviceRBX-Controls"
 
 @inject("ros")
 @observer
 
-// ControlsRBX Application page
 class NepiDeviceRBX extends Component {
   constructor(props) {
     super(props)
 
-
     this.state = {
-
-      namespace: null,
-      status_msg: null,
-
-      show_controls: true,
-      show_settings: true,
-      show_save_data: true,
-
-      rbx_capabilities: null,
-
-      device_name: null,
-      serial_num: null,
-      hw_version: null,
-      sw_version: null,
-      standby: null,
-      state_index: null,
-      mode_index: null,
-      error_bound_m: 0,
-      error_bound_deg: 0,
-      error_stabilize_s: 0,
-      cmd_timeout: null,
-      image_source: null,
-      image_status_overlay: null,
-      home_lat: null,
-      home_long: null,
-      home_alt: null,
-      fake_gps_enabled: null,
-      states_list: null,
-      states_menu: null,
-      modes_list: null,
-      modes_menu: null,
-      image_topic: null,
-
-      actions_list: null,
-      actions_menu: null,
-      selected_setup_action: null,
-      selected_setup_action_index: 0,
-
-      namespaceText: "No device selected",
-
-      rbxInfoListener: null
+      namespace: 'None',
+      data_topic: 'None',
+      data_product: 'None',
+      data_image_topic: 'None'
     }
 
-    this.updateInfoListener = this.updateInfoListener.bind(this)
-    this.infoListener = this.infoListener.bind(this)
 
-    this.onTopicRBXSelected = this.onTopicRBXSelected.bind(this)
-    this.clearTopicRBXSelection = this.clearTopicRBXSelection.bind(this)
-    this.createTopicOptions = this.createTopicOptions.bind(this)
-    this.createImageOptions = this.createImageOptions.bind(this)
-    this.onEnterSetInputErrorBoundValue = this.onEnterSetInputErrorBoundValue.bind(this)
-    this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
-    this.sendSetupActionIndex = this.sendSetupActionIndex.bind(this)
-    this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
+    this.renderDataProductSelector = this.renderDataProductSelector.bind(this)
+
+    this.renderImageViewer = this.renderImageViewer.bind(this)
+
+    this.setDeviceSelection = this.setDeviceSelection.bind(this)
+    this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
+    this.createDeviceOptions = this.createDeviceOptions.bind(this)
+    this.onDeviceSelected = this.onDeviceSelected.bind(this)
+
+
   }
 
 
-  // Callback for handling ROS Status messages
-  infoListener(message) {
-    const {rbxDevices} = this.props.ros
-    this.setState({
-      status_msg: message,
-      device_name: message.device_name,
-      serial_num: message.serial_num,
-      hw_version: message.hw_version,
-      sw_version: message.sw_version,
-      standby: message.standby,
-      state_index: message.state,
-      mode_index: message.mode,
-      error_bound_m: message.error_bounds.max_distance_error_m,
-      error_bound_deg: message.error_bounds.max_rotation_error_deg,
-      error_stabilize_s: message.error_bounds.max_stabilize_time_s,
-      cmd_timeout: message.cmd_timeout,
-      image_source: message.image_source,
-      image_status_overlay: message.image_status_overlay,
-      home_lat: message.home_lat,
-      home_long: message.home_long,
-      home_alt: message.home_alt,
-      fake_gps_enabled: message.fake_gps_enabled
-
-      
-    })
-    if (this.state.rbx_capabilities === null){
-      const capabilities = rbxDevices[this.state.namespace]
-      if (capabilities){
-        const states=capabilities.state_options
-        const states_menu_options=createMenuListFromStrList(states,false,[],[],[])
-        const modes=capabilities.mode_options
-        const modes_menu_options=createMenuListFromStrList(modes,false,[],[],[])
-        var actions=capabilities.setup_action_options
-        const actions_menu_options=createMenuListFromStrList(actions,false,[],[],[])
-      
-        this.setState({ rbx_capabilities: capabilities,
-          states_list: states,
-          states_menu: states_menu_options,
-          modes_list: modes,
-          modes_menu: modes_menu_options,
-          action_options: capabilities.setup_action_options,
-          actions_list: actions,
-          actions_menu: actions_menu_options,
-        })
-      }
-    }
-  }
-
-  
-  // Function for configuring and subscribing to Status
-  updateInfoListener() {
-    const namespace = this.state.namespace
-
-    if (this.state.rbxInfoListener) {
-      this.state.rbxInfoListener.unsubscribe()
+  setDeviceSelection(namespace) {
       this.setState({
-        rbx_capabilities: null,
-        states_list: null,
-        modes_list: null,
-        image_topic: null
+        namespace: namespace,
       })
-    }
-    var listener = this.props.ros.setupStatusListener(
-          namespace + "/info" ,
-          "nepi_interfaces/DevicRBXInfo",
-          this.infoListener
-        )
-
-    this.setState({ rbxInfoListener: listener })
   }
 
-  
-  
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
-  componentDidUpdate(prevProps, prevState) {
-    const { namespace } = this.props
-    if (namespace !== prevState.namespace){  
-        this.updateInfoListener()
-        //this.render()
-    }
+  clearDeviceSelection() {
+    this.setState({
+      namespace: 'None',
+    })
   }
-
-
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status message
-  componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
-    }
-  }
-
 
   // Function for creating topic options for Select input
-  createTopicOptions(topics, filter) {
-    var filteredTopics = topics
-    var i
-    if (filter) {
-      filteredTopics = []
-      for (i = 0; i < topics.length; i++) {
-        // includes does a substring search
-        if (topics[i].includes(filter)) {
-          filteredTopics.push(topics[i])
-        }
-      }
-    }
-
+  createDeviceOptions() {
+    const { rbxDevices} = this.props.ros
+    const topics = Object.keys(rbxDevices)
+    const namespace = this.state.namespace
     var items = []
-    items.push(<Option>{"None"}</Option>)
-    //var unique_names = createShortUniqueValues(filteredTopics)
+    items.push(<Option value={'None'}>{'None'}</Option>)
     var device_name = ""
-    for (i = 0; i < filteredTopics.length; i++) {
-      device_name = filteredTopics[i].split('/rbx')[0].split('/').pop()
-      items.push(<Option value={filteredTopics[i]}>{device_name}</Option>)
+    for (var i = 0; i < topics.length; i++) {
+      device_name = topics[i].split('/rbx')[0].split('/').pop()
+      items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    const { namespace } = this.state
-    if ((namespace != null) && (! filteredTopics.includes(namespace))) {
-      this.clearTopicRBXSelection()
+    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+      this.clearDeviceSelection()
     }
-
+    if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
+      this.setState({namespace: 'None'})
+    }
     return items
   }
 
-  createImageOptions(RBXDeviceNamespace) {
-    var items = []
-    items.push(<Option>{"None"}</Option>)
-
-    const image_topics = this.props.ros.imageTopics
-    var img_topics = []
-
-    for (var i = 0; i < image_topics.length; i++) {
-      const topic = image_topics[i]
-      if (topic.startsWith(RBXDeviceNamespace) === true || topic.includes('zed_node') === true) {
-        continue
-      }
-      img_topics.push(topic)
-    }
-
-    const img_topics_short = createShortValuesFromNamespaces(img_topics)
-    for (i = 0; i < img_topics.length; i++) {
-      items.push(<Option value={img_topics[i]}>{img_topics_short[i]}</Option>)
-    }
-    return items    
-  }
-
-  clearTopicRBXSelection() {
-    this.setState({
-      namespace: null,
-      namespaceText: "No device selected",
-      imageText_0: null,
-    })
-  }
-
   // Handler for RBX Sensor topic selection
-  onTopicRBXSelected(event) {
-    var rbx = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[rbx].text
-    var value = event.target.value
-
-    // Handle the "None" option -- always index 0
-    if (rbx === 0) {
-      this.clearTopicRBXSelection()
-      this.setstate()
-      return
-    }
-
-    this.setState({
-      namespace: value,
-      namespaceText: text,
-    })
+  onDeviceSelected(event) {
+    const value = event.target.value
+      this.setDeviceSelection(value)
   }
 
 
-  onEnterSetInputErrorBoundValue(event, stateVarStr) {
-    if(event.key === 'Enter'){
-      const value = parseFloat(event.target.value)
-      if (!isNaN(value)){
-        var key = stateVarStr
-        var obj  = {}
-        obj[key] = value
-        this.setState(obj)
-      }
-      this.sendErrorBounds()
-      document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-    }
-  }
 
-  sendErrorBounds(){
-    const {sendErrorBoundsMsg} = this.props.ros
-    const max_m = this.state.error_bound_m
-    const max_d = this.state.error_bound_deg
-    const min_stab = this.state.error_stabilize_s
-    const namespace = this.state.namespace + "/set_goto_error_bounds"
-    sendErrorBoundsMsg(namespace,max_m,max_d,min_stab)
-  }
-
-  sendSetupActionIndex(){
-    const {sendIntMsg} = this.props.ros
-    const namespace = this.state.namespace+ "/setup_action"
-    if (this.state.selected_setup_action_index !== null) {
-        sendIntMsg(namespace,this.state.selected_setup_action_index)
-      }
-    }
-
-    onDropdownSelectedAction(event) {
-      this.setState({
-        selected_setup_action: event.target.value,
-        selected_setup_action_index: event.target.selectedIndex
-      })
-    }
-
-
-    renderDeviceSelection() {
-      const { rbxDevices, sendStringMsg, sendBoolMsg, sendGeoPointMsg } = this.props.ros
-      const NoneOption = <Option>None</Option>
-      const deviceSelected = (this.state.namespace != null)
-      const has_fake_gps = (this.state.rbx_capabilities !== null)? this.state.rbx_capabilities.has_fake_gps : false
-      const namespace = this.state.namespace
-      return (
-        <React.Fragment>
-        <Section title={"Device Slection and Configuration"}>
-          <Columns>
-            <Column>
-  
-              <Label title={"Device"}>
-                    <Select
-                      onChange={this.onTopicRBXSelected}
-                      value={namespace}
-                    >
-                      {this.createTopicOptions(Object.keys(rbxDevices))}
-                    </Select>
-              </Label>
-  
-            </Column>
-            <Column>
-
-            
-            </Column>
-          </Columns>
-  
-  
-  
-          <div align={"left"} textAlign={"left"} hidden={!deviceSelected}>
-  
-  
-              <Columns>
-                <Column>
-                <div hidden={(has_fake_gps===false)}>
-                      <Label title="Enable Fake GPS">
-                        <Toggle
-                        checked={this.state.fake_gps_enabled===true}
-                        onClick={() => sendBoolMsg(namespace + "/enable_fake_gps", this.state.fake_gps_enabled === false)}>
-                        </Toggle>
-                      </Label>
-                    </div>
-
-                <Label title={"Image_Source"}>
-                          <Select
-                            id="image_source"
-                            onChange={(event) => sendStringMsg(namespace + "/set_image_topic",event.target.value)}
-                            value={this.state.image_source}
-                            >
-                            {namespace
-                            ? this.createImageOptions(namespace)
-                            : NoneOption}
-                          </Select>
-                          </Label>
-  
-  
-
-  
-                  </Column>
-                  <Column>
-
-
-                          <Label title="Image Status Overlay">
-                            <Toggle
-                            checked={this.state.image_status_overlay===true}
-                            onClick={() => sendBoolMsg(namespace + "/enable_image_overlay", this.state.image_status_overlay === false)}>
-                            </Toggle>
-                          </Label>
-  
-                          
-
-  
-                          <Label title="">
-                          </Label>
-  
-
-                          
-                </Column>
-              </Columns>
-  
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-  
-              <label style={{fontWeight: 'bold'}}>
-                {"GoTo Error Bounds"}
-              </label>
-  
-                <Columns>
-                <Column>
-  
-                    <Label title={"Max (m)"}>
-                      <Input
-                        value={this.state.error_bound_m}
-                        id="error_m"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_m")}
-                        onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_m")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-  
-                  </Column>
-                  <Column>
-  
-                    <Label title={"Max deg"}>
-                      <Input
-                        value={this.state.error_bound_deg}
-                        id="error_deg"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_bound_deg")}
-                        onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_bound_deg")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-  
-                  </Column>
-                  <Column>
-  
-                    <Label title={"Stablize Time (s)"}>
-                      <Input
-                        value={this.state.error_stabilize_s}
-                        id="error_stablize"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"error_stabilize_s")}
-                        onKeyDown= {(event) => this.onEnterSetInputErrorBoundValue(event,"error_stabilize_s")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-  
-                    </Column>
-                    </Columns>
-  
-                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                    <label style={{fontWeight: 'bold'}}>
-                      {"Home Location"}
-                    </label>
-  
-                    <Columns>
-                    <Column>
-  
-                    <Label title={"latitude"}>
-                      <Input
-                        value={this.state.home_lat}
-                        id="home_lat"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_lat")}
-                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace +"home_lat")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-  
-                    </Column>
-                    <Column>
-  
-                    <Label title={"longitude"}>
-                      <Input
-                        value={this.state.home_long}
-                        id="home_long"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"home_long")}
-                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_long")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-  
-                    </Column>
-                    <Column>
-  
-                    <Label title={"altitude"}>
-                      <Input
-                        value={this.state.home_alt}
-                        id="home_alt"
-                        onChange= {(event) => this.onUpdateAppInputBoxValue(event,"home_alt")}
-                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event, this.state.appNamespace + "home_alt")}
-                        style={{ width: "80%" }}
-                      />
-                    </Label>
-  
-                    <ButtonMenu>
-                      <Button onClick={() => sendGeoPointMsg(namespace + "/set_home", this.state.home_lat, this.state.home_long, this.state.home_alt )}>{"Set Home"}</Button>
-                    </ButtonMenu>
-  
-                    </Column>
-                    </Columns>
-  
-                    <Columns>
-                  <Column>
-
-                          <NepiIF3DTransform
-                              namespace={namespace + '/navpose_frame_transform'}
-                              supports_updates={true}
-                              title={"Nepi_IF_3DTransform"}
-                          />
-
-                  </Column>
-              </Columns>
-
-  
-             </div>
-          </Section>
-  
-        </React.Fragment>
-      )
-    }
-
-  renderSetupControls() {
+  renderDeviceSelector() {
     const NoneOption = <Option>None</Option>
-    const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null)? this.state.states_list[this.state.state_index] : "None"
-    const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null)? this.state.modes_list[this.state.mode_index] : "None"
-    const namespace = this.state.namespace
-    return (
-      <React.Fragment>
-      <Section title={"Setup Controls"}>
- 
-          <Columns>
-            <Column>
-
-             <Label title={"Set Mode"}>
-             <Select
-               id="device_mode"
-               onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,namespace + "/set_mode")}
-               value={current_mode}
-             >
-               {this.state.modes_list ? this.state.modes_menu : NoneOption}
-             </Select>
-             </Label>
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
+    const data_topic = this.state.data_topic
+    const namespace = this.state.namespace ? this.state.namespace : "None"
 
 
-             <Label title={"Set State"}>
-             <Select
-               id="device_state"
-               onChange={(event) => onDropdownSelectedSendIndex.bind(this)(event,namespace + "/set_state")}
-               value={current_state}
-             >
-               {this.state.states_list ? this.state.states_menu : NoneOption}
-             </Select>
-             </Label>
+      return(
+                <Section title={"Selection"}>
 
-            </Column>
-            <Column>
+                  <Columns>
+                  <Column>
+                  
+                    <Label title={"Device"}>
+                      <Select
+                        onChange={this.onDeviceSelected}
+                        value={namespace}
+                      >
+                        {this.createDeviceOptions()}
+                      </Select>
+                    </Label>
 
-             <Label title={"Setup Actions"}>
-              <Select
-                id="action_select"
-                onChange={(event) => this.onDropdownSelectedAction(event)}
-                value={this.state.selected_setup_action}
-              >
-                {this.state.actions_list ? this.state.actions_menu : NoneOption}
-              </Select>
-              </Label>
+                  </Column>
+                  <Column>
+    
+                  </Column>
+                </Columns>
+                  
+                </Section>
 
-             <ButtonMenu>
-               <Button onClick={() =>  this.sendSetupActionIndex()}>{"Send Action"}</Button>
-             </ButtonMenu>
+        )
 
-            </Column>
-          </Columns>
-
-        </Section>
-
-      </React.Fragment>
-    )
   }
 
   renderImageViewer() {
+    const namespace = this.state.namespace
+    const image_topic = this.state.namespace + '/color_image'
+    const image_text = image_topic.split('/rbx')[0].split('/').pop() + '-' + image_topic
     return (
       <React.Fragment>
 
-                <div id="rbxImageViewer">
-                  <ImageViewerSelector
-                    id="rbxImageViewer"
-                    imageTopic={this.state.imageTopic}
-                    title={this.state.imageText}
-                    show_image_controls={true}
-                  />
-                </div>
+            <ImageViewer
+              image_topic={image_topic}
+              title={image_text}
+              hideQualitySelector={false}
+              show_topic_selector={false}
+              show_all_options={false}
+            />
+        
       </React.Fragment>
     )
   }
 
 
   render() {
-    const deviceSelected = (this.state.namespace != null)
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    return (
-      <Columns>
-        <Column>
+    const data_product = this.state.data_product
+
+    
+        return (
+
+          <Columns>
+          <Column>
+
+
+        
+          <div style={{ display: 'flex' }}>
+
+              <div style={{ width: "68%" }}>
+
+
+              {(device_selected == true) ?
+              this.renderImageViewer()
+              : null}
+
+              </div>
+
+
+              <div style={{ width: '2%' }}>
+                    {}
+              </div>
 
 
 
-          {this.renderImageViewer()}
+              <div style={{ width: "30%"}}>
 
-          <div hidden={(!deviceSelected)}>
+                    {this.renderDeviceSelector()}
 
-            <NepiIFSaveData
-                saveNamespace={namespace + '/save_data'}
-                title={"Nepi_IF_SaveData"}
-            />
-          </div>
+{/*
+                          {(device_selected == true) ?
+                          <NepiDeviceRBXControls
+                              namespace={namespace}
+                              dataProduct={data_product}
+                              title={ "Publish Controls"}
+                        />
+                        : null}
 
-          <div hidden={(!deviceSelected)}>
-            <NepiDeviceInfo
-                  namespace={namespace}
-                  status_topic={"/info"}
-                  status_msg_type={"nepi_interfaces/RBXInfo"}
-                  name_update_topic={"/update_device_name"}
-                  name_reset_topic={"/reset_device_name"}
-                  title={"Device Info"}
-              />
-          </div>
-          <div hidden={(!deviceSelected && this.state.show_controls)}>
-            <NepiDeviceMessages
-                namespace={namespace}
-                title={"Device Messages"}
-            />
-          </div>
+*/}                        
+                          {(device_selected == true) ?
+                          <NepiIFSettings
+                            namespace={namespace}
+                            allways_show_settings={true}
+                            title={"Device Settings"}
+                        />
+                        : null}
 
 
-          <NepiSystemMessages
-                    namespace={namespace.replace('/rbx','') + '/messages'}
-                    title={"NepiSystemMessages"}
-                    />
 
-        </Column>
-        <Column>
-          {this.renderDeviceSelection()}
+              </div>
 
-          <div hidden={(!deviceSelected && this.state.show_controls)}>
-          {this.renderSetupControls()}
-          </div>
+        </div>
 
-          <div hidden={(!deviceSelected && this.state.show_controls)}>
-            <NepiDeviceControls
-                namespace={namespace}
-                title={"Device Controls"}
-            />
-          </div>
 
-          <div hidden={(!deviceSelected && this.state.show_settings)}>
-            <NepiIFSettings
-              namespace={namespace}
-              title={"Nepi_IF_Settings"}
-            />
-          </div>
+          </Column>
+        </Columns>
 
-         </Column>
-      </Columns>
-    )
+        )
   }
+
 }
 
 export default NepiDeviceRBX

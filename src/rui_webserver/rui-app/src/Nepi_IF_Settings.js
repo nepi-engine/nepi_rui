@@ -133,7 +133,7 @@ class Nepi_IF_Settings extends Component {
   updateSettingsListener() {
     const namespace = (this.props.namespace != undefined) ? (this.props.namespace !== 'None') ? 
                               this.props.namespace  + '/settings': 'None' : 'None'
-    if (this.state.settingsListener) {
+    if (this.state.settingsListener != null) {
       this.state.settingsListener.unsubscribe()
       this.setState({settingsListener: null})
       this.setState({capSettingsNamesList: [],
@@ -350,7 +350,8 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderSettings() {
-    const show_settings = (this.props.show_settings != undefined) ? this.props.show_settings : this.state.show_settings
+    const allways_show_settings = (this.props.allways_show_settings != undefined) ? this.props.allways_show_settings : false
+    const show_settings = (allways_show_settings === true) ? true : (this.props.show_settings != undefined) ? this.props.show_settings : this.state.show_settings
     const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
 
     const settingsHeight = this.state.settingsCount * 25
@@ -381,12 +382,15 @@ class Nepi_IF_Settings extends Component {
               <Columns>
                 <Column>
 
+
+                  {(allways_show_settings === false) ?
                   <Label title="Show Settings">
                       <Toggle
                         checked={show_settings===true}
                         onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",show_settings)}>
                       </Toggle>
                   </Label>
+                  : null }
 
 
                   <Label title={"Select Setting"}>
@@ -545,12 +549,13 @@ class Nepi_IF_Settings extends Component {
     const make_section = this.props.make_section ? this.props.make_section : true
     const namespace = this.state.namespace ? this.state.namespace : 'None'
     const status_msg = this.state.status_msg
+    const title = (this.props.title != undefined) ? this.props.title : 'Settings'
     // if (namespace.replace('/settings','') != this.props.namespace){
     //   this.setState({updatedNamespace: this.state.namespace  + '/settings'})
     // }
     if (namespace !== 'None' && status_msg != null && make_section === true){
       return (
-        <Section title={"Device Settings"}>
+        <Section title={title}>
           {this.renderSettings()}
         </Section>
       )

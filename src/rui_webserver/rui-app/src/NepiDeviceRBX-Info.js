@@ -178,11 +178,11 @@ class NepiRBXMessages extends Component {
     if (this.state.MessagesStatusStrListener ) {
       this.state.MessagesStatusStrListener.unsubscribe()
     }
-    var statuslistener = this.props.ros.setupStringListener(
+    var statusListener = this.props.ros.setupStringListener(
           Namespace + "/status_str",
           this.MessagesStatusStrListener
         )
-    this.setState({ MessagesStatusStrListener : statuslistener})
+    this.setState({ MessagesStatusStrListener : statusListener})
      }
   
 

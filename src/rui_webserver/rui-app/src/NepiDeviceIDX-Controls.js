@@ -47,8 +47,11 @@ class NepiDeviceIDXControls extends Component {
     // these states track the values through IDX Status messages
     this.state = {
 
-      show_controls: false,
+      namespace: 'None',
       status_msg: null,
+
+      show_controls: false,
+
       rtsp_url: "",
       rtsp_username: "",
       rtsp_password: "",
@@ -79,23 +82,15 @@ class NepiDeviceIDXControls extends Component {
       last_width_deg: null,
       last_height_deg: null,
 
+      statusListener: null,
 
-
-      listener: null,
-      disabled: false
     }
 
-
-    
     this.renderControlPanel = this.renderControlPanel.bind(this)
-
 
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
 
-    
-
-    
     
   }
 
@@ -140,15 +135,18 @@ class NepiDeviceIDXControls extends Component {
   // Function for configuring and subscribing to StatusIDX
   updateStatusListener() {
     const { namespace } = this.props
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
-      this.setState({ status_msg: null,  disabled: true })
+    if (this.state.statusListener != null) {
+      this.state.statusListener.unsubscribe()
+      this.setState({ status_msg: null, statusListener: null})
     }
-    var listener = this.props.ros.setupIDXStatusListener(
-      namespace,
-      this.statusListener
-    )
-    this.setState({ listener: listener, namespace: namespace, disabled: false })
+    if (namespace !== 'None'){
+      var statusListener = this.props.ros.setupIDXStatusListener(
+        namespace,
+        this.statusListener
+      )
+      this.setState({ statusListener: statusListener})
+    }
+    this.setState({ namespace: namespace})
 
   }
 
@@ -159,9 +157,7 @@ class NepiDeviceIDXControls extends Component {
     if (namespace !== prevState.namespace){
       if (namespace !== null) {
         this.updateStatusListener()
-      } else if (namespace === null){
-        this.setState({ disabled: true })
-      }
+      } 
     }
   }
 
@@ -172,8 +168,8 @@ class NepiDeviceIDXControls extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to StatusIDX message
   componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
     }
   }
 
@@ -229,14 +225,14 @@ class NepiDeviceIDXControls extends Component {
       )
     }
     else {
-      const has_resolution = (capabilities && capabilities.has_resolution && !this.state.disabled)
-      const has_framerate = (capabilities && capabilities.has_framerate && !this.state.disabled)
-      const has_auto_adjust = (capabilities && capabilities.has_auto_adjustment && !this.state.disabled)
-      const has_contrast = (capabilities && capabilities.has_contrast && !this.state.disabled)
-      const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
-      const has_threshold = (capabilities && capabilities.has_threshold && !this.state.disabled)
-      const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
-      /*const data_products = (capabilities && capabilities.data_products && !this.state.disabled)  Unused*/
+      const has_resolution = (capabilities && capabilities.has_resolution)
+      const has_framerate = (capabilities && capabilities.has_framerate)
+      const has_auto_adjust = (capabilities && capabilities.has_auto_adjustment)
+      const has_contrast = (capabilities && capabilities.has_contrast)
+      const has_brightness = (capabilities && capabilities.has_brightness)
+      const has_threshold = (capabilities && capabilities.has_threshold)
+      const has_range = (capabilities && capabilities.has_range)
+      /*const data_products = (capabilities && capabilities.data_products)  Unused*/
 
       const framerates = this.state.frameratesCurrent
       const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
@@ -313,28 +309,6 @@ class NepiDeviceIDXControls extends Component {
                             </Column>
                           </Columns>  
 
-{/*}
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                  <Columns>
-                        <Column>
-
-                          <Label title="Show Controls">
-                            <Toggle
-                              checked={this.state.show_controls===true}
-                              onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",this.state.show_controls)}>
-                            </Toggle>
-                        </Label>
-
-                        </Column>
-                    <Column>
-
-                    </Column>
-                          </Columns>  
-
-                    <div hidden={this.state.show_controls===false}>
-
-*/}
                     <div align={"left"} textAlign={"left"} hidden={!has_auto_adjust}>
 
 
@@ -370,7 +344,6 @@ class NepiDeviceIDXControls extends Component {
                                         scaled={0.01}
                                         min={0}
                                         max={100}
-                                        disabled={(capabilities && !this.state.disabled)? false : true}
                                         tooltip={"Adjustable Resolution"}
                                         unit={"%"}
                                     />

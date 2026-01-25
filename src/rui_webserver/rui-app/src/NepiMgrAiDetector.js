@@ -1035,7 +1035,7 @@ renderDetectorSettings() {
 
               const detector_ns = this.state.detector_namespace
               const detector_enabled = det_msg.enabled
-              const det_img_nns = det_msg.image_detector_namespaces
+              const det_img_nns = det_msg.image_detector_topics
               if (detector_enabled === false) {
                   img_topic === "Detector Not Enabled"
                   img_text = "Detector Not Enabled"

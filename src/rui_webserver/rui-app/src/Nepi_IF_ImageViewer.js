@@ -157,9 +157,10 @@ class ImageViewer extends Component {
     const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
     const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : null
     const statusNamespace = status_topic + '/status'
-    if (this.state.status_listenter) {
+    if (this.state.status_listenter != null) {
       this.state.status_listenter.unsubscribe()
       this.setState({status_msg: null,
+                    status_listenter: null,
                     image_topic: 'None'
       })
 

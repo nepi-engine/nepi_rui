@@ -19,29 +19,19 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-//import Toggle from "react-toggle"
 
-//import Section from "./Section"
+
+import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
-//import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
-//import Input from "./Input"
-//import Styles from "./Styles"
-//import Button, { ButtonMenu } from "./Button"
-//import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
 
-
+import NepiIFSettings from "./Nepi_IF_Settings"
 
 import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
 import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 
 
-import NepiIFSettings from "./Nepi_IF_Settings"
-//Unused import NepiIFSaveData from "./Nepi_IF_SaveData"
-
-
-//import {onChangeSwitchStateValue } from "./Utilities"
 
 
 function round(value, decimals = 0) {
@@ -58,144 +48,178 @@ class NepiDevicePTX extends Component {
     super(props)
 
     this.state = {
-      namespace: null,
-
-
+      namespace: 'None'
     }
 
-    
-    this.createPTXOptions = this.createPTXOptions.bind(this)
-    this.onptxDeviceselected = this.onptxDeviceselected.bind(this)
-  
+    this.renderImageViewer = this.renderImageViewer.bind(this)
+
+    this.setDeviceSelection = this.setDeviceSelection.bind(this)
+    this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
+    this.createDeviceOptions = this.createDeviceOptions.bind(this)
+    this.onDeviceSelected = this.onDeviceSelected.bind(this)
+
+   }
+
+
+  setDeviceSelection(namespace) {
+      this.setState({
+        namespace: namespace,
+      })
   }
-  
-  // Callback for handling ROS Status3DX messages
-  ptxStatusListener(message) {
+
+  clearDeviceSelection() {
     this.setState({
-      status_msg: message
+      namespace: 'None',
     })
-    
-  }
-
-  // Function for configuring and subscribing to ptx/status
-  onptxDeviceselected(event) {
-    if (this.state.statusListener) {
-      this.state.statusListener.unsubscribe()
-      this.setState({status_msg: null})
-    }
-
-    var ind = event.nativeEvent.target.selectedIndex
-    var value = event.target.value
-
-    if (value != 'None'){
-      this.setState({ namespace: value })
-
-      var statusListener = this.props.ros.setupPTXStatusListener(
-          value,
-          this.ptxStatusListener
-        )
-    }
-    this.setState({ namespace: value, statusListener: statusListener })
-  }
-
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status3DX message
-  componentWillUnmount() {
-    if (this.state.statusListener) {
-      this.state.statusListener.unsubscribe()
-      this.setState({statusListener : null})
-    }
   }
 
   // Function for creating topic options for Select input
-  createPTXOptions(caps_dictionaries, filter) {
-    const topics = Object.keys(caps_dictionaries)
-    var filteredTopics = topics
-    var i
-    if (filter) {
-      filteredTopics = []
-      for (i = 0; i < topics.length; i++) {
-        // includes does a substring search
-        if (topics[i].includes(filter)) {
-          filteredTopics.push(topics[i])
-        }
-      }
-    }
-
+  createDeviceOptions() {
+    const { ptxDevices} = this.props.ros
+    const topics = Object.keys(ptxDevices)
+    const namespace = this.state.namespace
     var items = []
-    items.push(<Option>{""}</Option>)
-    //var unique_names = createShortUniqueValues(filteredTopics)
+    items.push(<Option value={'None'}>{'None'}</Option>)
     var device_name = ""
-    for (i = 0; i < filteredTopics.length; i++) {
-      device_name = filteredTopics[i].split('/ptx')[0].split('/').pop()
-      items.push(<Option value={filteredTopics[i]}>{device_name}</Option>)
+    for (var i = 0; i < topics.length; i++) {
+      device_name = topics[i].split('/ptx')[0].split('/').pop()
+      items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
-
+    // Check that our current selection hasn't disappeard as an available option
+    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+      this.clearDeviceSelection()
+    }
+    if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
+      this.setState({namespace: 'None'})
+    }
     return items
+  }
+
+  // Handler for PTX Sensor topic selection
+  onDeviceSelected(event) {
+    const value = event.target.value
+      this.setDeviceSelection(value)
   }
 
 
 
-  render() {
-    const { ptxDevices } = this.props.ros
-    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    const connected = (this.state.status_msg != null)
+  renderDeviceSelection() {
+    const NoneOption = <Option>None</Option>
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
+    const data_topic = this.state.data_topic
+    const namespace = this.state.namespace ? this.state.namespace : "None"
 
+      return(
+                <Section title={"Selection"}>
+
+                  <Columns>
+                  <Column>
+                  
+                    <Label title={"Device"}>
+                      <Select
+                        onChange={this.onDeviceSelected}
+                        value={namespace}
+                      >
+                        {this.createDeviceOptions()}
+                      </Select>
+                    </Label>
+
+                  </Column>
+                  <Column>
+    
+                  </Column>
+                </Columns>
+                  
+                </Section>
+
+      )
+  }
+
+
+
+  renderImageViewer() {
     return (
       <React.Fragment>
-        <Columns>
-          <Column equalWidth = {false} >
-
-
-                
 
                 <div id="ptxImageViewer">
                   <NepiDevicePTXImageViewer
                     id="ptxImageViewer"
-                    show_image_controls={false}
-                    namespace={namespace}
                   />
                 </div>
 
 
-          </Column>
+      </React.Fragment>
+    )
+  }
+
+
+ render() {
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
+    const data_product = this.state.data_product
+
+    
+        return (
+
+          <Columns>
           <Column>
-            <Label title={"Select PanTilt"}>
-              <Select
-                onChange={this.onptxDeviceselected}
-                value={namespace}
-              >
-                {this.createPTXOptions(ptxDevices)}
-              </Select>
-            </Label>
-   
+
+
+        
+          <div style={{ display: 'flex' }}>
+
+              <div style={{ width: "68%" }}>
+
+
+              {(device_selected == true) ?
+              this.renderImageViewer()
+              : null}
+
+              </div>
+
+
+              <div style={{ width: '2%' }}>
+                    {}
+              </div>
 
 
 
+              <div style={{ width: "30%"}}>
 
-{/*
-            { (connected === true) ?
-            <NepiDevicePTXControls
-                namespace={namespace}
-                make_section = {true}
-                title={"Pan Tilt Controls"}
-            />
-            : null}
-*/}
+                    {this.renderDeviceSelection()}
 
-           { (connected === true) ?
-              <NepiIFSettings
-                namespace={namespace}
-                title={"Nepi_IF_Settings"}
-              />
-            : null}
+
+                          {(device_selected == true) ?
+                          <NepiDevicePTXControls
+                              namespace={namespace}
+                              dataProduct={data_product}
+                              title={ "Pan Tilt Controls"}
+                        />
+                        : null}
+
+                        
+                          {(device_selected == true) ?
+                          <NepiIFSettings
+                            namespace={namespace}
+                            allways_show_settings={true}
+                            title={"Device Settings"}
+                        />
+                        : null}
+
+
+
+              </div>
+
+        </div>
 
 
           </Column>
         </Columns>
-      </React.Fragment>
-    )
+
+        )
   }
+
 }
+
 
 export default NepiDevicePTX

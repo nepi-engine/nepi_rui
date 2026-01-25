@@ -24,16 +24,29 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
-//Unused import Styles from "./Styles"
 
-import NepiDeviceNPXControls from "./NepiDeviceNPX-Controls"
+//import NepiDeviceNPXControls from "./NepiDeviceNPX-Controls"
 
-import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
-import NepiIFConfig from "./Nepi_IF_Config"
-import NepiSystemMessages from "./Nepi_IF_Messages"
+import NepiIFSettings from "./Nepi_IF_Settings"
+
+
+                    // <div hidden={(!deviceSelected)}>
+                    //   <NepiDeviceInfo
+                    //         namespace={namespace}
+                    //         status_topic={"npx/status"}
+                    //         status_msg_type={"nepi_interfaces/DeviceNPXStatus"}
+                    //         name_update_topic={"/update_device_name"}
+                    //         name_reset_topic={"/reset_device_name"}
+                    //         title={"NepiDeviceNPXInfo"}
+                    //     />
+
+                    // </div>
+
+                    // <NepiIFNavPoseViewer
+                    //   namespace={namespace + "/navpose"}
+                    //   title={"NavPose Data"}
+                    // />
 
 //Unused import {createShortUniqueValues} from "./Utilities"
 
@@ -45,329 +58,181 @@ class NepiDeviceNPX extends Component {
   constructor(props) {
     super(props)
 
-
-    //const namespaces = Object.keys(props.ros.npxDevices)
-
     this.state = {
-
-      show_controls: true,
-      show_settings: true,
-      show_save_data: true,
-      
-      // NPX Device topic to subscribe to and update
-      namespace: null,
-
-      listener: null,
-
-      disabled: false,
-
-      connected: false,
-      statusListener: null,
-      navposeListener: null,
-      needs_update: true,
-      nav_needs_update: true
+      namespace: 'None',
     }
 
+    this.renderNavPoseViewer = this.renderNavPoseViewer.bind(this)
 
-    this.ondeviceSelected = this.ondeviceSelected.bind(this)
+    this.setDeviceSelection = this.setDeviceSelection.bind(this)
     this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
     this.createDeviceOptions = this.createDeviceOptions.bind(this)
-    this.statusListener = this.statusListener.bind(this)
-    this.navposeListener = this.navposeListener.bind(this)
-    this.updateStatusListener = this.updateStatusListener.bind(this)
-    this.updateNavposeListener = this.updateNavposeListener.bind(this)
+    this.onDeviceSelected = this.onDeviceSelected.bind(this)
+
+   }
 
 
-  }
-
-
-  // Callback for handling ROS StatusNPX messages
-  statusListener(message) {
-  console.log('Status message received:', message);
-
-    this.setState({
-      status_msg: message, 
-      connected: true
-    })
-
-  }
-
-  navposeListener(message) {
-    
-    const navpose_data = {
-      latitude: message.latitude,
-      longitude: message.longitude,
-      altitude: message.altitude_m,
-      heading: message.heading_deg,
-      roll: message.roll_deg,
-      pitch: message.pitch_deg,
-      yaw: message.yaw_deg,
-      x_m: message.x_m,
-      y_m: message.y_m,
-      z_m: message.z_m,
-      navpose_frame: message.navpose_frame,
-      frame_id: message.frame_id
-    }
-        
-    this.setState({
-      navpose_data: navpose_data, 
-      connected: true
-    })
-  }
-
-updateStatusListener() {
-  const namespace = this.state.namespace
-  //Unused const statusTopic = namespace + "/status"
-  var statusListener = this.props.ros.setupStatusListener(
-    namespace + "/status",
-    "nepi_interfaces/DeviceNPXStatus",
-    this.statusListener 
-  )
-  
-  this.setState({ 
-    statusListener: statusListener,
-    needs_update: false 
-  })
-}
-
-updateNavposeListener() {
-  const namespace = this.state.namespace
-  const navposeTopic = namespace + "/navpose"
-  if (this.state.navposeListener) {
-    this.state.navposeListener.unsubscribe()
-  }
-  
-  var navposeListener = this.props.ros.setupStatusListener(
-    navposeTopic,
-    "nepi_interfaces/NavPose",
-    this.navposeListener 
-  )
-  
-  this.setState({ 
-    navposeListener: navposeListener,
-    nav_needs_update: false 
-  })
-}
-
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.namespace !== this.state.namespace) {
-      const namespace = this.state.namespace;  
-      if (namespace) {
-        this.updateStatusListener();
-        this.updateNavposeListener();
-      } else {
-        this.setState({ disabled: true });
-      }
-    }
-  }
-
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to StatusNPX message
-  componentWillUnmount() {
-    if (this.state.statusListener) {
-      this.state.statusListener.unsubscribe()
-    }
-    if (this.state.navposeListener) {
-      this.state.navposeListener.unsubscribe()
-    }
-  }
-
-
-    // Function for creating topic options for Select input
-    createDeviceOptions(topics) {
-
-      var items = []
-      items.push(<Option>{"None"}</Option>)
-      //var unique_names = createShortUniqueValues(topics)
-      var device_name = ""
-      for (var i = 0; i < topics.length; i++) {
-        device_name = topics[i].split('/npx')[0].split('/').pop()
-        items.push(<Option value={topics[i]}>{device_name}</Option>)
-      }
-      // Check that our current selection hasn't disappeard as an available option
-      const { namespace } = this.state
-      if ((namespace != null) && (! topics.includes(namespace))) {
-        this.clearDeviceSelection()
-      }
-  
-      return items
-    }
-  
-  
-    clearDeviceSelection() {
+  setDeviceSelection(namespace) {
       this.setState({
-        namespace: null,
-        namespaceText: "No sensor selected",
+        namespace: namespace,
       })
+  }
+
+  clearDeviceSelection() {
+    this.setState({
+      namespace: 'None',
+    })
+  }
+
+  // Function for creating topic options for Select input
+  createDeviceOptions() {
+    const { npxDevices} = this.props.ros
+    const topics = Object.keys(npxDevices)
+    const namespace = this.state.namespace
+    var items = []
+    items.push(<Option value={'None'}>{'None'}</Option>)
+    var device_name = ""
+    for (var i = 0; i < topics.length; i++) {
+      device_name = topics[i].split('/npx')[0].split('/').pop()
+      items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
-  
-    // Handler for IDX Sensor topic selection
-    ondeviceSelected(event) {
-      var index = event.nativeEvent.target.selectedIndex
-      var text = event.nativeEvent.target[index].text
-      var value = event.target.value
-  
-      // Handle the "None" option -- always index 0
-      if (index === 0) {
-        this.clearDeviceSelection()
-        return
-      }
-      else{
-        //Unused var autoSelectedImgTopic = null
-        //Unused var autoSelectedImgTopicText = null
-        //Unused const capabilities = this.props.ros.npxDevices[value]
-        
-  
-        this.setState({
-          namespace: value,
-          namespaceText: text,
-        })
-      }
+    // Check that our current selection hasn't disappeard as an available option
+    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+      this.clearDeviceSelection()
     }
+    if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
+      this.setState({namespace: 'None'})
+    }
+    return items
+  }
+
+  // Handler for NPX Sensor topic selection
+  onDeviceSelected(event) {
+    const value = event.target.value
+      this.setDeviceSelection(value)
+  }
+
 
 
   renderDeviceSelection() {
-    const { npxDevices, } = this.props.ros
-    //Unused const NoneOption = <Option>None</Option>
-    const deviceSelected = (this.state.namespace != null)
-    const namespace = this.state.namespace
+    const NoneOption = <Option>None</Option>
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
+    const data_topic = this.state.data_topic
+    const namespace = this.state.namespace ? this.state.namespace : "None"
+
+      return(
+                <Section title={"Selection"}>
+
+                  <Columns>
+                  <Column>
+                  
+                    <Label title={"Device"}>
+                      <Select
+                        onChange={this.onDeviceSelected}
+                        value={namespace}
+                      >
+                        {this.createDeviceOptions()}
+                      </Select>
+                    </Label>
+
+                  </Column>
+                  <Column>
     
+                  </Column>
+                </Columns>
+                  
+                </Section>
+
+      )
+  }
+
+
+
+  renderNavPoseViewer() {
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     return (
       <React.Fragment>
-        <Columns>
-          <Column>
-            <Section title={"Selection"}>
 
-              <Columns>
-              <Column>
-              
-                <Label title={"Device"}>
-                  <Select
-                    onChange={this.ondeviceSelected}
-                    value={namespace}
-                  >
-                    {this.createDeviceOptions(Object.keys(npxDevices))}
-                  </Select>
-                </Label>
-               
- 
-
-              </Column>
-              <Column>
- 
-              </Column>
-            </Columns>
-
-            <div align={"left"} textAlign={"left"} hidden={!deviceSelected}>
-                  <NepiIFConfig
-                        namespace={namespace}
-                        title={"Nepi_IF_Conig"}
+             
+                  <NepiIFNavPoseViewer
+                    namespace={namespace}
                   />
+               
 
 
-          </div>
-
-
-            </Section>
-          </Column>
-        </Columns>
       </React.Fragment>
     )
   }
 
-  render() {
-    const deviceSelected = (this.state.namespace != null)
+
+ render() {
+    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    //Unused const navpose_data = this.state.navpose_data
-    const status_msg = this.state.status_msg
-    //Unused const connected = this.state.connected
+    const data_product = this.state.data_product
 
-    return (
-      
-      <div style={{ display: 'flex' }}>
+    
+        return (
 
-          <div style={{ width: "65%" }}>
-
-                    <div hidden={(!deviceSelected)}>
-                      <NepiDeviceInfo
-                            namespace={namespace}
-                            status_topic={"npx/status"}
-                            status_msg_type={"nepi_interfaces/DeviceNPXStatus"}
-                            name_update_topic={"/update_device_name"}
-                            name_reset_topic={"/reset_device_name"}
-                            title={"NepiDeviceNPXInfo"}
-                        />
-
-                    </div>
-
-                    <NepiIFNavPoseViewer
-                      namespace={namespace + "/navpose"}
-                      title={"NavPose Data"}
-                    />
+          <Columns>
+          <Column>
 
 
-                    <div hidden={(!deviceSelected)}>
+        
+          <div style={{ display: 'flex' }}>
 
-                      <NepiIFSaveData
-                        saveNamespace={namespace + '/save_data'}
-                        title={"Nepi_IF_SaveData"}
-                      />
-
-                    <NepiSystemMessages
-                    namespace={namespace.replace('/npx','') + '/messages'}
-                    title={"NepiSystemMessages"}
-                    />
+              <div style={{ width: "68%" }}>
 
 
-                    </div>
+              {(device_selected == true) ?
+              this.renderNavposeViewer()
+              : null}
+
+              </div>
 
 
-          </div>
+              <div style={{ width: '2%' }}>
+                    {}
+              </div>
 
 
 
-
-          <div style={{ width: '5%' }}>
-                {}
-          </div>
-
-
-
-          <div style={{ width: "30%"}}>
-
+              <div style={{ width: "30%"}}>
 
                     {this.renderDeviceSelection()}
 
-
 {/*
-                    <div hidden={(!deviceSelected)}>
-                      <NepiDeviceNPXControls
-                          namespace={namespace}
-                          status_msg={status_msg}
-                          title={"NepiDeviceNPXControls"}
-                      />
-                    </div>
+                          {(device_selected == true) ?
+                          <NepiDeviceNPXControls
+                              namespace={namespace}
+                              dataProduct={data_product}
+                              title={ "Pan Tilt Controls"}
+                        />
+                        : null}
+
 */}
-
-                    <div hidden={(!deviceSelected && this.state.show_settings)}>
-                      <NepiIFSettings
-                        namespace={namespace}
-                        title={"Nepi_IF_Settings"}
-                      />
-                    </div>
-
-          </div>
+                          {(device_selected == true) ?
+                          <NepiIFSettings
+                            namespace={namespace}
+                            allways_show_settings={true}
+                            title={"Device Settings"}
+                        />
+                        : null}
 
 
 
-    </div>
+              </div>
+
+        </div>
 
 
+          </Column>
+        </Columns>
 
-    )
+        )
   }
+
+
+
 }
 
 export default NepiDeviceNPX

@@ -87,21 +87,21 @@ class NepiDevicePTXImageViewer extends Component {
   // Function for configuring and subscribing to Status
   updateStatusListener(namespace) {
     const statusNamespace = namespace + '/status'
-    if (this.state.statusListner) {
-      this.state.statusListner.unsubscribe()
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
       this.setState({status_msg: null,
     })
     }
     if (namespace != null && namespace !== 'None' && namespace.indexOf('null') === -1){
-        var statusListner = this.props.ros.setupStatusListener(
+        var statusListener = this.props.ros.setupStatusListener(
               statusNamespace,
               "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
-              this.statusListner
+              this.statusListener
             )
     }
     this.setState({ 
       namespace: namespace,
-      statusListner: statusListner,
+      statusListener: statusListener,
     })
 
 }

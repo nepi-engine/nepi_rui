@@ -492,8 +492,8 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
           <NepiIFSettings
             namespace={settings_namespace}
             make_section={false}
-            show_settings={true}
-            title={"Nepi_IF_Settings"}
+            allways_show_settings={true}
+            title={"Driver Discovery Options"}
           />
 
           </div>

@@ -50,6 +50,7 @@ class NepiDevicePTXControls extends Component {
     this.state = {
       
       namespace : null,
+      status_msg: null,
 
       panHomePos : null,
       tiltHomePos : null,
@@ -62,7 +63,7 @@ class NepiDevicePTXControls extends Component {
       tiltSoftStopMax : null,
             
       statusListener: null,
-      status_msg: null,  
+  
     }
 
 
@@ -146,8 +147,8 @@ class NepiDevicePTXControls extends Component {
   // Function for configuring and subscribing to Status
   updateStatusListener(namespace) {
     const statusNamespace = namespace + '/status'
-    if (this.state.statusListner) {
-      this.state.statusListner.unsubscribe()
+    if (this.state.statusListener != null) {
+      this.state.statusListener.unsubscribe()
       this.setState({status_msg: null,
                     panHomePos : null,
                     tiltHomePos : null,
@@ -157,20 +158,19 @@ class NepiDevicePTXControls extends Component {
                     tiltHardStopMax : null,
                     tiltSoftStopMin : null,
                     panSoftStopMax : null,
-                    tiltSoftStopMax : null
+                    tiltSoftStopMax : null,
+                    statusListener: null
       })
     }
     if (namespace != null && namespace !== 'None'){
-        var statusListner = this.props.ros.setupStatusListener(
+        var statusListener = this.props.ros.setupStatusListener(
               statusNamespace,
               "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
-              this.statusListner
+              this.statusListener
             )
+      this.setState({ statusListener: statusListener})
     }
-    this.setState({ 
-      namespace: namespace,
-      statusListner: statusListner,
-    })
+    this.setState({ namespace: namespace})
 
 }
   
