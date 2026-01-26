@@ -456,7 +456,7 @@ class ROSConnectionStore {
         var i
         if (this.systemTopics != null){
           for (i = 0; i < topics.length; i++) {
-            if (this.systemTopcis.indexOf(topics[i]) !== -1) {
+            if (this.systemTopics.indexOf(topics[i]) !== -1) {
                 topicNames.push(topics[i])
                 topicTypes.push(types[i])
             }

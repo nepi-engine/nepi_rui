@@ -104,9 +104,6 @@ class NepiDevicePTX extends Component {
 
 
   renderDeviceSelection() {
-    const NoneOption = <Option>None</Option>
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
-    const data_topic = this.state.data_topic
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
       return(
@@ -138,12 +135,14 @@ class NepiDevicePTX extends Component {
 
 
   renderImageViewer() {
+    const namespace = this.state.namespace ? this.state.namespace : "None"
     return (
       <React.Fragment>
 
                 <div id="ptxImageViewer">
                   <NepiDevicePTXImageViewer
                     id="ptxImageViewer"
+                    namespace={namespace}
                   />
                 </div>
 
@@ -156,7 +155,6 @@ class NepiDevicePTX extends Component {
  render() {
     const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    const data_product = this.state.data_product
 
     
         return (
@@ -192,7 +190,6 @@ class NepiDevicePTX extends Component {
                           {(device_selected == true) ?
                           <NepiDevicePTXControls
                               namespace={namespace}
-                              dataProduct={data_product}
                               title={ "Pan Tilt Controls"}
                         />
                         : null}

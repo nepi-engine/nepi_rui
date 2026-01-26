@@ -29,7 +29,9 @@ import Label from "./Label"
 import Input from "./Input"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
-import {setElementStyleModified, clearElementStyleModified, onUpdateSetStateValue} from "./Utilities"
+//import BooleanIndicator from "./BooleanIndicator"
+
+import {setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue} from "./Utilities"
 import {createShortValuesFromNamespaces} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -51,6 +53,7 @@ class NepiDevicePTXControls extends Component {
       
       namespace : null,
       status_msg: null,
+      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : false,
 
       panHomePos : null,
       tiltHomePos : null,
@@ -69,36 +72,14 @@ class NepiDevicePTXControls extends Component {
 
     this.onUpdateText = this.onUpdateText.bind(this)
     this.onKeyText = this.onKeyText.bind(this)
-    this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
-    this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
-    this.onptxDeviceselected = this.onptxDeviceselected.bind(this)
 
+    this.renderControlData = this.renderControlData.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
-    this.createPTXOptions = this.createPTXOptions.bind(this)
-    this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
-    this.onClickToggleShowTransform = this.onClickToggleShowTransform.bind(this)
 
-    this.onEnterSendScanRangeWindowValue = this.onEnterSendScanRangeWindowValue.bind(this)
-
-    this.getNamespace = this.getNamespace.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
   }
 
-
-  getNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var namespace = 'None'
-    if (namespacePrefix !== null && deviceId !== null){
-      if (this.props.namespace != undefined){
-        namespace = this.props.namespace
-      }
-      else{
-        namespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appName
-      }
-    }
-    return namespace
-  }
 
   // Callback for handling ROS Status3DX messages
   statusListener(message) {
@@ -145,12 +126,12 @@ class NepiDevicePTXControls extends Component {
   }
   
   // Function for configuring and subscribing to Status
-  updateStatusListener(namespace) {
-    const statusNamespace = namespace + '/status'
+  updateStatusListener() {
+    const { namespace } = this.props
     if (this.state.statusListener != null) {
       this.state.statusListener.unsubscribe()
-      this.setState({status_msg: null,
-                    panHomePos : null,
+       this.setState({ status_msg: null, statusListener: null})
+      this.setState({panHomePos : null,
                     tiltHomePos : null,
                     panHardStopMin : null,
                     tiltHardStopMin : null,
@@ -163,9 +144,8 @@ class NepiDevicePTXControls extends Component {
       })
     }
     if (namespace != null && namespace !== 'None'){
-        var statusListener = this.props.ros.setupStatusListener(
-              statusNamespace,
-              "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
+        var statusListener = this.props.ros.setupPTXStatusListener(
+              namespace,
               this.statusListener
             )
       this.setState({ statusListener: statusListener})
@@ -177,9 +157,9 @@ class NepiDevicePTXControls extends Component {
 // Lifecycle method called when compnent updates.
 // Used to track changes in the topic
 componentDidUpdate(prevProps, prevState, snapshot) {
-  const namespace = this.getNamespace()
-   if (namespace !== prevState.namespace){
-      this.updateStatusListener(namespace)
+  const { namespace } = this.props
+   if (namespace !== this.state.namespace){
+      this.updateStatusListener()
   }
 }
 
@@ -257,11 +237,11 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
     const namespace = (this.props.namespace != undefined) ? this.props.namespace : 'None'
 
-    const ptxDevicesList = Object.keys(ptxDevices)
+    const devicesList = Object.keys(ptxDevices)
     var has_sep_pan_tilt = false
-    if (ptxDevicesList.indexOf(namespace) !== -1){
-      const ptx_caps = ptxDevices[namespace]
-      has_sep_pan_tilt = ptx_caps && (ptx_caps.has_sep_pan_tilt === true)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = ptxDevices[namespace]
+      has_sep_pan_tilt = capabilities && (capabilities.has_sep_pan_tilt === true)
     }
     var panElement = null
     var tiltElement = null
@@ -331,243 +311,228 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     }
   }
 
-  // Add the missing toggle method
-  onClickToggleShowTransform() {
-    this.setState({ showTransform: !this.state.showTransform })
-  }
-
-  // Function for creating image topic options.
-  createImageTopicsOptions() {
-    var items = []
-    items.push(<Option>{"None"}</Option>) 
-    const { imageTopics } = this.props.ros
-    var imageTopicShortnames = createShortValuesFromNamespaces(imageTopics)
-    for (var i = 0; i < imageTopics.length; i++) {
-      items.push(<Option value={imageTopics[i]}>{imageTopicShortnames[i]}</Option>)
-    }
-    return items
-  }
-
-  // Handler for Image topic selection
-  onImageTopicSelected(event) {
-    var ind = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[ind].text
-    var value = event.target.value
-
-    this.setState({
-      imageTopic: value,
-      imageText: text === "None" ? null : text,
-    })
-  }
-
   
 
-
-onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
-  const {publishRangeWindow} = this.props.ros
-  const namespace = this.props.namespace ? this.props.namespace : 'None'
-
-  const topic_namespace = namespace + topicName
-  var min = -60
-  var max = 60
-  if(event.key === 'Enter'){
-    const value = parseFloat(event.target.value)
-    if (!isNaN(value)){
-      if (entryName === "min"){
-        min = value
-        max = other_val
-      }
-      else if (entryName === "max"){
-        min = other_val
-        max = value
-      }
-      publishRangeWindow(topic_namespace,min,max,false)
-    }
-    document.getElementById(event.target.id).style.color = Styles.vars.colors.black
-  }
-}
-
-
-
-  renderControlPanel() {
-    const { ptxDevices, sendBoolMsg, onPTXGoHome, onPTXSetHomeHere } = this.props.ros
+  renderControlData() {
+    const { onPTXGoHome,} = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
 
-    if (namespace !== 'None' && status_msg == null){
-      return (
-        <Columns>
-          <Column>
-          
-        </Column>
-      </Columns>
-
-      )
-
+    const devices = this.props.ros.ptxDevices
+    var has_abs_pos = false
+    var has_timed_pos = false
+    var has_speed_control = false
+    var has_homing = false
+    const devicesList = Object.keys(devices)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = devices[namespace]
+      has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
+      has_timed_pos = capabilities && (capabilities.has_timed_positioning === true)
+      has_speed_control = capabilities && (capabilities.has_adjustable_speed)
+      has_homing = capabilities && (capabilities.has_homing)
     }
-    else {
+
+    const panPosition = status_msg.pan_now_deg
+    const tiltPosition = status_msg.tilt_now_deg
+
+    const speed_pan_dps = status_msg.speed_pan_dps
+    const speed_tilt_dps = status_msg.speed_tilt_dps
+
+
+    const panPositionClean = panPosition + .001
+    const tiltPositionClean = tiltPosition + .001
+
+
+      
+      return (
+        <React.Fragment>
+
+          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
+          </label>
 
 
 
-          const ptxDevicesList = Object.keys(ptxDevices)
-          var has_abs_pos = false
-          var has_timed_pos = false
-          var has_speed_control = false
-          var has_homing = false
-          //Unused var has_set_home =
-          if (ptxDevicesList.indexOf(namespace) !== -1){
-            const ptx_caps = ptxDevices[namespace]
-            has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
-            has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
-            has_speed_control = ptx_caps && (ptx_caps.has_adjustable_speed)
-            has_homing = ptx_caps && (ptx_caps.has_homing)
-            //Unused has_set_home = ptx_caps && (ptx_caps.has_set_home)
-          }
-
-          const reversePanEnabled = status_msg.reverse_pan_enabled
-          const reverseTiltEnabled = status_msg.reverse_tilt_enabled
-
-          const speedRatio = status_msg.speed_ratio
-          const panPosition = status_msg.pan_now_deg
-          const tiltPosition = status_msg.tilt_now_deg
-
-          const speed_pan_dps = status_msg.speed_pan_dps
-          const speed_tilt_dps = status_msg.speed_tilt_dps
-
-
-          const panPositionClean = panPosition + .001
-          const tiltPositionClean = tiltPosition + .001
-
-
-   
-          const panHomePos = this.state.panHomePos
-          const tiltHomePos = this.state.tiltHomePos
-          const panHardStopMin = this.state.panHardStopMin
-          const tiltHardStopMin = this.state.tiltHardStopMin
-          const panHardStopMax = this.state.panHardStopMax
-          const tiltHardStopMax = this.state.tiltHardStopMax
-          const panSoftStopMin = this.state.panSoftStopMin
-          const tiltSoftStopMin = this.state.tiltSoftStopMin
-          const panSoftStopMax = this.state.panSoftStopMax
-          const tiltSoftStopMax = this.state.tiltSoftStopMax   
-
-
-          return (
-            <React.Fragment>
-
-              <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
-              </label>
+          <Label title={""}>
+            <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+            <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+          </Label>
 
 
 
-              <Label title={""}>
-                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+          <div hidden={(has_abs_pos === false)}>
+
+              <Label title={"Present Position"}>
+                <Input
+                  disabled
+                  style={{ width: "45%", float: "left" }}
+                  value={round(panPositionClean, 2)}
+                />
+                <Input
+                  disabled
+                  style={{ width: "45%" }}
+                  value={round(tiltPositionClean, 2)}
+                />
               </Label>
 
 
-
-              <div hidden={(has_abs_pos === false)}>
-
-                  <Label title={"Present Position"}>
-                    <Input
-                      disabled
-                      style={{ width: "45%", float: "left" }}
-                      value={round(panPositionClean, 2)}
-                    />
-                    <Input
-                      disabled
-                      style={{ width: "45%" }}
-                      value={round(tiltPositionClean, 2)}
-                    />
-                  </Label>
-
-
-                  <Label title={"Current Speed"}>
-                    <Input
-                      disabled
-                      style={{ width: "45%", float: "left" }}
-                      value={round(speed_pan_dps, 0)}
-                    />
-                    <Input
-                      disabled
-                      style={{ width: "45%" }}
-                      value={round(speed_tilt_dps, 0)}
-                    />
-                  </Label>
-
-                </div>
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-              <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-                <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+              <Label title={"Current Speed"}>
+                <Input
+                  disabled
+                  style={{ width: "45%", float: "left" }}
+                  value={round(speed_pan_dps, 0)}
+                />
+                <Input
+                  disabled
+                  style={{ width: "45%" }}
+                  value={round(speed_tilt_dps, 0)}
+                />
               </Label>
-
-
-
-
-
-
-                <div hidden={(has_abs_pos === false)}>
-
-                  <Label title={"GoTo Position "}>
-                    <Input
-                      disabled={!has_abs_pos}
-                      id={"PTXPanGoto"}
-                      style={{ width: "45%", float: "left" }}
-                      value={this.state.panGoto}
-                      onChange= {this.onUpdateText}
-                      onKeyDown= {this.onKeyText}
-                    />
-                    <Input
-                      disabled={!has_abs_pos}
-                      id={"PTXTiltGoto"}
-                      style={{ width: "45%" }}
-                      value={this.state.tiltGoto}
-                      onChange= {this.onUpdateText}
-                      onKeyDown= {this.onKeyText}
-                    />
-                  </Label>
-
-              </div>
-
-              <div hidden={(has_homing === false)}>
-
-              <ButtonMenu>
-                <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
-              </ButtonMenu>
 
             </div>
 
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+
+          <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
+            <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
+          </Label>
+
+            <div hidden={(has_abs_pos === false)}>
+
+              <Label title={"GoTo Position "}>
+                <Input
+                  disabled={!has_abs_pos}
+                  id={"PTXPanGoto"}
+                  style={{ width: "45%", float: "left" }}
+                  value={this.state.panGoto}
+                  onChange= {this.onUpdateText}
+                  onKeyDown= {this.onKeyText}
+                />
+                <Input
+                  disabled={!has_abs_pos}
+                  id={"PTXTiltGoto"}
+                  style={{ width: "45%" }}
+                  value={this.state.tiltGoto}
+                  onChange= {this.onUpdateText}
+                  onKeyDown= {this.onKeyText}
+                />
+              </Label>
+
+          </div>
+
+          <div hidden={(has_homing === false)}>
+
+          <ButtonMenu>
+            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
+          </ButtonMenu>
+
+        </div>
+
+      </React.Fragment>
+      )
+
+  }
+
+
+    renderControlPanel() {
+    const {sendBoolMsg, onPTXSetHomeHere } = this.props.ros
+    const namespace = this.props.namespace ? this.props.namespace : 'None'
+    const status_msg = this.state.status_msg
+
+    const devices = this.props.ros.ptxDevices
+    var has_abs_pos = false
+    var has_timed_pos = false
+    var has_speed_control = false
+    var has_homing = false
+    const devicesList = Object.keys(devices)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = devices[namespace]
+      has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
+      has_timed_pos = capabilities && (capabilities.has_timed_positioning === true)
+      has_speed_control = capabilities && (capabilities.has_adjustable_speed)
+      has_homing = capabilities && (capabilities.has_homing)
+    }
+
+    const reversePanEnabled = status_msg.reverse_pan_enabled
+    const reverseTiltEnabled = status_msg.reverse_tilt_enabled
+
+    const speedRatio = status_msg.speed_ratio
+
+    const panHomePos = this.state.panHomePos
+    const tiltHomePos = this.state.tiltHomePos
+    const panHardStopMin = this.state.panHardStopMin
+    const tiltHardStopMin = this.state.tiltHardStopMin
+    const panHardStopMax = this.state.panHardStopMax
+    const tiltHardStopMax = this.state.tiltHardStopMax
+    const panSoftStopMin = this.state.panSoftStopMin
+    const tiltSoftStopMin = this.state.tiltSoftStopMin
+    const panSoftStopMax = this.state.panSoftStopMax
+    const tiltSoftStopMax = this.state.tiltSoftStopMax   
+
+
+
+    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
+    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+
+
+    if (never_show_controls === true){
+              <Columns>
+                <Column>
+
+                </Column>
+              </Columns>
+
+    }
+
+    else if (show_controls === false){
+      return(
+              <Columns>
+                <Column>
+
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+      )
+    }
+    else {
+
+      return (
+        <React.Fragment>
 
 
               <Columns>
                 <Column>
 
-                  <Label title="PT SETUP">
-                          <Toggle
-                            checked={this.state.showSettings===true}
-                            onClick={this.onClickToggleShowSettings}>
-                          </Toggle>
-                        </Label>
+                    {(allways_show_controls === false) ?
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+                    : null }
+
+                  </Column>
+                  <Column>
+
+                  </Column>
+                </Columns>
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-                  
-                </Column>
-                <Column>
-      
-
-                </Column>
-              </Columns>
-
-
-              <div hidden={(this.state.showSettings === false)}>
 
 
                         <Label title={""}>
@@ -717,14 +682,12 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
                           />
 
 
-
-                  </div>
-
-
                   </React.Fragment>
           )
-        }
+       
+    }
   }
+
 
 
   render() {
@@ -748,6 +711,7 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
           <Columns>
             <Column >
 
+              { this.renderControlData()}
               { this.renderControlPanel()}
 
             </Column>
@@ -760,7 +724,8 @@ onEnterSendScanRangeWindowValue(event, topicName, entryName, other_val) {
           <Section title={(this.props.title != undefined) ? this.props.title : ""}>
 
 
-              {this.renderControlPanel()}
+              { this.renderControlData()}
+              { this.renderControlPanel()}
 
         </Section>
      )

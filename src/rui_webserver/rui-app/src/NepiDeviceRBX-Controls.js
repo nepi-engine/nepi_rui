@@ -32,7 +32,7 @@ import BooleanIndicator from "./BooleanIndicator"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import {convertStrToStrList, onEnterSetStateFloatValue, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState} from "./Utilities"
+import {convertStrToStrList, onEnterSetStateFloatValue, createMenuListFromStrList, onUpdateSetStateValue, onDropdownSelectedSetState, onChangeSwitchStateValue} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -47,7 +47,7 @@ class NepiDeviceControls extends Component {
 
       namespace: 'None',
       status_msg: null,
-      show_process_controls: true,
+      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : true,
 
       current_lat: null,
       current_long: null,
@@ -112,22 +112,28 @@ class NepiDeviceControls extends Component {
       altitude_meters: 0,
       yaw_deg_location: 0,
 
+      statusListener: null
+
     }
 
-    this.renderControlPanel = this.renderControlPanel.bind(this)
-
-    this.updateControlsStatusListener = this.updateControlsStatusListener.bind(this)
-    this.controlsStatusListener = this.controlsStatusListener.bind(this)
 
     this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
     this.sendGoActionIndex = this.sendGoActionIndex.bind(this)
     this.setLocationToCurrent = this.setLocationToCurrent.bind(this)
+
+    this.renderControlData = this.renderControlData.bind(this)
+    this.renderControlPanel = this.renderControlPanel.bind(this)
+
+    
+    this.updateStatusListener = this.updateStatusListener.bind(this)
+    this.statusListener = this.statusListener.bind(this)
+
+    
   }
 
-
-
-  // Callback for handling ROS Status messages
-  controlsStatusListener(message) {
+  // Callback for handling ROS StatusIDX messages
+  statusListener(message) {
+    const last_msg = this.state.status_msg
     const {rbxDevices} = this.props.ros
     this.setState({
       status_msg: message,
@@ -215,45 +221,69 @@ class NepiDeviceControls extends Component {
       })
 
     }
+
   }
 
-  // Function for configuring and subscribing to Status
-  updateControlsStatusListener() {
-    const namespace = this.props.namespace
+  // Function for configuring and subscribing to StatusIDX
+  updateStatusListener() {
+    const { namespace } = this.props
     if (this.state.statusListener != null) {
       this.state.statusListener.unsubscribe()
       this.setState({ status_msg: null, statusListener: null})
     }
-    if (namespace != 'None'){
-      var listener = this.props.ros.setupStatusListener(
-            namespace + "/status",
-            "nepi_interfaces/DeviceRBXStatus",
-            this.controlsStatusListener
-          )
-      this.setState({ controlsStatusListener : listener})
+    if (namespace !== 'None'){
+      var statusListener = this.props.ros.setupRBXStatusListener(
+        namespace,
+        this.statusListener
+      )
+      this.setState({ statusListener: statusListener})
     }
-    this.setState({namespace: namespace})
+    this.setState({ namespace: namespace})
+
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { namespace } = this.props
-    if (namespace !== prevState.namespace){  
-        this.updateControlsStatusListener()
-        this.render()
+    if (namespace !== this.state.namespace){
+      if (namespace !== null) {
+        this.updateStatusListener()
+      } 
     }
   }
+
+  componentDidMount() {
+    this.updateStatusListener()
+    }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status message
+  // Used to unsubscribe to StatusIDX message
   componentWillUnmount() {
-    if (this.state.controlsStatusListener ) {
-      this.state.controlsStatusListener.unsubscribe()
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
     }
   }
 
-  
+
+
+  renderControlData() {
+
+    const namespace = this.props.namespace ? this.props.namespace : null
+ 
+    const status_msg = this.state.status_msg
+
+    
+      return (
+          <React.Fragment>
+
+
+
+          </React.Fragment>
+        )
+ 
+  }
+
   sendGoActionIndex(){
   const {sendIntMsg} = this.props.ros
   const namespace = this.props.namespace + "/go_action"
@@ -282,29 +312,79 @@ class NepiDeviceControls extends Component {
   renderControlPanel() {
     const {  sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const namespace = this.props.namespace
-    return (
-     <React.Fragment>
 
-{/*
-          <Columns>
-          <Column>
-                  <Label title="Show Process Controls">
-                    <Toggle
-                      checked={this.state.show_process_controls===true}
-                      onClick={() => onChangeSwitchStateValue.bind(this)("show_process_controls",this.state.show_process_controls)}>
-                    </Toggle>
-                  </Label>
-
-            </Column>
-            <Column>
-
-            </Column>
-            </Columns>
-*/}
+    const namespace = this.props.namespace ? this.props.namespace : null
     
+    const status_msg = this.state.status_msg
 
-       <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+    // const devices = this.props.ros.rbxDevices
+ 
+    // const devicesList = Object.keys(devices)
+    // if (devicesList.indexOf(namespace) !== -1){
+    //   const capabilities = devices[namespace]
+
+    // }
+
+
+    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
+    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+
+
+    if (never_show_controls === true){
+              <Columns>
+                <Column>
+
+                </Column>
+              </Columns>
+
+    }
+
+    else if (show_controls === false){
+      return(
+              <Columns>
+                <Column>
+
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+      )
+    }
+    else {
+      return (
+        <React.Fragment>
+
+
+              <Columns>
+                <Column>
+
+                    {(allways_show_controls === false) ?
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+                    : null }
+
+                  </Column>
+                  <Column>
+
+                  </Column>
+                </Columns>
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
 
 
             <Columns>
@@ -687,8 +767,6 @@ class NepiDeviceControls extends Component {
             </div>
 
 
-
-
                   <NepiIFConfig
                       namespace={namespace}
                       title={"Nepi_IF_Conig"}
@@ -698,11 +776,12 @@ class NepiDeviceControls extends Component {
 
 
 
-    </React.Fragment>
-    )
+          </React.Fragment>
+        )
+    }
   }
 
- 
+
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
@@ -725,7 +804,9 @@ class NepiDeviceControls extends Component {
           <Columns>
             <Column >
 
+              { this.renderControlData()}
               { this.renderControlPanel()}
+
 
             </Column>
           </Columns>
@@ -736,15 +817,17 @@ class NepiDeviceControls extends Component {
 
           <Section title={(this.props.title != undefined) ? this.props.title : ""}>
 
-
-              {this.renderControlPanel()}
+              { this.renderControlData()}
+              { this.renderControlPanel()}
 
 
         </Section>
      )
-    }
+   }
+
   }
- 
+
+
 
 }
 export default NepiDeviceControls

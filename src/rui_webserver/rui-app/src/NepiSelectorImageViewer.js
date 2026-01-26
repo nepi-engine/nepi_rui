@@ -95,7 +95,7 @@ class ImageViewerSelector extends Component {
   // Function for creating list menu options.
   getListMenu() {
     // Update Class List
-    const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : this.props.ros.image_topics
+    const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : this.props.ros.imageTopics
     const image_exclude_filters = (this.props.image_exclude_filters != undefined) ? this.props.image_exclude_filters : []
     const image_include_filters = (this.props.image_include_filters != undefined) ? this.props.image_include_filters : []
     var images = image_topics  

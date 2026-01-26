@@ -74,7 +74,6 @@ class ImageViewer extends Component {
     super(props)
 
     this.state = {
-      image_topic: null,
       
       image_topic: 'None',
       prev_image_topic: 'None',
@@ -1387,7 +1386,6 @@ class ImageViewer extends Component {
     const show_all_options = (this.props.show_all_options != undefined) ? this.props.show_all_options : true
     const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
     const save_data_topic = (this.props.save_data_topic != undefined) ? this.props.save_data_topic :  this.state.save_data_topic
-    const title = this.props.title ? this.props.title : ""
     const show_status = this.state.show_status
     const show_controls = this.state.show_controls
     const show_renders = this.state.show_renders
@@ -1399,12 +1397,8 @@ class ImageViewer extends Component {
       <Columns>
       <Column>
               <div style={{ display: 'flex' }}>
-                        <div style={{ width: '80%' }}>
-                              <Label title={title}>
-                            </Label>
-                        </div>
 
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '90%' }}>
                           {}
                         </div>
 
@@ -1621,6 +1615,7 @@ class ImageViewer extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const title = this.props.title ? this.props.title : this.state.image_topic.split('/').pop()
     if (make_section === false){
       return (
         <Columns>
@@ -1633,7 +1628,7 @@ class ImageViewer extends Component {
     else {
       return (
 
-      <Section>
+      <Section title={title}>
 
         {this.renderImageViewer()}
 

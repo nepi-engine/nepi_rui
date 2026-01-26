@@ -47,7 +47,7 @@ class Nepi_IF_Settings extends Component {
       status_msg: null,
       capabilities: null,
 
-      show_settings: false,
+      show_controls: false,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
@@ -350,25 +350,32 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderSettings() {
-    const allways_show_settings = (this.props.allways_show_settings != undefined) ? this.props.allways_show_settings : false
-    const show_settings = (allways_show_settings === true) ? true : (this.props.show_settings != undefined) ? this.props.show_settings : this.state.show_settings
-    const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
+   
 
+    const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
     const settingsHeight = this.state.settingsCount * 25
     const settingsHeightStr = settingsHeight.toString() + 'px'
 
 
-    if (show_settings === false){
+    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+
+
+    if (show_controls === false){
       return(
               <Columns>
                 <Column>
 
-                  <Label title="Show Settings">
-                      <Toggle
-                        checked={show_settings===true}
-                        onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",show_settings)}>
-                      </Toggle>
-                  </Label>
+                    <Label title="Show Settings">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+
+                </Column>
+                <Column>
+
                 </Column>
               </Columns>
       )
@@ -376,22 +383,25 @@ class Nepi_IF_Settings extends Component {
     else {
       return (
         <React.Fragment>
-          <Columns>
-            <Column>
+
 
               <Columns>
                 <Column>
 
+                    {(allways_show_controls === false) ?
+                    <Label title="Show Settings">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+                    : null }
 
-                  {(allways_show_settings === false) ?
-                  <Label title="Show Settings">
-                      <Toggle
-                        checked={show_settings===true}
-                        onClick={() => onChangeSwitchStateValue.bind(this)("show_settings",show_settings)}>
-                      </Toggle>
-                  </Label>
-                  : null }
+                  </Column>
+                  <Column>
 
+                  </Column>
+                </Columns>
 
                   <Label title={"Select Setting"}>
                     <Select
@@ -402,11 +412,6 @@ class Nepi_IF_Settings extends Component {
                       {createMenuListFromStrList(capSettingNamesOrdered, false, [], ['NONE'], [])}
                     </Select>
                   </Label>
-                </Column>
-                <Column>
-
-                </Column>
-              </Columns>
           
               <Columns>
                 <Column>
@@ -414,13 +419,7 @@ class Nepi_IF_Settings extends Component {
                   {this.renderSetting()}
       
           
-                  <div
-                    style={{
-                      borderTop: "1px solid #ffffff",
-                      marginTop: Styles.vars.spacing.medium,
-                      marginBottom: Styles.vars.spacing.xs,
-                    }}
-                  />
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
           
                   <Label title={"Current Settings"} />
                   <pre style={{ height: settingsHeightStr, overflowY: "auto" }}>
@@ -431,9 +430,6 @@ class Nepi_IF_Settings extends Component {
               </Columns>
 
               {this.renderConfigs()}
-
-          </Column>
-          </Columns>
 
         </React.Fragment>
       )
@@ -543,45 +539,59 @@ class Nepi_IF_Settings extends Component {
     )
 
   }
-
-
   render() {
-    const make_section = this.props.make_section ? this.props.make_section : true
-    const namespace = this.state.namespace ? this.state.namespace : 'None'
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+
     const status_msg = this.state.status_msg
-    const title = (this.props.title != undefined) ? this.props.title : 'Settings'
-    // if (namespace.replace('/settings','') != this.props.namespace){
-    //   this.setState({updatedNamespace: this.state.namespace  + '/settings'})
-    // }
-    if (namespace !== 'None' && status_msg != null && make_section === true){
-      return (
-        <Section title={title}>
-          {this.renderSettings()}
-        </Section>
-      )
+
+    var has_settings = false
+    if ((status_msg != null)){
+      if (status_msg.settings_list.length > 1) {
+        has_settings = true
+      }
+      else if (status_msg.settings_list.length === 1 && status_msg.settings_list[0].name_str !== 'None') {
+        has_settings = true
+      }
     }
-    else if (namespace !== 'None' && status_msg != null  && make_section === false) {
+
+
+    if (has_settings == false){
+      return (
+        <Columns>
+        <Column>
+       
+        </Column>
+        </Columns>
+      )
+
+
+    }
+    else if (make_section === false){
+
       return (
 
+          <Columns>
+            <Column >
 
-        <Columns>
-          <Column>
-          {this.renderSettings()}
+               {this.renderSettings()}
 
-          </Column>
-        </Columns>
+
+            </Column>
+          </Columns>
       )
     }
     else {
       return (
-        <Columns>
-          <Column>
 
-          </Column>
-        </Columns>
-      )
-    }
-    
+          <Section title={(this.props.title != undefined) ? this.props.title : "Settings"}>
+
+              {this.renderSettings()}
+
+
+        </Section>
+     )
+   }
+
   }
 
 }

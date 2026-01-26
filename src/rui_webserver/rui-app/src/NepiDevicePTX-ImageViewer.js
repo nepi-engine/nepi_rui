@@ -34,6 +34,8 @@ import Styles from "./Styles"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
+import ImageViewerSelector from "./NepiSelectorImageViewer"
+import ImageViewersSelector from "./NepiSelectorImageViewers"
 
 
 function round(value, decimals = 0) {
@@ -56,6 +58,8 @@ class NepiDevicePTXImageViewer extends Component {
       statusListener: null
     }
 
+
+    this.renderImageViewer = this.renderImageViewer.bind(this)
 
     this.getNamespace = this.getNamespace.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
@@ -85,33 +89,29 @@ class NepiDevicePTXImageViewer extends Component {
   }
   
   // Function for configuring and subscribing to Status
-  updateStatusListener(namespace) {
-    const statusNamespace = namespace + '/status'
-    if (this.state.statusListener) {
+  updateStatusListener() {
+    const { namespace } = this.props
+    if (this.state.statusListener != null) {
       this.state.statusListener.unsubscribe()
-      this.setState({status_msg: null,
-    })
+       this.setState({ status_msg: null, statusListener: null})
     }
-    if (namespace != null && namespace !== 'None' && namespace.indexOf('null') === -1){
-        var statusListener = this.props.ros.setupStatusListener(
-              statusNamespace,
-              "nepi_app_pan_tilt_auto/PanTiltAutoAppStatus",
+    if (namespace != null && namespace !== 'None'){
+        var statusListener = this.props.ros.setupPTXStatusListener(
+              namespace,
               this.statusListener
             )
+      this.setState({ statusListener: statusListener})
     }
-    this.setState({ 
-      namespace: namespace,
-      statusListener: statusListener,
-    })
+    this.setState({ namespace: namespace})
 
 }
   
 // Lifecycle method called when compnent updates.
 // Used to track changes in the topic
 componentDidUpdate(prevProps, prevState, snapshot) {
-  const namespace = this.getNamespace()
-   if (namespace !== prevState.namespace){
-      this.updateStatusListener(namespace)
+  const { namespace } = this.props
+   if (namespace !== this.state.namespace){
+      this.updateStatusListener()
   }
 }
 
@@ -131,7 +131,42 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   }
 
 
+  renderImageViewer() {
+  
+    const use_images_selector = (this.props.use_images_selector != undefined) ? this.props.use_images_selector : false 
+    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : false
+    const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
 
+    return (
+
+        <React.Fragment >
+
+          <div id={'ptxImageViewer'}>
+
+            {(use_images_selector === true) ?
+              <ImageViewersSelector
+                
+                hideQualitySelector={true}
+                show_save_controls={show_save_controls}
+                show_image_controls={show_image_controls}
+              />
+              : 
+                  <ImageViewerSelector
+                    id={'ptxImageViewer'}
+                    hideQualitySelector={true}
+                    show_save_controls={show_save_controls}
+                    show_image_controls={show_image_controls}
+                  />
+            }
+
+        </div>
+
+  </React.Fragment>
+
+
+
+    )
+  }
 
 
 
@@ -157,44 +192,34 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     }
 
     const ptxImageViewerElement = document.getElementById("ptxImageViewer")
-    const tiltSliderHeight = (ptxImageViewerElement)? ptxImageViewerElement.offsetHeight : "100px"
-
-
+    const tiltSliderHeight = (ptxImageViewerElement)? Math.floor(ptxImageViewerElement.offsetHeight * 0.8) : 1
+    const show_pt_controls = (tiltSliderHeight === 1) ? false : (has_abs_pos === true)
 
 
     return (
-      <Section>
+
         <Columns>
           <Column equalWidth = {false} >
 
 
-                
-          <div id={'ptxImageViewer'}>
-            <ImageViewer
-              hideQualitySelector={true}
-              show_save_data={false}
-              show_control_options={false}
-            />
-          </div>
+            {this.renderImageViewer()}
 
+              <div hidden={show_pt_controls === false}>
 
-
-                <SliderAdjustment
-                  disabled={!has_abs_pos}
-                  title={"Pan"}
-                  msgType={"std_msgs/Float32"}
-                  adjustment={panGoalRatio}
-                  topic={namespace + "/goto_pan_ratio"}
-                  scaled={0.01}
-                  min={0}
-                  max={100}
-                  tooltip={"Pan as a percentage (0%=min, 100%=max)"}
-                  unit={"%"}
-                  noTextBox={true}
-                  noLabel={true}
-                />
-
-              <div hidden={(has_timed_pos === false)}>
+                  <SliderAdjustment
+                    title={"Pan"}
+                    msgType={"std_msgs/Float32"}
+                    adjustment={panGoalRatio}
+                    topic={namespace + "/goto_pan_ratio"}
+                    scaled={0.01}
+                    min={0}
+                    max={100}
+                    tooltip={"Pan as a percentage (0%=min, 100%=max)"}
+                    unit={"%"}
+                    noTextBox={true}
+                    noLabel={true}
+                  />
+        
 
               <ButtonMenu>
 
@@ -222,9 +247,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                 </ButtonMenu>
 
 
-                </div>
-
-
+             
 
                 <ButtonMenu>
 
@@ -232,13 +255,17 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                   
                 </ButtonMenu>
 
+
+
+             </div>
+
+
           </Column>
           <Column style={{flex: 0.05}}>
 
-          <div style={{ height: '0px' }}></div>
+           <div hidden={show_pt_controls === false}>
 
             <SliderAdjustment
-              disabled={!has_abs_pos}
               title={"Tilt"}
               msgType={"std_msgs/Float32"}
               adjustment={tiltGoalRatio}
@@ -254,12 +281,18 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               noLabel={true}
             />
 
+          </div>
+
         </Column>
         </Columns>
 
-      </Section>
+
+
+
     )
   }
+
+
 }
 
 export default NepiDevicePTXImageViewer

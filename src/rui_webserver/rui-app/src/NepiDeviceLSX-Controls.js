@@ -23,19 +23,18 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
+import Styles from "./Styles"
 
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
 import Toggle from "react-toggle"
+import BooleanIndicator from "./BooleanIndicator"
 
-import ImageViewerSelector from "./NepiSelectorImageViewer"
-import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFConfig from "./Nepi_IF_Config"
-import NepiSystemMessages from "./Nepi_IF_Messages"
 
 
-import {onDropdownSelectedSendStr, createMenuListFromStrList} from "./Utilities"
+import {onDropdownSelectedSendStr, createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
 //import {createShortValuesFromNamespaces} from "./Utilities"
 
 function round(value, decimals = 0) {
@@ -57,8 +56,7 @@ class NepiControlsLightsControls extends Component {
 
       namespace: 'None',
       status_msg: null,
-
-      show_controls: false,
+      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : false,
 
       lxsIdentifier: null,
       lsxSerialNum: null,
@@ -87,6 +85,7 @@ class NepiControlsLightsControls extends Component {
 
     }
 
+    this.renderControlData = this.renderControlData.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
 
     this.updateStatusListener = this.updateStatusListener.bind(this)
@@ -132,7 +131,7 @@ class NepiControlsLightsControls extends Component {
       this.setState({ status_msg: null, statusListener: null})
     }
     if (namespace !== 'None'){
-      var statusListener = this.props.ros.setupPTXStatusListener(
+      var statusListener = this.props.ros.setupLSXStatusListener(
         namespace,
         this.statusListener
       )
@@ -146,7 +145,7 @@ class NepiControlsLightsControls extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { namespace } = this.props
-    if (namespace !== prevState.namespace){
+    if (namespace !== this.state.namespace){
       if (namespace !== null) {
         this.updateStatusListener()
       } 
@@ -166,32 +165,231 @@ class NepiControlsLightsControls extends Component {
   }
 
 
-  
-  renderControlPanel() {
-    const { lsxDevices } = this.props.ros
+  renderControlData() {
+
     const lsxTempC = this.state.lsxTempC
     const namespace = this.state.namespace
 
-    const lsx_caps = lsxDevices[namespace]
-    const has_standby_mode = lsx_caps && (lsx_caps['has_standby_mode'] === true)
-    const has_on_off_control = lsx_caps && (lsx_caps['has_on_off_control'] === true)
-    const has_intensity_control = lsx_caps && (lsx_caps['has_intensity_control'] === true)
-    const has_color_control = lsx_caps && (lsx_caps['has_color_control'] === true)
-    const color_options_list = lsx_caps ?  lsx_caps['color_options_list'] : ["None"]
-    const has_kelvin_control = lsx_caps && (lsx_caps['has_kelvin_control'] === true)
-    const kelvin_min = lsx_caps ? lsx_caps['kelvin_min'] : 1000
-    const kelvin_max = lsx_caps ? lsx_caps['kelvin_max'] : 100
-    const has_blink_control = lsx_caps && (lsx_caps['has_blink_control'] === true)
-    const has_hw_strobe = lsx_caps && (lsx_caps['has_hw_strobe'] === true)
-    const reports_temperature = lsx_caps && (lsx_caps['reports_temperature'] === true)
-    const reports_power = lsx_caps && (lsx_caps['reports_power'] === true)
-    const NoneOption = <Option>None</Option>
+    const devices = this.props.ros.lsxDevices
+    var has_standby_mode = false
+    var has_on_off_control = false
+    var has_intensity_control = false
+    var has_color_control = false
+    var color_options_list = ["None"]
+    var has_kelvin_control = false
+    var kelvin_min = 1000
+    var kelvin_max = 100
+    var has_blink_control = false
+    var has_hw_strobe = false
+    var reports_temperature = false
+    var reports_power = false
+    const devicesList = Object.keys(devices)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = devices[namespace]
+      has_standby_mode = capabilities.has_standby_mode
+      has_on_off_control = capabilities.has_on_off_control
+      has_intensity_control = capabilities.has_intensity_control
+      has_color_control = capabilities.has_color_control
+      color_options_list = capabilities.color_options_list
+      has_kelvin_control = capabilities.has_kelvin_control
+      kelvin_min = capabilities.kelvin_min
+      kelvin_max = capabilities.kelvin_max
+      has_blink_control = capabilities.has_blink_control
+      has_hw_strobe = capabilities.has_hw_strobe
+      reports_temperature = capabilities.reports_temperature
+      reports_power = capabilities.reports_power
+    }
 
 
 
     return (
 
  <React.Fragment>
+            <div hidden={!has_on_off_control}>    
+          <Label title="On_Off State">
+            <BooleanIndicator value={this.state.lsxOnOffState===true} />
+            </Label>
+            </div>
+
+ 
+            <div hidden={!has_standby_mode}>      
+          <Label title="Standby State">
+            <BooleanIndicator value={this.state.lsxStandbyState===true} />
+                 
+            </Label>
+            </div>
+
+
+
+            <div hidden={!has_intensity_control || this.state.lsxOnOffState===false}>    
+              <Label title="Intensity %">
+                  <Input 
+                    value={round(this.state.lsxIntensityRatio,0)} 
+                    disabled
+                    />
+              </Label>
+            </div>
+
+
+            <div hidden={false}> 
+            <div hidden={!has_color_control}>    
+            <Label title={"Color"}>
+                    <Input 
+                    value={this.state.lsxColorStr} 
+                    disabled
+                    />
+                    </Label>
+                    </div>
+
+            <div hidden={!has_blink_control}>    
+              <Label title="Blink Interval (ms)">
+                  <Input 
+                    value={round(this.state.lsxBlinkInterval,0)} 
+                    disabled
+                    />
+              </Label>
+          
+            </div>
+            
+
+          
+
+
+
+            <div hidden={!has_kelvin_control}>    
+                <Label title={"Kelvin Setting"}>
+                      <Input 
+                        value={round(this.state.lsxKelvinVal,0)} 
+                        disabled
+                        />
+                    </Label>
+            </div>
+
+
+            <div hidden={!reports_temperature}>    
+                  <Label title={"Temperature C"}>
+                    <Input
+                      disabled
+                      value={round(lsxTempC, 1)}  />
+                  </Label>
+                  </div>
+
+                  <div hidden={!reports_power}>    
+             <Label title={"Power"}>
+                    <Input
+                      disabled
+                      value={round(this.state.lsxPowerW, 1)}  />
+                  </Label>
+                  </div>
+
+          </div>
+
+          <div hidden={!has_hw_strobe}>    
+            <Label title="Strobe Enabled">
+              <BooleanIndicator value={this.state.lsxStrobeState===true} />
+            
+            </Label>
+            </div>
+
+        </React.Fragment>
+    )
+  }
+
+  
+  renderControlPanel() {
+    const lsxTempC = this.state.lsxTempC
+    const NoneOption = <Option>None</Option>
+    const namespace = this.state.namespace
+
+    const devices = this.props.ros.lsxDevices
+    var has_standby_mode = false
+    var has_on_off_control = false
+    var has_intensity_control = false
+    var has_color_control = false
+    var color_options_list = ["None"]
+    var has_kelvin_control = false
+    var kelvin_min = 1000
+    var kelvin_max = 100
+    var has_blink_control = false
+    var has_hw_strobe = false
+    var reports_temperature = false
+    var reports_power = false
+    const devicesList = Object.keys(devices)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = devices[namespace]
+      has_standby_mode = capabilities.has_standby_mode
+      has_on_off_control = capabilities.has_on_off_control
+      has_intensity_control = capabilities.has_intensity_control
+      has_color_control = capabilities.has_color_control
+      color_options_list = capabilities.color_options_list
+      has_kelvin_control = capabilities.has_kelvin_control
+      kelvin_min = capabilities.kelvin_min
+      kelvin_max = capabilities.kelvin_max
+      has_blink_control = capabilities.has_blink_control
+      has_hw_strobe = capabilities.has_hw_strobe
+      reports_temperature = capabilities.reports_temperature
+      reports_power = capabilities.reports_power
+    }
+
+
+    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
+    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+
+
+    if (never_show_controls === true){
+              <Columns>
+                <Column>
+
+                </Column>
+              </Columns>
+
+    }
+
+    else if (show_controls === false){
+      return(
+              <Columns>
+                <Column>
+
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+      )
+    }
+    else {
+      return (
+        <React.Fragment>
+
+
+              <Columns>
+                <Column>
+
+                    {(allways_show_controls === false) ?
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+                    : null }
+
+                  </Column>
+                  <Column>
+
+                  </Column>
+                </Columns>
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
             <div hidden={!has_on_off_control}>    
           <Label title="Set On_Off State">
                   <Toggle
@@ -227,8 +425,7 @@ class NepiControlsLightsControls extends Component {
                   />
             </div>
 
-
-            <div hidden={false}> 
+ 
             <div hidden={!has_color_control}>    
             <Label title={"Select Color"}>
                     <Select
@@ -241,7 +438,7 @@ class NepiControlsLightsControls extends Component {
                           : NoneOption}
                       </Select>
                     </Label>
-                    </div>
+            </div>
 
             <div hidden={!has_blink_control}>    
 
@@ -258,17 +455,6 @@ class NepiControlsLightsControls extends Component {
                   />
             </div>
             
-
-{/*
-            <Label title={"Kelvin Setting"}>
-                  <Input id="blink_interval" 
-                    value={this.state.lsxKelvinVal} 
-                    onChange={(event) => onUpdateSetStateValue.bind(this)(event,"lsxKelvinVal")} 
-                    onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + "/set_kelvin")} />
-                </Label>
-
-                disabled={!has_intensity_control}
-*/}                
 
 
 
@@ -287,24 +473,6 @@ class NepiControlsLightsControls extends Component {
             </div>
 
 
-            <div hidden={!reports_temperature}>    
-                  <Label title={"Temperature C"}>
-                    <Input
-                      disabled
-                      value={round(lsxTempC, 1)}  />
-                  </Label>
-                  </div>
-
-                  <div hidden={!reports_power}>    
-             <Label title={"Power"}>
-                    <Input
-                      disabled
-                      value={round(this.state.lsxPowerW, 1)}  />
-                  </Label>
-                  </div>
-
-          </div>
-
           <div hidden={!has_hw_strobe}>    
             <Label title="Set Strobe State">
                   <Toggle
@@ -314,9 +482,14 @@ class NepiControlsLightsControls extends Component {
             </Label>
             </div>
 
+            <NepiIFConfig
+                namespace={namespace}
+                title={"Nepi_IF_Conig"}
+          />
 
         </React.Fragment>
-    )
+      )
+    }
   }
 
 
@@ -342,6 +515,7 @@ class NepiControlsLightsControls extends Component {
           <Columns>
             <Column >
 
+              { this.renderControlData()}
               { this.renderControlPanel()}
 
 
@@ -354,7 +528,8 @@ class NepiControlsLightsControls extends Component {
 
           <Section title={(this.props.title != undefined) ? this.props.title : ""}>
 
-              {this.renderControlPanel()}
+              { this.renderControlData()}
+              { this.renderControlPanel()}
 
 
         </Section>

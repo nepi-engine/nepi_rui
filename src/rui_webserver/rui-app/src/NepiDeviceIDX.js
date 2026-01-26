@@ -175,9 +175,7 @@ class NepiDeviceIDX extends Component {
 
 
   renderDataProductSelector() {
-    const NoneOption = <Option>None</Option>
     const data_topic = this.state.data_topic
-    const namespace = this.state.namespace ? this.state.namespace : "None"
 
         return (
 
@@ -203,9 +201,7 @@ class NepiDeviceIDX extends Component {
 
 
   renderDeviceSelector() {
-    const NoneOption = <Option>None</Option>
     const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
-    const data_topic = this.state.data_topic
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
 
@@ -224,8 +220,10 @@ class NepiDeviceIDX extends Component {
                       </Select>
                     </Label>
 
+                    {(device_selected == true) ?
+                    this.renderDataProductSelector()
+                    : null }
 
-                  {this.renderDataProductSelector()}
                   </Column>
                   <Column>
     
@@ -296,7 +294,9 @@ class NepiDeviceIDX extends Component {
 
               <div style={{ width: "30%"}}>
 
-                    {this.renderDeviceSelector()}
+                    
+                      {this.renderDeviceSelector()}
+    
 
 
                           {(device_selected == true) ?
@@ -311,7 +311,6 @@ class NepiDeviceIDX extends Component {
                           {(device_selected == true) ?
                           <NepiIFSettings
                             namespace={namespace}
-                            allways_show_settings={true}
                             title={"Device Settings"}
                         />
                         : null}

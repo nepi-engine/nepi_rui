@@ -30,6 +30,7 @@ import Label from "./Label"
 import Styles from "./Styles"
 //Unused import Select from "./Select"
 import Input from "./Input"
+//import BooleanIndicator from "./BooleanIndicator"
 import { Column, Columns } from "./Columns"
 import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
 
@@ -49,8 +50,7 @@ class NepiDeviceIDXControls extends Component {
 
       namespace: 'None',
       status_msg: null,
-
-      show_controls: false,
+      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : false,
 
       rtsp_url: "",
       rtsp_username: "",
@@ -86,6 +86,7 @@ class NepiDeviceIDXControls extends Component {
 
     }
 
+    this.renderControlData = this.renderControlData.bind(this)
     this.renderControlPanel = this.renderControlPanel.bind(this)
 
     this.updateStatusListener = this.updateStatusListener.bind(this)
@@ -154,7 +155,7 @@ class NepiDeviceIDXControls extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const { namespace } = this.props
-    if (namespace !== prevState.namespace){
+    if (namespace !== this.state.namespace){
       if (namespace !== null) {
         this.updateStatusListener()
       } 
@@ -208,61 +209,121 @@ class NepiDeviceIDXControls extends Component {
     )
   }
 
-  renderControlPanel() {
-    const { idxDevices, sendBoolMsg } = this.props.ros
+  renderControlData() {
     const namespace = this.props.namespace ? this.props.namespace : 'None'
-    var capabilities = null
-    if (namespace !== 'None'){
-      capabilities = idxDevices[namespace] ? idxDevices[namespace] : null
+
+
+    const framerates = this.state.frameratesCurrent
+    const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
+    const dp_index = framerates ? this.state.dataProducts.indexOf(data_product) : -1
+    var pub_framerate = 0.0
+    if (dp_index !== -1) {
+      pub_framerate = round(framerates[dp_index],1)
     }
-    if (capabilities == null){
+    if (pub_framerate > this.state.max_framerate){
+      pub_framerate = this.state.max_framerate
+    }
+
+    const devices = this.props.ros.idxDevices
+    var has_resolution =   false
+    var has_framerate =   false
+    var has_auto_adjust =   false
+    var has_contrast =   false
+    var has_brightness =   false
+    var has_threshold =   false
+    var has_range =   false
+    const devicesList = Object.keys(devices)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = devices[namespace]
+      has_resolution = (capabilities.has_resolution)
+      has_framerate = (capabilities.has_framerate)
+      has_auto_adjust = (capabilities.has_auto_adjustment)
+      has_contrast = (capabilities.has_contrast)
+      has_brightness = (capabilities.has_brightness)
+      has_threshold = (capabilities.has_threshold)
+      has_range = (capabilities.has_range)
+    }
+    
+    const auto_controls = this.state.auto_adjust_enabled ? this.state.auto_adjust_controls : []
+    const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') !== -1)
+    const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') !== -1)
+    const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') !== -1)
+    const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') !== -1)
+    const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
+    const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
+
+
+
       return (
-        <Columns>
+        <React.Fragment>
+
+            <Columns>
+              <Column>
+
+
+              <div hidden={(hide_framerate)}>
+                  <Label title={"Max Framerate"}>
+                <Input
+                  value={this.state.max_framerate}
+                  disabled
+                  style={{ width: "100%" }}
+                />
+              </Label>
+
+              </div>
+              <div hidden={(hide_framerate)}>
+                  <Label title={"Pub Framerate"}>
+                <Input
+                  value={pub_framerate}
+                  disabled
+                  style={{ width: "100%" }}
+                />
+              </Label>
+
+            </div>
+
+
+            </Column>
+            <Column>
+
+            <Label title={"Image Size"}>
+            <Input
+              value={this.state.resolutionString}
+              id="size"
+              style={{ width: "80%" }}
+              disabled={true}
+            />
+          </Label>
+
+              </Column>
+            </Columns>  
+
+
+          <Columns>
           <Column>
 
-          </Column>
-        </Columns>
-      )
-    }
-    else {
-      const has_resolution = (capabilities && capabilities.has_resolution)
-      const has_framerate = (capabilities && capabilities.has_framerate)
-      const has_auto_adjust = (capabilities && capabilities.has_auto_adjustment)
-      const has_contrast = (capabilities && capabilities.has_contrast)
-      const has_brightness = (capabilities && capabilities.has_brightness)
-      const has_threshold = (capabilities && capabilities.has_threshold)
-      const has_range = (capabilities && capabilities.has_range)
-      /*const data_products = (capabilities && capabilities.data_products)  Unused*/
-
-      const framerates = this.state.frameratesCurrent
-      const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
-      if (data_product === 'None'){
-        return (
-          <Columns>
-            <Column>
-  
-            </Column>
-          </Columns>
-        )
-      }
-      else {
-        const dp_index = framerates ? this.state.dataProducts.indexOf(data_product) : -1
-        var framerate_str = "0"
-        if (dp_index !== -1) {
-          framerate_str = round(framerates[dp_index],1).toString()
-        }
-
-        const auto_controls = this.state.auto_adjust_enabled ? this.state.auto_adjust_controls : []
-        const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') !== -1)
-        const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') !== -1)
-        const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') !== -1)
-        const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') !== -1)
-        const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
-        const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
-        return (
+          <Label title={"Width (Deg)"}>
+            <Input
+              value={this.state.width_deg}
+              disabled
+              style={{ width: "80%" }}
+            />
+          </Label>
 
 
-        <React.Fragment>
+              </Column>
+              <Column>
+
+              <Label title={"Height (Deg)"}>
+            <Input
+              value={this.state.height_deg}
+              disabled
+              style={{ width: "80%" }}
+            />
+          </Label>
+
+              </Column>
+            </Columns>  
 
                   {/*
                   <div hidden={this.state.rtsp_url === ""}>
@@ -272,7 +333,107 @@ class NepiDeviceIDXControls extends Component {
                   </div>
                   */}
 
-        
+
+
+            </React.Fragment>
+          )
+
+  }
+
+
+  renderControlPanel() {
+    const { sendBoolMsg } = this.props.ros
+    const namespace = this.props.namespace ? this.props.namespace : 'None'
+
+
+    const devices = this.props.ros.idxDevices
+    var has_resolution =   false
+    var has_framerate =   false
+    var has_auto_adjust =   false
+    var has_contrast =   false
+    var has_brightness =   false
+    var has_threshold =   false
+    var has_range =   false
+    const devicesList = Object.keys(devices)
+    if (devicesList.indexOf(namespace) !== -1){
+      const capabilities = devices[namespace]
+      has_resolution = (capabilities.has_resolution)
+      has_framerate = (capabilities.has_framerate)
+      has_auto_adjust = (capabilities.has_auto_adjustment)
+      has_contrast = (capabilities.has_contrast)
+      has_brightness = (capabilities.has_brightness)
+      has_threshold = (capabilities.has_threshold)
+      has_range = (capabilities.has_range)
+    }
+    
+    const auto_controls = this.state.auto_adjust_enabled ? this.state.auto_adjust_controls : []
+    const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') !== -1)
+    const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') !== -1)
+    const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') !== -1)
+    const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') !== -1)
+    const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
+    const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
+
+
+
+
+    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
+    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+
+
+    if (never_show_controls === true){
+              <Columns>
+                <Column>
+
+                </Column>
+              </Columns>
+
+    }
+
+    else if (show_controls === false){
+      return(
+              <Columns>
+                <Column>
+
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+      )
+    }
+    else {
+      return (
+        <React.Fragment>
+
+
+              <Columns>
+                <Column>
+
+                    {(allways_show_controls === false) ?
+                    <Label title="Show Controls">
+                        <Toggle
+                          checked={show_controls===true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
+                        </Toggle>
+                    </Label>
+                    : null }
+
+                  </Column>
+                  <Column>
+
+                  </Column>
+                </Columns>
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
 
@@ -297,14 +458,7 @@ class NepiDeviceIDXControls extends Component {
                             </Column>
                             <Column>
 
-                            <Label title={"Image Size"}>
-                          <Input
-                            value={this.state.resolutionString}
-                            id="size"
-                            style={{ width: "100%" }}
-                            disabled={true}
-                          />
-                        </Label>
+        
 
                             </Column>
                           </Columns>  
@@ -458,10 +612,10 @@ class NepiDeviceIDXControls extends Component {
 
 
 
-          </React.Fragment>
-        )
+            </React.Fragment>
+          )
       }
-    }
+    
   }
 
 
@@ -469,7 +623,9 @@ class NepiDeviceIDXControls extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
     const status_msg = this.state.status_msg
-    if (status_msg == null){
+    const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
+
+    if (status_msg == null && data_product !== 'None'){
       return (
         <Columns>
         <Column>
@@ -486,7 +642,7 @@ class NepiDeviceIDXControls extends Component {
 
           <Columns>
             <Column >
-
+              { this.renderControlData()}
               { this.renderControlPanel()}
 
 
@@ -499,7 +655,8 @@ class NepiDeviceIDXControls extends Component {
 
           <Section title={(this.props.title != undefined) ? this.props.title : ""}>
 
-              {this.renderControlPanel()}
+              { this.renderControlData()}
+              { this.renderControlPanel()}
 
 
         </Section>
