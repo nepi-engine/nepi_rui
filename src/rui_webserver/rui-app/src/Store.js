@@ -446,7 +446,7 @@ class ROSConnectionStore {
     //}
     //else if (this.ros && !this.topicQueryLock && this.connectedToROS) {
 
-    if (this.ros && !this.topicQueryLock && this.connectedToROS) {
+    if (this.ros && (this.topicQueryLock === false) && (this.connectedToROS == true)) {
       this.topicQueryLock = true
       this.ros.getTopics(result => {
         const topics = result.topics
@@ -469,7 +469,7 @@ class ROSConnectionStore {
           this.topicTypes = types
         }
 
-
+        
         var newPrefix = this.updatePrefix()
         var newResetTopics = this.updateResetTopics()
         var newSaveDataNamespaces = this.updateSaveDataNamespaces()

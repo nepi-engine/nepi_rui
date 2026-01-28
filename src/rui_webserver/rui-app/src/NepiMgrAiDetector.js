@@ -37,7 +37,7 @@ import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import {filterStrList, createShortImagesFromNamespaces,onChangeSwitchStateValue} from "./Utilities"
+import {filterStrList, createShortImagesFromNamespaces,createShortValuesFromNamespaces} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -70,6 +70,7 @@ class AiDetectorMgr extends Component {
       models_types: [],
 
       active_models_list: [],
+      active_models_names: [],
       active_models_types: [],
       active_models_nodes: [],
       active_models_namespaces: [],
@@ -167,6 +168,7 @@ class AiDetectorMgr extends Component {
       models_types: message.ai_models_types,
 
       active_models_list: message.active_ai_models,
+      active_models_names: message.active_ai_models_names,
       active_models_types: message.active_ai_models_types,
       active_mdoels_nodes: message.active_ai_models_nodes,
       active_models_namespaces: message.active_ai_models_namespaces,
@@ -334,6 +336,7 @@ class AiDetectorMgr extends Component {
   // Function for creating image topic options.
   getDetectorOptions() {
     const active_models_list = this.state.active_models_list
+    const active_models_names = this.state.active_models_names
     const active_models_types = this.state.active_models_types
     var items = []
     var check_type = 'detection'
@@ -342,7 +345,7 @@ class AiDetectorMgr extends Component {
     for (var i = 0; i < active_models_list.length; i++) {
         type = active_models_types[i]
         if (type === check_type ){
-          items.push(<Option value={active_models_list[i]}>{active_models_list[i]}</Option>)
+          items.push(<Option value={active_models_list[i]}>{active_models_names[i]}</Option>)
         }
     }
     return items
@@ -1025,32 +1028,30 @@ renderDetectorSettings() {
       const det_msg = this.state.det_status_msg
       const selected_detector = this.state.selected_detector
       const sel_img = this.state.selected_img_topic
-
+    
 
       var img_topic = "None"
       var img_text = "None"
       var img_ns = "None"
-
+      
         if (det_msg != null){
 
               const detector_ns = this.state.detector_namespace
               const detector_enabled = det_msg.enabled
-              const det_img_nns = det_msg.image_detector_topics
+              const det_img_nns = det_msg.image_pub_topics
+              const det_img_names =  createShortValuesFromNamespaces(det_img_nns)
               if (detector_enabled === false) {
                   img_topic === "Detector Not Enabled"
                   img_text = "Detector Not Enabled"
                   items.push(<Option value={img_topic}>{img_text}</Option>)
               }
               else if (detector_ns){
-                const det_img_topic = detector_ns + "/all/detection_image"
-                img_text = "All"
-                items.push(<Option value={det_img_topic}>{img_text}</Option>)
-                if (sel_img === ""){
-                  this.setState({selected_img_topic: det_img_topic })
+                if (sel_img === "" && det_img_nns.length > 0){
+                  this.setState({selected_img_topic: det_img_nns[0] })
                 }
                 for (var i = 0; i < det_img_nns.length; i++) {
-                    img_topic = det_img_nns[i] + '/detection_image'
-                    img_text = img_topic.replace(detector_ns + '/','')
+                    img_topic = det_img_nns[i]
+                    img_text = det_img_names[i]
                     items.push(<Option value={img_topic}>{img_text}</Option>)
                 }
               }
