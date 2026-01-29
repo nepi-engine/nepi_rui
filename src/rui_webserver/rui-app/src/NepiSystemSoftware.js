@@ -45,16 +45,14 @@ class NepiSystemSoftware extends Component {
     }
 
     renderSysPartitionSettings() {
-      const {
-        systemDefs,
-        onSwitchNepitImage,
-        systemStatus
-      } = this.props.ros
+      const status_msg = this.props.ros.status_msg
+      const { onSwitchNepitImage } = this.props.ros
 
-      const active_str = systemDefs? systemDefs.active_rootfs + ": " + systemDefs.firmware_version : ""
-      const inactive_str = systemDefs? systemDefs.inactive_rootfs + ": " + systemDefs.inactive_rootfs_fw_version : ""
 
-      const stale_active_inactive = systemStatus && (systemStatus.warnings.flags[3] === true)
+      const active_str = status_msg? status_msg.active_rootfs + ": " + status_msg.firmware_version : ""
+      const inactive_str = status_msg? status_msg.inactive_rootfs + ": " + status_msg.inactive_rootfs_fw_version : ""
+
+      const stale_active_inactive = status_msg && (status_msg.warnings.flags[3] === true)
       var active_inactive_style = {width: '100%'}
       if (stale_active_inactive === true) {
         active_inactive_style["color"] = Styles.vars.colors.red
@@ -70,7 +68,7 @@ class NepiSystemSoftware extends Component {
             <Input disabled value={inactive_str} style={active_inactive_style}/>
           </Label>
           <Label title={"Max Boot Fail Count"}>
-            <Input disabled value={systemDefs? systemDefs.max_boot_fail_count : ""} style={{width: '100%'}}/>
+            <Input disabled value={status_msg? status_msg.max_boot_fail_count : ""} style={{width: '100%'}}/>
           </Label>
           <ButtonMenu>
             <Button onClick={onSwitchNepitImage}>{"Switch Active/Inactive"}</Button>
@@ -95,21 +93,15 @@ class NepiSystemSoftware extends Component {
   }
 
 
-
     renderSysSoftwareUpdate() {
-      const {
-          systemStatus,
-          systemSoftwareStatus,
-          systemSoftwareInstallOptions,
-          callSystemSoftwareStatusQueryService,
-          onInstallFullSysImg
-      } = this.props.ros
+      const status_msg = this.props.ros.status_msg
+      const { onInstallFullSysImg } = this.props.ros
 
-      const selected_image = systemSoftwareStatus.sys_img_update_selected
+      const selected_image = status_msg.sys_img_update_selected
       const NoneOption = <Option>None</Option>
 
       
-      const systemSoftwareInstallMenu = createMenuListFromStrList(systemSoftwareInstallOptions,false,[],[],[])
+      const systemSoftwareInstallMenu = createMenuListFromStrList(status_msg.systemSoftwareInstallOptions,false,[],[],[])
       
 
       return (
@@ -120,28 +112,28 @@ class NepiSystemSoftware extends Component {
               onChange={this.onImageTopicSelected}
               value={selected_image}
             >
-              {systemSoftwareInstallOptions ? systemSoftwareInstallMenu : NoneOption}
+              {status_msg.systemSoftwareInstallOptions ? systemSoftwareInstallMenu : NoneOption}
             </Select>
           </Label>
           <Label title={"Image Filename"}>
-            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img : ""} style={{width: '100%'}}/>
+            <Input disabled value={status_msg? status_msg.new_sys_img : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Image Version"}>
-            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_version : ""} style={{width: '100%'}}/>
+            <Input disabled value={status_msg? status_msg.new_sys_img_version : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Image Size"}>
-            <Input disabled value={systemSoftwareStatus? systemSoftwareStatus.new_sys_img_size_mb.toFixed(0) + "GB" : ""} style={{width: '100%'}}/>
+            <Input disabled value={status_msg? status_msg.new_sys_img_size_mb.toFixed(0) + "GB" : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Status"}>
-            <Input disabled value={systemStatus? systemStatus.sys_img_update_status : ""} style={{width: '100%'}}/> 
+            <Input disabled value={status_msg? status_msg.sys_img_update_status : ""} style={{width: '100%'}}/> 
           </Label>
           <Label title={"Progress"}>
-            <progress value={systemStatus? systemStatus.sys_img_update_progress : 0.0} style={{width: '100%'}}/>
+            <progress value={status_msg? status_msg.sys_img_update_progress : 0.0} style={{width: '100%'}}/>
           </Label>          
           <ButtonMenu>
-            <Button onClick={callSystemSoftwareStatusQueryService}>{"Check"}</Button>
-            {(systemSoftwareStatus && (systemSoftwareStatus.new_sys_img !== 'none detected')) &&
-                <Button onClick={() => onInstallFullSysImg(systemSoftwareStatus.new_sys_img)}>{"Install"}</Button>
+            {/*<Button onClick={callSoftwareStatusQueryService}>{"Check"}</Button>*/}
+            {(status_msg && (status_msg.new_sys_img !== 'none detected')) &&
+                <Button onClick={() => onInstallFullSysImg(status_msg.new_sys_img)}>{"Install"}</Button>
             }
           </ButtonMenu>
         </Section>
@@ -149,29 +141,25 @@ class NepiSystemSoftware extends Component {
     }
 
     renderSysArchive() {
-      const {
-        onStartSysBackup,
-        systemSoftwareStatus,
-        systemDefs,
-        systemStatus
-      } = this.props.ros
+      const {onStartSysBackup} = this.props.ros
+      const status_msg = this.props.ros.status_msg
 
       // const formatMbToGb = (mb) => (mb / 1024).toFixed(2);
 
-      // const active_rootfs_size_gb = formatMbToGb(systemDefs.active_rootfs_size_mb);
+      // const active_rootfs_size_gb = formatMbToGb(status_msg.active_rootfs_size_mb);
 
-      // const new_sys_img_staging_free_gb = formatMbToGb(systemSoftwareStatus.new_sys_img_staging_free_mb);
+      // const new_sys_img_staging_free_gb = formatMbToGb(status_msg.new_sys_img_staging_free_mb);
 
 
       
 
 
-      const source_str = systemDefs? 
-        systemDefs.active_rootfs + ":  (" + systemDefs.active_rootfs_size_mb + "GB)": 
+      const source_str = status_msg? 
+        status_msg.active_rootfs + ":  (" + status_msg.active_rootfs_size_mb + "GB)": 
         ""
       
-      const dest_str = systemSoftwareStatus?
-        systemSoftwareStatus.new_sys_img_staging + ":  (" + systemSoftwareStatus.new_sys_img_staging_free_mb + "GB free)":
+      const dest_str = status_msg?
+        status_msg.new_sys_img_staging + ":  (" + status_msg.new_sys_img_staging_free_mb + "GB free)":
         ""
       
         return (
@@ -183,13 +171,13 @@ class NepiSystemSoftware extends Component {
             <Input disabled value={dest_str} style={{width: '100%'}}/>
           </Label>
           <Label title={"Archive Filename"}>
-            <Input disabled value={systemStatus? systemStatus.sys_img_archive_filename : ""} style={{width: '100%'}}/>
+            <Input disabled value={status_msg? status_msg.sys_img_archive_filename : ""} style={{width: '100%'}}/>
           </Label>
           <Label title={"Status"}>
-            <Input disabled value={systemStatus? systemStatus.sys_img_archive_status : ""} style={{width: '100%'}}/> 
+            <Input disabled value={status_msg? status_msg.sys_img_archive_status : ""} style={{width: '100%'}}/> 
           </Label>
           <Label title={"Progress"}>
-            <progress value={systemStatus? systemStatus.sys_img_archive_progress : 0.0} style={{width: '100%'}}/>
+            <progress value={status_msg? status_msg.sys_img_archive_progress : 0.0} style={{width: '100%'}}/>
           </Label>
           <ButtonMenu>
             <Button onClick={() => onStartSysBackup()}>{"Archive"}</Button>
@@ -201,12 +189,12 @@ class NepiSystemSoftware extends Component {
     render() {
 
       const {
-        systemDefs
+        status_msg
       } = this.props.ros
       return (
         <Columns>
         <Column>
-          {systemDefs.has_ab_fs && this.renderSysPartitionSettings()}
+          {status_msg.has_ab_fs && this.renderSysPartitionSettings()}
           {this.renderSysArchive()}
         </Column>
         <Column>

@@ -140,6 +140,7 @@ Object.defineProperty(Array.prototype, "equals", { enumerable: false })
 //////////////////////////////////////////////////////////////
 
 class ROSConnectionStore {
+  @observable ros = null
   @observable rosCheckDelay = 1000
   @observable rosCheckStarted = false
   @observable connectedToROS = false
@@ -153,15 +154,14 @@ class ROSConnectionStore {
   @observable deviceSerial = null
   @observable deviceInWater = false
 
-  @observable systemDefs = null
+  @observable connectedToNepi = false
   @observable systemDefsFirmwareVersion = null
   @observable systemDefsDiskCapacityMB = null
-
-  @observable systemSoftwareStatus = null
 
   @observable systemStatus = null
   @observable systemDebugEnabled = false
   @observable heartbeat = false
+  @observable heartbeatWatchdog = false
   @observable systemTopics = null
   @observable systemHwType = "Uknown"
   @observable systemHwModel = "Uknown"
@@ -190,57 +190,7 @@ class ROSConnectionStore {
   @observable clockNTP = false
   @observable ntp_sources = []
   @observable clockPPS = false
-
-  @observable blankNavPose = {
-      navpose_frame: 'nepi_frame',
-      frame_nav: 'ENU',
-      frame_altitude: 'WGS84',
-      frame_depth: 'MSL',
-  
-      geoid_height_meters: 0.0,
-  
-      has_location: false,
-      time_location: moment.utc().unix(),
-      // Location Lat,Long
-      latitude: 0.0,
-      longitude: 0.0,
-  
-      has_heading: false,
-      time_heading: moment.utc().unix(),
-      // Heading should be provided in Degrees True North
-      heading_deg: 0.0,
-  
-      has_position: false,
-      time_position: moment.utc().unix(),
-      // Position should be provided in Meters in specified 3d frame (x,y,z) with x forward, y right/left, and z up/down
-      x_m: 0.0,
-      y_m: 0.0,
-      z_m: 0.0,
-  
-      has_orientation: false,
-      time_orientation: moment.utc().unix(),
-      // Orientation should be provided in Degrees in specified 3d frame
-      roll_deg: 0.0,
-      pitch_deg: 0.0,
-      yaw_deg: 0.0,
-  
-      has_altitude: false,
-      time_altitude: moment.utc().unix(),
-      // Altitude should be provided in postivie meters in specified alt frame
-      altitude_m: 0.0,
-  
-      has_depth: false,
-      time_depth: moment.utc().unix(),
-      // Depth should be provided in positive meters
-      depth_m: 0.0,
-
-      has_pan_tilt: false,
-      time_pan_tilt: moment.utc().unix(),
-      // Pan and Titl should be provided in ENU frame
-      pan_deg: 0.0,
-      tilt_deg: 0.0
-  }
-  
+ 
 
   @observable gpsClockSyncEnabled = false
 
@@ -254,8 +204,10 @@ class ROSConnectionStore {
   @observable saveFreqHz = 1.0
 
   @observable topicQueryLock = false
+  @observable checkTopicsServices = false
   @observable topicNames = null
   @observable topicTypes = null
+  @observable serviceNames = null
   @observable appNames = []
   @observable appNamesLast = []
   @observable appNameList = []
@@ -277,6 +229,7 @@ class ROSConnectionStore {
   @observable lsxDevices = {}
   @observable rbxDevices = {}
   @observable npxDevices = {}
+  @observable aiDetectorNamespaces = []
   @observable resetTopics = []
   @observable navSatFixTopics = []
   @observable orientationTopics = []
@@ -339,7 +292,55 @@ class ROSConnectionStore {
   @observable license_request_info = null
   @observable license_request_mode = false
 
+  @observable blankNavPose = {
+      navpose_frame: 'nepi_frame',
+      frame_nav: 'ENU',
+      frame_altitude: 'WGS84',
+      frame_depth: 'MSL',
+  
+      geoid_height_meters: 0.0,
+  
+      has_location: false,
+      time_location: moment.utc().unix(),
+      // Location Lat,Long
+      latitude: 0.0,
+      longitude: 0.0,
+  
+      has_heading: false,
+      time_heading: moment.utc().unix(),
+      // Heading should be provided in Degrees True North
+      heading_deg: 0.0,
+  
+      has_position: false,
+      time_position: moment.utc().unix(),
+      // Position should be provided in Meters in specified 3d frame (x,y,z) with x forward, y right/left, and z up/down
+      x_m: 0.0,
+      y_m: 0.0,
+      z_m: 0.0,
+  
+      has_orientation: false,
+      time_orientation: moment.utc().unix(),
+      // Orientation should be provided in Degrees in specified 3d frame
+      roll_deg: 0.0,
+      pitch_deg: 0.0,
+      yaw_deg: 0.0,
+  
+      has_altitude: false,
+      time_altitude: moment.utc().unix(),
+      // Altitude should be provided in postivie meters in specified alt frame
+      altitude_m: 0.0,
+  
+      has_depth: false,
+      time_depth: moment.utc().unix(),
+      // Depth should be provided in positive meters
+      depth_m: 0.0,
 
+      has_pan_tilt: false,
+      time_pan_tilt: moment.utc().unix(),
+      // Pan and Titl should be provided in ENU frame
+      pan_deg: 0.0,
+      tilt_deg: 0.0
+  }
 
   async checkLicense() {
     var retry_delay_ms = 3000
@@ -412,7 +413,7 @@ class ROSConnectionStore {
     if (!this.connectedToROS) {
       try {
         // setup rosbridge connection
-        if (!this.ros || !this.connectedToROS) {
+        if (this.ros == null || !this.connectedToROS) {
           this.ros = new ROS.Ros({
             url: ROS_WS_URL
           })
@@ -422,33 +423,88 @@ class ROSConnectionStore {
         } else {
           this.ros.connect(ROS_WS_URL)
         }
-        //update the topics periodically
-        this.updateTopics()
+
+        // Start System and RUI Status Listeners
+        this.rosListeners.forEach(listener => {
+          listener.unsubscribe()
+        })
+
+        // listeners
+        //this.setupMgrSystemStatusListener()
+        //this.setupRUISettingsListener()    // services
+
+
+
       } catch (e) {
         console.error(e)
       }
     }
 
-    if (this.rosAutoReconnect) {
-      setTimeout(async () => {
-        await this.checkROSConnection()
-      }, this.rosCheckDelay)
+        //update the topics periodically
+    if (this.connectedToROS === true){
+      this.checkTopicsServices = true
+      this.updateTopicsServices()
     }
+
+    if (this.ros != null && this.connectedToNepi === true && this.heartbeatWatchdog === false ) {
+
+      this.destroyROSConnection()
+     
+    }
+
+    this.heartbeatWatchdog = false
+
+
+  if (this.rosAutoReconnect) {
+    setTimeout(async () => {
+      await this.checkROSConnection()
+    }, this.rosCheckDelay)
+  }
   }
 
   @action.bound
-  async updateTopics() {
+  async updateTopicsServices() {
     // topicQueryLock is used so we don't call getTopics many times
     // while witing for it to return.  With many topics on a slow
     // target it takes a few seconds to retrun.
-    //if (this.ros && !this.connectedToROS && !this.rosCheckStarted){
+    //if (this.ros != null && !this.connectedToROS && !this.rosCheckStarted){
     //  this.checkROSConnection()
     //}
-    //else if (this.ros && !this.topicQueryLock && this.connectedToROS) {
+    //else if (this.ros != null && !this.topicQueryLock && this.connectedToROS) {
 
-    if (this.ros && (this.topicQueryLock === false) && (this.connectedToROS == true)) {
+
+
+    if (this.ros != null && (this.topicQueryLock === false) && (this.connectedToROS == true)) {
       this.topicQueryLock = true
-      this.ros.getTopics(result => {
+
+
+      if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
+        var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
+        var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
+        var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
+        var newAiDetectorNamespaces = this.updateAiDetectorNamespaces(this.topicNames, this.topicTypes)
+        var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
+        var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
+        var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
+        this.updateAppStatusList(this.topicNames, this.topicTypes)
+        this.updateIDXDevices(this.topicNames, this.topicTypes)
+        this.updatePTXDevices(this.topicNames, this.topicTypes)
+        this.updateLXSDevices(this.topicNames, this.topicTypes)
+        this.updateRBXDevices(this.topicNames, this.topicTypes)
+        this.updateNPXDevices(this.topicNames, this.topicTypes)        
+
+        if (newPrefix === true){
+          this.setupMgrSystemStatusListener()
+          this.setupRUISettingsListener()    // services
+        }
+
+        if ((this.systemStatus != null) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
+          this.initializeSystemListeners()
+        }
+
+      }
+
+     this.ros.getTopics(result => {
         const topics = result.topics
         const types = result.types
         var topicNames = []
@@ -468,31 +524,20 @@ class ROSConnectionStore {
           this.topicNames = topics
           this.topicTypes = types
         }
+        })
 
-        
-        var newPrefix = this.updatePrefix()
-        var newResetTopics = this.updateResetTopics()
-        var newSaveDataNamespaces = this.updateSaveDataNamespaces()
-        var newImageTopics = this.updateImageTopics()
-        var newMessageTopics = this.updateMessageTopics()
-        var newPointcloudTopics = this.updatePointcloudTopics()
-        this.updateAppStatusList()
-        this.updateIDXDevices()
-        this.updatePTXDevices()
-        this.updateLXSDevices()
-        this.updateRBXDevices()
-        this.updateNPXDevices()        
-
-        if (newPrefix || newResetTopics || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics) {
-          this.initalizeListeners()
-        }
+      this.ros.getServices(result => {
+        this.serviceNames = result
       })
+
     }
     this.topicQueryLock = false
     
-    setTimeout(async () => {
-      await this.updateTopics()
-    }, 2000)
+    if (this.checkTopicsServices === true) {
+      setTimeout(async () => {
+        await this.updateTopicsServices()
+      }, 2000)
+    }
 
   }
 
@@ -500,366 +545,28 @@ class ROSConnectionStore {
     return this.namespacePrefix && this.deviceId
   }
 
-  @action.bound
-  updatePrefix() {
-    // Function for testing if we need to update the device prefix variables.
-    // It loops though the topics and uses the testTopicForPrefix to test and
-    // perform the update.  If it updates we are done, break.
 
-    // we return true if the prefix was updated
-    var ret = false
-    for (var i = 0; i < this.topicNames.length; i++) {
-      var topic_name_parts = this.topicNames[i].split("/")
-      if (
-        topic_name_parts[topic_name_parts.length - 1] === "system_status" &&
-        this.topicTypes[i] === "nepi_interfaces/MgrSystemStatus"
-      ) {
-        if (
-          this.namespacePrefix !== topic_name_parts[1] &&
-          this.deviceId !== topic_name_parts[2]
-        ) {
-          this.namespacePrefix = topic_name_parts[1]
-          this.deviceId = topic_name_parts[2]
-          if (this.validPrefix()) {
-            ret = true
-            this.rosLog(
-              `Fetched device info ${this.namespacePrefix}/${this.deviceId}`
-            )
-          }
-        }
-      }
-    }
-    return ret
-  }
-
-
-
-  @action.bound
-  updateSaveDataNamespaces() {
-    // Function for updating image topics list
-    var newSaveDataNamespaces = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "nepi_interfaces/SaveDataStatus"){
-        newSaveDataNamespaces.push(this.topicNames[i].replace('/status',''))
-      }
-    }
-
-    // sort the save topics for comparison to work
-    newSaveDataNamespaces.sort()    
-
-    if (!this.saveDataNamespaces.equals(newSaveDataNamespaces)) {
-      this.saveDataNamespaces = newSaveDataNamespaces
-      for (var i = 0; i < this.saveDataNamespaces.length; i++) {
-            this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i])
-          }
-      return true
-    } else {
-      return false
-    }
-  }
-
-
-  @action.bound
-  updateMessageTopics() {
-    // Function for updating image topics list
-    var newMessageTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "nepi_interfaces/Message") {
-        newMessageTopics.push(this.topicNames[i])
-      }
-    }
-
-    // sort the image topics for comparison to work
-    newMessageTopics.sort()
-
-    if (!this.messageTopics.equals(newMessageTopics)) {
-      this.messageTopics = newMessageTopics
-      return true
-    } else {
-      return false
-    }
-  }
-
-
-  @action.bound
-  updateNavPoseTopics() {
-    // Function for updating image topics list
-    var newNavPoseTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "nepi_interfaces/NavPose" && this.topicNames[i].indexOf("zed_node") === -1) {
-        newNavPoseTopics.push(this.topicNames[i])
-      }
-    }
-
-    // sort the image topics for comparison to work
-    newNavPoseTopics.sort()    
-
-    if (!this.navposeTopic.equals(newNavPoseTopics)) {
-      this.navposeTopics = newNavPoseTopics
-      for (var i = 0; i < this.navposeTopics.length; i++) {
-            this.callNavPoseCapabilitiesQueryService(this.NavPoseTopics[i])
-          }
-      return true
-    } else {
-      return false
-    }
-  }
-
-  @action.bound
-  updateImageTopics() {
-    // Function for updating image topics list
-    var newImageTopics = []
-    var newImageDetectionTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "sensor_msgs/Image" && this.topicNames[i].indexOf("zed_node") === -1) {
-        newImageTopics.push(this.topicNames[i])
-        if (this.topicNames[i].indexOf('detection_image') !== -1){
-          newImageDetectionTopics.push(this.topicNames[i])
-        }
-      }
-    }
-
-    // sort the image topics for comparison to work
-    newImageTopics.sort()    
-
-    if (!this.imageTopics.equals(newImageTopics)) {
-      this.imageTopics = newImageTopics
-      this.imageDetectionTopics = newImageDetectionTopics
-      for (var i = 0; i < this.imageTopics.length; i++) {
-            this.callImageCapabilitiesQueryService(this.imageTopics[i])
-          }
-      return true
-    } else {
-      return false
-    }
-  }
-
-
-
-  @action.bound
-  updatePointcloudTopics() {
-    // Function for updating image topics list
-    var newPointcloudTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicTypes[i] === "sensor_msgs/PointCloud2") {
-        newPointcloudTopics.push(this.topicNames[i])
-      }
-    }
-
-    // sort the image topics for comparison to work
-    newPointcloudTopics.sort()
-
-    if (!this.pointcloudTopics.equals(newPointcloudTopics)) {
-      this.pointcloudTopics = newPointcloudTopics
-      return true
-    } else {
-      return false
-    }
-  }
-
-  @action.bound
-  updateAppStatusList() {
-    const appNames = this.appNames
-    const appNamesLast = this.appNamesLast
-    if (appNames.length > 0 && appNames !== appNamesLast) {
-      for (var i = 0; i < appNames.length; i++) {
-          this.callAppStatusQueryService(appNames[i])
-      }
-      this.appNamesLast = appNames
-    }
-
-  }
-
-  
-  @action.bound
-  updateIDXDevices() {
-    var idx_devices_changed = false
-    var devices_detected = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicNames[i].endsWith("/idx/status")) {
-        const idx_device_namespace = this.topicNames[i].replace("/status","")
-        if (!(devices_detected.includes(idx_device_namespace))) {
-          this.callIDXCapabilitiesQueryService(idx_device_namespace) // Testing
-          this.callSettingsCapabilitiesQueryService(idx_device_namespace + "/settings")
-          const idxDevices = this.idxDevices[idx_device_namespace]
-          if (idxDevices) { // Testing
-            devices_detected.push(idx_device_namespace)
-          }
-          idx_devices_changed = true // Testing -- always declare changed
-        }
-      }
-    }
-
-    // Now clean out any devices that are no longer detected
-    const previously_known = Object.keys(this.idxDevices)
-    for (i = 0; i < previously_known.length; ++i) {
-      if (!(devices_detected.includes(previously_known[i]))) {
-        delete this.idxDevices[previously_known[i]]
-        idx_devices_changed = true
-      }
-    }
-    return idx_devices_changed
-  }
-
-  @action.bound
-  updatePTXDevices() {
-    var ptx_devices_changed = false
-    var ptx_devices_detected = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicNames[i].endsWith("/ptx/status")) {
-        const ptx_device_namespace = this.topicNames[i].replace("/status","")
-        if (!(ptx_devices_detected.includes(ptx_device_namespace))) {
-          this.callPTXCapabilitiesQueryService(ptx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(ptx_device_namespace + "/settings")
-          const ptxUnit = this.ptxDevices[ptx_device_namespace]
-          if (ptxUnit)
-          {
-            ptx_devices_detected.push(ptx_device_namespace)
-          }
-        }
-        ptx_devices_changed = true
-      }
-    }
-
-    // Now clean out any units that are no longer detected
-    const previously_known = Object.keys(this.ptxDevices)
-    for (i = 0; i < previously_known.length; ++i) {
-      if (!(ptx_devices_detected.includes(previously_known[i]))) {
-        delete this.ptxDevices[previously_known[i]]
-        ptx_devices_changed = true
-      }
-    }
-    return ptx_devices_changed
-  }
-  
-  @action.bound
-  updateLXSDevices() {
-    var lsx_devices_changed = false
-    var lsx_devices_detected = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicNames[i].endsWith("/lsx/status")) {
-        const lsx_device_namespace = this.topicNames[i].replace("/status","")
-        if (!(lsx_devices_detected.includes(lsx_device_namespace))) {
-          this.callLSXCapabilitiesQueryService(lsx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(lsx_device_namespace + "/settings")
-          const lsxDevices = this.lsxDevices[lsx_device_namespace]
-          if (lsxDevices)
-          {
-            lsx_devices_detected.push(lsx_device_namespace)
-          }
-        }
-        lsx_devices_changed = true
-      }
-    }
-
-    // Now clean out any units that are no longer detected
-    const previously_known = Object.keys(this.lsxDevices)
-    for (i = 0; i < previously_known.length; ++i) {
-      if (!(lsx_devices_detected.includes(previously_known[i]))) {
-        delete this.lsxDevices[previously_known[i]]
-        lsx_devices_changed = true
-      }
-    }
-    return lsx_devices_changed
-  }  
-  
-  @action.bound
-  updateRBXDevices() {
-    var rbx_devices_changed = false
-    var devices_detected = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicNames[i].endsWith("/rbx/status")) {
-        const rbx_device_namespace = this.topicNames[i].replace("/status","")
-        if (!(devices_detected.includes(rbx_device_namespace))) {
-          this.callRBXCapabilitiesQueryService(rbx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(rbx_device_namespace + "/settings")
-          const rbxDevice = this.rbxDevices[rbx_device_namespace]
-          if (rbxDevice) {
-            devices_detected.push(rbx_device_namespace)
-          }
-          rbx_devices_changed = true // Testing -- always declare changed
-        }
-      }
-    }
-
-    // Now clean out any devices that are no longer detected
-    const previously_known = Object.keys(this.rbxDevices)
-    for (i = 0; i < previously_known.length; ++i) {
-      if (!(devices_detected.includes(previously_known[i]))) {
-        delete this.rbxDevices[previously_known[i]]
-        rbx_devices_changed = true
-      }
-    }
-    return rbx_devices_changed
-  }
-
-  @action.bound
-  updateNPXDevices() {
-    var npx_devices_changed = false
-    var devices_detected = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      if (this.topicNames[i].endsWith("/npx/status")) {
-        const npx_device_namespace = this.topicNames[i].replace("/status","")
-        if (!(devices_detected.includes(npx_device_namespace))) {
-          this.callNPXCapabilitiesQueryService(npx_device_namespace) // Testing
-          this.callSettingsCapabilitiesQueryService(npx_device_namespace + "/settings")
-          const npxSensor = this.npxDevices[npx_device_namespace]
-          if (npxSensor) { // Testing
-            devices_detected.push(npx_device_namespace)
-          }
-          npx_devices_changed = true // Testing -- always declare changed
-        }
-      }
-    }
-
-    // Now clean out any devices that are no longer detected
-    const previously_known = Object.keys(this.npxDevices)
-    for (i = 0; i < previously_known.length; ++i) {
-      if (!(devices_detected.includes(previously_known[i]))) {
-        delete this.npxDevices[previously_known[i]]
-        npx_devices_changed = true
-      }
-    }
-    return npx_devices_changed
-  }
-
-
-  @action.bound
-  updateResetTopics() {
-    var newResetTopics = []
-    for (var i = 0; i < this.topicNames.length; i++) {
-      var topic_name_parts = this.topicNames[i].split("/")
-      var last_element = topic_name_parts.pop()
-      var topic_base = topic_name_parts.join("/")
-      if (
-        last_element === "system_reset" &&
-        this.topicTypes[i] === "nepi_interfaces/Reset"
-      ) {
-        newResetTopics.push(topic_base)
-      }
-    }
-
-    // sort the topics for comparison to work
-    newResetTopics.sort()
-
-    if (!this.resetTopics.equals(newResetTopics)) {
-      this.resetTopics = newResetTopics
-      return true
-    } else {
-      return false
-    }
-  }
 
   @action.bound
   destroyROSConnection() {
-    this.rosAutoReconnect = false
-    this.ros.off("connection", this.onConnectedToROS)
-    this.ros.off("error", this.onErrorConnectingToROS)
-    this.ros.off("close", this.onDisconnectedToROS)
+    if (this.ros != null){
+      this.rosAutoReconnect = false
+      this.ros.off("connection", this.onConnectedToROS)
+      this.ros.off("error", this.onErrorConnectingToROS)
+      this.ros.off("close", this.onDisconnectedToROS)
 
-    this.rosListeners.forEach(listener => {
-      listener.unsubscribe()
-    })
+      this.rosListeners.forEach(listener => {
+        listener.unsubscribe()
+      })
+      this.connectedToNepi = false
+      this.connectedToROS = false
+      this.checkTopicsServices = false
+      this.topicNames = null
+      this.topicTypes = null
+
+      this.ros = null
+
+    }
   }
 
   @action.bound
@@ -886,7 +593,7 @@ class ROSConnectionStore {
     messageType,
     callback,
     noPrefix = false,
-    manageListener = true
+    manageListener = false
   }) {
     const listener = new ROS.Topic({
       ros: this.ros,
@@ -930,18 +637,9 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  initalizeListeners() {
-    this.rosListeners.forEach(listener => {
-      listener.unsubscribe()
-    })
+  initializeSystemListeners() {
 
-    // listeners
-    this.setupMgrSystemStatusListener()
-    this.setupRUISettingsListener()
 
-    // services
-    this.callSystemDefsService()
-    this.callSystemSoftwareStatusQueryService()
     this.startPollingIPAddrQueryService()
     this.startPollingBandwidthUsageService()
     this.startPollingWifiQueryService()
@@ -979,6 +677,569 @@ class ROSConnectionStore {
     this.rosLog("Connection to NEPI device closed")
   }
 
+
+  @action.bound
+  setupMgrSystemStatusListener() {
+    this.addListener({
+      name: "system_status",
+      messageType: "nepi_interfaces/MgrSystemStatus",
+      callback: message => {
+        // turn heartbeat on for half a second
+        this.heartbeat = true
+        setTimeout(() => {
+          this.heartbeat = false
+        }, 500)
+        
+        this.heartbeatWatchdog = true
+        this.connectedToNepi = true
+
+        this.systemStatus = message
+        this.systemDebugEnabled = message.sys_debug_enabled
+        this.systemTopics = message.active_topics
+        this.systemHwType = message.hw_type
+        this.systemHwModel = message.hw_model
+        this.systemInContainer = message.in_container
+        this.systemManagesSSH = message.manages_ssh
+        this.systemManagesSHARE = message.manages_share
+        this.systemManagesTime = message.manages_time
+        this.systemManagesNetwork = message.manages_network
+        this.systemAdminEnabled=message.sys_admin_restrict_enabled
+        this.systemRestrictOptions = message.sys_admin_restrict_options
+        this.systemRestrictions = message.sys_admin_restricted
+        this.systemRestricted = (this.systemAdminEnabled === true) ? [] : message.sys_admin_restricted
+        this.systemStatusDiskUsageMB = message.disk_usage
+        this.systemStatusDiskRate = message.storage_rate
+        this.deviceType = message.hw_type
+        this.deviceSerial = message.serial_number
+        this.systemDefsFirmwareVersion = message.firmware_version
+        this.systemDefsDiskCapacityMB = message.disk_capacity
+        
+        this.diskUsagePercent = `${parseInt(
+          100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacityMB,
+          10
+        )}%`
+
+        this.systemStatusTempC =
+          message.temperatures.length && message.temperatures[0]
+        this.systemStatusWarnings = message.warnings && message.warnings.flags
+        //this.rosLog("Received Status Message:")
+        var i
+        for(i in message.info_strings) {
+          this.rosLog(message.info_strings[i].payload)
+        }
+      }
+    })
+  }
+
+
+
+
+  ////////////////////////////////
+  /////  Service Calls
+  ///////////////////////////////
+
+
+
+  @action.bound
+  async callSaveDataCapabilitiesQueryService(namespace) {
+    this.saveDataCaps[namespace] = []
+    const capabilities = await this.callService({
+      name: namespace + "/capabilities_query",
+      messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
+    })
+    this.saveDataCaps[namespace] = capabilities
+  }
+
+
+
+  @action.bound
+  async callSettingsCapabilitiesQueryService(namespace) {
+    this.settingCaps[namespace] = []
+    const capabilities = await this.callService({
+      name: namespace + "/capabilities_query",
+      messageType: "nepi_interfaces/SettingsCapabilitiesQuery",  
+    })
+    this.settingCaps[namespace] = capabilities
+  }
+
+  @action.bound
+  async callImageCapabilitiesQueryService(namespace) {
+    const capabilities = await this.callService({
+      name: namespace + "/capabilities_query",
+      messageType: "nepi_interfaces/ImageCapabilitiesQuery",  
+    })
+    this.imageCaps[namespace] = capabilities
+  }
+
+  @action.bound
+  async callNavPoseCapabilitiesQueryService(namespace) {
+    const capabilities = await this.callService({
+      name: namespace + "/capabilities_query",
+      messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
+    })
+    this.navPoseCapsCaps[namespace] = capabilities
+  }
+  
+
+  @action.bound
+  async callIDXCapabilitiesQueryService(idxDeviceNamespace) {
+    const capabilities = await this.callService({
+      name: idxDeviceNamespace + "/capabilities_query",
+      messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
+    })
+    this.idxDevices[idxDeviceNamespace] = capabilities
+  }
+
+
+  @action.bound
+  async callPTXCapabilitiesQueryService(ptxDeviceNamespace) {
+    const capabilities = await this.callService({
+      name: ptxDeviceNamespace + "/capabilities_query",
+      messageType: "nepi_interfaces/PTXCapabilitiesQuery",
+    })
+    this.ptxDevices[ptxDeviceNamespace] = capabilities
+  }
+
+  @action.bound
+  async callLSXCapabilitiesQueryService(lsxDeviceNamespace) {
+    const capabilities = await this.callService({
+      name: lsxDeviceNamespace + "/capabilities_query",
+      messageType: "nepi_interfaces/LSXCapabilitiesQuery",
+    })
+    this.lsxDevices[lsxDeviceNamespace] = capabilities
+  }
+
+
+  @action.bound
+  async callRBXCapabilitiesQueryService(rbxDeviceNamespace) {
+    const capabilities = await this.callService({
+      name: rbxDeviceNamespace + "/capabilities_query",
+      messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
+    })
+    this.rbxDevices[rbxDeviceNamespace] = capabilities
+  }
+
+  @action.bound
+  async callNPXCapabilitiesQueryService(npxDeviceNamespace) {
+    const capabilities = await this.callService({
+      name: npxDeviceNamespace + "/capabilities_query",
+      messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
+    })
+    this.npxDevices[npxDeviceNamespace] = capabilities
+  }
+
+  // @action.bound
+  // async callSoftwareStatusQueryService() {
+  //   this.systemSoftwareStatus = await this.callService({
+  //     name: "sw_update_status_query",
+  //     messageType: "nepi_interfaces/SystemSoftwareStatusQuery"
+  //   })
+  // }
+
+
+  @action.bound
+  async callAppStatusQueryService(appName) {
+    const appStatus = await this.callService({
+      name: 'apps_mgr/app_status_query',
+      messageType: "nepi_interfaces/AppStatusQuery",
+      args: {app_name : appName},
+    })
+    const appNames = this.appNameList
+    const appInd = appNames.indexOf(appName)
+    if (appInd === -1){
+      this.appStatusList.push(appStatus)
+      this.appNameList.push(appName)
+
+    }
+    else {
+
+      this.appNameList[appInd] = appName
+      this.appStatusList[appInd] = appStatus
+    }
+  }
+
+
+  /*******************************/
+  // System Data Update Functions
+  /*******************************/
+
+
+
+    @action.bound
+  updatePrefix(topics,types) {
+    // Function for testing if we need to update the device prefix variables.
+    // It loops though the topics and uses the testTopicForPrefix to test and
+    // perform the update.  If it updates we are done, break.
+
+    // we return true if the prefix was updated
+
+    var ret = false
+    if (topics != null){
+      for (var i = 0; i < topics.length; i++) {
+        var topic_name_parts = topics[i].split("/")
+        if (
+          topic_name_parts[topic_name_parts.length - 1] === "system_status" &&
+          types[i] === "nepi_interfaces/MgrSystemStatus"
+        ) {
+          if (
+            this.namespacePrefix !== topic_name_parts[1] &&
+            this.deviceId !== topic_name_parts[2]
+          ) {
+            this.namespacePrefix = topic_name_parts[1]
+            this.deviceId = topic_name_parts[2]
+            if (this.validPrefix()) {
+              ret = true
+              this.rosLog(
+                `Fetched device info ${this.namespacePrefix}/${this.deviceId}`
+              )
+            }
+          }
+        }
+      }
+    }
+    return ret
+  }
+
+
+
+  @action.bound
+  updateSaveDataNamespaces(topics,types) {
+    // Function for updating image topics list
+    var newSaveDataNamespaces = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i] === "nepi_interfaces/SaveDataStatus"){
+        newSaveDataNamespaces.push(topics[i].replace('/status',''))
+      }
+    }
+
+    // sort the save topics for comparison to work
+    newSaveDataNamespaces.sort()    
+
+    if (!this.saveDataNamespaces.equals(newSaveDataNamespaces)) {
+      this.saveDataNamespaces = newSaveDataNamespaces
+      for (var i = 0; i < this.saveDataNamespaces.length; i++) {
+            this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i])
+          }
+      return true
+    } else {
+      return false
+    }
+  }
+
+    @action.bound
+  updateAiDetectorNamespaces(topics,types) {
+    // Function for updating image topics list
+    var newAiDetectorNamespaces = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i] === "nepi_interfaces/AiDetectorStatus"){
+        newAiDetectorNamespaces.push(topics[i].replace('/status',''))
+      }
+    }
+
+    // sort the save topics for comparison to work
+    newAiDetectorNamespaces.sort()    
+
+    if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
+      this.aiDetectorNamespaces = newAiDetectorNamespaces
+      for (var i = 0; i < this.aiDetectorNamespaces.length; i++) {
+            this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i])
+          }
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updateMessageTopics(topics,types) {
+    // Function for updating image topics list
+    var newMessageTopics = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i] === "nepi_interfaces/Message") {
+        newMessageTopics.push(topics[i])
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newMessageTopics.sort()
+
+    if (!this.messageTopics.equals(newMessageTopics)) {
+      this.messageTopics = newMessageTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+
+  @action.bound
+  updateNavPoseTopics(topics,types) {
+    // Function for updating image topics list
+    var newNavPoseTopics = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
+        newNavPoseTopics.push(topics[i])
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newNavPoseTopics.sort()    
+
+    if (!this.navposeTopic.equals(newNavPoseTopics)) {
+      this.navposeTopics = newNavPoseTopics
+      for (var i = 0; i < this.navposeTopics.length; i++) {
+            this.callNavPoseCapabilitiesQueryService(this.NavPoseTopics[i])
+          }
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updateImageTopics(topics,types) {
+    // Function for updating image topics list
+    var newImageTopics = []
+    var newImageDetectionTopics = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
+        newImageTopics.push(topics[i])
+        if (topics[i].indexOf('detection_image') !== -1){
+          newImageDetectionTopics.push(topics[i])
+        }
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newImageTopics.sort()    
+
+    if (!this.imageTopics.equals(newImageTopics)) {
+      this.imageTopics = newImageTopics
+      this.imageDetectionTopics = newImageDetectionTopics
+      for (var i = 0; i < this.imageTopics.length; i++) {
+            this.callImageCapabilitiesQueryService(this.imageTopics[i])
+          }
+      return true
+    } else {
+      return false
+    }
+  }
+
+
+
+  @action.bound
+  updatePointcloudTopics(topics,types) {
+    // Function for updating image topics list
+    var newPointcloudTopics = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i] === "sensor_msgs/PointCloud2") {
+        newPointcloudTopics.push(topics[i])
+      }
+    }
+
+    // sort the image topics for comparison to work
+    newPointcloudTopics.sort()
+
+    if (!this.pointcloudTopics.equals(newPointcloudTopics)) {
+      this.pointcloudTopics = newPointcloudTopics
+      return true
+    } else {
+      return false
+    }
+  }
+
+  @action.bound
+  updateAppStatusList(topics,types) {
+    const appNames = this.appNames
+    const appNamesLast = this.appNamesLast
+    if (appNames.length > 0 && appNames !== appNamesLast) {
+      for (var i = 0; i < appNames.length; i++) {
+          this.callAppStatusQueryService(appNames[i])
+      }
+      this.appNamesLast = appNames
+    }
+
+  }
+
+  
+  @action.bound
+  updateIDXDevices(topics,types) {
+    var idx_devices_changed = false
+    var devices_detected = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i].endsWith("/idx/status")) {
+        const idx_device_namespace = topics[i].replace("/status","")
+        if (!(devices_detected.includes(idx_device_namespace))) {
+          this.callIDXCapabilitiesQueryService(idx_device_namespace) // Testing
+          this.callSettingsCapabilitiesQueryService(idx_device_namespace + "/settings")
+          const idxDevices = this.idxDevices[idx_device_namespace]
+          if (idxDevices) { // Testing
+            devices_detected.push(idx_device_namespace)
+          }
+          idx_devices_changed = true // Testing -- always declare changed
+        }
+      }
+    }
+
+    // Now clean out any devices that are no longer detected
+    const previously_known = Object.keys(this.idxDevices)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(devices_detected.includes(previously_known[i]))) {
+        delete this.idxDevices[previously_known[i]]
+        idx_devices_changed = true
+      }
+    }
+    return idx_devices_changed
+  }
+
+  @action.bound
+  updatePTXDevices(topics,types) {
+    var ptx_devices_changed = false
+    var ptx_devices_detected = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i].endsWith("/ptx/status")) {
+        const ptx_device_namespace = topics[i].replace("/status","")
+        if (!(ptx_devices_detected.includes(ptx_device_namespace))) {
+          this.callPTXCapabilitiesQueryService(ptx_device_namespace)
+          this.callSettingsCapabilitiesQueryService(ptx_device_namespace + "/settings")
+          const ptxUnit = this.ptxDevices[ptx_device_namespace]
+          if (ptxUnit)
+          {
+            ptx_devices_detected.push(ptx_device_namespace)
+          }
+        }
+        ptx_devices_changed = true
+      }
+    }
+
+    // Now clean out any units that are no longer detected
+    const previously_known = Object.keys(this.ptxDevices)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(ptx_devices_detected.includes(previously_known[i]))) {
+        delete this.ptxDevices[previously_known[i]]
+        ptx_devices_changed = true
+      }
+    }
+    return ptx_devices_changed
+  }
+  
+  @action.bound
+  updateLXSDevices(topics,types) {
+    var lsx_devices_changed = false
+    var lsx_devices_detected = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i].endsWith("/lsx/status")) {
+        const lsx_device_namespace = topics[i].replace("/status","")
+        if (!(lsx_devices_detected.includes(lsx_device_namespace))) {
+          this.callLSXCapabilitiesQueryService(lsx_device_namespace)
+          this.callSettingsCapabilitiesQueryService(lsx_device_namespace + "/settings")
+          const lsxDevices = this.lsxDevices[lsx_device_namespace]
+          if (lsxDevices)
+          {
+            lsx_devices_detected.push(lsx_device_namespace)
+          }
+        }
+        lsx_devices_changed = true
+      }
+    }
+
+    // Now clean out any units that are no longer detected
+    const previously_known = Object.keys(this.lsxDevices)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(lsx_devices_detected.includes(previously_known[i]))) {
+        delete this.lsxDevices[previously_known[i]]
+        lsx_devices_changed = true
+      }
+    }
+    return lsx_devices_changed
+  }  
+  
+  @action.bound
+  updateRBXDevices(topics,types) {
+    var rbx_devices_changed = false
+    var devices_detected = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i].endsWith("/rbx/status")) {
+        const rbx_device_namespace = topics[i].replace("/status","")
+        if (!(devices_detected.includes(rbx_device_namespace))) {
+          this.callRBXCapabilitiesQueryService(rbx_device_namespace)
+          this.callSettingsCapabilitiesQueryService(rbx_device_namespace + "/settings")
+          const rbxDevice = this.rbxDevices[rbx_device_namespace]
+          if (rbxDevice) {
+            devices_detected.push(rbx_device_namespace)
+          }
+          rbx_devices_changed = true // Testing -- always declare changed
+        }
+      }
+    }
+
+    // Now clean out any devices that are no longer detected
+    const previously_known = Object.keys(this.rbxDevices)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(devices_detected.includes(previously_known[i]))) {
+        delete this.rbxDevices[previously_known[i]]
+        rbx_devices_changed = true
+      }
+    }
+    return rbx_devices_changed
+  }
+
+  @action.bound
+  updateNPXDevices(topics,types) {
+    var npx_devices_changed = false
+    var devices_detected = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i].endsWith("/npx/status")) {
+        const npx_device_namespace = topics[i].replace("/status","")
+        if (!(devices_detected.includes(npx_device_namespace))) {
+          this.callNPXCapabilitiesQueryService(npx_device_namespace) // Testing
+          this.callSettingsCapabilitiesQueryService(npx_device_namespace + "/settings")
+          const npxSensor = this.npxDevices[npx_device_namespace]
+          if (npxSensor) { // Testing
+            devices_detected.push(npx_device_namespace)
+          }
+          npx_devices_changed = true // Testing -- always declare changed
+        }
+      }
+    }
+
+    // Now clean out any devices that are no longer detected
+    const previously_known = Object.keys(this.npxDevices)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(devices_detected.includes(previously_known[i]))) {
+        delete this.npxDevices[previously_known[i]]
+        npx_devices_changed = true
+      }
+    }
+    return npx_devices_changed
+  }
+
+
+  @action.bound
+  updateResetTopics(topics,types) {
+    var newResetTopics = []
+    for (var i = 0; i < topics.length; i++) {
+      var topic_name_parts = topics[i].split("/")
+      var last_element = topic_name_parts.pop()
+      var topic_base = topic_name_parts.join("/")
+      if (
+        last_element === "system_reset" &&
+        topics[i] === "nepi_interfaces/Reset"
+      ) {
+        newResetTopics.push(topic_base)
+      }
+    }
+
+    // sort the topics for comparison to work
+    newResetTopics.sort()
+
+    if (!this.resetTopics.equals(newResetTopics)) {
+      this.resetTopics = newResetTopics
+      return true
+    } else {
+      return false
+    }
+  }
 
   /*******************************/
   // Generic Listener Functions
@@ -1035,54 +1296,6 @@ class ROSConnectionStore {
       })
     }
   }
-
-  @action.bound
-  setupMgrSystemStatusListener() {
-    this.addListener({
-      name: "system_status",
-      messageType: "nepi_interfaces/MgrSystemStatus",
-      callback: message => {
-        // turn heartbeat on for half a second
-        this.heartbeat = true
-        setTimeout(() => {
-          this.heartbeat = false
-        }, 500)
-        this.systemStatus = message
-        this.systemDebugEnabled = message.sys_debug_enabled
-        this.systemTopics = message.active_topics
-        this.systemHwType = message.hw_type
-        this.systemHwModel = message.hw_model
-        this.systemInContainer = message.in_container
-        this.systemManagesSSH = message.manages_ssh
-        this.systemManagesSHARE = message.manages_share
-        this.systemManagesTime = message.manages_time
-        this.systemManagesNetwork = message.manages_network
-        this.systemAdminEnabled=message.sys_admin_restrict_enabled
-        this.systemRestrictOptions = message.sys_admin_restrict_options
-        this.systemRestrictions = message.sys_admin_restricted
-        this.systemRestricted = (this.systemAdminEnabled === true) ? [] : message.sys_admin_restricted
-        this.systemSoftwareInstallOptions = message.sys_img_update_options
-        this.systemStatusDiskUsageMB = message.disk_usage
-        this.systemStatusDiskRate = message.storage_rate
-        
-        this.diskUsagePercent = `${parseInt(
-          100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacityMB,
-          10
-        )}%`
-
-        this.systemStatusTempC =
-          message.temperatures.length && message.temperatures[0]
-        this.systemStatusWarnings = message.warnings && message.warnings.flags
-        //this.rosLog("Received Status Message:")
-        var i
-        for(i in message.info_strings) {
-          this.rosLog(message.info_strings[i].payload)
-        }
-      }
-    })
-  }
-
-
 
   /*******************************/
   // Custom Listener Functions
@@ -1193,6 +1406,228 @@ class ROSConnectionStore {
     }
   }
 
+
+  /*******************************/
+  // Data Polling Functions
+  /*******************************/
+
+
+  async startPollingIPAddrQueryService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.ip_query_response = await this.callService({
+          name: "ip_addr_query",
+          messageType: "nepi_interfaces/IPAddrQuery"
+        })
+      }
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingBandwidthUsageService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.bandwidth_usage_query_response = await this.callService({
+          name: "bandwidth_usage_query",
+          messageType: "nepi_interfaces/BandwidthUsageQuery",
+        })
+      }
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 3000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingWifiQueryService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.wifi_query_response = await this.callService({
+          name: "wifi_query",
+          messageType: "nepi_interfaces/WifiQuery",
+        })
+      }
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 3000)
+      }
+    }
+
+    _pollOnce()    
+  }
+
+  async startPollingOpEnvironmentQueryService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.opEnv = await this.callService({
+          name: "op_environment_query",
+          messageType: "nepi_interfaces/OpEnvironmentQuery",
+          msgKey: "op_env"
+        })
+
+
+        this.deviceInWater = (this.opEnv === "water")
+      }
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 5000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+
+  startPollingMgrTimeStatusService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.timeStatus = await this.callService({
+          name: "time_status_query",
+          messageType: "nepi_interfaces/TimeStatusQuery",
+        })
+
+        // if last_ntp_sync is 10y, no sync has happened
+        this.ntp_sources = this.timeStatus.time_status.ntp_sources
+        this.clockNTP = false
+        const currentlySyncd = this.timeStatus.time_status.currently_syncd
+        currentlySyncd &&
+        currentlySyncd.length &&
+        currentlySyncd.forEach(syncd => {
+            if (syncd !== false) {
+              this.clockNTP = true
+            }
+          })
+        this.available_timezones = this.timeStatus.available_timezones
+        // if last_pps – current_time < 1 second no sync has happened
+        this.clockPPS = true
+        const lastPPSTS = moment.unix(this.timeStatus.time_status.last_pps).unix()
+        this.systemStatusTime = moment.unix(this.timeStatus.time_status.current_time)
+        this.systemStatusTimeStr =this.timeStatus.time_status.time_str
+        this.systemStatusDateStr = this.timeStatus.time_status.date_str
+        this.systemStatusTimezone = this.timeStatus.time_status.timezone
+        this.systemStatusTimezoneDesc = this.timeStatus.time_status.timezone_description
+        const currTS = this.systemStatusTime && this.systemStatusTime.unix()
+        if (currTS && lastPPSTS - currTS < 1) {
+          this.clockPPS = false
+        }     
+        const IS_LOCAL = window.location.hostname === "localhost"
+        const clock_synced = this.timeStatus.time_status.clock_synced
+
+        const auto_sync_clocks = this.timeStatus.time_status.auto_sync_clocks
+
+        const should_sync = (IS_LOCAL === false && this.systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
+
+        if (should_sync === true ){
+          this.syncTime2Device()
+        }
+      }
+
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+
+  async startPollingGetScriptsService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.scripts = await this.callService({
+          name: "get_scripts",
+          messageType: "nepi_interfaces/GetScriptsQuery"
+        })
+      }
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startPollingGetRunningScriptsService() {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.running_scripts = await this.callService({
+          name: "get_running_scripts",
+          messageType: "nepi_interfaces/GetRunningScriptsQuery"
+        })
+      }
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+  async startLaunchScriptService(item) {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.launchScript = await this.callService({
+          name: "launch_script",
+          messageType: "nepi_interfaces/LaunchScript",
+          args: {script : item}
+        })
+      }
+    }
+    _pollOnce()
+  }
+
+
+  async stopLaunchScriptService(item) {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.stopScript = await this.callService({
+          name: "stop_script",
+          messageType: "nepi_interfaces/StopScript",
+          args: {script : item}
+        })
+      }
+    }
+    _pollOnce()
+  }
+
+  async callGetSystemStatsQueryService(item, poll = true) {
+    const _pollOnce = async () => {
+      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+        this.systemStats = await this.callService({
+          name: "get_system_stats",
+          messageType: "nepi_interfaces/GetSystemStatsQuery",
+          args: {script : this.scriptForPolledStats}
+        })
+      }
+
+      if (this.connectedToROS && poll) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    const firstCall = (this.scriptForPolledStats === null)
+    this.scriptForPolledStats = item
+    
+    // Only launch this once, then just change state to start polling a different script
+    if (firstCall === true || !poll) {
+      _pollOnce()
+    }
+    
+  }
+
+
+
+
+
+  
 
 
   /*******************************/
@@ -1822,138 +2257,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
     }
 
 
-  ////////////////////////////////
-  /////  Service Calls
-  ///////////////////////////////
 
-  async callSystemDefsService() {
-    this.systemDefs = await this.callService({
-      name: "system_defs_query",
-      messageType: "nepi_interfaces/SystemDefs",
-      msgKey: "defs"
-    })
-    this.deviceType = this.systemDefs.device_type
-    this.deviceSerial = this.systemDefs.device_sn
-    this.systemDefsFirmwareVersion = this.systemDefs.firmware_version
-    this.systemDefsDiskCapacityMB = this.systemDefs.disk_capacity
-  }
-
-  @action.bound
-  async callSaveDataCapabilitiesQueryService(namespace) {
-    this.saveDataCaps[namespace] = []
-    const capabilities = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
-    })
-    this.saveDataCaps[namespace] = capabilities
-  }
-
-
-
-  @action.bound
-  async callSettingsCapabilitiesQueryService(namespace) {
-    this.settingCaps[namespace] = []
-    const capabilities = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/SettingsCapabilitiesQuery",  
-    })
-    this.settingCaps[namespace] = capabilities
-  }
-
-  @action.bound
-  async callImageCapabilitiesQueryService(namespace) {
-    const capabilities = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/ImageCapabilitiesQuery",  
-    })
-    this.imageCaps[namespace] = capabilities
-  }
-
-  @action.bound
-  async callNavPoseCapabilitiesQueryService(namespace) {
-    const capabilities = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
-    })
-    this.navPoseCapsCaps[namespace] = capabilities
-  }
-  
-
-  @action.bound
-  async callIDXCapabilitiesQueryService(idxDeviceNamespace) {
-    const capabilities = await this.callService({
-      name: idxDeviceNamespace + "/capabilities_query",
-      messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
-    })
-    this.idxDevices[idxDeviceNamespace] = capabilities
-  }
-
-
-  @action.bound
-  async callPTXCapabilitiesQueryService(ptxDeviceNamespace) {
-    const capabilities = await this.callService({
-      name: ptxDeviceNamespace + "/capabilities_query",
-      messageType: "nepi_interfaces/PTXCapabilitiesQuery",
-    })
-    this.ptxDevices[ptxDeviceNamespace] = capabilities
-  }
-
-  @action.bound
-  async callLSXCapabilitiesQueryService(lsxDeviceNamespace) {
-    const capabilities = await this.callService({
-      name: lsxDeviceNamespace + "/capabilities_query",
-      messageType: "nepi_interfaces/LSXCapabilitiesQuery",
-    })
-    this.lsxDevices[lsxDeviceNamespace] = capabilities
-  }
-
-
-  @action.bound
-  async callRBXCapabilitiesQueryService(rbxDeviceNamespace) {
-    const capabilities = await this.callService({
-      name: rbxDeviceNamespace + "/capabilities_query",
-      messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
-    })
-    this.rbxDevices[rbxDeviceNamespace] = capabilities
-  }
-
-  @action.bound
-  async callNPXCapabilitiesQueryService(npxDeviceNamespace) {
-    const capabilities = await this.callService({
-      name: npxDeviceNamespace + "/capabilities_query",
-      messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
-    })
-    this.npxDevices[npxDeviceNamespace] = capabilities
-  }
-
-  @action.bound
-  async callSystemSoftwareStatusQueryService() {
-    this.systemSoftwareStatus = await this.callService({
-      name: "sw_update_status_query",
-      messageType: "nepi_interfaces/SystemSoftwareStatusQuery"
-    })
-  }
-
-  @action.bound
-  async callAppStatusQueryService(appName) {
-    const appStatus = await this.callService({
-      name: 'apps_mgr/app_status_query',
-      messageType: "nepi_interfaces/AppStatusQuery",
-      args: {app_name : appName},
-    })
-    const appNames = this.appNameList
-    const appInd = appNames.indexOf(appName)
-    if (appInd === -1){
-      this.appStatusList.push(appStatus)
-      this.appNameList.push(appName)
-
-    }
-    else {
-
-      this.appNameList[appInd] = appName
-      this.appStatusList[appInd] = appStatus
-    }
-  }
 
   @action.bound
   async onInstallFullSysImg(new_img_filename) {
@@ -1982,197 +2286,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
     })
   }  
 
-  async startPollingIPAddrQueryService() {
-    const _pollOnce = async () => {
-      this.ip_query_response = await this.callService({
-        name: "ip_addr_query",
-        messageType: "nepi_interfaces/IPAddrQuery"
-      })
 
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-  async startPollingBandwidthUsageService() {
-    const _pollOnce = async () => {
-      this.bandwidth_usage_query_response = await this.callService({
-        name: "bandwidth_usage_query",
-        messageType: "nepi_interfaces/BandwidthUsageQuery",
-      })
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 3000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-  async startPollingWifiQueryService() {
-    const _pollOnce = async () => {
-      this.wifi_query_response = await this.callService({
-        name: "wifi_query",
-        messageType: "nepi_interfaces/WifiQuery",
-      })
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 3000)
-      }
-    }
-
-    _pollOnce()    
-  }
-
-  async startPollingOpEnvironmentQueryService() {
-    const _pollOnce = async () => {
-      this.opEnv = await this.callService({
-        name: "op_environment_query",
-        messageType: "nepi_interfaces/OpEnvironmentQuery",
-        msgKey: "op_env"
-      })
-
-      this.deviceInWater = (this.opEnv === "water")
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 5000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-
-  startPollingMgrTimeStatusService() {
-    const _pollOnce = async () => {
-      this.timeStatus = await this.callService({
-        name: "time_status_query",
-        messageType: "nepi_interfaces/TimeStatusQuery",
-      })
-
-      // if last_ntp_sync is 10y, no sync has happened
-      this.ntp_sources = this.timeStatus.time_status.ntp_sources
-      this.clockNTP = false
-      const currentlySyncd = this.timeStatus.time_status.currently_syncd
-      currentlySyncd &&
-      currentlySyncd.length &&
-      currentlySyncd.forEach(syncd => {
-          if (syncd !== false) {
-            this.clockNTP = true
-          }
-        })
-      this.available_timezones = this.timeStatus.available_timezones
-      // if last_pps – current_time < 1 second no sync has happened
-      this.clockPPS = true
-      const lastPPSTS = moment.unix(this.timeStatus.time_status.last_pps).unix()
-      this.systemStatusTime = moment.unix(this.timeStatus.time_status.current_time)
-      this.systemStatusTimeStr =this.timeStatus.time_status.time_str
-      this.systemStatusDateStr = this.timeStatus.time_status.date_str
-      this.systemStatusTimezone = this.timeStatus.time_status.timezone
-      this.systemStatusTimezoneDesc = this.timeStatus.time_status.timezone_description
-      const currTS = this.systemStatusTime && this.systemStatusTime.unix()
-      if (currTS && lastPPSTS - currTS < 1) {
-        this.clockPPS = false
-      }     
-      const IS_LOCAL = window.location.hostname === "localhost"
-      const clock_synced = this.timeStatus.time_status.clock_synced
-
-      const auto_sync_clocks = this.timeStatus.time_status.auto_sync_clocks
-
-      const should_sync = (IS_LOCAL === false && this.systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
-
-      if (should_sync === true ){
-        this.syncTime2Device()
-      }
-
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-
-  async startPollingGetScriptsService() {
-    const _pollOnce = async () => {
-      this.scripts = await this.callService({
-        name: "get_scripts",
-        messageType: "nepi_interfaces/GetScriptsQuery"
-      })
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-  async startPollingGetRunningScriptsService() {
-    const _pollOnce = async () => {
-      this.running_scripts = await this.callService({
-        name: "get_running_scripts",
-        messageType: "nepi_interfaces/GetRunningScriptsQuery"
-      })
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-  async startLaunchScriptService(item) {
-    const _pollOnce = async () => {
-      this.launchScript = await this.callService({
-        name: "launch_script",
-        messageType: "nepi_interfaces/LaunchScript",
-        args: {script : item}
-      })
-    }
-    _pollOnce()
-  }
-
-
-  async stopLaunchScriptService(item) {
-    const _pollOnce = async () => {
-      this.stopScript = await this.callService({
-        name: "stop_script",
-        messageType: "nepi_interfaces/StopScript",
-        args: {script : item}
-      })
-    }
-    _pollOnce()
-  }
-
-  async callGetSystemStatsQueryService(item, poll = true) {
-    const _pollOnce = async () => {
-      this.systemStats = await this.callService({
-        name: "get_system_stats",
-        messageType: "nepi_interfaces/GetSystemStatsQuery",
-        args: {script : this.scriptForPolledStats}
-      })
-
-      if (this.connectedToROS && poll) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    const firstCall = (this.scriptForPolledStats === null)
-    this.scriptForPolledStats = item
-    
-    // Only launch this once, then just change state to start polling a different script
-    if (firstCall === true || !poll) {
-      _pollOnce()
-    }
-    
-  }
 
   @action.bound
   setDeviceID({newDeviceID}) {
