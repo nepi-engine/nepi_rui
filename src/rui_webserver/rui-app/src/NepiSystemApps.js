@@ -183,7 +183,7 @@ class AppsMgr extends Component {
     const group_index = groups.indexOf(message.group)
     const group_names = this.state.group_names
     if ( group_index !== -1){
-      this.state.group_name = group_names[group_index]
+      this.setState({group_name: group_names[group_index]})
     }
   }
 

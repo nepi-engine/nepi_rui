@@ -60,9 +60,9 @@ class ImageViewerSelector extends Component {
       image_topics_names: [],
       filter_list: [],
       id: '0',
-      selected_image: (this.props.image_topic != undefined) ? this.props.image_topic : 'None',
+      selected_image: (this.props.image_topic !== undefined) ? this.props.image_topic : 'None',
       selected_image_index: -1,
-      selected_image_text: (this.props.title != undefined) ? this.props.title : 'None',
+      selected_image_text: (this.props.title !== undefined) ? this.props.title : 'None',
 
       connected: true
     }
@@ -95,9 +95,9 @@ class ImageViewerSelector extends Component {
   // Function for creating list menu options.
   getListMenu() {
     // Update Class List
-    const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : this.props.ros.imageTopics
-    const image_exclude_filters = (this.props.image_exclude_filters != undefined) ? this.props.image_exclude_filters : []
-    const image_include_filters = (this.props.image_include_filters != undefined) ? this.props.image_include_filters : []
+    const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : this.props.ros.imageTopics
+    const image_exclude_filters = (this.props.image_exclude_filters !== undefined) ? this.props.image_exclude_filters : []
+    const image_include_filters = (this.props.image_include_filters !== undefined) ? this.props.image_include_filters : []
     var images = image_topics  
     var items = []
     var push_item = true
@@ -139,12 +139,12 @@ class ImageViewerSelector extends Component {
 
     // Update Class Variables
     const id = this.props.id
-    //var selected_image = this.props.image_topic != undefined ? this.props.image_topic : this.state.selected_image
+    //var selected_image = this.props.image_topic !== undefined ? this.props.image_topic : this.state.selected_image
     var selected_image = this.state.selected_image
 
     const class_id = this.state.id
     if ((id === class_id) || (selected_image === 'None')){
-      if ((selected_image === 'None') && (this.props.image_topic != undefined)) {
+      if ((selected_image === 'None') && (this.props.image_topic !== undefined)) {
         selected_image = this.props.image_topic
       } 
       var selected_ind = this.state.selected_image_index
@@ -240,7 +240,7 @@ class ImageViewerSelector extends Component {
     const image_topics = this.state.image_topics
     const index = image_topics.indexOf(image)
     const {sendStringMsg} = this.props.ros
-    const select_updated_namespace = (this.props.select_updated_namespace != undefined) ? this.props.select_updated_namespace : null
+    const select_updated_namespace = (this.props.select_updated_namespace !== undefined) ? this.props.select_updated_namespace : null
     if (select_updated_namespace != null){
       sendStringMsg(select_updated_namespace,image)
     }
@@ -260,8 +260,8 @@ class ImageViewerSelector extends Component {
     const active_list = []
 
 
-    const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
-    const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
+    const show_selector = this.props.show_selector !== undefined ? this.props.show_selector : true
+    const show_buttons = this.props.show_buttons !== undefined ? this.props.show_buttons : true
     const show_controls = (menu_options.length > 0) && (show_selector === true )
     return (
       <React.Fragment>
@@ -332,8 +332,8 @@ class ImageViewerSelector extends Component {
     
 
 
-    const show_selector = this.props.show_selector != undefined ? this.props.show_selector : true
-    const show_buttons = this.props.show_buttons != undefined ? this.props.show_buttons : true
+    const show_selector = this.props.show_selector !== undefined ? this.props.show_selector : true
+    const show_buttons = this.props.show_buttons !== undefined ? this.props.show_buttons : true
     const show_controls = (image_topics.length > 0) && (show_buttons === true )
     return (
       <React.Fragment>
@@ -366,15 +366,15 @@ class ImageViewerSelector extends Component {
     const image_topic = this.state.selected_image
     const title = this.state.selected_image_text
     
-    const image_index = (this.props.image_index != undefined) ? this.props.image_index : 0
-    const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : [null,null,null,null]
-    const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
+    const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
+    const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : [null,null,null,null]
+    const mouse_event_callback = (this.props.mouse_event_callback !== undefined) ? this.props.mouse_event_callback : null
 
-    const streamingImageQuality = (this.props.streamingImageQuality != undefined) ? 
+    const streamingImageQuality = (this.props.streamingImageQuality !== undefined) ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
                 : null
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const save_data_topic = this.props.save_data_topic
     
     return (

@@ -97,7 +97,6 @@ class Nepi_IF_Settings extends Component {
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
     if (message.settings_topic === this.state.namespace){
-      const last_values_list = this.state.settingsValuesList
       const lastCaps = this.state.capabilities
       const settings = message.settings_list
       const capabilities = message.setting_caps_list
@@ -131,7 +130,7 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const namespace = (this.props.namespace != undefined) ? (this.props.namespace !== 'None') ? 
+    const namespace = (this.props.namespace !== undefined) ? (this.props.namespace !== 'None') ? 
                               this.props.namespace  + '/settings': 'None' : 'None'
     if (this.state.settingsListener != null) {
       this.state.settingsListener.unsubscribe()
@@ -173,7 +172,7 @@ class Nepi_IF_Settings extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = (this.props.namespace != undefined) ? (this.props.namespace !== 'None') ? 
+    const namespace = (this.props.namespace !== undefined) ? (this.props.namespace !== 'None') ? 
                               this.props.namespace  + '/settings': 'None' : 'None'
     if (namespace !== prevState.namespace) {
       this.updateSettingsListener()
@@ -357,8 +356,8 @@ class Nepi_IF_Settings extends Component {
     const settingsHeightStr = settingsHeight.toString() + 'px'
 
 
-    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls !== undefined) ? this.props.show_controls : this.state.show_controls
 
 
     if (show_controls === false){
@@ -583,7 +582,7 @@ class Nepi_IF_Settings extends Component {
     else {
       return (
 
-          <Section title={(this.props.title != undefined) ? this.props.title : "Settings"}>
+          <Section title={(this.props.title !== undefined) ? this.props.title : "Settings"}>
 
               {this.renderSettings()}
 

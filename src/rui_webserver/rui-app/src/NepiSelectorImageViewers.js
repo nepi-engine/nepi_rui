@@ -69,7 +69,7 @@ class ImageViewersSelector extends Component {
 
   setNumWindows(num_windows){
       const {sendIntMsg} = this.props.ros
-      const num_windows_namespace = (this.props.num_windows_namespace != undefined) ? this.props.num_windows_namespace : null
+      const num_windows_namespace = (this.props.num_windows_namespace !== undefined) ? this.props.num_windows_namespace : null
       if (num_windows_namespace != null){
         this.setState({num_windows: num_windows})
       }
@@ -85,8 +85,8 @@ class ImageViewersSelector extends Component {
     }
 
 
-    const show_controls = this.props.show_controls != undefined ? this.props.show_controls : true
-    const show_selectors_control = this.props.show_selectors_control != undefined ? this.props.show_selectors_control : true
+    const show_controls = this.props.show_controls !== undefined ? this.props.show_controls : true
+    const show_selectors_control = this.props.show_selectors_control !== undefined ? this.props.show_selectors_control : true
     return (
       <React.Fragment>
 
@@ -178,14 +178,14 @@ class ImageViewersSelector extends Component {
       this.setState({needs_update: false})
     }
 
-    const num_windows = (this.props.num_windows != undefined) ? this.props.num_windows : this.state.num_windows
-    const image_topics = (this.props.image_topics != undefined) ? this.props.image_topics : [null,null,null,null]
-    const titles = (this.props.titles != undefined) ? this.props.titles : [null,null,null,null]
-    const exclude_filters = (this.props.exclude_filters != undefined) ? this.props.exclude_filters : []
-    const include_filters = (this.props.include_filters != undefined) ? this.props.include_filters : []
-    const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : [null,null,null,null]
-    const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
-    const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
+    const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
+    const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
+    const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
+    const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
+    const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
+    const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : [null,null,null,null]
+    const mouse_event_callback = (this.props.mouse_event_callback !== undefined) ? this.props.mouse_event_callback : null
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : false
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
     const has_col_2 = (num_windows > 1) ? true : false
@@ -298,7 +298,7 @@ class ImageViewersSelector extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
 
     if (make_section === false){
       return (

@@ -135,6 +135,145 @@ export function onChangeSwitchStateNestedValue(parentKey, nestedKey, currentVal)
 /////////////////////////////
 // MENU FUNCTIONS
 
+
+export function createMenuBaseName(optionsStr, prefixStr = '', appendStr = '') {
+    var shortname = ''
+    var parts = []
+    var sliced_parts = []
+    parts = optionsStr.split('/')
+    if (optionsStr === 'None') {
+      shortname = 'None'
+    }
+    else if (parts.length > 3){
+      sliced_parts = parts.slice(3); 
+      if (prefixStr !== ''){
+        shortname = sliced_parts[0]
+      }
+      else {
+        shortname = prefixStr + '-' + sliced_parts[0]
+      }
+      shortname = shortname + appendStr
+    }
+    else {
+      shortname = 'All'
+    }
+    
+    return shortname
+    
+}
+
+
+export function createMenuBaseNames(optionsStrList, prefixStr = '', appendStr = '') {
+    var shortnames = []
+    var shortname = ''
+    var i = 0
+    for (i = 0; i < optionsStrList.length; ++i) {
+      shortname = createMenuBaseName(optionsStrList[i], prefixStr, appendStr)
+      shortnames.push(shortname)
+    }
+    return shortnames
+    
+}
+
+
+export function createMenuShortName(optionsStr, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
+    var shortname = prefixStr
+    var parts = []
+    var sliced_parts = []
+    parts = optionsStr.split('/')
+    if (optionsStr === 'None') {
+      shortname = 'None'
+    }
+    else if (parts.length > 3){
+      sliced_parts = parts.slice(3); 
+      var include_part = true
+      var i = 0
+      var i2 = 0
+      for (i = 0; i < sliced_parts.length; ++i) {
+        for (i2 = 0; i2 < filterOutList.length; ++i2) {
+          if (sliced_parts[i]===filterOutList[i2]){
+            include_part = false
+          }
+        }
+        if ((i === (sliced_parts.length - 1)) && (removeLast === true)){
+          include_part = false
+        }
+        if (include_part === true){
+          if (i === 0 && prefixStr !== ''){
+            shortname = sliced_parts[i]
+          }
+          else {
+            shortname = shortname + '-' + sliced_parts[i]
+          }
+        }
+        shortname = shortname + appendStr
+      }
+    }
+    else {
+      shortname = 'All'
+    }
+      
+    
+    return shortname
+    
+}
+
+
+export function createMenuShortNames(optionsStrList, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
+    var shortnames = []
+    var shortname = ''
+    var i = 0
+    for (i = 0; i < optionsStrList.length; ++i) {
+      shortname = createMenuShortName(optionsStrList[i], filterOutList, removeLast, prefixStr, appendStr)
+      shortnames.push(shortname)
+    }
+    return shortnames
+    
+}
+
+
+
+
+
+// export function createMenuList(optionsStrList, useShortnames = true, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
+//   var filteredTopics = []
+//   var i
+//   if (filterOut) {
+//     for (i = 0; i < optionsStrList.length; i++) {
+//         if (filterOut.includes(optionsStrList[i]) === false){
+//           filteredTopics.push(String(optionsStrList[i]))
+//         }
+//     }
+//   }
+//   var unique_names = null
+//   if (useShortnames === true){
+//     unique_names = createShortValuesFromNamespaces(filteredTopics)
+//   } 
+//   else{
+//     unique_names = filteredTopics
+//   }
+//   var menuList = []
+//   for (i = 0; i < prefixOptionsStrList.length; i++) {
+//       let option = prefixOptionsStrList[i]
+//       menuList.push(<Option value={option}>{option}</Option>)
+//   }
+
+//   for (i = 0; i < filteredTopics.length; i++) {
+//     menuList.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
+//   }
+
+//   for (i = 0; i < appendOptionsStrList.length; i++) {
+//     let option = appendOptionsStrList[i]
+//     menuList.push(<Option value={option}>{option}</Option>)
+//   }
+
+//    return menuList
+// }
+
+//////////////////////////////////////
+// Depriciated
+
+
 export function createShortValues(list) {
   var tokenizedList = []
   var depthsToShort = 2
@@ -207,8 +346,8 @@ export function createShortValuesFromNamespaces(namespacesList) {
       else {
         shortName = namespacesList[i]
       }
-      for (var i2 = 0; i2 < filterList.length; ++i2) {
-        shortName = shortName.replace(filterList[i2],"")
+      for (var i3 = 0; i2 < filterList.length; ++i3) {
+        shortName = shortName.replace(filterList[i3],"")
       }
       outputList.push(shortName)
   }
@@ -273,6 +412,9 @@ export function createMenuListFromStrList(optionsStrList, useShortNames, filterO
 
    return menuList
 }
+
+// Depriciated
+//////////////////////////////////////
 
 
 export function onDropdownSelectedSetState(event, stateVarStr) {

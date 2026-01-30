@@ -56,6 +56,8 @@ class AiDetectorMgr extends Component {
     this.state = {
 
       mgrName: "ai_model_mgr",
+      all_namespace: null,
+      status_msg: null,
 
       modelMgrListener: null,
       model_mgr_connected: false,
@@ -74,16 +76,14 @@ class AiDetectorMgr extends Component {
       active_models_nodes: [],
       active_models_namespaces: [],
 
-      all_namespace: null,
 
-      status_msg: null,
 
       detectorMgrListener: null,
 
 
       detectorListener: null,
       detector_connected: false,
-      status_msg: null,
+
 
       selected_detector: "None",
       last_selected_detector: "None",
@@ -206,7 +206,7 @@ class AiDetectorMgr extends Component {
   // Callback for handling ROS Status messages
   detectorStatusListener(message) {
     const sel_detector = this.state.selected_detector
-    const got_detector = message.ai_detector_topic
+    const got_detector = message.ai_detector_namespace
 
     if (sel_detector === got_detector){
       this.setState({
@@ -339,7 +339,7 @@ class AiDetectorMgr extends Component {
   renderAiDetector() {
     const {sendTriggerMsg} = this.props.ros
     const model_mgr_namespace = this.getMgrNamespace()
-    const model_mgr_connected = this.state.model_mgr_connected == true
+    const model_mgr_connected = this.state.model_mgr_connected === true
 
     const has_framework = this.active_framework !== "None"
 
@@ -471,7 +471,7 @@ class AiDetectorMgr extends Component {
 
   onImagesTopicSelected(event){
     const {imageTopics, sendStringMsg, sendStringArrayMsg} = this.props.ros
-    const detector_namespace = this.this.selected_detector
+    const detector_namespace = this.selected_detector
     const add_img_namespace = detector_namespace + "/add_img_topic"
     const add_imgs_namespace = detector_namespace + "/add_img_topics"
     const remove_img_namespace = detector_namespace + "/remove_img_topic"
@@ -506,7 +506,7 @@ class AiDetectorMgr extends Component {
     const selected_detector = this.state.selected_detector
     const status_msg = this.state.status_msg
     if (status_msg != null){
-      const detector_namespace = status_msg.detector_namespace 
+      const detector_namespace = status_msg.ai_detector_namespace 
       if (selected_detector === detector_namespace){
         const availableClassesList = status_msg.available_classes
 
@@ -536,7 +536,7 @@ class AiDetectorMgr extends Component {
       const selected_detector = this.state.selected_detector
       const status_msg = this.state.status_msg
       if (status_msg != null){
-        const detector_namespace = status_msg.detector_namespace 
+        const detector_namespace = status_msg.ai_detector_namespace 
         if (selected_detector === detector_namespace){
           const classSelection = event.target.value
           const availableClassesList = status_msg.available_classes
@@ -578,7 +578,7 @@ renderDetectorSettings() {
   const status_msg = this.state.status_msg
   if (status_msg != null){
     const detector_name = status_msg.name
-    const detector_namespace = status_msg.ai_detector_topic
+    const detector_namespace = status_msg.ai_detector_namespace
     if (selected_detector === detector_namespace){
       
 
@@ -598,8 +598,8 @@ renderDetectorSettings() {
       const classes_selected = (selectedClassesList.length > 0)
 
       const detector_enabled = status_msg.enabled
-      const detector_state = status_msg.state
-      const detection_state = status_msg.state_str_msg
+      const detection_state = status_msg.detection_state
+      const detector_state = status_msg.state_str_msg
       const det_running = (detector_state === "Detecting")
 
 
@@ -999,7 +999,7 @@ renderDetectorSettings() {
                 for (var i = 0; i < image_pub_topics.length; i++) {
                     img_topic = image_pub_topics[i]
                     parts = image_pub_topics[i].replace('/detection_image','').split('/')
-                    sliced_parts = parts.slice(4); // Use slice(4) to get elements *after* index 3
+                    sliced_parts = parts.slice(3); 
                     shortname =  sliced_parts.join('-');   
                     items.push(<Option value={img_topic}>{shortname}</Option>)
 
@@ -1011,7 +1011,7 @@ renderDetectorSettings() {
               }
               else  {
                 items.push(<Option value={"None"}>{"None"}</Option>)
-                if (sel_img != 'None'){
+                if (sel_img !== 'None'){
                   this.setState({selected_img_topic: "None", selected_img_text: "None" })
                 }
               }

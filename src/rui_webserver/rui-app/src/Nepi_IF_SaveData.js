@@ -170,13 +170,13 @@ class NepiIFSaveData extends Component {
   // Function for configuring and subscribing to Status
   updateSaveStatusListener() {
     const allNamespace = this.getAllNamespace()
-    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace != 'None') ? this.state.saveNamespace :
-                                (this.props.saveNamespace != undefined && this.props.saveNamespace != 'None' && this.props.saveNamespace != 'None/save_data') ? 
+    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace !== 'None') ? this.state.saveNamespace :
+                                (this.props.saveNamespace !== undefined && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== 'None/save_data') ? 
                                  this.props.saveNamespace : allNamespace
     if (this.state.saveStatusListener != null) {
       this.state.saveStatusListener.unsubscribe()
     }
-    if (saveNamespace != '' &&  saveNamespace !== 'None'){
+    if (saveNamespace !== '' &&  saveNamespace !== 'None'){
       var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
             saveNamespace,
             this.saveStatusListener
@@ -190,15 +190,15 @@ class NepiIFSaveData extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const allNamespace = this.getAllNamespace()
-    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace != 'None') ? this.state.saveNamespace :
-                                (this.props.saveNamespace != undefined && this.props.saveNamespace != 'None' && this.props.saveNamespace != 'None/save_data') ? 
+    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace !== 'None') ? this.state.saveNamespace :
+                                (this.props.saveNamespace !== undefined && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== 'None/save_data') ? 
                                  this.props.saveNamespace : allNamespace
     const needs_update = ((this.state.saveNamespace !== saveNamespace && saveNamespace !== 'None'))
   
     if ((needs_update) && !saveNamespace.includes("null") ) {
       this.updateSaveStatusListener()
     }
-    if (saveNamespace == 'None' && allNamespace != null){
+    if (saveNamespace === 'None' && allNamespace != null){
       this.setState({saveNamespace: allNamespace})
     }
   }
@@ -215,9 +215,9 @@ class NepiIFSaveData extends Component {
 
   createTopicOptions() {
     const { namespacePrefix, deviceId} = this.props.ros
-    const show_all_options = (this.props.show_all_options != undefined) ? this.show_all_options : true
-    const save_include_filters = (this.props.save_include_filters != undefined) ? this.save_include_filters : []
-    const save_exclude_filters = (this.props.save_exclude_filters != undefined) ? this.save_exclude_filters : []
+    const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
+    const save_include_filters = (this.props.save_include_filters !== undefined) ? this.save_include_filters : []
+    const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.save_exclude_filters : []
     const allNamespace = this.getAllNamespace()
     var items = []
     if (show_all_options === true){
@@ -237,8 +237,8 @@ class NepiIFSaveData extends Component {
       topic = saveData_topics[i]
       include = true
       if (topic !== allNamespace && topic.indexOf("None") === -1){
-        for (var i2 = 0; i2 < save_exclude_filters.length; i2++) {
-          if (topic.indexOf(save_exclude_filters[i2]) !== -1 ){
+        for (var i = 0; i < save_exclude_filters.length; i++) {
+          if (topic.indexOf(save_exclude_filters[i]) !== -1 ){
             include = false
           }
         }
@@ -252,7 +252,7 @@ class NepiIFSaveData extends Component {
           shortname_base = shortname_split[0]
           shortname_desc = shortname_split[shortname_split.length - 1]
           shortname = shortname_base
-          if (shortname_desc != shortname){
+          if (shortname_desc !== shortname){
             shortname = shortname + '-' + shortname_desc
           }
           items.push(<Option value={topic}>{shortname}</Option>)
@@ -369,7 +369,7 @@ class NepiIFSaveData extends Component {
         ratesList = []
         if (topic !== "None" && topic !== allNamespace ){
                 save_rates_list = saveDataCaps[topic].save_data_rates
-                if (save_rates_list != undefined){
+                if (save_rates_list !== undefined){
                   for (i2 = 0; i2 < save_rates_list.length; i2++) {
                       namesList.push(save_rates_list[i2].data_product)
                       ratesList.push(round(save_rates_list[i2].save_rate_hz,2))
@@ -434,7 +434,7 @@ class NepiIFSaveData extends Component {
         save_rates_list = saveDataCaps[topic].save_data_rates
         if (topic !== "None" && topic !== allNamespace ){
                 save_rates_list = saveDataCaps[topic].save_data_rates
-                if (save_rates_list != undefined){
+                if (save_rates_list !== undefined){
                   for (i2 = 0; i2 < save_rates_list.length; i2++) {
                       namesList.push(save_rates_list[i2].data_product)
                       ratesList.push(round(save_rates_list[i2].save_rate_hz,2))
@@ -563,7 +563,7 @@ sendLogRateUpdate(rate) {
   onChangeBoolSaveAllValue(){
     const {sendBoolMsg}  = this.props.ros
     const saveNamespace = this.state.saveNamespace
-    const lastSaveNamespace = (this.state.lastSaveNamespace != 'None') ? this.state.lastSaveNamespace : saveNamespace
+    const lastSaveNamespace = (this.state.lastSaveNamespace !== 'None') ? this.state.lastSaveNamespace : saveNamespace
     const saveAll = this.state.saveAll
     const enabled = (saveAll === false)
     const allNamespace = this.getAllNamespace()
@@ -716,7 +716,7 @@ sendLogRateUpdate(rate) {
     const saveAllEnabled = this.state.saveAllEnabled
     const saveAllRate = this.state.saveAllRate
 
-    const always_show_controls = (this.props.always_show_controls != undefined) ? this.props.always_show_controls : false
+    const always_show_controls = (this.props.always_show_controls !== undefined) ? this.props.always_show_controls : false
     if (always_show_controls === true){
       this.setState({showControls: true})
     }
@@ -724,7 +724,7 @@ sendLogRateUpdate(rate) {
     const showControls = (always_show_controls === true || this.state.showControls === true)
     const show_active_settings = this.state.show_active_settings
 
-    const show_all_options = (this.props.show_all_options != undefined) ? this.show_all_options : true
+    const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
 
     const saveAll = this.state.saveAll
     const save_enabled = saveDataEnabled
@@ -990,8 +990,8 @@ sendLogRateUpdate(rate) {
  renderControlOptions() {
     const saveNamespace = this.state.saveNamespace
     const showControls = this.state.showControls
-    const show_control_options = (this.props.show_control_options != undefined) ? this.props.show_control_options : true
-    const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
+    const show_control_options = (this.props.show_control_options !== undefined) ? this.props.show_control_options : true
+    const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
 
     if (saveNamespace === 'None' || showControls === false || show_control_options === false){
       return (
@@ -1034,7 +1034,7 @@ sendLogRateUpdate(rate) {
 
 
   render() {
-    const make_section = (this.props.make_section != undefined) ? this.props.make_section : true
+    const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     if (make_section === false){
       return (
         <Columns>

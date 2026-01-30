@@ -161,10 +161,12 @@ class ROSConnectionStore {
   @observable systemStatus = null
   @observable systemDebugEnabled = false
   @observable heartbeat = false
-  @observable heartbeatWatchdog = false
+  @observable watchdog = false
   @observable systemTopics = null
-  @observable systemHwType = "Uknown"
-  @observable systemHwModel = "Uknown"
+  @observable systemTopicTypes = null
+  @observable systemServices = null
+  @observable systemHwType = "Unknown"
+  @observable systemHwModel = "Unknown"
   @observable systemInContainer = false
   @observable systemManagesSSH = false
   @observable systemManagesSHARE = false
@@ -424,42 +426,33 @@ class ROSConnectionStore {
           this.ros.connect(ROS_WS_URL)
         }
 
-        // Start System and RUI Status Listeners
-        this.rosListeners.forEach(listener => {
-          listener.unsubscribe()
-        })
-
-        // listeners
-        //this.setupMgrSystemStatusListener()
-        //this.setupRUISettingsListener()    // services
-
-
-
+          this.checkTopicsServices = true
+          this.updateTopicsServices()
+       
       } catch (e) {
-        console.error(e)
+        //console.error(e)
+        const errored = true 
       }
     }
 
         //update the topics periodically
-    if (this.connectedToROS === true){
-      this.checkTopicsServices = true
-      this.updateTopicsServices()
+
+
+    if (this.ros != null && this.connectedToNepi === true && this.watchdog === false ) {
+
+      this.connectedToRos = false
+      this.connectedToNepi = false
+    
     }
 
-    if (this.ros != null && this.connectedToNepi === true && this.heartbeatWatchdog === false ) {
+    this.watchdog = false
 
-      this.destroyROSConnection()
-     
+
+    if (this.rosAutoReconnect) {
+      setTimeout(async () => {
+        await this.checkROSConnection()
+      }, this.rosCheckDelay)
     }
-
-    this.heartbeatWatchdog = false
-
-
-  if (this.rosAutoReconnect) {
-    setTimeout(async () => {
-      await this.checkROSConnection()
-    }, this.rosCheckDelay)
-  }
   }
 
   @action.bound
@@ -474,7 +467,7 @@ class ROSConnectionStore {
 
 
 
-    if (this.ros != null && (this.topicQueryLock === false) && (this.connectedToROS == true)) {
+    if (this.ros != null && (this.topicQueryLock === false) && (this.connectedToROS === true)) {
       this.topicQueryLock = true
 
 
@@ -503,42 +496,37 @@ class ROSConnectionStore {
         }
 
       }
+    
+      // Update Topics and Services
+      if (this.systemTopics != null && this.systemTopicTypes != null ){
+            this.topicNames = this.systemTopics
+            this.topicTypes = this.systemTopicTypes
+      }
+      else {
+        this.ros.getTopics(result => {
+            this.topicNames = result.topics
+            this.topicTypes = result.types
+            })
+      }
 
-     this.ros.getTopics(result => {
-        const topics = result.topics
-        const types = result.types
-        var topicNames = []
-        var topicTypes = []
-        var i
-        if (this.systemTopics != null){
-          for (i = 0; i < topics.length; i++) {
-            if (this.systemTopics.indexOf(topics[i]) !== -1) {
-                topicNames.push(topics[i])
-                topicTypes.push(types[i])
-            }
-          }
-          this.topicNames = topicNames
-          this.topicTypes = topicTypes
-        }
-        else {
-          this.topicNames = topics
-          this.topicTypes = types
-        }
+      if (this.systemServices != null){
+            this.serviceNames = this.systemServices
+      }
+      else {
+        this.ros.getServices(result => {
+          this.serviceNames = result
         })
+      }
 
-      this.ros.getServices(result => {
-        this.serviceNames = result
-      })
+
+      this.topicQueryLock = false
 
     }
-    this.topicQueryLock = false
-    
     if (this.checkTopicsServices === true) {
       setTimeout(async () => {
         await this.updateTopicsServices()
       }, 2000)
     }
-
   }
 
   validPrefix() {
@@ -561,10 +549,18 @@ class ROSConnectionStore {
       this.connectedToNepi = false
       this.connectedToROS = false
       this.checkTopicsServices = false
+      
       this.topicNames = null
       this.topicTypes = null
+      this.serviceNames = null
 
-      this.ros = null
+      this.systemTopics = null
+      this.systemTopicTypes = null
+      this.systemServices = null
+      
+
+
+      //this.ros = null
 
     }
   }
@@ -690,12 +686,14 @@ class ROSConnectionStore {
           this.heartbeat = false
         }, 500)
         
-        this.heartbeatWatchdog = true
+        this.watchdog = true
         this.connectedToNepi = true
 
         this.systemStatus = message
         this.systemDebugEnabled = message.sys_debug_enabled
         this.systemTopics = message.active_topics
+        this.systemTopicTypes = message.active_topic_types
+        this.systemServices = message.active_services
         this.systemHwType = message.hw_type
         this.systemHwModel = message.hw_model
         this.systemInContainer = message.in_container
@@ -742,6 +740,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callSaveDataCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     this.saveDataCaps[namespace] = []
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
@@ -749,11 +748,13 @@ class ROSConnectionStore {
     })
     this.saveDataCaps[namespace] = capabilities
   }
+  }
 
 
 
   @action.bound
   async callSettingsCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     this.settingCaps[namespace] = []
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
@@ -761,71 +762,86 @@ class ROSConnectionStore {
     })
     this.settingCaps[namespace] = capabilities
   }
+  }
 
   @action.bound
   async callImageCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/ImageCapabilitiesQuery",  
     })
     this.imageCaps[namespace] = capabilities
   }
+  }
 
   @action.bound
   async callNavPoseCapabilitiesQueryService(namespace) {
-    const capabilities = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
-    })
-    this.navPoseCapsCaps[namespace] = capabilities
+    if ( this.topicNames.indexOf(namespace + "/capabilities_query") !== -1) {
+      const capabilities = await this.callService({
+        name: namespace + "/capabilities_query",
+        messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
+      })
+      this.navPoseCapsCaps[namespace] = capabilities
+    }
   }
   
 
   @action.bound
-  async callIDXCapabilitiesQueryService(idxDeviceNamespace) {
+  async callIDXCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
-      name: idxDeviceNamespace + "/capabilities_query",
+      name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
     })
-    this.idxDevices[idxDeviceNamespace] = capabilities
+    this.idxDevices[namespace] = capabilities
+  }
   }
 
 
   @action.bound
-  async callPTXCapabilitiesQueryService(ptxDeviceNamespace) {
+  async callPTXCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
-      name: ptxDeviceNamespace + "/capabilities_query",
+      name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/PTXCapabilitiesQuery",
     })
-    this.ptxDevices[ptxDeviceNamespace] = capabilities
+    this.ptxDevices[namespace] = capabilities
+  }
   }
 
   @action.bound
-  async callLSXCapabilitiesQueryService(lsxDeviceNamespace) {
+  async callLSXCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
-      name: lsxDeviceNamespace + "/capabilities_query",
+      name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/LSXCapabilitiesQuery",
     })
-    this.lsxDevices[lsxDeviceNamespace] = capabilities
+    this.lsxDevices[namespace] = capabilities
+  }
   }
 
 
   @action.bound
-  async callRBXCapabilitiesQueryService(rbxDeviceNamespace) {
+  async callRBXCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
-      name: rbxDeviceNamespace + "/capabilities_query",
+      name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
     })
-    this.rbxDevices[rbxDeviceNamespace] = capabilities
+    this.rbxDevices[namespace] = capabilities
+  }
   }
 
   @action.bound
-  async callNPXCapabilitiesQueryService(npxDeviceNamespace) {
+  async callNPXCapabilitiesQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
-      name: npxDeviceNamespace + "/capabilities_query",
+      name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
     })
-    this.npxDevices[npxDeviceNamespace] = capabilities
+    this.npxDevices[namespace] = capabilities
+  }
   }
 
   // @action.bound
@@ -838,26 +854,40 @@ class ROSConnectionStore {
 
 
   @action.bound
-  async callAppStatusQueryService(appName) {
+  async callAppStatusQueryService(namespace) {
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const appStatus = await this.callService({
       name: 'apps_mgr/app_status_query',
       messageType: "nepi_interfaces/AppStatusQuery",
-      args: {app_name : appName},
+      args: {app_name : namespace},
     })
     const appNames = this.appNameList
-    const appInd = appNames.indexOf(appName)
+    const appInd = appNames.indexOf(namespace)
     if (appInd === -1){
       this.appStatusList.push(appStatus)
-      this.appNameList.push(appName)
+      this.appNameList.push(namespace)
 
     }
     else {
 
-      this.appNameList[appInd] = appName
+      this.appNameList[appInd] = namespace
       this.appStatusList[appInd] = appStatus
     }
   }
+  }
 
+
+    @action.bound
+  async callAiDetectorCapabilitiesQueryService(namespace) {
+    this.saveDataCaps[namespace] = []
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+    const capabilities = await this.callService({
+      name: namespace + "/capabilities_query",
+      messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
+    })
+    this.saveDataCaps[namespace] = capabilities
+  }
+  }
 
   /*******************************/
   // System Data Update Functions
@@ -907,7 +937,7 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newSaveDataNamespaces = []
     for (var i = 0; i < topics.length; i++) {
-      if (topics[i] === "nepi_interfaces/SaveDataStatus"){
+      if (types[i] === "nepi_interfaces/SaveDataStatus"){
         newSaveDataNamespaces.push(topics[i].replace('/status',''))
       }
     }
@@ -917,8 +947,8 @@ class ROSConnectionStore {
 
     if (!this.saveDataNamespaces.equals(newSaveDataNamespaces)) {
       this.saveDataNamespaces = newSaveDataNamespaces
-      for (var i = 0; i < this.saveDataNamespaces.length; i++) {
-            this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i])
+      for (var i2 = 0; i < this.saveDataNamespaces.length; i2++) {
+            this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i2])
           }
       return true
     } else {
@@ -931,7 +961,7 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newAiDetectorNamespaces = []
     for (var i = 0; i < topics.length; i++) {
-      if (topics[i] === "nepi_interfaces/AiDetectorStatus"){
+      if (types[i] === "nepi_interfaces/AiDetectorStatus"){
         newAiDetectorNamespaces.push(topics[i].replace('/status',''))
       }
     }
@@ -941,7 +971,7 @@ class ROSConnectionStore {
 
     if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
       this.aiDetectorNamespaces = newAiDetectorNamespaces
-      for (var i = 0; i < this.aiDetectorNamespaces.length; i++) {
+      for (var i2 = 0; i2 < this.aiDetectorNamespaces.length; i2++) {
             this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i])
           }
       return true
@@ -955,7 +985,7 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newMessageTopics = []
     for (var i = 0; i < topics.length; i++) {
-      if (topics[i] === "nepi_interfaces/Message") {
+      if (types[i] === "nepi_interfaces/Message") {
         newMessageTopics.push(topics[i])
       }
     }
@@ -977,7 +1007,7 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newNavPoseTopics = []
     for (var i = 0; i < topics.length; i++) {
-      if (topics[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
+      if (types[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
         newNavPoseTopics.push(topics[i])
       }
     }
@@ -985,10 +1015,10 @@ class ROSConnectionStore {
     // sort the image topics for comparison to work
     newNavPoseTopics.sort()    
 
-    if (!this.navposeTopic.equals(newNavPoseTopics)) {
+    if (!this.navposeTopics.equals(newNavPoseTopics)) {
       this.navposeTopics = newNavPoseTopics
-      for (var i = 0; i < this.navposeTopics.length; i++) {
-            this.callNavPoseCapabilitiesQueryService(this.NavPoseTopics[i])
+      for (var i2 = 0; i < this.navposeTopics.length; i2++) {
+            this.callNavPoseCapabilitiesQueryService(this.NavPoseTopics[i2])
           }
       return true
     } else {
@@ -1002,7 +1032,7 @@ class ROSConnectionStore {
     var newImageTopics = []
     var newImageDetectionTopics = []
     for (var i = 0; i < topics.length; i++) {
-      if (topics[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
+      if (types[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
         newImageTopics.push(topics[i])
         if (topics[i].indexOf('detection_image') !== -1){
           newImageDetectionTopics.push(topics[i])
@@ -1016,7 +1046,7 @@ class ROSConnectionStore {
     if (!this.imageTopics.equals(newImageTopics)) {
       this.imageTopics = newImageTopics
       this.imageDetectionTopics = newImageDetectionTopics
-      for (var i = 0; i < this.imageTopics.length; i++) {
+      for (var i2 = 0; i2 < this.imageTopics.length; i2++) {
             this.callImageCapabilitiesQueryService(this.imageTopics[i])
           }
       return true
@@ -1032,7 +1062,7 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newPointcloudTopics = []
     for (var i = 0; i < topics.length; i++) {
-      if (topics[i] === "sensor_msgs/PointCloud2") {
+      if (types[i] === "sensor_msgs/PointCloud2") {
         newPointcloudTopics.push(topics[i])
       }
     }

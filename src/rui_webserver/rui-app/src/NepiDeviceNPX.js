@@ -97,7 +97,7 @@ class NepiDeviceNPX extends Component {
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+    if ((namespace != null) && (namespace !== 'None') && (topics.includes(namespace) === false)) {
       this.clearDeviceSelection()
     }
     if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
@@ -116,7 +116,7 @@ class NepiDeviceNPX extends Component {
 
   renderDeviceSelection() {
     const NoneOption = <Option>None</Option>
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
+    const device_selected = (this.state.namespace != null && this.state.namespace !== 'None' )
     const data_topic = this.state.data_topic
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
@@ -166,7 +166,7 @@ class NepiDeviceNPX extends Component {
 
 
  render() {
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
+    const device_selected = (this.state.namespace != null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const data_product = this.state.data_product
 
@@ -183,7 +183,7 @@ class NepiDeviceNPX extends Component {
               <div style={{ width: "68%" }}>
 
 
-              {(device_selected == true) ?
+              {(device_selected === true) ?
               this.renderNavposeViewer()
               : null}
 
@@ -201,7 +201,7 @@ class NepiDeviceNPX extends Component {
                     {this.renderDeviceSelection()}
 
 {/*
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiDeviceNPXControls
                               namespace={namespace}
                               dataProduct={data_product}
@@ -210,7 +210,7 @@ class NepiDeviceNPX extends Component {
                         : null}
 
 */}
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiIFSettings
                             namespace={namespace}
                             allways_show_settings={true}

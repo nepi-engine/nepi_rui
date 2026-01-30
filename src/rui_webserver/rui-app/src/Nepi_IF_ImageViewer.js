@@ -149,12 +149,12 @@ class ImageViewer extends Component {
 
   // Function for configuring and subscribing to Status
   updateStatusListener() {
-    const image_topic = (this.props.image_topic != undefined) ? this.props.image_topic : "None"
-    const status_topic = (this.props.status_topic != undefined) ? this.props.status_topic : image_topic
+    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : "None"
+    const status_topic = (this.props.status_topic !== undefined) ? this.props.status_topic : image_topic
     const prev_image_topic = (this.state.image_topic != null) ? this.state.image_topic : 'None'
-    const image_index = (this.props.image_index != undefined) ? this.props.image_index : 0
-    const mouse_event_callback = (this.props.mouse_event_callback != undefined) ? this.props.mouse_event_callback : null
-    const selection_callback = (this.props.selection_callback != undefined) ? this.props.selection_callback : null
+    const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
+    const mouse_event_callback = (this.props.mouse_event_callback !== undefined) ? this.props.mouse_event_callback : null
+    const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : null
     const statusNamespace = status_topic + '/status'
     if (this.state.status_listenter != null) {
       this.state.status_listenter.unsubscribe()
@@ -164,7 +164,7 @@ class ImageViewer extends Component {
       })
 
     }
-    if (image_topic != 'None'){
+    if (image_topic !=+ 'None'){
       var status_listenter = this.props.ros.setupStatusListener(
             statusNamespace,
             "nepi_interfaces/ImageStatus",
@@ -179,7 +179,7 @@ class ImageViewer extends Component {
                     selection_callback: selection_callback
     })
 
-    if (prev_image_topic != image_topic && selection_callback != null){
+    if (prev_image_topic !== image_topic && selection_callback != null){
       this.props.ros.sendImageSelectionMsg(selection_callback, image_index, image_topic , prev_image_topic)
 
     }
@@ -1382,10 +1382,10 @@ class ImageViewer extends Component {
     const namespace = this.props.image_topic ? this.props.image_topic : 'None'
     const { sendTriggerMsg } = this.props.ros
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : true
-    const show_all_options = (this.props.show_all_options != undefined) ? this.props.show_all_options : true
-    const show_topic_selector = (this.props.show_topic_selector != undefined) ? this.props.show_topic_selector : true
-    const save_data_topic = (this.props.save_data_topic != undefined) ? this.props.save_data_topic :  this.state.save_data_topic
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
+    const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
+    const save_data_topic = (this.props.save_data_topic !== undefined) ? this.props.save_data_topic :  this.state.save_data_topic
     const show_status = this.state.show_status
     const show_controls = this.state.show_controls
     const show_renders = this.state.show_renders
