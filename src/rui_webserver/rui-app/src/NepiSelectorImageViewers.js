@@ -12,16 +12,18 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
-import Label from "./Label"
-import Select, { Option } from "./Select"
+//import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
-import Styles from "./Styles"
+//import Styles from "./Styles"
+import Label from "./Label"
 import Toggle from "react-toggle"
+
+import {onChangeSwitchStateValue} from "./Utilities"
 
 import ImageViewerSelector from "./NepiSelectorImageViewer"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
-import {createShortValuesFromNamespaces, onChangeSwitchStateValue} from "./Utilities"
+
 
 @inject("ros")
 @observer

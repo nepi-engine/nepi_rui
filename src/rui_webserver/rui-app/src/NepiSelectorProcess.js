@@ -23,6 +23,10 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import Label from "./Label"
+import Toggle from "react-toggle"
+
+import {onChangeSwitchStateValue} from "./Utilities"
 
 import TargetsMgr from "./NepiMgrTargets"
 import AiDetectorMgr from "./NepiMgrAiDetector"
@@ -48,33 +52,6 @@ class ProcessSelector extends Component {
       appsMgrName: "apps_mgr",
       appsMgrNamespace: null,
 
-      viewableApps: false,
-
-      apps_list: ['NONE'],
-      last_apps_list: [],
-      apps_active_list: [],
-      apps_install_path: null,
-      apps_install_list: [],
-      selected_app: 'NONE',
-
-      apps_rui_list: [],
-      apps_group_list: [],
-
-      app_name: 'NONE',
-      app_description: null,
-      apps_path: null,
-      app_options_menu: null,
-      active_state: null,
-
-      backup_removed_apps: true,
-
-      connected: false,
-
-      appsListener: null,
-      appListener: null,
-
-      aiMgrName: "ai_model_mgr",
-      aiMgrNamespace: null,
 
 
       frameworks_list: [],
@@ -86,24 +63,35 @@ class ProcessSelector extends Component {
       active_models_types: [],
 
 
-      selected_app_install_pkg: null,
+
+
+      apps_list: ['NONE'],
+      apps_group_list: [],
+      apps_rui_list: null,
+      apps_active_list: [],
+      
+      selected_app: 'NONE',
+
+      connectedToNepi: false,
+      apps_connnected: false,
+
+      appsListener: null,
+      appListener: null,
+
       needs_update: false
     }
-
     this.checkConnection = this.checkConnection.bind(this)
 
-    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
     this.getAiMgrNamespace = this.getAiMgrNamespace.bind(this)
+    this.updateAiMgrStatusListener = this.updateAiMgrStatusListener.bind(this)
+    this.aiMgrStatusListener = this.aiMgrStatusListener.bind(this)
+
+
+    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
 
     this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
     this.appsStatusListener = this.appsStatusListener.bind(this)
 
-    this.updateAiMgrStatusListener = this.updateAiMgrStatusListener.bind(this)
-    this.aiMgrStatusListener = this.aiMgrStatusListener.bind(this)
-    
-
-
-    this.toggleViewableApps = this.toggleViewableApps.bind(this)  
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
     
@@ -116,6 +104,25 @@ class ProcessSelector extends Component {
       appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
     }
     return appsMgrNamespace
+  }
+
+
+
+  async checkConnection() {
+    const { connectedToNepi } = this.props.ros
+    if (this.state.connectedToNepi !== connectedToNepi){
+      this.setState({connectedToNepi: connectedToNepi,
+                    appsMgrNamespace: null, apps_connected: false,
+                    selected_app: 'NONE', needs_update: true})
+    }
+
+    setTimeout(async () => {
+      await this.checkConnection()
+    }, 1000)
+  }
+
+  componentDidMount(){
+    this.checkConnection()
   }
 
   getAiMgrNamespace(){
@@ -192,18 +199,6 @@ class ProcessSelector extends Component {
   }
 
 
-  async checkConnection() {
-    const { namespacePrefix, deviceId} = this.props.ros
-    if (namespacePrefix != null && deviceId != null) {
-      this.setState({needs_update: true})
-    }
-    else {
-      setTimeout(async () => {
-        await this.checkConnection()
-      }, 1000)
-    }
-  }
-
   componentDidMount(){
     this.checkConnection()
   }
@@ -248,100 +243,6 @@ class ProcessSelector extends Component {
 
 
 
-  toggleViewableApps() {
-    const viewable = !this.state.viewableApps
-    this.setState({viewableApps: viewable})
-  }
-
-
-  onToggleAppSelection(event){
-    const app_name = event.target.value
-    this.setState({selected_app: app_name})
-  }
-
-
-  // Function for creating image topic options.
-  getAppOptions() {
-    const appsList = this.state.apps_list
-    const ruiList = this.state.apps_rui_list 
-    const groupList = this.state.apps_group_list
-    const activeAppList = this.state.apps_active_list
-    const activeModelTypes = this.state.active_models_types
-    var items = []
-    const connected = this.state.connected
-    if (connected !== true){
-      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
-    }
-    else {
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
-          }
-        }
-      }
-
-      if (activeModelTypes.indexOf('detection') !== -1){
-        items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
-      }
-      if (activeModelTypes.indexOf('segmentation') !== -1){
-        items.push(<Option value={'AI Segmetation'}>{'AI Segmetation'}</Option>)
-      }
-      if (activeModelTypes.indexOf('pose') !== -1){
-        items.push(<Option value={'AI Pose'}>{'AI Pose'}</Option>)
-      }
-      if (activeModelTypes.indexOf('orientation') !== -1){
-        items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
-      }
-
-      //items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
-      
-      items.push(<Option value={'Model Manager'}>{'Model Manager'}</Option>)
-      //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
-    }
-    return items
-  }
-
-
-  renderSelection() {
-    const app_options = this.getAppOptions()
-    const hide_app_list = !this.state.viewableApps && !this.state.connected
-
-    return (
-      <React.Fragment>
-
-      <Columns>
-        <Column>
-
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Select Process App"}
-         </label>
-         
-
-          <div onClick={this.toggleViewableApps} style={{backgroundColor: Styles.vars.colors.grey0}}>
-            <Select style={{width: "10px"}}/>
-          </div>
-          <div hidden={hide_app_list}>
-          {app_options.map((app) =>
-          <div onClick={this.onToggleAppSelection}
-            style={{
-              textAlign: "center",
-              padding: `${Styles.vars.spacing.xs}`,
-              color: Styles.vars.colors.black,
-              backgroundColor: (app.props.value === this.state.selected_app) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-              cursor: "pointer",
-              }}>
-              <body app-topic ={app} style={{color: Styles.vars.colors.black}}>{app}</body>
-          </div>
-          )}
-          </div>
-
-      </Column>
-      </Columns>
-
-      </React.Fragment>
-    )
-  }
 
 
   renderApplication() {
@@ -489,25 +390,133 @@ class ProcessSelector extends Component {
 
 
 
-  render() {
+  onToggleAppSelection(event){
+    const app_name = event.target.value
+    this.setState({selected_app: app_name})
+  }
+
+
+  // Function for creating image topic options.
+  getAppOptions() {
+    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
+    const typeList = this.state.drvs_active_type_list
+    var items = []
+    const connected = this.state.drvs_connected && this.state.apps_connected
+    const appsList = this.state.apps_list
+    const ruiList = this.state.apps_rui_list 
+    const groupList = this.state.apps_group_list
+    const activeAppList = this.state.apps_active_list
+    const activeModelTypes = this.state.active_models_types
+
+    if (connected !== true){
+      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
+    }
+    else {
+
+
+      if (typeList) {
+        if (typeList.length > 0){
+            if (Object.keys(idxDevices).length > 0){
+              items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
+            }
+            if (Object.keys(ptxDevices).length > 0){
+              items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
+            }
+            if (Object.keys(lsxDevices).length > 0){
+              items.push(<Option value={"Lights"}>{"Lights"}</Option>)
+            }
+            if (Object.keys(rbxDevices).length > 0){
+              items.push(<Option value={"Robots"}>{"Robots"}</Option>)
+            }
+            if (Object.keys(npxDevices).length > 0){
+              items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
+            }
+        }
+      }
+
+      if (appsList.length > 0){
+        for (var i = 0; i < ruiList.length; i++) {
+          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          }
+        }
+      }
+      items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
+    }
+    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+    return items
+  }
+
+
+    renderSelection() {
+    const app_options = this.getAppOptions()
+
     return (
+      <React.Fragment>
 
+      <Columns>
+        <Column>
 
-      <div style={{ display: 'flex' }}>
-        <div style={{ width: '10%' }}>
-          {this.renderSelection()}
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Select Device App"}
+         </label>
+
+        <div>
+            <Select style={{width: "10px"}}/>
+            {app_options.map((app) =>
+            <div onClick={this.onToggleAppSelection}
+              style={{
+                textAlign: "center",
+                padding: `${Styles.vars.spacing.xs}`,
+                color: Styles.vars.colors.black,
+                backgroundColor: (app.props.value === this.state.selected_app) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                cursor: "pointer",
+                }}>
+                <body app-topic ={app} style={{color: (app === 'Connecting') ? Styles.vars.colors.blue : Styles.vars.colors.black}}>{app}</body>
+            </div>
+            )}
+         
         </div>
+      </Column>
+      </Columns>
 
-        <div style={{ width: '5%' }}>
-          {}
-        </div>
-
-        <div style={{ width: '85%' }}>
-          {this.renderApplication()}
-        </div>
-      </div>
-
+      </React.Fragment>
     )
+  }
+
+
+
+  render() {
+    const full_screen = (this.state.selected_app !== 'NONE')
+    const hide_full_screen = this.state.selected_app === 'NONE'
+
+    if (full_screen === true){
+      return(
+          <React.Fragment>
+               {this.renderApplication()}
+          </React.Fragment>
+      )
+    }
+    else {
+      return (
+
+
+        <div style={{ display: 'flex' }}>
+          <div style={{ width: '10%' }}>
+
+
+            {this.renderSelection()}
+          </div>
+
+     
+          <div style={{ width: '90%' }}>
+
+          </div>
+        </div>
+
+      )
+    }
   }
 
 }

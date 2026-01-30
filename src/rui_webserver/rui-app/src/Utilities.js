@@ -137,52 +137,88 @@ export function onChangeSwitchStateNestedValue(parentKey, nestedKey, currentVal)
 
 
 export function createMenuBaseName(optionsStr, prefixStr = '', appendStr = '') {
-    var shortname = ''
+    var menu_name = ''
     var parts = []
     var sliced_parts = []
     parts = optionsStr.split('/')
     if (optionsStr === 'None') {
-      shortname = 'None'
+      menu_name = 'None'
     }
     else if (parts.length > 3){
       sliced_parts = parts.slice(3); 
       if (prefixStr !== ''){
-        shortname = sliced_parts[0]
+        menu_name = sliced_parts[0]
       }
       else {
-        shortname = prefixStr + '-' + sliced_parts[0]
+        menu_name = prefixStr + '-' + sliced_parts[0]
       }
-      shortname = shortname + appendStr
+      menu_name = menu_name + appendStr
     }
     else {
-      shortname = 'All'
+      menu_name = 'All'
     }
     
-    return shortname
+    return menu_name
     
 }
 
 
 export function createMenuBaseNames(optionsStrList, prefixStr = '', appendStr = '') {
-    var shortnames = []
-    var shortname = ''
+    var menu_names = []
+    var menu_name = ''
     var i = 0
     for (i = 0; i < optionsStrList.length; ++i) {
-      shortname = createMenuBaseName(optionsStrList[i], prefixStr, appendStr)
-      shortnames.push(shortname)
+      menu_name = createMenuBaseName(optionsStrList[i], prefixStr, appendStr)
+      menu_names.push(menu_name)
     }
-    return shortnames
+    return menu_names
+    
+}
+
+export function createMenuFirstLastName(optionsStr) {
+    var menu_name = ''
+    var parts = []
+    var sliced_parts = []
+    parts = optionsStr.split('/')
+    if (optionsStr === 'None') {
+      menu_name = 'None'
+    }
+    else if (parts.length > 3){
+      sliced_parts = parts.slice(3); 
+      menu_name = sliced_parts[0]
+      if (sliced_parts.length > 1){
+        menu_name = menu_name + sliced_parts.pop()
+      }
+    }
+    else {
+      menu_name = 'All'
+    }
+    
+    return menu_name
+    
+}
+
+
+export function createMenuFirstLastNames(optionsStrList) {
+    var menu_names = []
+    var menu_name = ''
+    var i = 0
+    for (i = 0; i < optionsStrList.length; ++i) {
+      menu_name = createMenuBaseName(optionsStrList[i])
+      menu_names.push(menu_name)
+    }
+    return menu_names
     
 }
 
 
 export function createMenuShortName(optionsStr, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
-    var shortname = prefixStr
+    var menu_name = prefixStr
     var parts = []
     var sliced_parts = []
     parts = optionsStr.split('/')
     if (optionsStr === 'None') {
-      shortname = 'None'
+      menu_name = 'None'
     }
     else if (parts.length > 3){
       sliced_parts = parts.slice(3); 
@@ -200,34 +236,34 @@ export function createMenuShortName(optionsStr, filterOutList = [], removeLast =
         }
         if (include_part === true){
           if (i === 0 && prefixStr !== ''){
-            shortname = sliced_parts[i]
+            menu_name = sliced_parts[i]
           }
           else {
-            shortname = shortname + '-' + sliced_parts[i]
+            menu_name = menu_name + '-' + sliced_parts[i]
           }
         }
-        shortname = shortname + appendStr
+        menu_name = menu_name + appendStr
       }
     }
     else {
-      shortname = 'All'
+      menu_name = 'All'
     }
       
     
-    return shortname
+    return menu_name
     
 }
 
 
 export function createMenuShortNames(optionsStrList, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
-    var shortnames = []
-    var shortname = ''
+    var menu_names = []
+    var menu_name = ''
     var i = 0
     for (i = 0; i < optionsStrList.length; ++i) {
-      shortname = createMenuShortName(optionsStrList[i], filterOutList, removeLast, prefixStr, appendStr)
-      shortnames.push(shortname)
+      menu_name = createMenuShortName(optionsStrList[i], filterOutList, removeLast, prefixStr, appendStr)
+      menu_names.push(menu_name)
     }
-    return shortnames
+    return menu_names
     
 }
 

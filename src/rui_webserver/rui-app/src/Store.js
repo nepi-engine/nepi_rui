@@ -440,8 +440,17 @@ class ROSConnectionStore {
 
     if (this.ros != null && this.connectedToNepi === true && this.watchdog === false ) {
 
-      this.connectedToRos = false
       this.connectedToNepi = false
+      this.connectedToROS = false
+      this.checkTopicsServices = false
+      
+      this.topicNames = null
+      this.topicTypes = null
+      this.serviceNames = null
+
+      this.systemTopics = null
+      this.systemTopicTypes = null
+      this.systemServices = null
     
     }
 

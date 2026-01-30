@@ -33,11 +33,12 @@ import Toggle from "react-toggle"
 import BooleanIndicator from "./BooleanIndicator"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 
+
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import {filterStrList, createShortImagesFromNamespaces,createShortValuesFromNamespaces, createShortImageFromNamespace} from "./Utilities"
+import {filterStrList, createMenuFirstLastNames,createMenuBaseNames} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -95,8 +96,8 @@ class AiDetectorMgr extends Component {
       img_filter_str_list: ['detection_image','targeting_image','alert_image','tracking_image'],
 
 
-      selected_img_topic: "None",
-      selected_img_text: "None",
+      selected_display_topic: "None",
+      selected_display_text: "None",
 
       classes_list_viewable: false,
       availableClassesList: [],
@@ -226,8 +227,8 @@ class AiDetectorMgr extends Component {
         status_msg: null,
         detector_connected: false,
         detectorListener: null,
-      selected_img_topic: "None",
-      selected_img_text: "None"
+      selected_display_topic: "None",
+      selected_display_text: "None"
     })
     }
     const active_models_namespaces = this.state.active_models_namespaces
@@ -301,7 +302,8 @@ class AiDetectorMgr extends Component {
   // Function for creating image topic options.
   getDetectorOptions() {
     const active_models_namespaces = this.state.active_models_namespaces
-    const active_models_names = this.state.active_models_names
+    const shortnames = createMenuBaseNames(active_models_namespaces)
+    //const active_models_names = this.state.active_models_names
     const active_models_types = this.state.active_models_types
     const selected_detector = this.state.selected_detector
     var items = []
@@ -315,7 +317,8 @@ class AiDetectorMgr extends Component {
       for (var i = 0; i < active_models_namespaces.length; i++) {
           type = active_models_types[i]
           if (type === check_type ){
-            items.push(<Option value={active_models_namespaces[i]}>{active_models_names[i]}</Option>)
+            //items.push(<Option value={active_models_namespaces[i]}>{active_models_names[i]}</Option>)
+            items.push(<Option value={active_models_namespaces[i]}>{shortnames[i]}</Option>)
           }
       }
     }
@@ -449,7 +452,7 @@ class AiDetectorMgr extends Component {
     const { imageTopics } = this.props.ros
     const img_options = filterStrList(imageTopics,filter_str_list)
     const baseNamespace = this.getBaseNamespace()
-    var imageTopicShortnames = createShortImagesFromNamespaces(baseNamespace, img_options)
+    var imageTopicShortnames = createMenuFirstLastNames(img_options)
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     items.push(<Option value={'All'}>{'All'}</Option>)
@@ -471,7 +474,7 @@ class AiDetectorMgr extends Component {
 
   onImagesTopicSelected(event){
     const {imageTopics, sendStringMsg, sendStringArrayMsg} = this.props.ros
-    const detector_namespace = this.selected_detector
+    const detector_namespace = this.state.selected_detector
     const add_img_namespace = detector_namespace + "/add_img_topic"
     const add_imgs_namespace = detector_namespace + "/add_img_topics"
     const remove_img_namespace = detector_namespace + "/remove_img_topic"
@@ -480,7 +483,7 @@ class AiDetectorMgr extends Component {
     const img_options = filterStrList(imageTopics,filter_str_list)
     const det_img_topics = this.state.status_msg.selected_img_topics
     const img_topic = event.target.value
-    //this.setState({selected_img_topic: img_topic})
+    //this.setState({selected_display_topic: img_topic})
 
     if (img_topic === "None"){
         sendStringArrayMsg(remove_imgs_namespace,img_options)
@@ -568,7 +571,7 @@ renderDetectorSettings() {
   const { sendTriggerMsg, sendBoolMsg } = this.props.ros
 
 
-  const sel_img = 'Unselected' //this.state.selected_img_topic
+  const sel_img = 'Unselected' //this.state.selected_display_topic
 
   const classOptions = this.getClassOptions()
   const selectedClasses = this.state.selectedClassesList
@@ -983,10 +986,10 @@ renderDetectorSettings() {
 
     // Function for creating image topic for a selected detector.
     getDisplayImgOptions() {
-
+      const { imageTopics } = this.props.ros
       var items = []
       const status_msg = this.state.status_msg
-      const sel_img = this.state.selected_img_topic
+      const sel_img = this.state.selected_display_topic
     
 
       var img_topic = "None"
@@ -995,24 +998,26 @@ renderDetectorSettings() {
       var shortname = ''
       if (status_msg != null){
               const image_pub_topics = status_msg.image_pub_topics
+              const image_names = createMenuFirstLastNames(image_pub_topics)
               if (image_pub_topics.length > 0){
                 for (var i = 0; i < image_pub_topics.length; i++) {
-                    img_topic = image_pub_topics[i]
-                    parts = image_pub_topics[i].replace('/detection_image','').split('/')
-                    sliced_parts = parts.slice(3); 
-                    shortname =  sliced_parts.join('-');   
-                    items.push(<Option value={img_topic}>{shortname}</Option>)
+                    if (imageTopics.indexOf(image_pub_topics[i]) !== -1) {
+                      img_topic = image_pub_topics[i] 
+                      shortname =  image_names[i]  
+                      items.push(<Option value={img_topic}>{shortname}</Option>)
+                   
 
-                  if ((sel_img === "None" || sel_img === '') && i === 0 ){
-                    
-                    this.setState({selected_img_topic: img_topic, selected_img_text: shortname })
-                  }
+                      if ((sel_img === "None" || sel_img === '') && i === 0 ){
+                        
+                        this.setState({selected_display_topic: img_topic, selected_display_text: shortname })
+                      }
+                    }
                 }
               }
               else  {
                 items.push(<Option value={"None"}>{"None"}</Option>)
                 if (sel_img !== 'None'){
-                  this.setState({selected_img_topic: "None", selected_img_text: "None" })
+                  this.setState({selected_display_topic: "None", selected_display_text: "None" })
                 }
               }
       }
@@ -1032,8 +1037,8 @@ renderDetectorSettings() {
       detector_name = status_msg.name 
       img_name = detector_name + img_topic.split(detector_name)[1]
     }
-    this.setState({selected_img_topic: img_topic,
-                   selected_img_text: img_name
+    this.setState({selected_display_topic: img_topic,
+                   selected_display_text: img_name
     })
   }   
 
@@ -1056,11 +1061,12 @@ renderDetectorSettings() {
 
   render() {
     const {topicNames} = this.props.ros
+    const { imageTopics } = this.props.ros
     const img_options = this.getDisplayImgOptions()
-    const sel_img_topic = this.state.selected_img_topic
-    const img_publishning = topicNames.indexOf(sel_img_topic) !== -1
-    const sel_img = img_publishning? sel_img_topic : ""
-    const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_img_text : 'Waiting for image to publish'
+    const sel_img_topic = this.state.selected_display_topic
+    const img_publishning = imageTopics.indexOf(sel_img_topic) !== -1
+    const sel_img = img_publishning? sel_img_topic : "None"
+    const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
     const saveNamespace = this.state.selected_detector
     const connected = this.state.detector_connected
@@ -1092,9 +1098,8 @@ renderDetectorSettings() {
 
 
       <ImageViewer
-        imageTopic={sel_img}
+        image_topic={sel_img}
         title={sel_img_text}
-        hideQualitySelector={false}
       />
 
       { (saveNamespace !== 'None' && connected === true) ?
