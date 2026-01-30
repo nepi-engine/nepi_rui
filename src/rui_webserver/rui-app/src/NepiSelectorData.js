@@ -24,10 +24,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import Label from "./Label"
-import Toggle from "react-toggle"
 
-import {onChangeSwitchStateValue} from "./Utilities"
 
 import NepiDashboardData from "./NepiDashboardData"
 import NavPoseMgr from "./NepiMgrNavPose"
@@ -244,7 +241,9 @@ class DataSelector extends Component {
 
   onToggleAppSelection(event){
     const app_name = event.target.value
-    this.setState({selected_app: app_name})
+    if (app_name !== 'Connecting'){
+      this.setState({selected_app: app_name})
+    }
   }
 
 
@@ -314,7 +313,7 @@ class DataSelector extends Component {
           {"Select Device App"}
          </label>
 
-        <div>
+       <div style={{backgroundColor: Styles.vars.colors.grey0}}>
             <Select style={{width: "10px"}}/>
             {app_options.map((app) =>
             <div onClick={this.onToggleAppSelection}

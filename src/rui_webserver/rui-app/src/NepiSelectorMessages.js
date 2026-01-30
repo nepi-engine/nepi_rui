@@ -23,15 +23,15 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import Label from "./Label"
-import Toggle from "react-toggle"
+// import Label from "./Label"
+// import Toggle from "react-toggle"
 
-import {onChangeSwitchStateValue} from "./Utilities"
+// import {onChangeSwitchStateValue} from "./Utilities"
 
 import NepiSystemMessages from "./Nepi_IF_Messages"
 
 
-import { createShortUniqueValues} from "./Utilities"
+import { createMenuBaseNames} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -71,7 +71,7 @@ class NepiMessagesSelector extends Component {
       if (sel_topic === "Connecting"){
         this.setState({selected_topic: allNamespace})
       }
-      const shortnames = createShortUniqueValues(msgTopics)
+      const shortnames = createMenuBaseNames(msgTopics)
       var topic = ""
       for (var i = 0; i < msgTopicsSorted.length; i++) {
         topic = msgTopicsSorted[i]

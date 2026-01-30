@@ -23,10 +23,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import Label from "./Label"
-import Toggle from "react-toggle"
 
-import {onChangeSwitchStateValue} from "./Utilities"
 
 import DriversMgr from "./NepiSystemDrivers"
 import AppRender from "./Nepi_IF_Apps"
@@ -52,8 +49,7 @@ class DevicesSelector extends Component {
       appsMgrName: "apps_mgr",
       appsMgrNamespace: null,
 
-      drvsMgrName: "drivers_mgr",
-      drvsMgrNamespace: null,
+
 
       apps_list: ['NONE'],
       apps_group_list: [],
@@ -62,6 +58,8 @@ class DevicesSelector extends Component {
       
       selected_app: 'NONE',
 
+      drvsMgrName: "drivers_mgr",
+      drvsMgrNamespace: null,
 
       drvs_list: ['NONE'],
       last_drvs_list: [],
@@ -427,7 +425,25 @@ class DevicesSelector extends Component {
     else if (sel_app === "Driver Mgr"){
       return (
         <React.Fragment>
+          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+          </label>
           {this.renderDriversMgr()}    
+        </React.Fragment>
+      )
+    }
+    else {
+      return (
+        <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+          </label>
+
+          <Columns>
+          <Column>
+
+          </Column>
+          </Columns> 
         </React.Fragment>
       )
     }
@@ -440,7 +456,9 @@ class DevicesSelector extends Component {
 
   onToggleAppSelection(event){
     const app_name = event.target.value
-    this.setState({selected_app: app_name})
+    if (app_name !== 'Connecting'){
+      this.setState({selected_app: app_name})
+    }
   }
 
 
@@ -510,7 +528,7 @@ class DevicesSelector extends Component {
           {"Select Device App"}
          </label>
 
-        <div>
+        <div style={{backgroundColor: Styles.vars.colors.grey0}}>
             <Select style={{width: "10px"}}/>
             {app_options.map((app) =>
             <div onClick={this.onToggleAppSelection}
