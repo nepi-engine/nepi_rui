@@ -63,7 +63,7 @@ class DevicesSelector extends Component {
 
       drvsMgrName: "drivers_mgr",
       drvsMgrNamespace: null,
-      drvsListener: null,
+      drvsMgrListener: null,
       drvs_connected: null,
 
       drvs_list: ['NONE'],
@@ -189,15 +189,15 @@ class DevicesSelector extends Component {
   // Function for configuring and subscribing to Status
   updateDrvsMgrStatusListener() {
     const statusNamespace = this.getDrvsMgrNamespace() + '/status'
-    if (this.state.drvsListener) {
-      this.state.drvsListener.unsubscribe()
+    if (this.state.drvsMgrListener) {
+      this.state.drvsMgrListener.unsubscribe()
     }
-    var drvsListener = this.props.ros.setupStatusListener(
+    var drvsMgrListener = this.props.ros.setupStatusListener(
           statusNamespace,
           "nepi_interfaces/MgrDriversStatus",
           this.drvsStatusListener
         )
-    this.setState({ drvsListener: drvsListener,
+    this.setState({ drvsMgrListener: drvsMgrListener,
       needs_update: false})
   }
 
@@ -222,12 +222,12 @@ class DevicesSelector extends Component {
       } 
     }
 
-    const drvsNamespace = this.getDrvsMgrNamespace()
-    const drvsNamespace_updated = (prevState.drvsNamespace !== drvsNamespace && drvsNamespace !== null)
+    const drvsMgrNamespace = this.getDrvsMgrNamespace()
+    const drvsMgrNamespace_updated = (prevState.drvsMgrNamespace !== drvsMgrNamespace && drvsMgrNamespace !== null)
     if (namespace_updated ) {
-      if (drvsNamespace.indexOf('null') === -1){
+      if (drvsMgrNamespace.indexOf('null') === -1){
         this.setState({
-          drvsNamespace: drvsNamespace,
+          drvsMgrNamespace: drvsMgrNamespace,
         })
         this.updateDrvsMgrStatusListener()
       } 
@@ -237,8 +237,8 @@ class DevicesSelector extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.drvsListener) {
-      this.state.drvsListener.unsubscribe()
+    if (this.state.drvsMgrListener) {
+      this.state.drvsMgrListener.unsubscribe()
     }
     if (this.state.appsMgrListener) {
       this.state.appsMgrListener.unsubscribe()

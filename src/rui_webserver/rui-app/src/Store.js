@@ -763,7 +763,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callSettingsCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     this.settingCaps[namespace] = []
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
@@ -775,7 +775,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callImageCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/ImageCapabilitiesQuery",  
@@ -786,7 +786,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callNavPoseCapabilitiesQueryService(namespace) {
-    if ( this.topicNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1) {
+    if ( this.topicNames.indexOf(namespace + "/capabilities_query") !== -1) {
       const capabilities = await this.callService({
         name: namespace + "/capabilities_query",
         messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
@@ -798,7 +798,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callIDXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
@@ -810,7 +810,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callPTXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/PTXCapabilitiesQuery",
@@ -821,7 +821,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callLSXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/LSXCapabilitiesQuery",
@@ -833,7 +833,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callRBXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
@@ -844,7 +844,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callNPXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/capabilities_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
@@ -889,7 +889,7 @@ class ROSConnectionStore {
     @action.bound
   async callAiDetectorCapabilitiesQueryService(namespace) {
     this.saveDataCaps[namespace] = []
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + namespace + "/detector_info_query") !== -1){
+  if (this.serviceNames.indexOf(namespace + "/detector_info_query") !== -1){
     const capabilities = await this.callService({
       name: namespace + "/detector_info_query",
       messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
