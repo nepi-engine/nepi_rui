@@ -56,6 +56,7 @@ import AiDetectorMgr from "./NepiMgrAiDetector"
 //import TargetsMgr from "./NepiMgrTargets"
 
 // Other SYSTEM Classes
+import NepiSystemDevice from "./NepiSystemDevice"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AppsMgr from "./NepiSystemApps"
 
@@ -406,7 +407,24 @@ class NepiIFAppSelector extends Component {
     }
 
 
+    else if (sel_app === "Device Manager"){
+      return (
+        <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+            </label>
+            <Columns>
+            <Column>
 
+              <DeviceMgr
+              title={"Device Manager"}
+              />
+
+          </Column>
+          </Columns>  
+        </React.Fragment>
+      )
+    }
     else if (sel_app === "Automation Mgr"){
       return (
         <React.Fragment>
