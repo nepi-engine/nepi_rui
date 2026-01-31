@@ -23,6 +23,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import Button, { ButtonMenu } from "./Button"
 
 
 import TargetsMgr from "./NepiMgrTargets"
@@ -45,11 +46,27 @@ class ProcessSelector extends Component {
     super(props)
 
     this.state = {
-      show_delete_app: false,
+
+      connectedToNepi: false,
+      selected_app: 'NONE',
+
       appsMgrName: "apps_mgr",
       appsMgrNamespace: null,
+      appsMgrListener: null,
+      apps_connected: false,
 
 
+      apps_list: ['NONE'],
+      apps_group_list: [],
+      apps_rui_list: null,
+      apps_active_list: [],
+
+
+
+      aiMgrName: 'ai_model_mgr',
+      aiMgrNamespace: null,
+      aiMgrListener: null,
+      ai_connected: false,
 
       frameworks_list: [],
       active_framework: "None",
@@ -60,33 +77,19 @@ class ProcessSelector extends Component {
       active_models_types: [],
 
 
-
-
-      apps_list: ['NONE'],
-      apps_group_list: [],
-      apps_rui_list: null,
-      apps_active_list: [],
-      
-      selected_app: 'NONE',
-
-      connectedToNepi: false,
-      apps_connnected: false,
-
-      appsListener: null,
-      appListener: null,
-
       needs_update: false
     }
-    this.checkConnection = this.checkConnection.bind(this)
+
 
     this.getAiMgrNamespace = this.getAiMgrNamespace.bind(this)
     this.updateAiMgrStatusListener = this.updateAiMgrStatusListener.bind(this)
     this.aiMgrStatusListener = this.aiMgrStatusListener.bind(this)
 
+    this.checkConnection = this.checkConnection.bind(this)
 
     this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
 
-    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
+    this.updateAppsMgrStatusListener = this.updateAppsMgrStatusListener.bind(this)
     this.appsStatusListener = this.appsStatusListener.bind(this)
 
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
@@ -110,6 +113,7 @@ class ProcessSelector extends Component {
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
                     appsMgrNamespace: null, apps_connected: false,
+                    aiMgrNamespace: null, ai_connected: false,
                     selected_app: 'NONE', needs_update: true})
     }
 
@@ -118,9 +122,7 @@ class ProcessSelector extends Component {
     }, 1000)
   }
 
-  componentDidMount(){
-    this.checkConnection()
-  }
+
 
   getAiMgrNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
@@ -134,36 +136,34 @@ class ProcessSelector extends Component {
   // Callback for handling ROS Status messages
   appsStatusListener(message) {
     this.setState({
-      apps_path: message.apps_path,
       apps_list: message.apps_ordered_list,
       apps_group_list: message.apps_group_list,
-      apps_rui_list: message.apps_rui_list,
       apps_active_list: message.apps_active_list,
-      apps_install_path: message.apps_install_path,
-      apps_install_list: message.apps_install_list,
-      backup_removed_apps: message.backup_removed_apps,
+      apps_rui_list: message.apps_rui_list,
 
-      connected: true
+      apps_connected: true
     })    
 
     this.props.ros.appNames = message.apps_ordered_list
 
   }
 
+  
   // Function for configuring and subscribing to Status
-  updateMgrAppsStatusListener() {
+  updateAppsMgrStatusListener() {
     const statusNamespace = this.getAppsMgrNamespace() + '/status'
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
-    var appsListener = this.props.ros.setupStatusListener(
+    var appsMgrListener = this.props.ros.setupStatusListener(
           statusNamespace,
           "nepi_interfaces/MgrAppsStatus",
           this.appsStatusListener
         )
-    this.setState({ appsListener: appsListener,
+    this.setState({ appsMgrListener: appsMgrListener,
       needs_update: false})
   }
+
 
 
 
@@ -176,7 +176,9 @@ class ProcessSelector extends Component {
       models_types: message.ai_models_types,
       active_framework: message.active_ai_framework,
       active_models_list: message.active_ai_models,
-      active_models_types: message.active_ai_models_types
+      active_models_types: message.active_ai_models_types,
+
+      ai_connected: true
     })    
 
   }
@@ -211,7 +213,7 @@ class ProcessSelector extends Component {
         this.setState({
           appsMgrNamespace: namespace,
         })
-        this.updateMgrAppsStatusListener()
+        this.updateAppsMgrStatusListener()
       } 
     }
 
@@ -230,8 +232,8 @@ class ProcessSelector extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
     if (this.state.aiMgrListener) {
       this.state.aiMgrListener.unsubscribe()
@@ -394,55 +396,46 @@ class ProcessSelector extends Component {
     }
   }
 
+
   // Function for creating image topic options.
   getAppOptions() {
-    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
-    const typeList = this.state.drvs_active_type_list
-    var items = []
-    const connected = this.state.drvs_connected && this.state.apps_connected
     const appsList = this.state.apps_list
     const ruiList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
     const activeAppList = this.state.apps_active_list
     const activeModelTypes = this.state.active_models_types
-
+    var items = []
+    const connected = this.state.apps_connected && this.state.ai_connected
     if (connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else {
-
-
-      if (typeList) {
-        if (typeList.length > 0){
-            if (Object.keys(idxDevices).length > 0){
-              items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
-            }
-            if (Object.keys(ptxDevices).length > 0){
-              items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
-            }
-            if (Object.keys(lsxDevices).length > 0){
-              items.push(<Option value={"Lights"}>{"Lights"}</Option>)
-            }
-            if (Object.keys(rbxDevices).length > 0){
-              items.push(<Option value={"Robots"}>{"Robots"}</Option>)
-            }
-            if (Object.keys(npxDevices).length > 0){
-              items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
-            }
-        }
-      }
-
       if (appsList.length > 0){
         for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+          if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
             items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
           }
         }
       }
-      items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
+
+      if (activeModelTypes.indexOf('detection') !== -1){
+        items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
+      }
+      if (activeModelTypes.indexOf('segmentation') !== -1){
+        items.push(<Option value={'AI Segmetation'}>{'AI Segmetation'}</Option>)
+      }
+      if (activeModelTypes.indexOf('pose') !== -1){
+        items.push(<Option value={'AI Pose'}>{'AI Pose'}</Option>)
+      }
+      if (activeModelTypes.indexOf('orientation') !== -1){
+        items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
+      }
+
+      //items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
+      
+      items.push(<Option value={'Model Manager'}>{'Model Manager'}</Option>)
+      //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
     }
-    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     return items
   }
 
@@ -492,6 +485,9 @@ class ProcessSelector extends Component {
     if (full_screen === true){
       return(
           <React.Fragment>
+
+
+
                {this.renderApplication()}
           </React.Fragment>
       )

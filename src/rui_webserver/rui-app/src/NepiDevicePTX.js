@@ -166,7 +166,7 @@ class NepiDevicePTX extends Component {
         
           <div style={{ display: 'flex' }}>
 
-              <div style={{ width: "68%" }}>
+              <div style={{ width: "73%" }}>
 
 
               {(device_selected == true) ?
@@ -182,7 +182,7 @@ class NepiDevicePTX extends Component {
 
 
 
-              <div style={{ width: "30%"}}>
+              <div style={{ width: "25%"}}>
 
                     {this.renderDeviceSelection()}
 

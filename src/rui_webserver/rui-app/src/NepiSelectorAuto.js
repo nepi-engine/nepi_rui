@@ -23,6 +23,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import Button, { ButtonMenu } from "./Button"
 
 
 import AutomationMgr from "./NepiMgrAutomation"
@@ -37,23 +38,19 @@ class AutoSelector extends Component {
     super(props)
 
     this.state = {
-      show_delete_app: false,
+
+      connectedToNepi: false,
+      selected_app: 'NONE',
+
       appsMgrName: "apps_mgr",
       appsMgrNamespace: null,
-
+      appsMgrListener: null,
+      apps_connected: false,
 
       apps_list: ['NONE'],
       apps_group_list: [],
       apps_rui_list: null,
       apps_active_list: [],
-      
-      selected_app: 'NONE',
-
-      connectedToNepi: false,
-      apps_connnected: false,
-
-      appsListener: null,
-      appListener: null,
 
       needs_update: false
     }
@@ -61,23 +58,13 @@ class AutoSelector extends Component {
 
     this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
 
-    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
+    this.updateAppsMgrStatusListener = this.updateAppsMgrStatusListener.bind(this)
     this.appsStatusListener = this.appsStatusListener.bind(this)
 
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
     
   }
-
-  getAppsMgrNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var appsMgrNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
-    }
-    return appsMgrNamespace
-  }
-
 
 
   async checkConnection() {
@@ -93,18 +80,28 @@ class AutoSelector extends Component {
     }, 1000)
   }
 
-  componentDidMount(){
-    this.checkConnection()
+
+
+  getAppsMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var appsMgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
+    }
+    return appsMgrNamespace
   }
+
 
 
   // Callback for handling ROS Status messages
   appsStatusListener(message) {
     this.setState({
+      apps_list: message.apps_ordered_list,
       apps_group_list: message.apps_group_list,
       apps_active_list: message.apps_active_list,
       apps_rui_list: message.apps_rui_list,
-      apps_connnected: true
+
+      apps_connected: true
     })    
 
     this.props.ros.appNames = message.apps_ordered_list
@@ -112,18 +109,23 @@ class AutoSelector extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  updateMgrAppsStatusListener() {
+  updateAppsMgrStatusListener() {
     const statusNamespace = this.getAppsMgrNamespace() + '/status'
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
-    var appsListener = this.props.ros.setupStatusListener(
+    var appsMgrListener = this.props.ros.setupStatusListener(
           statusNamespace,
           "nepi_interfaces/MgrAppsStatus",
           this.appsStatusListener
         )
-    this.setState({ appsListener: appsListener,
+    this.setState({ appsMgrListener: appsMgrListener,
       needs_update: false})
+  }
+
+
+  componentDidMount(){
+    this.checkConnection()
   }
 
 
@@ -143,12 +145,18 @@ class AutoSelector extends Component {
         this.setState({
           appsMgrNamespace: namespace,
         })
-        this.updateMgrAppsStatusListener()
+        this.updateAppsMgrStatusListener()
       } 
     }
   }
 
-  
+    // Lifecycle method called just before the component umounts.
+  // Used to unsubscribe to Status message
+  componentWillUnmount() {
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
+    }
+  }
 
   renderApplication() {
     const sel_app = this.state.selected_app
@@ -213,55 +221,30 @@ class AutoSelector extends Component {
   }
 
 
-  // Function for creating image topic options.
+   // Function for creating image topic options.
   getAppOptions() {
-    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
-    const typeList = this.state.drvs_active_type_list
-    var items = []
-    const connected = this.state.drvs_connected && this.state.apps_connected
+
     const appsList = this.state.apps_list
     const ruiList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
-    const activeAppList = this.state.apps_active_list
-    const activeModelTypes = this.state.active_models_types
-
-    if (connected !== true){
+    const activeList = this.state.apps_active_list
+    var items = []
+    const apps_connected = this.state.apps_connected
+    if (apps_connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else {
 
-
-      if (typeList) {
-        if (typeList.length > 0){
-            if (Object.keys(idxDevices).length > 0){
-              items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
-            }
-            if (Object.keys(ptxDevices).length > 0){
-              items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
-            }
-            if (Object.keys(lsxDevices).length > 0){
-              items.push(<Option value={"Lights"}>{"Lights"}</Option>)
-            }
-            if (Object.keys(rbxDevices).length > 0){
-              items.push(<Option value={"Robots"}>{"Robots"}</Option>)
-            }
-            if (Object.keys(npxDevices).length > 0){
-              items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
-            }
-        }
-      }
-
       if (appsList.length > 0){
         for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+          if (groupList[i] === "AUTOMATION" && ruiList[i] !== "None" && activeList.indexOf(appsList[i]) !== -1 ){
             items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
           }
         }
       }
-      items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
+      items.push(<Option value={'Automation Mgr'}>{'Automation Mgr'}</Option>)
+      //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
     }
-    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     return items
   }
 
@@ -311,6 +294,7 @@ class AutoSelector extends Component {
     if (full_screen === true){
       return(
           <React.Fragment>
+
                {this.renderApplication()}
           </React.Fragment>
       )

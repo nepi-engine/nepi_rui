@@ -23,6 +23,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import Button, { ButtonMenu } from "./Button"
 
 
 
@@ -44,40 +45,28 @@ class SystemSelector extends Component {
     super(props)
 
     this.state = {
-      show_delete_app: false,
-      mgrName: "apps_mgr",
-      mgrNamespace: null,
-
-      apps_list: ['NONE'],
-      last_apps_list: [],
-      apps_active_list: [],
-      apps_install_path: null,
-      apps_install_list: [],
+      
+      connectedToNepi: false,
       selected_app: 'NONE',
 
-      apps_rui_list: [],
+      appsMgrName: "apps_mgr",
+      appsMgrNamespace: null,
+      appsMgrListener: null,
+      apps_connected: false,
+
+      apps_list: ['NONE'],
       apps_group_list: [],
-
-      app_name: 'NONE',
-      app_description: null,
-      apps_path: null,
-      app_options_menu: null,
-      active_state: null,
-
-      backup_removed_apps: true,
-
-      connected: false,
-
-      appsListener: null,
-      appListener: null,
+      apps_rui_list: null,
+      apps_active_list: [],
 
       needs_update: true
     }
 
+    this.checkConnection = this.checkConnection.bind(this)
 
-    this.getMgrNamespace = this.getMgrNamespace.bind(this)
+    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
 
-    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
+    this.updateAppsMgrStatusListener = this.updateAppsMgrStatusListener.bind(this)
     this.appsStatusListener = this.appsStatusListener.bind(this)
 
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
@@ -85,69 +74,84 @@ class SystemSelector extends Component {
     
   }
 
-  getMgrNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var mgrNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
+  async checkConnection() {
+    const { connectedToNepi } = this.props.ros
+    if (this.state.connectedToNepi !== connectedToNepi){
+      this.setState({connectedToNepi: connectedToNepi,
+                    appsMgrNamespace: null, apps_connected: false,
+                    selected_app: 'NONE', needs_update: true})
     }
-    return mgrNamespace
+
+    setTimeout(async () => {
+      await this.checkConnection()
+    }, 1000)
+  }
+
+
+
+  getAppsMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var appsMgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
+    }
+    return appsMgrNamespace
   }
 
   // Callback for handling ROS Status messages
   appsStatusListener(message) {
     this.setState({
-      apps_path: message.apps_path,
       apps_list: message.apps_ordered_list,
       apps_group_list: message.apps_group_list,
       apps_active_list: message.apps_active_list,
-      apps_install_path: message.apps_install_path,
-      apps_install_list: message.apps_install_list,
-      backup_removed_apps: message.backup_removed_apps,
       apps_rui_list: message.apps_rui_list,
-      connected: true
-    })    
 
+      apps_connected: true
+    })    
     this.props.ros.appNames = message.apps_ordered_list
 
   }
 
+ 
   // Function for configuring and subscribing to Status
-  updateMgrAppsStatusListener() {
-    const statusNamespace = this.getMgrNamespace() + '/status'
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+  updateAppsMgrStatusListener() {
+    const statusNamespace = this.getAppsMgrNamespace() + '/status'
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
-    var appsListener = this.props.ros.setupStatusListener(
+    var appsMgrListener = this.props.ros.setupStatusListener(
           statusNamespace,
           "nepi_interfaces/MgrAppsStatus",
           this.appsStatusListener
         )
-    this.setState({ appsListener: appsListener,
+    this.setState({ appsMgrListener: appsMgrListener,
       needs_update: false})
   }
 
 
 
+  componentDidMount(){
+    this.checkConnection()
+  }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.getMgrNamespace()
+    const namespace = this.getAppsMgrNamespace()
 
     const {topicNames} = this.props.ros
     //Unused const script_file = this.state.automationSelectedScript
     const check_topic = namespace + "/status"
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
 
-    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
+    const namespace_updated = (prevState.appsMgrNamespace !== namespace && namespace !== null)
     const needs_update = (this.state.needs_update && namespace !== null && topic_publishing)
     if (namespace_updated || needs_update) {
       if (namespace.indexOf('null') === -1){
         this.setState({
-          mgrNamespace: namespace,
+          appsMgrNamespace: namespace,
         })
-        this.updateMgrAppsStatusListener()
+        this.updateAppsMgrStatusListener()
       } 
     }
   }
@@ -155,8 +159,8 @@ class SystemSelector extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
   }
 
@@ -323,55 +327,36 @@ class SystemSelector extends Component {
 
   // Function for creating image topic options.
   getAppOptions() {
-    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
-    const typeList = this.state.drvs_active_type_list
-    var items = []
-    const connected = this.state.drvs_connected && this.state.apps_connected
     const appsList = this.state.apps_list
     const ruiList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
-    const activeAppList = this.state.apps_active_list
-    const activeModelTypes = this.state.active_models_types
-
-    if (connected !== true){
+    const activeList = this.state.apps_active_list
+    var items = []
+    const apps_connected = this.state.apps_connected
+    if (apps_connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else {
 
 
-      if (typeList) {
-        if (typeList.length > 0){
-            if (Object.keys(idxDevices).length > 0){
-              items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
-            }
-            if (Object.keys(ptxDevices).length > 0){
-              items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
-            }
-            if (Object.keys(lsxDevices).length > 0){
-              items.push(<Option value={"Lights"}>{"Lights"}</Option>)
-            }
-            if (Object.keys(rbxDevices).length > 0){
-              items.push(<Option value={"Robots"}>{"Robots"}</Option>)
-            }
-            if (Object.keys(npxDevices).length > 0){
-              items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
-            }
-        }
-      }
 
+      items.push(<Option value={'Device Manager'}>{'Device Manager'}</Option>)
+      items.push(<Option value={'Software Manager'}>{'Software Manager'}</Option>)
+      items.push(<Option value={'NavPose Manager'}>{'NavPose Manager'}</Option>)
+      items.push(<Option value={'Driver Manager'}>{'Driver Manager'}</Option>)
+      items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
+      items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
       if (appsList.length > 0){
         for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+          if (groupList[i] === "System" && ruiList[i] !== "None" && activeList.indexOf(appsList[i]) !== -1){
             items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
           }
         }
       }
-      items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
     }
-    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     return items
   }
+
 
 
     renderSelection() {
@@ -419,6 +404,7 @@ class SystemSelector extends Component {
     if (full_screen === true){
       return(
           <React.Fragment>
+
                {this.renderApplication()}
           </React.Fragment>
       )

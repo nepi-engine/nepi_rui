@@ -23,6 +23,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import Button, { ButtonMenu } from "./Button"
 
 
 import DriversMgr from "./NepiSystemDrivers"
@@ -44,22 +45,26 @@ class DevicesSelector extends Component {
     super(props)
 
     this.state = {
-      show_delete_app: false,
+
+      connectedToNepi: false,
+      selected_app: 'NONE',
 
       appsMgrName: "apps_mgr",
       appsMgrNamespace: null,
-
-
+      appsMgrListener: null,
+      apps_connected: false,
 
       apps_list: ['NONE'],
       apps_group_list: [],
       apps_rui_list: null,
       apps_active_list: [],
-      
-      selected_app: 'NONE',
+
+
 
       drvsMgrName: "drivers_mgr",
       drvsMgrNamespace: null,
+      drvsListener: null,
+      drvs_connected: null,
 
       drvs_list: ['NONE'],
       last_drvs_list: [],
@@ -77,47 +82,26 @@ class DevicesSelector extends Component {
       drv_options_menu: null,
       active_state: null,
 
-      backup_removed_drvs: true,
-
-      drvsListener: null,
-      drvListener: null,
-
-
-      selected_app: 'NONE',
-
-      connectedToNepi: false,
-      apps_connnected: false,
-
-      appsListener: null,
-      appListener: null,
 
       needs_update: false
     }
-    this.checkConnection = this.checkConnection.bind(this)
 
-    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
-
-    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
-    this.appsStatusListener = this.appsStatusListener.bind(this)
 
     this.getDrvsMgrNamespace = this.getDrvsMgrNamespace.bind(this)
     this.updateDrvsMgrStatusListener = this.updateDrvsMgrStatusListener.bind(this)
     this.drvsStatusListener = this.drvsStatusListener.bind(this)
 
+    this.checkConnection = this.checkConnection.bind(this)
+
+    this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
+
+    this.updateAppsMgrStatusListener = this.updateAppsMgrStatusListener.bind(this)
+    this.appsStatusListener = this.appsStatusListener.bind(this)
+
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
     
   }
-
-  getAppsMgrNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var appsMgrNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
-    }
-    return appsMgrNamespace
-  }
-
 
 
   async checkConnection() {
@@ -132,6 +116,18 @@ class DevicesSelector extends Component {
       await this.checkConnection()
     }, 1000)
   }
+
+  getAppsMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var appsMgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      appsMgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.appsMgrName
+    }
+    return appsMgrNamespace
+  }
+
+
+
 
   componentDidMount(){
     this.checkConnection()
@@ -163,17 +159,17 @@ class DevicesSelector extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  updateMgrAppsStatusListener() {
+  updateAppsMgrStatusListener() {
     const statusNamespace = this.getAppsMgrNamespace() + '/status'
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
-    var appsListener = this.props.ros.setupStatusListener(
+    var appsMgrListener = this.props.ros.setupStatusListener(
           statusNamespace,
           "nepi_interfaces/MgrAppsStatus",
           this.appsStatusListener
         )
-    this.setState({ appsListener: appsListener,
+    this.setState({ appsMgrListener: appsMgrListener,
       needs_update: false})
   }
 
@@ -222,7 +218,7 @@ class DevicesSelector extends Component {
         this.setState({
           appsMgrNamespace: namespace,
         })
-        this.updateMgrAppsStatusListener()
+        this.updateAppsMgrStatusListener()
       } 
     }
 
@@ -244,8 +240,8 @@ class DevicesSelector extends Component {
     if (this.state.drvsListener) {
       this.state.drvsListener.unsubscribe()
     }
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
   }
 
@@ -560,6 +556,7 @@ class DevicesSelector extends Component {
     if (full_screen === true){
       return(
           <React.Fragment>
+
                {this.renderApplication()}
           </React.Fragment>
       )

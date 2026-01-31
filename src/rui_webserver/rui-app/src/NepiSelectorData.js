@@ -24,6 +24,7 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+import Button, { ButtonMenu } from "./Button"
 
 
 import NepiDashboardData from "./NepiDashboardData"
@@ -41,23 +42,19 @@ class DataSelector extends Component {
     super(props)
 
     this.state = {
-      show_delete_app: false,
-      mgrName: "apps_mgr",
-      appsMgrNamespace: null,
 
+      connectedToNepi: false,
+      selected_app: 'NONE',
+
+      appsMgrName: "apps_mgr",
+      appsMgrNamespace: null,
+      appsMgrListener: null,
+      apps_connected: false,
 
       apps_list: ['NONE'],
       apps_group_list: [],
       apps_rui_list: null,
       apps_active_list: [],
-      
-      selected_app: 'NONE',
-
-      connectedToNepi: false,
-      apps_connnected: false,
-
-      appsListener: null,
-      appListener: null,
 
       needs_update: false
     }
@@ -65,13 +62,26 @@ class DataSelector extends Component {
 
     this.getAppsMgrNamespace = this.getAppsMgrNamespace.bind(this)
 
-    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
+    this.updateAppsMgrStatusListener = this.updateAppsMgrStatusListener.bind(this)
     this.appsStatusListener = this.appsStatusListener.bind(this)
 
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
     
   }
+
+  async checkConnection() {
+  const { connectedToNepi } = this.props.ros
+  if (this.state.connectedToNepi !== connectedToNepi){
+    this.setState({connectedToNepi: connectedToNepi,
+                  appsMgrNamespace: null, apps_connected: false,
+                  selected_app: 'NONE', needs_update: true})
+  }
+
+  setTimeout(async () => {
+    await this.checkConnection()
+  }, 1000)
+}
 
   getAppsMgrNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
@@ -84,50 +94,33 @@ class DataSelector extends Component {
 
 
 
-  async checkConnection() {
-    const { connectedToNepi } = this.props.ros
-    if (this.state.connectedToNepi !== connectedToNepi){
-      this.setState({connectedToNepi: connectedToNepi,
-                    appsMgrNamespace: null, apps_connected: false,
-                    selected_app: 'NONE', needs_update: true})
-    }
 
-    setTimeout(async () => {
-      await this.checkConnection()
-    }, 1000)
-  }
-
-  componentDidMount(){
-    this.checkConnection()
-  }
   // Callback for handling ROS Status messages
   appsStatusListener(message) {
     this.setState({
-      apps_path: message.apps_path,
       apps_list: message.apps_ordered_list,
       apps_group_list: message.apps_group_list,
       apps_active_list: message.apps_active_list,
-      apps_install_path: message.apps_install_path,
-      apps_install_list: message.apps_install_list,
-      backup_removed_apps: message.backup_removed_apps,
       apps_rui_list: message.apps_rui_list,
-      connected: true
+
+      apps_connected: true
     })    
     this.props.ros.appNames = message.apps_ordered_list
   }
 
+ 
   // Function for configuring and subscribing to Status
-  updateMgrAppsStatusListener() {
+  updateAppsMgrStatusListener() {
     const statusNamespace = this.getAppsMgrNamespace() + '/status'
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
-    var appsListener = this.props.ros.setupStatusListener(
+    var appsMgrListener = this.props.ros.setupStatusListener(
           statusNamespace,
           "nepi_interfaces/MgrAppsStatus",
           this.appsStatusListener
         )
-    this.setState({ appsListener: appsListener,
+    this.setState({ appsMgrListener: appsMgrListener,
       needs_update: false})
   }
 
@@ -144,14 +137,14 @@ class DataSelector extends Component {
     const check_topic = namespace + "/status"
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
 
-    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
+    const namespace_updated = (prevState.appsMgrNamespace !== namespace && namespace !== null)
     const needs_update = (this.state.needs_update && namespace !== null && topic_publishing)
     if (namespace_updated || needs_update) {
       if (namespace.indexOf('null') === -1){
         this.setState({
-          mgrNamespace: namespace,
+          appsMgrNamespace: namespace,
         })
-        this.updateMgrAppsStatusListener()
+        this.updateAppsMgrStatusListener()
       } 
     }
   }
@@ -159,8 +152,8 @@ class DataSelector extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
+    if (this.state.appsMgrListener) {
+      this.state.appsMgrListener.unsubscribe()
     }
   }
 
@@ -247,57 +240,31 @@ class DataSelector extends Component {
   }
 
 
-  // Function for creating image topic options.
+   // Function for creating image topic options.
   getAppOptions() {
-    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
-    const typeList = this.state.drvs_active_type_list
-    var items = []
-    const connected = this.state.drvs_connected && this.state.apps_connected
     const appsList = this.state.apps_list
     const ruiList = this.state.apps_rui_list 
     const groupList = this.state.apps_group_list
-    const activeAppList = this.state.apps_active_list
-    const activeModelTypes = this.state.active_models_types
-
+    const activeList = this.state.apps_active_list
+    var items = []
+    const connected = this.state.apps_connected
     if (connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else {
-
-
-      if (typeList) {
-        if (typeList.length > 0){
-            if (Object.keys(idxDevices).length > 0){
-              items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
-            }
-            if (Object.keys(ptxDevices).length > 0){
-              items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
-            }
-            if (Object.keys(lsxDevices).length > 0){
-              items.push(<Option value={"Lights"}>{"Lights"}</Option>)
-            }
-            if (Object.keys(rbxDevices).length > 0){
-              items.push(<Option value={"Robots"}>{"Robots"}</Option>)
-            }
-            if (Object.keys(npxDevices).length > 0){
-              items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
-            }
-        }
-      }
-
       if (appsList.length > 0){
         for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+          if (groupList[i] === "DATA" && ruiList[i] !== "None" && activeList.indexOf(appsList[i]) !== -1 ){
             items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
           }
         }
       }
-      items.push(<Option value={"Driver Mgr"}>{"Driver Mgr"}</Option>)
+      items.push(<Option value={'NavPose Manager'}>{'NavPose Manager'}</Option>)
+      items.push(<Option value={'Data Dashboard'}>{'Data Dashboard'}</Option>)
     }
-    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
     return items
   }
+
 
 
     renderSelection() {
@@ -345,6 +312,7 @@ class DataSelector extends Component {
     if (full_screen === true){
       return(
           <React.Fragment>
+
                {this.renderApplication()}
           </React.Fragment>
       )

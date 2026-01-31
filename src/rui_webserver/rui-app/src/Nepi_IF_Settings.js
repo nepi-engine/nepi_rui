@@ -508,9 +508,6 @@ class Nepi_IF_Settings extends Component {
 
 
         </Column>
-        <Column>
-
-        </Column>
       </Columns>
 
 

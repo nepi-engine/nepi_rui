@@ -215,21 +215,7 @@ class NepiDashboardData extends Component {
             onKeyDown={this.onKeySaveSettingFilePrefix}
           />
         </Label>
-        <Label title={"File Save Subfolder"}>
-          <Input
-            id={"file_subfolder_input"}
-            value={this.state.saveSettingsFileSubfolder}
-            onChange={this.onUpdateSaveSettingFileSubfolder}
-            onKeyDown={this.onKeySaveSettingFileSubfolder}
-          />
-        </Label>
-        <Label title={"Use UTC Timezone"}>
-          <Toggle id={"toggle_utc"} onClick={this.onToggleSaveUTC} />
-        </Label>
-
-        <Label title={"Log NavPose"}>
-          <Toggle id={"toggle_log_navpose"} onClick={this.onToggleLogNavPose} />
-        </Label>
+        
       </Section>
     )
   }
