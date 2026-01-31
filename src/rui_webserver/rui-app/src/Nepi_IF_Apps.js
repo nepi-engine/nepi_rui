@@ -47,8 +47,8 @@ class AppRender extends Component {
 
   render() {
     const sel_app = this.props.sel_app
-    const {appNameList, appStatusList} = this.props.ros
-    const appInd = appNameList.indexOf(sel_app)
+    const {appsNameList, appStatusList} = this.props.ros
+    const appInd = appsNameList.indexOf(sel_app)
     var appStatusMsg = null
     if (appInd !== -1){
       appStatusMsg =appStatusList[appInd]
@@ -60,7 +60,7 @@ class AppRender extends Component {
       rui_menu_name = appStatusMsg.rui_menu_name
     }
   
-    if (appNameList.indexOf(sel_app) !== -1){
+    if (appsNameList.indexOf(sel_app) !== -1){
       const AppToRender = appsClassMap.get(rui_main_class);
       return (
         <div>

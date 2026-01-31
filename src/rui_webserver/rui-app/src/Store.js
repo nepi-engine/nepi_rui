@@ -140,275 +140,64 @@ Object.defineProperty(Array.prototype, "equals", { enumerable: false })
 //////////////////////////////////////////////////////////////
 
 class ROSConnectionStore {
+
+  @action.bound
+  resetStates(){
+
+      this.connectedToRos = false
+
+      this.connectedToNepi = false
+      this.connectedToROS = false
+      this.checkTopicsServices = false
+      
+      this.topicNames = []
+      this.topicTypes = []
+      this.serviceNames = []
+
+      this.connectedToSystemMgr = false
+      this.systemMgrStatus = null
+
+      this.systemStatusTopics = null
+      this.systemStatusTopicTypes = null
+      this.systemStatusServices = null
+
+      this.connectedToTimeMgr = false
+      this.timeMgrStatus = null
+
+      this.connectedToDriversMgr = false
+      this.driversMgrStatus = null
+
+      this.connectedToAppsMgr = false
+      this.appsMgrStatus = null
+
+      this.connectedToAiModelMgr = false
+      this.aiModelMgrStatus = null
+
+
+
+  }
+
+
+  //////////////////////////////
+  // ROS
+  //////////////////////////////
+
+
   @observable ros = null
   @observable rosCheckDelay = 1000
   @observable rosCheckStarted = false
   @observable connectedToROS = false
   @observable rosAutoReconnect = true
   @observable messageLog = ""
-  rosListeners = []
-
-  @observable namespacePrefix = null
-  @observable deviceType = null
-  @observable deviceId = null
-  @observable deviceSerial = null
-  @observable deviceInWater = false
-
-  @observable connectedToNepi = false
-  @observable systemDefsFirmwareVersion = null
-  @observable systemDefsDiskCapacityMB = null
-
-  @observable systemStatus = null
-  @observable systemDebugEnabled = false
-  @observable heartbeat = false
-  @observable watchdog = false
-  @observable systemTopics = null
-  @observable systemTopicTypes = null
-  @observable systemServices = null
-  @observable systemHwType = "Unknown"
-  @observable systemHwModel = "Unknown"
-  @observable systemInContainer = false
-  @observable systemManagesSSH = false
-  @observable systemManagesSHARE = false
-  @observable systemManagesTime = false
-  @observable systemManagesNetwork = false
-  @observable systemRestrictOptions = []
-  @observable systemRestrictions = []
-  @observable systemRestricted = []
-  @observable systemSoftwareInstallOptions = []
-  @observable systemStatusDiskUsageMB = null
-  @observable systemStatusDiskRate = null
-  @observable systemStatusTempC = null
-  @observable systemStatusWarnings = []
-  @observable diskUsagePercent = null
-
-  @observable systemStatusTime = null
-  @observable systemStatusTimeStr = null
-  @observable systemStatusDateStr = null
-  @observable clockUTCMode = false
-  @observable available_timezones = []
-  @observable systemStatusTimezone = null
-  @observable clockTZ = this.get_timezone_desc()
-  @observable clockNTP = false
-  @observable ntp_sources = []
-  @observable clockPPS = false
- 
-
-  @observable gpsClockSyncEnabled = false
-
-    
-  @observable imageRecognitions = []
-
-  @observable triggerStatus = null
-  @observable triggerAutoRateHz = 0
-  @observable triggerMask = TRIGGER_MASKS.DEFAULT
-
-  @observable saveFreqHz = 1.0
 
   @observable topicQueryLock = false
   @observable checkTopicsServices = false
   @observable topicNames = null
   @observable topicTypes = null
   @observable serviceNames = null
-  @observable appNames = []
-  @observable appNamesLast = []
-  @observable appNameList = []
-  @observable appStatusList = []
-  @observable navPoseTopics = []
-  @observable navPoseCaps = {}
-  @observable imageTopics = []
-  @observable imageCaps = {}
-  @observable imageDetectionTopics = []
-  @observable depthMapTopics = []
-  @observable depthMapCaps = {}
-  @observable pointcloudTopics = []
-  @observable pointcloudCaps = {}
-  @observable settingCaps = {}
-  @observable saveDataNamespaces = []
-  @observable saveDataCaps = {}
-  @observable idxDevices = {}
-  @observable ptxDevices = {}
-  @observable lsxDevices = {}
-  @observable rbxDevices = {}
-  @observable npxDevices = {}
-  @observable aiDetectorNamespaces = []
-  @observable resetTopics = []
-  @observable navSatFixTopics = []
-  @observable orientationTopics = []
-  @observable headingTopics = []
-  @observable messageTopics = []
 
-  @observable imageFilterDetection = null
-  @observable imageFilterSequencer = null
-  @observable imageFilterPTX = null
-  
-  @observable lastUpdate = new Date()
+  rosListeners = []
 
-  @observable targLocalizerImgTopic = null
-
-  @observable ip_query_response = null
-  @observable bandwidth_usage_query_response = null
-  @observable wifi_query_response = null
-  /*
-  @observable NUID = "INVALID"
-  @observable NEPIConnectStatus = null
-  @observable alias = ""
-  @observable ssh_public_key = ""
-  @observable bot_running = null
-  @observable lb_last_connection_time = null
-  @observable hb_last_connection_time = null
-  @observable lb_do_msg_count = "1"
-  @observable lb_dt_msg_count = null
-  @observable hb_do_transfered_mb = null
-  @observable hb_dt_transfered_mb = null
-  @observable lb_data_sets_per_hour = null
-  @observable lb_enabled = null
-  @observable hb_enabled = null
-  @observable lb_available_data_sources = null
-  @observable lb_selected_data_sources = null
-  @observable lb_comms_types = null
-  @observable auto_attempts_per_hour = null
-  @observable lb_data_queue_size_kb = null
-  @observable hb_data_queue_size_mb = null
-  @observable hb_auto_data_offloading_enabled = null
-  @observable log_storage_enabled = null
-  */
-
-  @observable streamingImageQuality = 95
-  @observable nepiLinkHbAutoDataOffloadingCheckboxVisible = false
-
-  @observable scripts = []
-  @observable running_scripts = []
-  @observable launchScript = false
-  @observable stopScript = false
-  @observable systemStats = null
-  @observable scriptForPolledStats = null
-
-  @observable imgMuxSequences = null
-  @observable drivers_list_query
-
-  @observable license_server = null
-  @observable license_valid = true // Default to true to avoid initial DEVELOPER message]
-  @observable license_type = 'Unlicensed'
-  @observable license_info = null
-  @observable license_request_info = null
-  @observable license_request_mode = false
-
-  @observable blankNavPose = {
-      navpose_frame: 'nepi_frame',
-      frame_nav: 'ENU',
-      frame_altitude: 'WGS84',
-      frame_depth: 'MSL',
-  
-      geoid_height_meters: 0.0,
-  
-      has_location: false,
-      time_location: moment.utc().unix(),
-      // Location Lat,Long
-      latitude: 0.0,
-      longitude: 0.0,
-  
-      has_heading: false,
-      time_heading: moment.utc().unix(),
-      // Heading should be provided in Degrees True North
-      heading_deg: 0.0,
-  
-      has_position: false,
-      time_position: moment.utc().unix(),
-      // Position should be provided in Meters in specified 3d frame (x,y,z) with x forward, y right/left, and z up/down
-      x_m: 0.0,
-      y_m: 0.0,
-      z_m: 0.0,
-  
-      has_orientation: false,
-      time_orientation: moment.utc().unix(),
-      // Orientation should be provided in Degrees in specified 3d frame
-      roll_deg: 0.0,
-      pitch_deg: 0.0,
-      yaw_deg: 0.0,
-  
-      has_altitude: false,
-      time_altitude: moment.utc().unix(),
-      // Altitude should be provided in postivie meters in specified alt frame
-      altitude_m: 0.0,
-  
-      has_depth: false,
-      time_depth: moment.utc().unix(),
-      // Depth should be provided in positive meters
-      depth_m: 0.0,
-
-      has_pan_tilt: false,
-      time_pan_tilt: moment.utc().unix(),
-      // Pan and Titl should be provided in ENU frame
-      pan_deg: 0.0,
-      tilt_deg: 0.0
-  }
-
-  async checkLicense() {
-    var retry_delay_ms = 3000
-    if (!this.license_server) {
-      try {
-        this.license_server = new WebSocket(LICENSE_SERVER_WS_URL)
-
-        this.license_server.onmessage = (event) => {
-          var response_dict = yaml.load(event.data)         
-          
-          if ('licensed_components' in response_dict)
-          {
-            this.license_info = yaml.load(event.data)
-            this.license_type = this.license_info['licensed_components']['nepi_base']['commercial_license_type']
-            if ( this.license_type === 'Unlicensed') {
-              this.license_valid = false
-            }
-            else {
-              if (this.license_request_mode && !this.license_valid) {
-                this.license_request_mode = false
-              }
-              this.license_valid = true
-            }
-          }
-
-          else if ('license_request' in response_dict)
-          {
-            this.license_request_info = yaml.load(event.data)
-          }
-        }
-
-        retry_delay_ms = 250 // Fast to avoid a lot of latency while connecting
-      } catch (e) {
-        // Note: Failure to contact the server does not result in this exception, instead
-        // an event is dispatched, so we don't get into this block just because the
-        // server isn't present: 
-        // https://stackoverflow.com/questions/31002592/javascript-doesnt-catch-error-in-websocket-instantiation
-        //console.error(e)
-        console.error("License server not running")
-        this.license_server = null
-        this.license_yaml = null
-        this.license_valid = false 
-        this.license_info = null
-        this.license_request_info = null
-        this.license_request_mode = false
-      }
-    }
-
-    else if (this.license_server.readyState === 1) { // READY
-      // Check for license updates
-      this.license_server.send("license_check") 
-      retry_delay_ms = 5000 // Slow down the updates now that we are connected
-    }
-
-    else if (this.license_server.readyState === 3) { // CLOSED
-      this.license_server = null
-      this.license_valid = false
-      this.license_info = null
-      this.license_request_info = null
-      this.license_request_mode = false
-    }
-
-    setTimeout(async () => {
-      await this.checkLicense()
-    }, retry_delay_ms)
-  }
 
   async checkROSConnection() {
     this.rosCheckStarted = true
@@ -438,23 +227,12 @@ class ROSConnectionStore {
         //update the topics periodically
 
 
-    if (this.ros != null && this.connectedToNepi === true && this.watchdog === false ) {
-
+    if (this.ros != null && this.connectedToNepi === true && this.watchdogNepi === false ) {
       this.connectedToNepi = false
-      this.connectedToROS = false
-      this.checkTopicsServices = false
-      
-      this.topicNames = null
-      this.topicTypes = null
-      this.serviceNames = null
-
-      this.systemTopics = null
-      this.systemTopicTypes = null
-      this.systemServices = null
+      this.destroyROSConnection()
     
     }
-
-    this.watchdog = false
+    this.watchdogNepi = false
 
 
     if (this.rosAutoReconnect) {
@@ -500,16 +278,16 @@ class ROSConnectionStore {
           this.setupRUISettingsListener()    // services
         }
 
-        if ((this.systemStatus != null) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
+        if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
           this.initializeSystemListeners()
         }
 
       }
     
       // Update Topics and Services
-      if (this.systemTopics != null && this.systemTopicTypes != null ){
-            this.topicNames = this.systemTopics
-            this.topicTypes = this.systemTopicTypes
+      if (this.systemStatusTopics != null && this.systemStatusTopicTypes != null ){
+            this.topicNames = this.systemStatusTopics
+            this.topicTypes = this.systemStatusTopicTypes
       }
       else {
         this.ros.getTopics(result => {
@@ -518,8 +296,8 @@ class ROSConnectionStore {
             })
       }
 
-      if (this.systemServices != null){
-            this.serviceNames = this.systemServices
+      if (this.systemStatusServices != null){
+            this.serviceNames = this.systemStatusServices
       }
       else {
         this.ros.getServices(result => {
@@ -552,27 +330,15 @@ class ROSConnectionStore {
       this.ros.off("error", this.onErrorConnectingToROS)
       this.ros.off("close", this.onDisconnectedToROS)
 
+      this.ros = null
       this.rosListeners.forEach(listener => {
         listener.unsubscribe()
       })
-      this.connectedToNepi = false
-      this.connectedToROS = false
-      this.checkTopicsServices = false
-      
-      this.topicNames = null
-      this.topicTypes = null
-      this.serviceNames = null
-
-      this.systemTopics = null
-      this.systemTopicTypes = null
-      this.systemServices = null
-      
-
-
-      //this.ros = null
-
+      this.this.resetStates()
     }
   }
+
+
 
   @action.bound
   rosLog(text) {
@@ -649,7 +415,10 @@ class ROSConnectionStore {
     this.startPollingBandwidthUsageService()
     this.startPollingWifiQueryService()
     this.startPollingOpEnvironmentQueryService()
-    this.startPollingMgrTimeStatusService()
+    this.startPollingTimeMgrStatusService()
+    this.setupDriversMgrStatusListener()
+    this.setupAppsMgrStatusListener()
+    this.setupAiModelMgrStatusListener()
     
     // automation manager services
     this.startPollingGetScriptsService()  // populate listbox with files
@@ -683,26 +452,198 @@ class ROSConnectionStore {
   }
 
 
+
+
+  //////////////////////////////
+  // NEPI 
+  //////////////////////////////
+
+
+  @observable connectedToNepi = false
+  @observable hearbeatNepi = false
+  @observable watchdogNepi = false
+
+
+
+  @observable namespacePrefix = null
+  @observable deviceType = null
+  @observable deviceId = null
+  @observable deviceSerial = null
+  @observable deviceInWater = false
+
+  @observable navPoseTopics = []
+  @observable navPoseCaps = {}
+  @observable imageTopics = []
+  @observable imageCaps = {}
+  @observable imageDetectionTopics = []
+  @observable depthMapTopics = []
+  @observable depthMapCaps = {}
+  @observable pointcloudTopics = []
+  @observable pointcloudCaps = {}
+  @observable settingCaps = {}
+  @observable saveDataNamespaces = []
+  @observable saveDataCaps = {}
+
+  @observable resetTopics = []
+
+  @observable aiDetectorNamespaces = []
+
+
+
+  @observable navSatFixTopics = []
+  @observable orientationTopics = []
+  @observable headingTopics = []
+  @observable messageTopics = []
+
+  @observable imageFilterDetection = null
+  @observable imageFilterSequencer = null
+  @observable imageFilterPTX = null
+  @observable targLocalizerImgTopic = null
+  
+  @observable lastUpdate = new Date()
+
+  @observable idxDevices = {}
+  @observable ptxDevices = {}
+  @observable lsxDevices = {}
+  @observable rbxDevices = {}
+  @observable npxDevices = {}
+
+
+
+  //////////////////////////////
+  // License Manager
+  //////////////////////////////
+
+  @observable license_server = null
+  @observable license_valid = true // Default to true to avoid initial DEVELOPER message]
+  @observable license_type = 'Unlicensed'
+  @observable license_info = null
+  @observable license_request_info = null
+  @observable license_request_mode = false
+
+
+
+  
+  async checkLicense() {
+    var retry_delay_ms = 3000
+    if (!this.license_server) {
+      try {
+        this.license_server = new WebSocket(LICENSE_SERVER_WS_URL)
+
+        this.license_server.onmessage = (event) => {
+          var response_dict = yaml.load(event.data)         
+          
+          if ('licensed_components' in response_dict)
+          {
+            this.license_info = yaml.load(event.data)
+            this.license_type = this.license_info['licensed_components']['nepi_base']['commercial_license_type']
+            if ( this.license_type === 'Unlicensed') {
+              this.license_valid = false
+            }
+            else {
+              if (this.license_request_mode && !this.license_valid) {
+                this.license_request_mode = false
+              }
+              this.license_valid = true
+            }
+          }
+
+          else if ('license_request' in response_dict)
+          {
+            this.license_request_info = yaml.load(event.data)
+          }
+        }
+
+        retry_delay_ms = 250 // Fast to avoid a lot of latency while connecting
+      } catch (e) {
+        // Note: Failure to contact the server does not result in this exception, instead
+        // an event is dispatched, so we don't get into this block just because the
+        // server isn't present: 
+        // https://stackoverflow.com/questions/31002592/javascript-doesnt-catch-error-in-websocket-instantiation
+        //console.error(e)
+        console.error("License server not running")
+        this.license_server = null
+        this.license_yaml = null
+        this.license_valid = false 
+        this.license_info = null
+        this.license_request_info = null
+        this.license_request_mode = false
+      }
+    }
+
+    else if (this.license_server.readyState === 1) { // READY
+      // Check for license updates
+      this.license_server.send("license_check") 
+      retry_delay_ms = 5000 // Slow down the updates now that we are connected
+    }
+
+    else if (this.license_server.readyState === 3) { // CLOSED
+      this.license_server = null
+      this.license_valid = false
+      this.license_info = null
+      this.license_request_info = null
+      this.license_request_mode = false
+    }
+
+    setTimeout(async () => {
+      await this.checkLicense()
+    }, retry_delay_ms)
+  }
+
+  //////////////////////////////
+  // SYSTEM MGR
+  //////////////////////////////
+
+  @observable connectedToSystemMgr = false
+  @observable systemMgrStatus = null
+
+  @observable systemStatusTopics = null
+  @observable systemStatusTopicTypes = null
+  @observable systemStatusServices = null
+  @observable systemHwType = "Unknown"
+  @observable systemHwModel = "Unknown"
+  @observable systemInContainer = false
+  @observable systemManagesSSH = false
+  @observable systemManagesSHARE = false
+  @observable systemManagesTime = false
+  @observable systemManagesNetwork = false
+  @observable systemRestrictOptions = []
+  @observable systemRestrictions = []
+  @observable systemRestricted = []
+  @observable systemSoftwareInstallOptions = []
+  @observable systemStatusDiskUsageMB = null
+  @observable systemStatusDiskRate = null
+  @observable systemStatusTempC = null
+  @observable systemStatusWarnings = []
+  @observable systemDebugEnabled = false
+  @observable systemDefsFirmwareVersion = null
+  @observable systemDefsDiskCapacityMB = null
+  @observable diskUsagePercent = null
+
+  @observable saveFreqHz = 1.0
+
+  @observable triggerStatus = null
+  @observable triggerAutoRateHz = 0
+  @observable triggerMask = TRIGGER_MASKS.DEFAULT
+
+
   @action.bound
   setupMgrSystemStatusListener() {
     this.addListener({
       name: "system_status",
       messageType: "nepi_interfaces/MgrSystemStatus",
+      manageListener: true,
       callback: message => {
-        // turn heartbeat on for half a second
-        this.heartbeat = true
-        setTimeout(() => {
-          this.heartbeat = false
-        }, 500)
         
-        this.watchdog = true
-        this.connectedToNepi = true
 
-        this.systemStatus = message
+
+        this.connectedToSystemMgr = true
+        this.systemMgrStatus = message
+
         this.systemDebugEnabled = message.sys_debug_enabled
-        this.systemTopics = message.active_topics
-        this.systemTopicTypes = message.active_topic_types
-        this.systemServices = message.active_services
+        this.systemStatusTopics = message.active_topics
+        this.systemStatusTopicTypes = message.active_topic_types
+        this.systemStatusServices = message.active_services
         this.systemHwType = message.hw_type
         this.systemHwModel = message.hw_model
         this.systemInContainer = message.in_container
@@ -734,10 +675,341 @@ class ROSConnectionStore {
         for(i in message.info_strings) {
           this.rosLog(message.info_strings[i].payload)
         }
+
+        ///////////////////
+        // NEPI connection updates
+
+        // turn hearbeatNepi on for half a second
+        this.hearbeatNepi = true
+        setTimeout(() => {
+          this.hearbeatNepi = false
+        }, 500)
+
+        this.connectedToNepi = true
+        this.watchdogNepi = true
+
+        ///////////////////
+
       }
     })
   }
 
+  //////////////////////////////
+  // TIME MGR
+  //////////////////////////////
+
+  @observable timeMgrStatus = null
+  @observable connectedToTimeMgr = null
+
+
+  @observable timeStatusTime = null
+  @observable timeStatusTimeStr = null
+  @observable timeStatusTimezone = null
+  @observable timeStatusDateStr = null
+  @observable clockUTCMode = false
+  @observable available_timezones = []
+
+  @observable clockTZ = this.get_timezone_desc()
+  @observable clockNTP = false
+  @observable ntp_sources = []
+  @observable clockPPS = false
+ 
+
+  @observable gpsClockSyncEnabled = false
+
+
+  startPollingTimeMgrStatusService() {
+    const _pollOnce = async () => {
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("time_status_query")))){
+        this.timeMgrStatus = await this.callService({
+          name: "time_status_query",
+          messageType: "nepi_interfaces/TimeStatusQuery",
+        })
+
+        // if last_ntp_sync is 10y, no sync has happened
+        this.connectedToTimeMgr = true
+
+        this.ntp_sources = this.timeMgrStatus.time_status.ntp_sources
+        this.clockNTP = false
+        const currentlySyncd = this.timeMgrStatus.time_status.currently_syncd
+        currentlySyncd &&
+        currentlySyncd.length &&
+        currentlySyncd.forEach(syncd => {
+            if (syncd !== false) {
+              this.clockNTP = true
+            }
+          })
+        this.available_timezones = this.timeMgrStatus.available_timezones
+        // if last_pps – current_time < 1 second no sync has happened
+        this.clockPPS = true
+        const lastPPSTS = moment.unix(this.timeMgrStatus.time_status.last_pps).unix()
+        this.timeStatusTime = moment.unix(this.timeMgrStatus.time_status.current_time)
+        this.timeStatusTimeStr =this.timeMgrStatus.time_status.time_str
+        this.timeStatusDateStr = this.timeMgrStatus.time_status.date_str
+        this.timeStatusTimezone = this.timeMgrStatus.time_status.timezone
+        this.timeStatusTimezoneDesc = this.timeMgrStatus.time_status.timezone_description
+        const currTS = this.timeStatusTime && this.timeStatusTime.unix()
+        if (currTS && lastPPSTS - currTS < 1) {
+          this.clockPPS = false
+        }     
+        const IS_LOCAL = window.location.hostname === "localhost"
+        const clock_synced = this.timeMgrStatus.time_status.clock_synced
+
+        const auto_sync_clocks = this.timeMgrStatus.time_status.auto_sync_clocks
+
+        const should_sync = (IS_LOCAL === false && this.systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
+
+        if (should_sync === true ){
+          this.syncTime2Device()
+        }
+      }
+
+
+      if (this.connectedToROS) {
+        setTimeout(_pollOnce, 1000)
+      }
+    }
+
+    _pollOnce()
+  }
+
+
+ //////////////////////////////
+  // DRIVERS MGR
+  //////////////////////////////
+
+
+  @observable driversMgrName = "drivers_mgr"
+
+  @observable connectedToDriversMgr = false
+  @observable driversMgrStatus = null
+
+
+  @observable drivers_list = []
+  @observable drivers_active_list = []
+  @observable drivers_active_type_list = []
+  @observable drivers_install_path = ''
+  @observable drivers_install_list = []
+
+  @observable drivers_rui_list = []
+  @observable drivers_type_list = []
+
+  @observable drv_name = 'NONE'
+  @observable drv_description = ''
+  @observable drivers_path = ''
+  @observable drv_options_menu = []
+
+
+  @action.bound
+  setupDriversMgrStatusListener() {
+    this.addListener({
+      name: this.driversMgrName + '/status',
+      messageType: "nepi_interfaces/MgrDriversStatus",
+      manageListener: true,
+      callback: message => {
+        
+      this.driversMgrStatus = message
+
+      this.drivers_list = message.pkg_list
+      this.drivers_type_list = message.type_list
+      this.drivers_active_list = message.active_pkg_list
+      this.drivers_active_type_list = message.active_type_list
+
+      this.connectedToDriversMgr = true
+
+      }
+    })
+  }
+
+
+  //////////////////////////////
+  // APPS Manager
+  //////////////////////////////
+
+
+  @observable appsMgrName  = "apps_mgr"
+
+  @observable connectedToAppsMgr = false
+  @observable appsMgrStatus = null
+
+
+  @observable apps_list =  []
+  @observable apps_group_list = []
+  @observable apps_rui_list = []
+  @observable apps_active_list = []
+
+
+
+ 
+  @action.bound
+  setupAppsMgrStatusListener() {
+    this.addListener({
+      name: this.appsMgrName + '/status',
+      messageType: "nepi_interfaces/MgrAppsStatus",
+      manageListener: true,
+      callback: message => {
+
+      this.appsMgrStatus = message
+
+      this.apps_list = message.apps_ordered_list
+      this.apps_group_list = message.apps_group_list
+      this.apps_active_list = message.apps_active_list
+      this.apps_rui_list = message.apps_rui_list
+
+      this.connectedToAppsMgr = true
+
+      }
+    })
+  }
+
+
+  //////////////////////////////
+  // AI Model Manager
+  ////////////////////////////// 
+
+  @observable aiModelMgrName = 'ai_model_mgr'
+
+  @observable connectedToAiModelMgr = false
+  @observable aiModelMgrStatus = null
+  
+
+  @observable frameworks_list = []
+  @observable active_framework = "None"
+  @observable models_list = []
+  @observable models_aifs = []
+  @observable models_types = []
+  @observable active_models_list = []
+  @observable active_models_types = []
+
+
+  setupAiModelMgrStatusListener() {
+    this.addListener({
+      name: this.aiModelMgrName + '/status',
+      messageType: "nepi_interfaces/MgrAiModelsStatus",
+      manageListener: true,
+      callback: message => {
+
+      this.aiModelMgrStatus = message
+
+      this.frameworks_list = message.ai_frameworks
+      this.models_list = message.ai_models
+      this.models_aifs = message.ai_models_frameworks
+      this.models_types = message.ai_models_types
+      this.active_framework = message.active_ai_framework
+      this.active_models_list = message.active_ai_models
+      this.active_models_types = message.active_ai_models_types
+
+      this.connectedToAiModelMgr = true
+
+
+      }
+    })
+  }
+
+
+
+
+  //////////////////////////////
+  // NavPose Manager
+  //////////////////////////////
+
+
+  @observable ip_query_response = null
+  @observable bandwidth_usage_query_response = null
+  @observable wifi_query_response = null
+  /*
+  @observable NUID = "INVALID"
+  @observable NEPIConnectStatus = null
+  @observable alias = ""
+  @observable ssh_public_key = ""
+  @observable bot_running = null
+  @observable lb_last_connection_time = null
+  @observable hb_last_connection_time = null
+  @observable lb_do_msg_count = "1"
+  @observable lb_dt_msg_count = null
+  @observable hb_do_transfered_mb = null
+  @observable hb_dt_transfered_mb = null
+  @observable lb_data_sets_per_hour = null
+  @observable lb_enabled = null
+  @observable hb_enabled = null
+  @observable lb_available_data_sources = null
+  @observable lb_selected_data_sources = null
+  @observable lb_comms_types = null
+  @observable auto_attempts_per_hour = null
+  @observable lb_data_queue_size_kb = null
+  @observable hb_data_queue_size_mb = null
+  @observable hb_auto_data_offloading_enabled = null
+  @observable log_storage_enabled = null
+  */
+
+  @observable streamingImageQuality = 95
+  @observable nepiLinkHbAutoDataOffloadingCheckboxVisible = false
+
+  @observable scripts = []
+  @observable running_scripts = []
+  @observable launchScript = false
+  @observable stopScript = false
+  @observable systemStats = null
+  @observable scriptForPolledStats = null
+
+  @observable imgMuxSequences = null
+  @observable drivers_list_query
+
+
+
+  //////////////////////////////
+  // NavPose Manager
+  //////////////////////////////
+
+  @observable blankNavPose = {
+      navpose_frame: 'nepi_frame',
+      frame_nav: 'ENU',
+      frame_altitude: 'WGS84',
+      frame_depth: 'MSL',
+  
+      geoid_height_meters: 0.0,
+  
+      has_location: false,
+      time_location: moment.utc().unix(),
+      // Location Lat,Long
+      latitude: 0.0,
+      longitude: 0.0,
+  
+      has_heading: false,
+      time_heading: moment.utc().unix(),
+      // Heading should be provided in Degrees True North
+      heading_deg: 0.0,
+  
+      has_position: false,
+      time_position: moment.utc().unix(),
+      // Position should be provided in Meters in specified 3d frame (x,y,z) with x forward, y right/left, and z up/down
+      x_m: 0.0,
+      y_m: 0.0,
+      z_m: 0.0,
+  
+      has_orientation: false,
+      time_orientation: moment.utc().unix(),
+      // Orientation should be provided in Degrees in specified 3d frame
+      roll_deg: 0.0,
+      pitch_deg: 0.0,
+      yaw_deg: 0.0,
+  
+      has_altitude: false,
+      time_altitude: moment.utc().unix(),
+      // Altitude should be provided in postivie meters in specified alt frame
+      altitude_m: 0.0,
+  
+      has_depth: false,
+      time_depth: moment.utc().unix(),
+      // Depth should be provided in positive meters
+      depth_m: 0.0,
+
+      has_pan_tilt: false,
+      time_pan_tilt: moment.utc().unix(),
+      // Pan and Titl should be provided in ENU frame
+      pan_deg: 0.0,
+      tilt_deg: 0.0
+  }
 
 
 
@@ -862,6 +1134,10 @@ class ROSConnectionStore {
   // }
 
 
+  @observable appsNameListLast = []
+  @observable appsNameList = []
+  @observable appsStatusList = []
+
   @action.bound
   async callAppStatusQueryService(namespace) {
   if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + 'apps_mgr/app_status_query') !== -1){
@@ -870,17 +1146,17 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/AppStatusQuery",
       args: {app_name : namespace},
     })
-    const appNames = this.appNameList
-    const appInd = appNames.indexOf(namespace)
+    const appsNameList = this.appsNameList
+    const appInd = appsNameList.indexOf(namespace)
     if (appInd === -1){
-      this.appStatusList.push(appStatus)
-      this.appNameList.push(namespace)
+      this.appsStatusList.push(appStatus)
+      this.appsNameList.push(namespace)
 
     }
     else {
 
-      this.appNameList[appInd] = namespace
-      this.appStatusList[appInd] = appStatus
+      this.appsNameList[appInd] = namespace
+      this.appsStatusList[appInd] = appStatus
     }
   }
   }
@@ -904,7 +1180,7 @@ class ROSConnectionStore {
 
 
 
-    @action.bound
+  @action.bound
   updatePrefix(topics,types) {
     // Function for testing if we need to update the device prefix variables.
     // It loops though the topics and uses the testTopicForPrefix to test and
@@ -1089,13 +1365,13 @@ class ROSConnectionStore {
 
   @action.bound
   updateAppStatusList(topics,types) {
-    const appNames = this.appNames
-    const appNamesLast = this.appNamesLast
-    if (appNames.length > 0 && appNames !== appNamesLast) {
-      for (var i = 0; i < appNames.length; i++) {
-          this.callAppStatusQueryService(appNames[i])
+    const appsNameList = this.apps_list
+    const appsNameListLast = this.appsNameListLast
+    if (appsNameList.length > 0 && appsNameList !== appsNameListLast) {
+      for (var i = 0; i < appsNameList.length; i++) {
+          this.callAppStatusQueryService(appsNameList[i])
       }
-      this.appNamesLast = appNames
+      this.appsNameListLast = appsNameList
     }
 
   }
@@ -1292,7 +1568,7 @@ class ROSConnectionStore {
         messageType: msg_type,
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1305,7 +1581,7 @@ class ROSConnectionStore {
         messageType: "std_msgs/String",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1318,7 +1594,7 @@ class ROSConnectionStore {
         messageType: "geometry_msgs/Vector3",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1331,7 +1607,7 @@ class ROSConnectionStore {
         messageType: "std_msgs/Float32",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1348,7 +1624,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DevicePTXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1361,7 +1637,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DeviceLSXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1386,7 +1662,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DeviceIDXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1399,7 +1675,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DeviceNPXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1414,7 +1690,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/SaveDataStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1427,7 +1703,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/SettingsStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1440,7 +1716,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/Frame3DTransform",
         noPrefix: true,
         callback: callback,
-        manageListener: false
+        manageListener: true
       })
     }
   }
@@ -1453,7 +1729,7 @@ class ROSConnectionStore {
 
   async startPollingIPAddrQueryService() {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.ip_query_response = await this.callService({
           name: "ip_addr_query",
           messageType: "nepi_interfaces/IPAddrQuery"
@@ -1470,7 +1746,7 @@ class ROSConnectionStore {
 
   async startPollingBandwidthUsageService() {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.bandwidth_usage_query_response = await this.callService({
           name: "bandwidth_usage_query",
           messageType: "nepi_interfaces/BandwidthUsageQuery",
@@ -1486,7 +1762,7 @@ class ROSConnectionStore {
 
   async startPollingWifiQueryService() {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.wifi_query_response = await this.callService({
           name: "wifi_query",
           messageType: "nepi_interfaces/WifiQuery",
@@ -1503,7 +1779,7 @@ class ROSConnectionStore {
 
   async startPollingOpEnvironmentQueryService() {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.opEnv = await this.callService({
           name: "op_environment_query",
           messageType: "nepi_interfaces/OpEnvironmentQuery",
@@ -1522,63 +1798,11 @@ class ROSConnectionStore {
   }
 
 
-  startPollingMgrTimeStatusService() {
-    const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
-        this.timeStatus = await this.callService({
-          name: "time_status_query",
-          messageType: "nepi_interfaces/TimeStatusQuery",
-        })
-
-        // if last_ntp_sync is 10y, no sync has happened
-        this.ntp_sources = this.timeStatus.time_status.ntp_sources
-        this.clockNTP = false
-        const currentlySyncd = this.timeStatus.time_status.currently_syncd
-        currentlySyncd &&
-        currentlySyncd.length &&
-        currentlySyncd.forEach(syncd => {
-            if (syncd !== false) {
-              this.clockNTP = true
-            }
-          })
-        this.available_timezones = this.timeStatus.available_timezones
-        // if last_pps – current_time < 1 second no sync has happened
-        this.clockPPS = true
-        const lastPPSTS = moment.unix(this.timeStatus.time_status.last_pps).unix()
-        this.systemStatusTime = moment.unix(this.timeStatus.time_status.current_time)
-        this.systemStatusTimeStr =this.timeStatus.time_status.time_str
-        this.systemStatusDateStr = this.timeStatus.time_status.date_str
-        this.systemStatusTimezone = this.timeStatus.time_status.timezone
-        this.systemStatusTimezoneDesc = this.timeStatus.time_status.timezone_description
-        const currTS = this.systemStatusTime && this.systemStatusTime.unix()
-        if (currTS && lastPPSTS - currTS < 1) {
-          this.clockPPS = false
-        }     
-        const IS_LOCAL = window.location.hostname === "localhost"
-        const clock_synced = this.timeStatus.time_status.clock_synced
-
-        const auto_sync_clocks = this.timeStatus.time_status.auto_sync_clocks
-
-        const should_sync = (IS_LOCAL === false && this.systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
-
-        if (should_sync === true ){
-          this.syncTime2Device()
-        }
-      }
-
-
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 1000)
-      }
-    }
-
-    _pollOnce()
-  }
 
 
   async startPollingGetScriptsService() {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.scripts = await this.callService({
           name: "get_scripts",
           messageType: "nepi_interfaces/GetScriptsQuery"
@@ -1595,7 +1819,7 @@ class ROSConnectionStore {
 
   async startPollingGetRunningScriptsService() {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.running_scripts = await this.callService({
           name: "get_running_scripts",
           messageType: "nepi_interfaces/GetRunningScriptsQuery"
@@ -1612,7 +1836,7 @@ class ROSConnectionStore {
 
   async startLaunchScriptService(item) {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.launchScript = await this.callService({
           name: "launch_script",
           messageType: "nepi_interfaces/LaunchScript",
@@ -1626,7 +1850,7 @@ class ROSConnectionStore {
 
   async stopLaunchScriptService(item) {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.stopScript = await this.callService({
           name: "stop_script",
           messageType: "nepi_interfaces/StopScript",
@@ -1639,7 +1863,7 @@ class ROSConnectionStore {
 
   async callGetSystemStatsQueryService(item, poll = true) {
     const _pollOnce = async () => {
-      if (this.serviceNames.some(str => str.includes("ip_addr_query"))){
+      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
         this.systemStats = await this.callService({
           name: "get_system_stats",
           messageType: "nepi_interfaces/GetSystemStatsQuery",
@@ -2415,8 +2639,8 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
     const utcTS = moment.utc()
       .unix()
 
-    if (this.timeStatus != null) {
-      const auto_sync_timezones = this.timeStatus.time_status.auto_sync_timezones
+    if (this.timeMgrStatus != null) {
+      const auto_sync_timezones = this.timeMgrStatus.time_status.auto_sync_timezones
 
       if ( auto_sync_timezones === true){
           this.publishMessage({
@@ -2427,7 +2651,7 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
                 secs: Math.floor(utcTS),
                 nsecs: 0,
                 update_timezone: true,
-                timezone:  this.systemStatusTimezoneDesc
+                timezone:  this.timeStatusTimezoneDesc
             }
         })
       }

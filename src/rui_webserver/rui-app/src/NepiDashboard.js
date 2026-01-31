@@ -139,10 +139,10 @@ class NepiDashboard extends Component {
       clockNTP,
       syncTime2Device,
       systemRestrictions,
-      systemStatusTime,
-      systemStatusTimeStr,
-      systemStatusDateStr,
-      systemStatusTimezoneDesc,
+      timeStatusTime,
+      timeStatusTimeStr,
+      timeStatusDateStr,
+      timeStatusTimezoneDesc,
     } = this.props.ros
 
 
@@ -157,14 +157,14 @@ class NepiDashboard extends Component {
     var auto_sync_clocks = false
     var show_sync_button = false
 
-    if (systemStatusTime && timeStatus){
+    if (timeStatusTime && timeStatus){
       time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
       clock_synced = timeStatus.time_status.clock_synced
       auto_sync_clocks = timeStatus.time_status.auto_sync_clocks
       show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
-      time_str = systemStatusTimeStr
-      date_str = systemStatusDateStr
-      timezone = systemStatusTimezoneDesc
+      time_str = timeStatusTimeStr
+      date_str = timeStatusDateStr
+      timezone = timeStatusTimezoneDesc
     }
     
     return (
@@ -214,7 +214,7 @@ class NepiDashboard extends Component {
 
   renderMgrSystemStatus() {
     const {
-      heartbeat,
+      hearbeatNepi,
       systemStatusDiskUsageMB,
       systemStatusTempC,
       systemDefsDiskCapacityMB,
@@ -229,7 +229,7 @@ class NepiDashboard extends Component {
     return (
       <Section title={"System Status"}>
         <Label title={"Heartbeat"}>
-          <BooleanIndicator value={heartbeat} />
+          <BooleanIndicator value={hearbeatNepi} />
         </Label>
         
         <Label title={"Temperature"}>

@@ -29,11 +29,12 @@ import HorizontalDivider from "./HorizontalDivider"
 
 import Dashboard from "./NepiDashboard"
 
-import DevicesSelector from "./NepiSelectorDevices"
-import AutoSelector from "./NepiSelectorAuto"
-import DataSelector from "./NepiSelectorData"
-import ProcessSelector from "./NepiSelectorProcess"
-import SystemSelector from "./NepiSelectorSystem"
+import NepiIFAppSelector from "./Nepi_IF_AppSelector"
+// import DevicesSelector from "./NepiSelectorDevices"
+// import AutoSelector from "./NepiSelectorAuto"
+// import DataSelector from "./NepiSelectorData"
+// import ProcessSelector from "./NepiSelectorProcess"
+// import SystemSelector from "./NepiSelectorSystem"
 
 
 
@@ -82,11 +83,32 @@ class App extends Component {
         <Switch>
           <Route exact path="/" component={Dashboard} />
 
-          <Route path="/devices_selector" component={DevicesSelector} />      
+          <Route 
+            path="/devices_selector" 
+            render={(props) => <NepiIFAppSelector {...props} app_id={'DEVICE'} />} 
+          />
+          <Route 
+            path="/data_selector" 
+            render={(props) => <NepiIFAppSelector {...props} app_id={'DATA'} />} 
+          />
+          <Route 
+            path="/process_selector"
+            render={(props) => <NepiIFAppSelector {...props} app_id={'PROCESS'} />} 
+          />
+          <Route 
+             path="/auto_selector" 
+            render={(props) => <NepiIFAppSelector {...props} app_id={'AUTOMATION'} />} 
+          />
+          <Route 
+            path="/system_selector" 
+            render={(props) => <NepiIFAppSelector {...props} app_id={'SYSTEM'} />} 
+          />
+
+          {/* <Route path="/devices_selector" component={DevicesSelector} />      
           <Route path="/data_selector" component={DataSelector} /> 
           <Route path="/process_selector" component={ProcessSelector} />
           <Route path="/auto_selector" component={AutoSelector} />
-          <Route path="/system_selector" component={SystemSelector} />
+          <Route path="/system_selector" component={SystemSelector} /> */}
           
 
           <Route path='/docs' component={() => {

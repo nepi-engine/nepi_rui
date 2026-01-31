@@ -71,7 +71,7 @@ class NepiIFSaveData extends Component {
 
       show_active_settings: true,
 
-      showControls: this.props.showControls ? this.props.showControls : false,
+      showControls: false,
 
       updateNamespace: null,
       saveStatusListener: null
@@ -97,7 +97,7 @@ class NepiIFSaveData extends Component {
     this.getActiveConfigString = this.getActiveConfigString.bind(this)
     this.getSaveRateValue = this.getSaveRateValue.bind(this)
     this.getSaveRateData = this.getSaveRateData.bind(this)
-    this.onClickToggleShowSettings = this.onClickToggleShowSettings.bind(this)
+    this.onClickToggleShowControls = this.onClickToggleShowControls.bind(this)
 
 
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
@@ -325,7 +325,7 @@ class NepiIFSaveData extends Component {
     this.setState({saveRatesList:RatesList})
   }
 
-  onClickToggleShowSettings(){
+  onClickToggleShowControls(){
     const currentVal = this.state.showControls 
     this.setState({showControls: !currentVal})
     this.render()
@@ -704,26 +704,13 @@ sendLogRateUpdate(rate) {
 
   renderSaveBar() {
 
-    const saveNamespace = this.state.saveNamespace ? this.state.saveNamespace : 'None'
     const saveDataEnabled = this.getSaveDataValue()
-    const isNavposeMgr = (saveNamespace.indexOf('navpose_mgr') !== -1)
-    const allNamespace = this.getAllNamespace()
-    const isAllNamespace = (saveNamespace === allNamespace)
-    const dataProdcutSources = this.getSaveNamesList()
-    const selectedDataProducts = this.getSelectedDataProducts()
     const diskUsage = this.getDiskUsageRate()
-    const saveUtcTz = this.state.saveUtcTz
-    const saveAllEnabled = this.state.saveAllEnabled
-    const saveAllRate = this.state.saveAllRate
 
-    const always_show_controls = (this.props.always_show_controls !== undefined) ? this.props.always_show_controls : false
-    if (always_show_controls === true){
-      this.setState({showControls: true})
-    }
+
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
+    const showControls = (allways_show_controls === true) ? true : this.state.showControls
     
-    const showControls = (always_show_controls === true || this.state.showControls === true)
-    const show_active_settings = this.state.show_active_settings
-
     const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
 
     const saveAll = this.state.saveAll
@@ -735,14 +722,15 @@ sendLogRateUpdate(rate) {
 
 
                         <div style={{ width: '15%' }}>
-                            {(always_show_controls === false) ? 
+                            <div hidden={(allways_show_controls === true)}>
                                 <Label title="Save Controls">
-                                <Toggle
-                                  checked={showControls===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("showControls",showControls)}>
-                                </Toggle>
-                            </Label>
-                            : null }
+                                  <Toggle
+                                    checked={showControls===true}
+                                    onClick={() => {this.onClickToggleShowControls()}}>
+                                  </Toggle>
+                              </Label>
+                            </div>
+
                         </div>
 
                         <div style={{ width: '5%' }}>
@@ -822,13 +810,17 @@ sendLogRateUpdate(rate) {
     const diskUsage = this.getDiskUsageRate()
     const saveUtcTz = this.state.saveUtcTz
 
-    
     const show_active_settings = this.state.show_active_settings
-    return (
+
+
+      return (
 
       <React.Fragment>
         
 
+                <label style={{fontWeight: 'bold'}}>
+                  {saveNamespace}
+                </label>
               
                 <Columns>
                   <Column>
@@ -982,18 +974,20 @@ sendLogRateUpdate(rate) {
          
 
 
-      </React.Fragment>
-    )
+        </React.Fragment>
+      )
+
   }
 
 
  renderControlOptions() {
     const saveNamespace = this.state.saveNamespace
-    const showControls = this.state.showControls
-    const show_control_options = (this.props.show_control_options !== undefined) ? this.props.show_control_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
 
-    if (saveNamespace === 'None' || showControls === false || show_control_options === false){
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
+    const showControls = (allways_show_controls === true) ? true : this.state.showControls
+
+    if (saveNamespace === 'None' || showControls === false){
       return (
         <Columns>
         <Column>
@@ -1009,8 +1003,10 @@ sendLogRateUpdate(rate) {
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
         <div style={{ display: 'flex' }}>
-          <div style={{ width: '30%' }} hidden={show_topic_selector === false}>
-            {this.renderTopicSelector()}
+          <div style={{ width: '30%' }}>
+            { (show_topic_selector === true) ?
+              this.renderTopicSelector()
+            : null }
           </div>
 
           <div style={{ width: '5%' }}>
@@ -1019,9 +1015,6 @@ sendLogRateUpdate(rate) {
 
           <div  style={{ width: '65%' }}>
 
-            <label style={{fontWeight: 'bold'}}>
-              {saveNamespace}
-            </label>
             {this.renderSaveControls()}
           </div>
         </div>

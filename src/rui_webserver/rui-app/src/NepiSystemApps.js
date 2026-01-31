@@ -119,6 +119,26 @@ class AppsMgr extends Component {
   
   }
 
+
+
+
+  async checkConnection() {
+    const { connectedToNepi , connectedToAppsMgr, connectedToDriversMgr, connectedToAiModelsMgr} = this.props.ros
+    if (this.state.connectedToNepi !== connectedToNepi){
+      this.setState({connectedToNepi: connectedToNepi,
+                    selected_app: 'NONE', needs_update: true})
+    }
+    if (this.state.connectedToAppsMgr !== connectedToAppsMgr )
+    {
+      this.setState({needs_update: true})
+    }
+
+    setTimeout(async () => {
+      await this.checkConnection()
+    }, 1000)
+  }
+
+
   getMgrNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
     var mgrNamespace = null
@@ -203,17 +223,6 @@ class AppsMgr extends Component {
     }
 
 
-   async checkConnection() {
-    const { namespacePrefix, deviceId} = this.props.ros
-    if (namespacePrefix != null && deviceId != null) {
-      this.setState({needs_update: true})
-    }
-    else {
-      setTimeout(async () => {
-        await this.checkConnection()
-      }, 1000)
-    }
-  }
 
   componentDidMount(){
     this.checkConnection()
