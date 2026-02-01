@@ -156,10 +156,13 @@ class ROSConnectionStore {
 
       this.connectedToSystemMgr = false
       this.systemMgrStatus = null
-
       this.systemStatusTopics = null
       this.systemStatusTopicTypes = null
       this.systemStatusServices = null
+
+      this.connectedToSoftwareMgr = false
+      this.softwareMgrStatus = null
+      
 
       this.connectedToTimeMgr = false
       this.timeMgrStatus = null
@@ -415,6 +418,7 @@ class ROSConnectionStore {
     this.startPollingBandwidthUsageService()
     this.startPollingWifiQueryService()
     this.startPollingOpEnvironmentQueryService()
+    this.setupMgrSoftwareStatusListener()
     this.startPollingTimeMgrStatusService()
     this.setupDriversMgrStatusListener()
     this.setupAppsMgrStatusListener()
@@ -610,7 +614,6 @@ class ROSConnectionStore {
   @observable systemRestrictOptions = []
   @observable systemRestrictions = []
   @observable systemRestricted = []
-  @observable systemSoftwareInstallOptions = []
   @observable systemStatusDiskUsageMB = null
   @observable systemStatusDiskRate = null
   @observable systemStatusTempC = null
@@ -618,6 +621,9 @@ class ROSConnectionStore {
   @observable systemDebugEnabled = false
   @observable systemDefsFirmwareVersion = null
   @observable systemDefsDiskCapacityMB = null
+
+
+
   @observable diskUsagePercent = null
 
   @observable saveFreqHz = 1.0
@@ -640,6 +646,7 @@ class ROSConnectionStore {
         this.connectedToSystemMgr = true
         this.systemMgrStatus = message
 
+
         this.systemDebugEnabled = message.sys_debug_enabled
         this.systemStatusTopics = message.active_topics
         this.systemStatusTopicTypes = message.active_topic_types
@@ -661,6 +668,8 @@ class ROSConnectionStore {
         this.deviceSerial = message.serial_number
         this.systemDefsFirmwareVersion = message.firmware_version
         this.systemDefsDiskCapacityMB = message.disk_capacity
+
+
         
         this.diskUsagePercent = `${parseInt(
           100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacityMB,
@@ -690,6 +699,34 @@ class ROSConnectionStore {
 
         ///////////////////
 
+      }
+    })
+  }
+
+
+  //////////////////////////////
+  // SOFTWARE MGR
+  //////////////////////////////
+
+  @observable connectedToSoftwareMgr = false
+  @observable softwareMgrStatus = null
+
+  @observable softwareInstallOptions = []
+ 
+
+  @action.bound
+  setupMgrSoftwareStatusListener() {
+    this.addListener({
+      name: "software_mgr/status",
+      messageType: "nepi_interfaces/MgrSoftwareStatus",
+      manageListener: true,
+      callback: message => {
+        
+        this.softwareMgrStatus = message
+
+        this.softwareInstallOptions.sys_img_update_options
+     
+        this.connectedToSoftwareMgr = true
       }
     })
   }

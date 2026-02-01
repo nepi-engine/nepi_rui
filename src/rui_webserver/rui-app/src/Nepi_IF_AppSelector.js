@@ -56,7 +56,7 @@ import AiDetectorMgr from "./NepiMgrAiDetector"
 //import TargetsMgr from "./NepiMgrTargets"
 
 // Other SYSTEM Classes
-import NepiSystemDevice from "./NepiSystemDevice"
+import DeviceMgr from "./NepiSystemDevice"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AppsMgr from "./NepiSystemApps"
 
@@ -155,7 +155,7 @@ class NepiIFAppSelector extends Component {
         </React.Fragment>
       )
     }
-    else if (sel_app === "Driver Mgr"){
+    else if (sel_app === "Drivers Manager"){
       return (
         <React.Fragment>
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>

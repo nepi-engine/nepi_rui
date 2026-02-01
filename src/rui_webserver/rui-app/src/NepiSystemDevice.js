@@ -416,7 +416,7 @@ updateMgrTimeStatusListener() {
   }
 
   renderDeviceConfiguration() {
-    const { systemStatus} = this.props.ros
+    const { systemMgrStatus} = this.props.ros
     const {deviceId} = this.props.ros
 
 
@@ -451,7 +451,7 @@ updateMgrTimeStatusListener() {
                   <Label title={"Device Type"}>
                     <Input
                       id={"device_type"}
-                      value={systemStatus.hw_type}
+                      value={systemMgrStatus.hw_type}
                       disabled={true}
                     />
                   </Label>
@@ -459,7 +459,7 @@ updateMgrTimeStatusListener() {
                   <Label title={"Device Model"}>
                     <Input
                       id={"device_model"}
-                      value={systemStatus.hw_model}
+                      value={systemMgrStatus.hw_model}
                       disabled={true}
                     />
                   </Label>
@@ -469,15 +469,15 @@ updateMgrTimeStatusListener() {
                   <Column>
  
                   <Label title={"Manages Network"}>
-                    <BooleanIndicator value={systemStatus.manages_network} />
+                    <BooleanIndicator value={systemMgrStatus.manages_network} />
                   </Label>
 
                   <Label title={"Manages Time"}>
-                    <BooleanIndicator value={systemStatus.manages_time} />
+                    <BooleanIndicator value={systemMgrStatus.manages_time} />
                   </Label>
 
                   <Label title={"Has Cuda"}>
-                    <BooleanIndicator value={systemStatus.has_cuda} />
+                    <BooleanIndicator value={systemMgrStatus.has_cuda} />
                   </Label>
 
 
@@ -670,10 +670,10 @@ updateMgrTimeStatusListener() {
       const {
         setTimezone,
         //Unused available_timezones,
-        systemStatusTimezoneDesc
+        timeStatusTimezoneDesc
       } = this.props.ros
       const timezoneSelection = event.target.value
-      if (timezoneSelection !== systemStatusTimezoneDesc){
+      if (timezoneSelection !== timeStatusTimezoneDesc){
         setTimezone(timezoneSelection)
       }
     }
@@ -688,10 +688,10 @@ updateMgrTimeStatusListener() {
       ntp_sources,
       clockNTP,
       syncTime2Device,
-      systemStatusTime,
-      systemStatusTimeStr,
-      systemStatusDateStr,
-      systemStatusTimezoneDesc
+      timeStatusTime,
+      timeStatusTimeStr,
+      timeStatusDateStr,
+      timeStatusTimezoneDesc
     } = this.props.ros  
 
     const timezoneOptions = this.getTimezoneOptions()
@@ -712,7 +712,7 @@ updateMgrTimeStatusListener() {
     const timeStatus = this.state.timeStatus
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
-    if (systemStatusTime && timeStatus){
+    if (timeStatusTime && timeStatus){
       time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
       time_ntp_restricted = systemRestrictions.indexOf('Time_NTP') !== -1
       clock_synced = timeStatus.clock_synced
@@ -720,9 +720,9 @@ updateMgrTimeStatusListener() {
       auto_sync_timezones = timeStatus.auto_sync_timezones
 
       show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
-      time_str = systemStatusTimeStr
-      date_str = systemStatusDateStr
-      timezone = systemStatusTimezoneDesc
+      time_str = timeStatusTimeStr
+      date_str = timeStatusDateStr
+      timezone = timeStatusTimezoneDesc
     }
     
     return (
@@ -1449,6 +1449,7 @@ updateMgrTimeStatusListener() {
 
   render() {
     //Unused const netStatus = this.state.netStatus
+    
     return (
       <Columns>
         <Column>

@@ -149,9 +149,9 @@ export function createMenuBaseName(optionsStr, prefixStr = '', appendStr = '') {
       if (prefixStr !== ''){
         menu_name = sliced_parts[0]
       }
-      else {
-        menu_name = prefixStr + '-' + sliced_parts[0]
-      }
+      // else {
+      //   menu_name = prefixStr + '-' + sliced_parts[0]
+      // }
       menu_name = menu_name + appendStr
     }
     else {
@@ -187,7 +187,7 @@ export function createMenuFirstLastName(optionsStr) {
       sliced_parts = parts.slice(3); 
       menu_name = sliced_parts[0]
       if (sliced_parts.length > 1){
-        menu_name = menu_name + sliced_parts.pop()
+        menu_name = menu_name + '-' + sliced_parts.pop()
       }
     }
     else {
@@ -204,7 +204,7 @@ export function createMenuFirstLastNames(optionsStrList) {
     var menu_name = ''
     var i = 0
     for (i = 0; i < optionsStrList.length; ++i) {
-      menu_name = createMenuBaseName(optionsStrList[i])
+      menu_name = createMenuFirstLastName(optionsStrList[i])
       menu_names.push(menu_name)
     }
     return menu_names

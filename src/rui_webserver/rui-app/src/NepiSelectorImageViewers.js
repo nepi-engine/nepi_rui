@@ -41,7 +41,7 @@ class ImageViewersSelector extends Component {
 
       needs_update: false,
 
-      show_selectors: false
+      show_selectors: true
     }
 
     this.renderImageControls = this.renderImageControls.bind(this)
