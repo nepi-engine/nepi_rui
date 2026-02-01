@@ -196,13 +196,17 @@ class ROSConnectionStore {
   @observable topicQueryLock = false
   @observable checkTopicsServices = false
   @observable topicNames = null
+  @observable topicNamesLast = null
   @observable topicTypes = null
+  @observable topicTypesLast = null
   @observable serviceNames = null
+  @observable serviceNamesLast = null
 
   rosListeners = []
 
 
   async checkROSConnection() {
+    var delay_time = 100
     this.rosCheckStarted = true
     if (!this.connectedToROS) {
       try {
@@ -218,8 +222,8 @@ class ROSConnectionStore {
           this.ros.connect(ROS_WS_URL)
         }
 
-          this.checkTopicsServices = true
-          this.updateTopicsServices()
+        this.checkTopicsServices = true
+        this.updateTopicsServices()
        
       } catch (e) {
         //console.error(e)
@@ -227,21 +231,21 @@ class ROSConnectionStore {
       }
     }
 
-        //update the topics periodically
 
-
-    if (this.ros != null && this.connectedToNepi === true && this.watchdogNepi === false ) {
-      this.connectedToNepi = false
-      this.destroyROSConnection()
-    
+    if (this.ros != null ) {
+      delay_time = 1500
+      if (this.connectedToNepi === true && this.watchdogNepi === false ) {
+          this.connectedToNepi = false
+          this.destroyROSConnection()
+      }
+      this.watchdogNepi = false
     }
-    this.watchdogNepi = false
 
 
     if (this.rosAutoReconnect) {
       setTimeout(async () => {
         await this.checkROSConnection()
-      }, this.rosCheckDelay)
+      }, delay_time)
     }
   }
 
@@ -257,42 +261,18 @@ class ROSConnectionStore {
 
 
 
+    var update_time = 100
     if (this.ros != null && (this.topicQueryLock === false) && (this.connectedToROS === true)) {
       this.topicQueryLock = true
 
-
-      if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
-        var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
-        var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
-        var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
-        var newAiDetectorNamespaces = this.updateAiDetectorNamespaces(this.topicNames, this.topicTypes)
-        var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
-        var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
-        var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
-        this.updateAppStatusList(this.topicNames, this.topicTypes)
-        this.updateIDXDevices(this.topicNames, this.topicTypes)
-        this.updatePTXDevices(this.topicNames, this.topicTypes)
-        this.updateLXSDevices(this.topicNames, this.topicTypes)
-        this.updateRBXDevices(this.topicNames, this.topicTypes)
-        this.updateNPXDevices(this.topicNames, this.topicTypes)        
-
-        if (newPrefix === true){
-          this.setupMgrSystemStatusListener()
-          this.setupRUISettingsListener()    // services
-        }
-
-        if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
-          this.initializeSystemListeners()
-        }
-
-      }
-    
-      // Update Topics and Services
+    // Update Topics and Services
       if (this.systemStatusTopics != null && this.systemStatusTopicTypes != null ){
+            update_time = 100
             this.topicNames = this.systemStatusTopics
             this.topicTypes = this.systemStatusTopicTypes
       }
       else {
+        update_time = 2000
         this.ros.getTopics(result => {
             this.topicNames = result.topics
             this.topicTypes = result.types
@@ -300,13 +280,56 @@ class ROSConnectionStore {
       }
 
       if (this.systemStatusServices != null){
+            update_time = 100
             this.serviceNames = this.systemStatusServices
       }
       else {
         this.ros.getServices(result => {
+          update_time = 2000
           this.serviceNames = result
         })
       }
+
+
+      const topicNames = (this.topicNamesLast != null) ? this.topicNamesLast : []
+      const topicTypes = (this.topicTypesLast != null) ? this.topicTypesLast : []
+      const serviceNames = (this.serviceNamesLast != null) ? this.serviceNamesLast : []
+
+      if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
+        if (this.topicNames.length != topicNames.length || 
+            this.topicTypes.length != topicTypes.length || 
+            this.serviceNames.length != serviceNames.length)
+        {
+          update_time = 2000
+          var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
+          var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
+          var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
+          var newAiDetectorNamespaces = this.updateAiDetectorNamespaces(this.topicNames, this.topicTypes)
+          var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
+          var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
+          var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
+          this.updateAppStatusList(this.topicNames, this.topicTypes)
+          this.updateIDXDevices(this.topicNames, this.topicTypes)
+          this.updatePTXDevices(this.topicNames, this.topicTypes)
+          this.updateLXSDevices(this.topicNames, this.topicTypes)
+          this.updateRBXDevices(this.topicNames, this.topicTypes)
+          this.updateNPXDevices(this.topicNames, this.topicTypes)        
+
+          if (newPrefix === true){
+            this.setupMgrSystemStatusListener()
+            this.setupRUISettingsListener()    // services
+          }
+
+          if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
+            this.initializeSystemListeners()
+          }
+        }
+
+      }
+    
+      this.topicNamesLast = this.topicNames
+      this.topicTypesLast = this.topicTypes
+      this.serviceNamesLast = this.serviceNames
 
 
       this.topicQueryLock = false
@@ -315,7 +338,7 @@ class ROSConnectionStore {
     if (this.checkTopicsServices === true) {
       setTimeout(async () => {
         await this.updateTopicsServices()
-      }, 2000)
+      }, update_time)
     }
   }
 
@@ -337,7 +360,7 @@ class ROSConnectionStore {
       this.rosListeners.forEach(listener => {
         listener.unsubscribe()
       })
-      this.this.resetStates()
+      this.resetStates()
     }
   }
 
@@ -405,8 +428,7 @@ class ROSConnectionStore {
   @action.bound
   onConnectedToROS() {
     this.connectedToROS = true
-    this.rosCheckDelay = 3000
-    this.rosLog("Connected to NEPI device")
+    this.rosLog("Connected Ros")
     this.checkLicense()
   }
 
@@ -611,17 +633,25 @@ class ROSConnectionStore {
   @observable systemManagesSHARE = false
   @observable systemManagesTime = false
   @observable systemManagesNetwork = false
-  @observable systemRestrictOptions = []
-  @observable systemRestrictions = []
-  @observable systemRestricted = []
+
   @observable systemStatusDiskUsageMB = null
   @observable systemStatusDiskRate = null
   @observable systemStatusTempC = null
   @observable systemStatusWarnings = []
-  @observable systemDebugEnabled = false
+
   @observable systemDefsFirmwareVersion = null
   @observable systemDefsDiskCapacityMB = null
 
+
+  @observable systemDebugEnabled = false
+  @observable systemAdminEnabled = false
+
+  @observable systemManagersOptions = []
+  @observable systemManagersEnabled = []
+
+  @observable userRestrictionsOptons = []
+  @observable userRestrictionsEnabled = []
+  @observable userRestrictionsActive = []
 
 
   @observable diskUsagePercent = null
@@ -646,8 +676,6 @@ class ROSConnectionStore {
         this.connectedToSystemMgr = true
         this.systemMgrStatus = message
 
-
-        this.systemDebugEnabled = message.sys_debug_enabled
         this.systemStatusTopics = message.active_topics
         this.systemStatusTopicTypes = message.active_topic_types
         this.systemStatusServices = message.active_services
@@ -658,16 +686,23 @@ class ROSConnectionStore {
         this.systemManagesSHARE = message.manages_share
         this.systemManagesTime = message.manages_time
         this.systemManagesNetwork = message.manages_network
-        this.systemAdminEnabled=message.sys_admin_restrict_enabled
-        this.systemRestrictOptions = message.sys_admin_restrict_options
-        this.systemRestrictions = message.sys_admin_restricted
-        this.systemRestricted = (this.systemAdminEnabled === true) ? [] : message.sys_admin_restricted
+        
         this.systemStatusDiskUsageMB = message.disk_usage
         this.systemStatusDiskRate = message.storage_rate
         this.deviceType = message.hw_type
         this.deviceSerial = message.serial_number
         this.systemDefsFirmwareVersion = message.firmware_version
         this.systemDefsDiskCapacityMB = message.disk_capacity
+
+        this.systemDebugEnabled = message.sys_debug_enabled
+        this.systemAdminEnabled=message.sys_admin_enabled
+
+        this.systemManagersOptions = message.system_managers_options
+        this.systemManagersEnabled = message.system_managers_enabled
+
+        this.userRestrictionsOptons = message.user_restrictions_options
+        this.userRestrictionsEnabled = message.user_restrictions_enabled
+        this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions_enabled
 
 
         
@@ -1058,7 +1093,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callSaveDataCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     this.saveDataCaps[namespace] = []
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
@@ -1072,7 +1107,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callSettingsCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     this.settingCaps[namespace] = []
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
@@ -1084,7 +1119,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callImageCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/ImageCapabilitiesQuery",  
@@ -1095,7 +1130,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callNavPoseCapabilitiesQueryService(namespace) {
-    if ( this.topicNames.indexOf(namespace + "/capabilities_query") !== -1) {
+    if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
       const capabilities = await this.callService({
         name: namespace + "/capabilities_query",
         messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
@@ -1107,7 +1142,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callIDXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
@@ -1119,7 +1154,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callPTXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/PTXCapabilitiesQuery",
@@ -1130,7 +1165,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callLSXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/LSXCapabilitiesQuery",
@@ -1142,7 +1177,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callRBXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
@@ -1153,7 +1188,7 @@ class ROSConnectionStore {
 
   @action.bound
   async callNPXCapabilitiesQueryService(namespace) {
-  if (this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1){
+  if ((this.serviceNames.indexOf(namespace + "/capabilities_query") !== -1) && (this.connectedToNepi === true)){
     const capabilities = await this.callService({
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/NPXCapabilitiesQuery",  

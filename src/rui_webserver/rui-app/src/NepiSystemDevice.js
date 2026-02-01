@@ -283,8 +283,8 @@ updateMgrTimeStatusListener() {
     const sys_debug = this.props.ros.systemDebugEnabled
     const debug_mode = sys_debug ? sys_debug : false
 
-    const { systemRestrictions} = this.props.ros
-    const device_restricted = systemRestrictions.indexOf('device_id') !== -1
+    const { userRestrictionsEnabled} = this.props.ros
+    const device_restricted = userRestrictionsEnabled.indexOf('device_id') !== -1
 
     if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
       this.setState({updatedDeviceId:deviceId})
@@ -420,8 +420,8 @@ updateMgrTimeStatusListener() {
     const {deviceId} = this.props.ros
 
 
-    const { systemRestrictions} = this.props.ros
-    const device_restricted = systemRestrictions.indexOf('device_id') !== -1
+    const { userRestrictionsEnabled} = this.props.ros
+    const device_restricted = userRestrictionsEnabled.indexOf('device_id') !== -1
 
     if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
       this.setState({updatedDeviceId:deviceId})
@@ -507,8 +507,8 @@ updateMgrTimeStatusListener() {
       license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
  
 
-    const { systemRestrictions} = this.props.ros
-    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
+    const { userRestrictionsEnabled} = this.props.ros
+    //Unused const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
 
 
       return (
@@ -582,8 +582,8 @@ updateMgrTimeStatusListener() {
 
     var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : ""
 
-    const { systemRestrictions} = this.props.ros
-    const license_restricted = systemRestrictions.indexOf('License') !== -1
+    const { userRestrictionsEnabled} = this.props.ros
+    const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
 
 
     if (license_request_mode === true) {
@@ -684,7 +684,7 @@ updateMgrTimeStatusListener() {
     const {
       sendBoolMsg,
       systemManagesTime,
-      systemRestrictions,
+      userRestrictionsEnabled,
       ntp_sources,
       clockNTP,
       syncTime2Device,
@@ -713,8 +713,8 @@ updateMgrTimeStatusListener() {
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
     if (timeStatusTime && timeStatus){
-      time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-      time_ntp_restricted = systemRestrictions.indexOf('Time_NTP') !== -1
+      time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
+      time_ntp_restricted = userRestrictionsEnabled.indexOf('Time_NTP') !== -1
       clock_synced = timeStatus.clock_synced
       auto_sync_clocks = timeStatus.auto_sync_clocks
       auto_sync_timezones = timeStatus.auto_sync_timezones
@@ -934,12 +934,12 @@ updateMgrTimeStatusListener() {
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-    const { systemManagesNetwork, systemRestrictions} = this.props.ros
-    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
-    //Unused const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    const network_restricted = systemRestrictions.indexOf('Network') !== -1
-    //Unused const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
-    //Unused const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
+    const { systemManagesNetwork, userRestrictionsEnabled} = this.props.ros
+    //Unused const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
+    //Unused const time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
+    const network_restricted = userRestrictionsEnabled.indexOf('Network') !== -1
+    //Unused const wifi_restricted = userRestrictionsEnabled.indexOf('WiFi') !== -1
+    //Unused const ap_restricted = userRestrictionsEnabled.indexOf('Access Point') !== -1
 
 
     if (systemManagesNetwork === false){
@@ -1188,12 +1188,12 @@ updateMgrTimeStatusListener() {
     const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
     const connect_value = (wifi_client_connected === true) ? true : connecting
     
-    const { systemManagesNetwork, systemRestrictions} = this.props.ros
-    //Unused const license_restricted = systemRestrictions.indexOf('License') !== -1
-    //Unused const time_sync_restricted = systemRestrictions.indexOf('Time_Sync_Clocks') !== -1
-    //Unused const network_restricted = systemRestrictions.indexOf('Network') !== -1
-    const wifi_restricted = systemRestrictions.indexOf('WiFi') !== -1
-    const ap_restricted = systemRestrictions.indexOf('Access Point') !== -1
+    const { systemManagesNetwork, userRestrictionsEnabled} = this.props.ros
+    //Unused const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
+    //Unused const time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
+    //Unused const network_restricted = userRestrictionsEnabled.indexOf('Network') !== -1
+    const wifi_restricted = userRestrictionsEnabled.indexOf('WiFi') !== -1
+    const ap_restricted = userRestrictionsEnabled.indexOf('Access Point') !== -1
 
 
     // Update on User Change

@@ -136,7 +136,7 @@ export function onChangeSwitchStateNestedValue(parentKey, nestedKey, currentVal)
 // MENU FUNCTIONS
 
 
-export function createMenuBaseName(optionsStr, prefixStr = '', appendStr = '') {
+export function createMenuBaseName(optionsStr) {
     var menu_name = ''
     var parts = []
     var sliced_parts = []
@@ -146,13 +146,7 @@ export function createMenuBaseName(optionsStr, prefixStr = '', appendStr = '') {
     }
     else if (parts.length > 3){
       sliced_parts = parts.slice(3); 
-      if (prefixStr !== ''){
-        menu_name = sliced_parts[0]
-      }
-      // else {
-      //   menu_name = prefixStr + '-' + sliced_parts[0]
-      // }
-      menu_name = menu_name + appendStr
+      menu_name = sliced_parts[0]
     }
     else {
       menu_name = 'All'
@@ -163,12 +157,12 @@ export function createMenuBaseName(optionsStr, prefixStr = '', appendStr = '') {
 }
 
 
-export function createMenuBaseNames(optionsStrList, prefixStr = '', appendStr = '') {
+export function createMenuBaseNames(optionsStrList) {
     var menu_names = []
     var menu_name = ''
     var i = 0
     for (i = 0; i < optionsStrList.length; ++i) {
-      menu_name = createMenuBaseName(optionsStrList[i], prefixStr, appendStr)
+      menu_name = createMenuBaseName(optionsStrList[i])
       menu_names.push(menu_name)
     }
     return menu_names
@@ -176,7 +170,7 @@ export function createMenuBaseNames(optionsStrList, prefixStr = '', appendStr = 
 }
 
 export function createMenuFirstLastName(optionsStr) {
-    var menu_name = ''
+    var menu_name = 'None'
     var parts = []
     var sliced_parts = []
     parts = optionsStr.split('/')
@@ -212,8 +206,8 @@ export function createMenuFirstLastNames(optionsStrList) {
 }
 
 
-export function createMenuShortName(optionsStr, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
-    var menu_name = prefixStr
+export function createMenuShortName(optionsStr, filterOutList = [], removeLast = false) {
+    var menu_name = 'None'
     var parts = []
     var sliced_parts = []
     parts = optionsStr.split('/')
@@ -235,14 +229,13 @@ export function createMenuShortName(optionsStr, filterOutList = [], removeLast =
           include_part = false
         }
         if (include_part === true){
-          if (i === 0 && prefixStr !== ''){
+          if (i === 0 ){
             menu_name = sliced_parts[i]
           }
           else {
             menu_name = menu_name + '-' + sliced_parts[i]
           }
         }
-        menu_name = menu_name + appendStr
       }
     }
     else {
@@ -255,12 +248,12 @@ export function createMenuShortName(optionsStr, filterOutList = [], removeLast =
 }
 
 
-export function createMenuShortNames(optionsStrList, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
+export function createMenuShortNames(optionsStrList, filterOutList = [], removeLast = false) {
     var menu_names = []
     var menu_name = ''
     var i = 0
     for (i = 0; i < optionsStrList.length; ++i) {
-      menu_name = createMenuShortName(optionsStrList[i], filterOutList, removeLast, prefixStr, appendStr)
+      menu_name = createMenuShortName(optionsStrList[i], filterOutList, removeLast)
       menu_names.push(menu_name)
     }
     return menu_names
@@ -270,44 +263,6 @@ export function createMenuShortNames(optionsStrList, filterOutList = [], removeL
 
 
 
-
-// export function createMenuList(optionsStrList, useShortnames = true, filterOutList = [], removeLast = false, prefixStr = '', appendStr = '') {
-//   var filteredTopics = []
-//   var i
-//   if (filterOut) {
-//     for (i = 0; i < optionsStrList.length; i++) {
-//         if (filterOut.includes(optionsStrList[i]) === false){
-//           filteredTopics.push(String(optionsStrList[i]))
-//         }
-//     }
-//   }
-//   var unique_names = null
-//   if (useShortnames === true){
-//     unique_names = createShortValuesFromNamespaces(filteredTopics)
-//   } 
-//   else{
-//     unique_names = filteredTopics
-//   }
-//   var menuList = []
-//   for (i = 0; i < prefixOptionsStrList.length; i++) {
-//       let option = prefixOptionsStrList[i]
-//       menuList.push(<Option value={option}>{option}</Option>)
-//   }
-
-//   for (i = 0; i < filteredTopics.length; i++) {
-//     menuList.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
-//   }
-
-//   for (i = 0; i < appendOptionsStrList.length; i++) {
-//     let option = appendOptionsStrList[i]
-//     menuList.push(<Option value={option}>{option}</Option>)
-//   }
-
-//    return menuList
-// }
-
-//////////////////////////////////////
-// Depriciated
 
 
 export function createShortValues(list) {

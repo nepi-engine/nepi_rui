@@ -77,6 +77,7 @@ class NepiIFAppSelector extends Component {
       connectedToAppsMgr: false,
       connectedToDriversMgr: false,
       connectedToAiModelsMgr: false,
+      app_id: 'NONE',
       selected_app: 'NONE',
       full_screen: false,
 
@@ -96,6 +97,7 @@ class NepiIFAppSelector extends Component {
     const { connectedToNepi , connectedToAppsMgr, connectedToDriversMgr, connectedToAiModelsMgr} = this.props.ros
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
+                    app_id: 'NONE',
                     selected_app: 'NONE', needs_update: true})
     }
     if (this.state.connectedToAppsMgr !== connectedToAppsMgr  || 
@@ -107,7 +109,7 @@ class NepiIFAppSelector extends Component {
 
     setTimeout(async () => {
       await this.checkConnection()
-    }, 1000)
+    }, 100)
   }
 
 
@@ -274,7 +276,7 @@ class NepiIFAppSelector extends Component {
       )
     }
 
-    else if (sel_app === "Data Dashboard"){
+    else if (sel_app === "Data Manager"){
       return (
         <React.Fragment>
             <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
@@ -284,7 +286,7 @@ class NepiIFAppSelector extends Component {
             <Column>
 
               <NepiDashboardData
-              title={"Data Dashboard"}
+              title={"Data Manager"}
               />
 
           </Column>
@@ -517,7 +519,7 @@ class NepiIFAppSelector extends Component {
   onToggleAppSelection(event){
     const app_name = event.target.value
     if (app_name === 'Connecting' || app_name === 'NONE'){
-      this.setState({full_screen: true })
+      this.setState({full_screen: false })
     }
     else {
       this.setState({selected_app: app_name, full_screen: true })
@@ -542,111 +544,139 @@ class NepiIFAppSelector extends Component {
     if (connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
-    else if (app_id === 'DEVICE') {
+    else {
+      const userRestrictionsActive = this.props.userRestrictionsActive
+      if (app_id === 'DEVICE') {
 
-      const typeList = this.props.ros.drivers_active_type_list
-      if (typeList) {
-        if (typeList.length > 0){
-            if (Object.keys(idxDevices).length > 0){
-              items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
-            }
-            if (Object.keys(ptxDevices).length > 0){
-              items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
-            }
-            if (Object.keys(lsxDevices).length > 0){
-              items.push(<Option value={"Lights"}>{"Lights"}</Option>)
-            }
-            if (Object.keys(rbxDevices).length > 0){
-              items.push(<Option value={"Robots"}>{"Robots"}</Option>)
-            }
-            if (Object.keys(npxDevices).length > 0){
-              items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
-            }
+        if (Object.keys(idxDevices).length > 0){
+          items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
         }
-      }
+        if (Object.keys(ptxDevices).length > 0){
+          items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
+        }
+        if (Object.keys(lsxDevices).length > 0){
+          items.push(<Option value={"Lights"}>{"Lights"}</Option>)
+        }
+        if (Object.keys(rbxDevices).length > 0){
+          items.push(<Option value={"Robots"}>{"Robots"}</Option>)
+        }
+        if (Object.keys(npxDevices).length > 0){
+          items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
+        }
+  
 
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+        if (appsList.length > 0){
+          for (var i = 0; i < ruiList.length; i++) {
+            if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+            }
           }
         }
       }
-      items.push(<Option value={"Drivers Manager"}>{"Drivers Manager"}</Option>)
-    }
-    else if (app_id === 'DATA') {
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "DATA" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
-          }
-        }
-      }
-      items.push(<Option value={'NavPose Manager'}>{'NavPose Manager'}</Option>)
-      items.push(<Option value={'Data Dashboard'}>{'Data Dashboard'}</Option>)
-    }
-
-    else if (app_id === 'PROCESS') {
-      
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+      else if (app_id === 'DATA') {
+        if (appsList.length > 0){
+          for (var i = 0; i < ruiList.length; i++) {
+            if (groupList[i] === "DATA" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+            }
           }
         }
       }
 
-      const activeModelTypes = this.props.ros.active_models_types
+      else if (app_id === 'PROCESS') {
+        
+        if (appsList.length > 0){
+          for (var i = 0; i < ruiList.length; i++) {
+            if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+            }
+          }
+        }
 
-      if (activeModelTypes.indexOf('detection') !== -1){
-        items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
-      }
-      if (activeModelTypes.indexOf('segmentation') !== -1){
-        items.push(<Option value={'AI Segmetation'}>{'AI Segmetation'}</Option>)
-      }
-      if (activeModelTypes.indexOf('pose') !== -1){
-        items.push(<Option value={'AI Pose'}>{'AI Pose'}</Option>)
-      }
-      if (activeModelTypes.indexOf('orientation') !== -1){
-        items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
+        if (true) { //((userRestrictionsActive.indexOf('ai_management')) {
+            const activeModelTypes = this.props.ros.active_models_types
+
+            if (activeModelTypes.indexOf('detection') !== -1){
+              items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
+            }
+            if (activeModelTypes.indexOf('segmentation') !== -1){
+              items.push(<Option value={'AI Segmetation'}>{'AI Segmetation'}</Option>)
+            }
+            if (activeModelTypes.indexOf('pose') !== -1){
+              items.push(<Option value={'AI Pose'}>{'AI Pose'}</Option>)
+            }
+            if (activeModelTypes.indexOf('orientation') !== -1){
+              items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
+            }
+        }
       }
 
-      //items.push(<Option value={'Targeting'}>{'Targeting'}</Option>)
-      
-      items.push(<Option value={'Model Manager'}>{'Model Manager'}</Option>)
-      //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
-    }
-    else if (app_id === 'AUTOMATION') {
-
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "AUTOMATION" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+      else if (app_id === 'AUTOMATION') {
+        if (appsList.length > 0){
+          for (var i = 0; i < ruiList.length; i++) {
+            if (groupList[i] === "AUTOMATION" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+            }
           }
         }
       }
-      items.push(<Option value={'Automation Mgr'}>{'Automation Mgr'}</Option>)
-      //items.push(<Option value={"AI PanTilt Tracker"}>{"AI PanTilt Tracker"}</Option>)
-    }
-    else if (app_id === 'SYSTEM') {
-      items.push(<Option value={'Device Manager'}>{'Device Manager'}</Option>)
-      items.push(<Option value={'Software Manager'}>{'Software Manager'}</Option>)
-      items.push(<Option value={'NavPose Manager'}>{'NavPose Manager'}</Option>)
-      items.push(<Option value={'Drivers Manager'}>{'Drivers Manager'}</Option>)
-      items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
-      items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
-      if (appsList.length > 0){
-        for (var i = 0; i < ruiList.length; i++) {
-          if (groupList[i] === "SYSTEM" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1){
-            items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+
+
+      else if (app_id === 'SYSTEM') {
+
+        if (true) { //((userRestrictionsActive.indexOf('device_manager')) {
+            items.push(<Option value={'Device Manager'}>{'Device Manager'}</Option>)
+        }   
+        
+
+        if (true) { //((userRestrictionsActive.indexOf('data_manager')) {
+          items.push(<Option value={"Data Manager"}>{"Data Manager"}</Option>)
+        }
+
+        if (true) { //((appsList.indexOf('software_mgr') !== -1 ) && (this.props.ros.connectedToSoftwareMgr === true) && (userRestrictionsActive.indexOf('software_manager')) {
+            items.push(<Option value={'Software Manager'}>{'Software Manager'}</Option>)
+        }        
+        
+
+        if (true) { //((appsList.indexOf('navpose_mgr') !== -1 ) && (this.props.ros.connectedToNavPosesMgr === true) && (userRestrictionsActive.indexOf('navpose_manager')) {
+            items.push(<Option value={"NavPose Manage"}>{"NavPose Manage"}</Option>)
+        }
+
+
+        if (true) { //((appsList.indexOf('drivers_mgr') !== -1 ) && (this.props.ros.connectedToDriversMgr === true) && (userRestrictionsActive.indexOf('drivers_manager')) {
+            items.push(<Option value={'Drivers Manager'}>{'Drivers Manager'}</Option>)
+        }   
+        
+
+        if (true) { //((appsList.indexOf('ai_model_mgr') !== -1 ) && (this.props.ros.connectedToAiModelMgr === true) && (userRestrictionsActive.indexOf('ai_model_manager')) {
+           items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
+        }   
+        
+
+        if (true) { //((appsList.indexOf('apps_mgr') !== -1 ) && (this.props.ros.connectedToAppsMgr === true) && (userRestrictionsActive.indexOf('apps_manager')) {
+           items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
+        }   
+
+        if (true) { //((appsList.indexOf('automation_mgr') !== -1 ) && (this.props.ros.connectedToAutomationMgr === true) && (userRestrictionsActive.indexOf('automation_manager')) {
+           items.push(<Option value={'Automation Mgr'}>{'Automation Mgr'}</Option>)
+        }   
+        
+ 
+        if (appsList.length > 0){
+          for (var i = 0; i < ruiList.length; i++) {
+            if (groupList[i] === "SYSTEM" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1){
+              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+            }
           }
         }
       }
     }
 
+    if (items.length === 0){
+      items.push(<Option value={'NONE'}>{'Waiting for Apps'}</Option>)
+    }
 
-    //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-    //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+
     return items
   }
 
@@ -691,8 +721,14 @@ class NepiIFAppSelector extends Component {
 
 
   render() {
+    const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'NONE'
+    if (this.state.app_id !== app_id){
+      this.setState({app_id: app_id,
+                    selected_app: 'NONE', needs_update: true})
+
+    }
     const app_selected = (this.state.selected_app !== 'NONE')
-    const full_screen = false //(this.state.full_screen === true) && (app_selected === true)
+    const full_screen = (this.state.full_screen === true) && (app_selected === true)
     const sel_col_width = (full_screen === false) ? '12%' : '3%'
     const app_col_width = (full_screen === false) ? '85%' : '94%'
 

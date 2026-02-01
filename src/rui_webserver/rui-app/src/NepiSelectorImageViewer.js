@@ -176,7 +176,7 @@ class ImageViewerSelector extends Component {
                         selected_image_text: names[0]})
           updated_image = selected_image
         }
-        else {
+        else if (selected_image !== 'None') {
           this.setState({
             id: id,
             selected_image: 'None',

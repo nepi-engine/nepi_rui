@@ -41,7 +41,8 @@ class ImageViewersSelector extends Component {
 
       needs_update: false,
 
-      show_selectors: true
+      show_image_controls: false,
+      show_selectors: false
     }
 
     this.renderImageControls = this.renderImageControls.bind(this)
@@ -87,12 +88,14 @@ class ImageViewersSelector extends Component {
     }
 
 
-    const show_controls = this.props.show_controls !== undefined ? this.props.show_controls : true
-    const show_selectors_control = this.props.show_selectors_control !== undefined ? this.props.show_selectors_control : true
+    const show_image_controls_option = (this.props.show_image_controls === undefined)
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : this.state.show_image_controls
+    const show_selectors_option = (this.props.show_selectors === undefined)
+    const show_selectors = (this.props.show_selectors !== undefined) ? this.props.show_selectors: this.state.show_selectors
     return (
       <React.Fragment>
 
-          {show_controls === true ?
+          {show_image_controls === true ?
 
                 <Columns>
                   <Column>
@@ -105,7 +108,7 @@ class ImageViewersSelector extends Component {
                         {}
                       </div>
 
-                      <div style={{ width: '10%' }} align={"center"} >
+                      <div style={{ width: '10%' }} centered={"true"} >
                         <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(1)}>{"1 Window"}</Button>
                         </ButtonMenu>
@@ -115,7 +118,7 @@ class ImageViewersSelector extends Component {
                         {}
                       </div>
 
-                      <div style={{ width: '10%' }} align={"center"} >
+                      <div style={{ width: '10%' }} centered={"true"} >
                         <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(2)}>{"2 Windows"}</Button>
                         </ButtonMenu>
@@ -125,7 +128,7 @@ class ImageViewersSelector extends Component {
                         {}
                       </div>
 
-                      <div style={{ width: '10%' }} align={"center"} >
+                      <div style={{ width: '10%' }} centered={"true"} >
                         <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(3)}>{"3 Windows"}</Button>
                         </ButtonMenu>
@@ -135,7 +138,7 @@ class ImageViewersSelector extends Component {
                         {}
                       </div>
       
-                      <div style={{ width: '10%' }} align={"center"} >
+                      <div style={{ width: '10%' }} centered={"true"} >
                         <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(4)}>{"4 Windows"}</Button>
                         </ButtonMenu>
@@ -145,20 +148,36 @@ class ImageViewersSelector extends Component {
                         {}
                       </div>
 
-                      <div style={{ width: '10%' }} hidden={show_selectors_control === false}>
+                      <div style={{ width: '10%' }} centered={"true"} hidden={show_selectors_option === false}>
 
                         <Label title="Show Selectors">
                           <Toggle
-                            checked={this.state.show_selectors===true}
-                            onClick={() => onChangeSwitchStateValue.bind(this)("show_selectors",this.state.show_selectors)}>
+                            checked={this.show_selectors===true}
+                            onClick={() => onChangeSwitchStateValue.bind(this)("show_selectors",show_selectors)}>
                           </Toggle>
                       </Label>
 
                     </div>
 
-                      <div style={{ width: '25%' }}>
+
+                      <div style={{ width: '5%' }}>
                         {}
                       </div>
+
+                      <div style={{ width: '10%' }} centered={"true"} hidden={show_image_controls_option === false}>
+
+                        <Label title="Show Controls">
+                          <Toggle
+                            checked={this.show_image_controls===true}
+                            onClick={() => onChangeSwitchStateValue.bind(this)("show_image_controls",show_image_controls)}>
+                          </Toggle>
+                      </Label>
+
+                    </div>
+
+
+                      <div style={{ width: '10%' }}>
+                        {}                      </div>
               </div>
 
 
@@ -187,14 +206,16 @@ class ImageViewersSelector extends Component {
     const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
     const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : [null,null,null,null]
     const mouse_event_callback = (this.props.mouse_event_callback !== undefined) ? this.props.mouse_event_callback : null
-    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : false
+
+
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : this.state.show_image_controls
+    const show_selectors = (this.props.show_selectors !== undefined) ? this.props.show_selectors: this.state.show_selectors
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
     const has_col_2 = (num_windows > 1) ? true : false
     const colFlexSize_1 = (has_col_2 === false)? "100%" : "50%"
     const colFlexSize_2 = (has_col_2 === false)? "0%" : "50%"
     
-    const show_selectors = this.state.show_selectors
     
   
       return (
@@ -208,10 +229,10 @@ class ImageViewersSelector extends Component {
                             id="Image1Viewer"
                             image_topic={image_topics[0]}
                             title={titles[0]}
-                            show_image_controls={show_image_controls}
                             streamingImageQuality={streamingImageQuality}
                             exclude_filters={exclude_filters}
                             include_filters={include_filters}
+                            show_image_controls={show_image_controls}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
                             mouse_event_callback={mouse_event_callback}
@@ -227,10 +248,10 @@ class ImageViewersSelector extends Component {
                               id="Image3Viewer"
                               image_topic={image_topics[2]}
                               title={titles[2]}
-                              show_image_controls={show_image_controls}
-                              select_updated_namespace={selection_callback[2]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}
+                              include_filters={include_filters}
+                              show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
                               mouse_event_callback={mouse_event_callback}
@@ -252,12 +273,12 @@ class ImageViewersSelector extends Component {
                               id="Image2Viewer"
                               image_topic={image_topics[1]}
                               title={titles[1]}
-                              show_image_controls={show_image_controls}
-                              select_updated_namespace={selection_callback[1]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}
-                            show_selector={show_selectors}
-                            show_buttons={show_selectors}
+                              include_filters={include_filters}
+                              show_image_controls={show_image_controls}
+                              show_selector={show_selectors}
+                              show_buttons={show_selectors}
                               mouse_event_callback={mouse_event_callback}
                               selection_callback={selection_callback[0]}
                              make_section={false}
@@ -272,13 +293,12 @@ class ImageViewersSelector extends Component {
                             <ImageViewerSelector
                               id="Image4Viewer"
                               image_topic={image_topics[3]}
-                              title={titles[3]}
-                              show_image_controls={show_image_controls}
-                              select_updated_namespace={selection_callback[3]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}
-                            show_selector={show_selectors}
-                            show_buttons={show_selectors}
+                              include_filters={include_filters}
+                              show_image_controls={show_image_controls}
+                              show_selector={show_selectors}
+                              show_buttons={show_selectors}
                               mouse_event_callback={mouse_event_callback}
                               selection_callback={selection_callback[0]}
                              make_section={false}
