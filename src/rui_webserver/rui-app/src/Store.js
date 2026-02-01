@@ -666,7 +666,7 @@ class ROSConnectionStore {
   @action.bound
   setupMgrSystemStatusListener() {
     this.addListener({
-      name: "system_status",
+      name: "status",
       messageType: "nepi_interfaces/MgrSystemStatus",
       manageListener: true,
       callback: message => {
@@ -1265,7 +1265,7 @@ class ROSConnectionStore {
       for (var i = 0; i < topics.length; i++) {
         var topic_name_parts = topics[i].split("/")
         if (
-          topic_name_parts[topic_name_parts.length - 1] === "system_status" &&
+          topic_name_parts[topic_name_parts.length - 1] === "status" &&
           types[i] === "nepi_interfaces/MgrSystemStatus"
         ) {
           if (
