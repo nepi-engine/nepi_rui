@@ -192,7 +192,7 @@ class NepiControlsLights extends Component {
                         
                           {(device_selected == true) ?
                           <NepiIFSettings
-                            namespace={namespace}
+                            settingsNamespace={namespace + '/settings'}
                             allways_show_settings={true}
                             title={"Device Settings"}
                         />

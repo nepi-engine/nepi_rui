@@ -310,7 +310,7 @@ class NepiDeviceIDX extends Component {
                         
                           {(device_selected == true) ?
                           <NepiIFSettings
-                            namespace={namespace}
+                            settingsNamespace={namespace + '/settings'}
                             title={"Device Settings"}
                         />
                         : null}

@@ -42,8 +42,6 @@ import {
 } from "./Utilities"
 
 
-//Unused import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
-//import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -1219,12 +1217,12 @@ class MgrNavPose extends Component {
       <div style={{ display: 'flex' }}>
         <div style={{ width: "65%" }}>
           <NepiIFNavPoseViewer
-            namespace={base_namespace  + "/navpose"}
+            navposeNamespace={base_namespace  + "/navpose"}
             title={"NavPose Data"}
           />
           <div hidden={(!connected)}>
             <NepiIFSaveData
-              namespace={namespace + '/save_data'}
+              saveNamespace={namespace + '/save_data'}
               title={"Nepi_IF_SaveData"}
             />
           </div>

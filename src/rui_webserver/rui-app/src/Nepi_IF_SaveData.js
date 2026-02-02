@@ -190,7 +190,7 @@ class NepiIFSaveData extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const allNamespace = this.getAllNamespace()
-    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace !== 'None') ? this.state.saveNamespace :
+    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace !== 'None' && this.state.saveNamespace !== '') ? this.state.saveNamespace :
                                 (this.props.saveNamespace !== undefined && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== 'None/save_data') ? 
                                  this.props.saveNamespace : allNamespace
     const needs_update = ((this.state.saveNamespace !== saveNamespace && saveNamespace !== 'None'))

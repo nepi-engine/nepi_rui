@@ -43,7 +43,7 @@ class Nepi_IF_Settings extends Component {
     // these states track the values through  Status messages
     this.state = {
 
-      namespace: 'None',
+      settingsNamespace: 'None',
       status_msg: null,
       capabilities: null,
 
@@ -96,7 +96,7 @@ class Nepi_IF_Settings extends Component {
 
   // Callback for handling ROS Settings Status messages
   settingsStatusListener(message) {
-    if (message.settings_topic === this.state.namespace){
+    if (message.settings_topic === this.state.settingsNamespace){
       const lastCaps = this.state.capabilities
       const settings = message.settings_list
       const capabilities = message.setting_caps_list
@@ -130,8 +130,9 @@ class Nepi_IF_Settings extends Component {
 
   // Function for configuring and subscribing to Settings Status
   updateSettingsListener() {
-    const namespace = (this.props.namespace !== undefined) ? (this.props.namespace !== 'None') ? 
-                              this.props.namespace  + '/settings': 'None' : 'None'
+    const settingsNamespace = (this.props.settingsNamespace !== undefined) ? 
+                                (this.props.settingsNamespace !== 'None' && this.props.settingsNamespace !== '') ? 
+                                  this.props.settingsNamespace : 'None' : 'None'
     if (this.state.settingsListener != null) {
       this.state.settingsListener.unsubscribe()
       this.setState({settingsListener: null})
@@ -154,16 +155,16 @@ class Nepi_IF_Settings extends Component {
         selectedSettingInput: ""
         })
     }
-    if (namespace !== 'None'){
+    if (settingsNamespace !== 'None'){
       const settingsListener = this.props.ros.setupSettingsStatusListener(
-        namespace + '/status',
+        settingsNamespace + '/status',
         this.settingsStatusListener
       )
       this.setState({ settingsListener: settingsListener})
 
     }
     
-    this.setState({namespace: namespace})
+    this.setState({settingsNamespace: settingsNamespace})
       
     
   }
@@ -172,9 +173,9 @@ class Nepi_IF_Settings extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = (this.props.namespace !== undefined) ? (this.props.namespace !== 'None') ? 
-                              this.props.namespace  + '/settings': 'None' : 'None'
-    if (namespace !== prevState.namespace) {
+    const settingsNamespace = (this.props.settingsNamespace !== undefined) ? (this.props.settingsNamespace !== 'None') ? 
+                              this.props.settingsNamespace  + '/settings': 'None' : 'None'
+    if (settingsNamespace !== prevState.settingsNamespace) {
       this.updateSettingsListener()
     }
   }
@@ -282,7 +283,7 @@ class Nepi_IF_Settings extends Component {
   onChangeBoolSettingValue(){
     const {updateSetting}  = this.props.ros
     const value = (this.getSettingValue(this.state.selectedSettingName) === "True") ? "False" : "True" 
-    updateSetting(this.state.namespace,
+    updateSetting(this.state.settingsNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -290,7 +291,7 @@ class Nepi_IF_Settings extends Component {
     const {updateSetting}  = this.props.ros
     const ind = event.nativeEvent.target.selectedIndex
     const value = event.nativeEvent.target[ind].text
-    updateSetting(this.state.namespace,
+    updateSetting(this.state.settingsNamespace,
       this.state.selectedSettingName,this.state.selectedSettingType,value)
   }
 
@@ -304,7 +305,7 @@ class Nepi_IF_Settings extends Component {
     const {updateSetting}  = this.props.ros
     if(event.key === 'Enter'){
       const value = this.state.selectedSettingInput
-      updateSetting(this.state.namespace,
+      updateSetting(this.state.settingsNamespace,
         this.state.selectedSettingName,this.state.selectedSettingType,value)
       document.getElementById("input_setting").style.color = Styles.vars.colors.black
       this.updateSelectedSettingInfo()
@@ -517,14 +518,14 @@ class Nepi_IF_Settings extends Component {
   }
 
   renderConfigs(){
-    const namespace = this.state.namespace
+    const settingsNamespace = this.state.settingsNamespace
     return(
       <Columns>
       <Column>
 
 
           <NepiIFConfig
-                        namespace={namespace}
+                        settingsNamespace={settingsNamespace}
                         title={"Nepi_IF_Config"}
           />
 

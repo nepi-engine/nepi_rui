@@ -43,37 +43,30 @@ class NepiIFNavPoseViewer extends Component {
 
     this.state = {
 
+      navposeNamespace: 'None',
 
-      mgrName: "navpose_mgr",
-      navposeNamespace: null,
-      base_namespace: null,
-
-      show_navpose: this.props.show_navpose ? this.props.show_navpose : true,
-
-      message: null,
-
-      listener: null,
-
-      disabled: false,
-
-      connected: false,
       statusListener: null,
       status_msg: null,
 
       dataListener: null,
-      navpose_msg: null,
-      navpose_dict: null,
+      data_msg: null,
+
+      show_data: true,
+
+      connected: false,
 
       needs_update: true,
-      nav_needs_update: true  
+      data_needs_update: true  
     }
 
 
-    this.renderNavPose = this.renderNavPose.bind(this)
-    this.statusListener = this.statusListener.bind(this)
-    this.dataListener = this.dataListener.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
-    this.updateNavposeListener = this.updateNavposeListener.bind(this)
+    this.statusListener = this.statusListener.bind(this)
+
+    this.updateDataListener = this.updateDataListener.bind(this)
+    this.dataListener = this.dataListener.bind(this)
+
+    this.renderData = this.renderData.bind(this)
 
   }
 
@@ -108,53 +101,53 @@ class NepiIFNavPoseViewer extends Component {
     
     //console.log("=====dataListener called=====" + message)
     //console.log("dataListener msg: " + message)
-    //Unused const last_navpose_msg = this.state.navpose_msg
+    //Unused const last_navpose_msg = this.state.data_msg
 
     const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
     const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
-    var navpose_msg = null
+    var data_msg = null
     var frames_list = null
     var frame_index = 0
     if (is_navposes === true){
       frames_list = message.navpose_frames
       frame_index = frames_list.indexOf(selected_frame)
       if ( frame_index !== -1 && selected_frame !== 'None'){
-        navpose_msg = message.navposes[frame_index]
+        data_msg = message.navposes[frame_index]
       }
       else {
         this.setState({ 
           navpose_data: null,
-          nav_needs_update: true 
+          data_needs_update: true 
         })        
       }
     }
     else {
-      navpose_msg = message
+      data_msg = message
     }
           
-    if (navpose_msg != null){
+    if (data_msg != null){
       const navpose_data = {
-        navpose_frame: navpose_msg.navpose_frame,
-        navpose_description: navpose_msg.navpose_description,
-        frame_nav: navpose_msg.frame_nav,
-        frame_alt: navpose_msg.frame_alt,
-        latitude: navpose_msg.latitude,
-        longitude: navpose_msg.longitude,
-        altitude: navpose_msg.altitude_m,
-        heading: navpose_msg.heading_deg,
-        roll: navpose_msg.roll_deg,
-        pitch: navpose_msg.pitch_deg,
-        yaw: navpose_msg.yaw_deg,
-        x_m: navpose_msg.x_m,
-        y_m: navpose_msg.y_m,
-        z_m: navpose_msg.z_m,
-        pan: navpose_msg.pan_deg,
-        tilt: navpose_msg.tilt_deg
+        navpose_frame: data_msg.navpose_frame,
+        navpose_description: data_msg.navpose_description,
+        frame_nav: data_msg.frame_nav,
+        frame_alt: data_msg.frame_alt,
+        latitude: data_msg.latitude,
+        longitude: data_msg.longitude,
+        altitude: data_msg.altitude_m,
+        heading: data_msg.heading_deg,
+        roll: data_msg.roll_deg,
+        pitch: data_msg.pitch_deg,
+        yaw: data_msg.yaw_deg,
+        x_m: data_msg.x_m,
+        y_m: data_msg.y_m,
+        z_m: data_msg.z_m,
+        pan: data_msg.pan_deg,
+        tilt: data_msg.tilt_deg
       }
 
 
       this.setState({
-        navpose_msg: message,
+        data_msg: message,
         navpose_data: navpose_data, 
         connected: true
       })
@@ -193,11 +186,11 @@ class NepiIFNavPoseViewer extends Component {
     }
     this.setState({ 
       navpose_data: null,
-      nav_needs_update: false 
+      data_needs_update: false 
     })
   }
 
-  updateNavposeListener() {
+  updateDataListener() {
     const navposeNamespace = this.state.navposeNamespace
     const navposeTopic = navposeNamespace
     const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
@@ -228,7 +221,7 @@ class NepiIFNavPoseViewer extends Component {
     }
     this.setState({ 
       navpose_data: null,
-      nav_needs_update: false 
+      data_needs_update: false 
     })
     
   }
@@ -236,14 +229,15 @@ class NepiIFNavPoseViewer extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var navposeNamespace = (this.props.navposeNamespace != undefined) ? this.props.navposeNamespace : null
-    if (prevState.navposeNamespace !== navposeNamespace ){
-      if (navposeNamespace != null) {
+    var navposeNamespace = (this.props.navposeNamespace != undefined) ? (this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== 'None') ? 
+                             this.props.navposeNamespace : 'None' : 'None'
+    if (this.state.navposeNamespace !== navposeNamespace ){
+      if (navposeNamespace !== 'None' &&  navposeNamespace != null) {
         this.setState({
           navposeNamespace: navposeNamespace,
         })
         this.updateStatusListener()
-        this.updateNavposeListener()
+        this.updateDataListener()
       } 
       else if (navposeNamespace == null){
         this.setState({ disabled: true })
@@ -264,7 +258,7 @@ class NepiIFNavPoseViewer extends Component {
   }
 
 
-  renderNavPose() {
+  renderData() {
     const navpose_data = this.state.navpose_data
 
     if (navpose_data == null) {
@@ -447,7 +441,7 @@ class NepiIFNavPoseViewer extends Component {
                 <Section>
                 <Label title={view_title} />
 
-                {this.renderNavPose()}
+                {this.renderData()}
     
                 </Section>
               )
@@ -459,7 +453,7 @@ class NepiIFNavPoseViewer extends Component {
               <Column>
               <Label title={view_title} />
 
-              {this.renderNavPose()}
+              {this.renderData()}
   
               </Column>
             </Columns>

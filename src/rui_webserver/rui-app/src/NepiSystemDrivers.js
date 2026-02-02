@@ -383,7 +383,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
     const check_topic = namespace + "/settings/status"
     const {topicNames} = this.props.ros
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
-    const settings_namespace = topic_publishing ? namespace : "None"
+    const settings_namespace = topic_publishing ? namespace + '/settings': "None"
 
 
     return (
@@ -490,7 +490,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
 
           <NepiIFSettings
-            namespace={settings_namespace}
+            settingsNamespace={settings_namespace}
             make_section={false}
             allways_show_settings={true}
             title={"Driver Discovery Options"}

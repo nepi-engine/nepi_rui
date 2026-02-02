@@ -47,6 +47,7 @@ class NepiIF3DTransform extends Component {
 
     this.state = {
 
+      transfromNamespace: 'None',
       transform_msg: null,
       source: '',
       end: '',
@@ -59,7 +60,7 @@ class NepiIF3DTransform extends Component {
       transformRZ: 0,
       transformHO: 0,
       needs_update: false,
-      namespace: null,
+
 
       listener: null
 
@@ -99,15 +100,15 @@ class NepiIF3DTransform extends Component {
 
   // Function for configuring and subscribing to StatusIDX
   updateListener() {
-    const namespace = this.props.namespace
+    const transfromNamespace = this.props.transfromNamespace
     if (this.state.listener != null) {
       this.state.listener.unsubscribe()
       this.setState({listener: null})
     }
     else {
-      this.setState({ namespace: namespace  })
+      this.setState({ transfromNamespace: transfromNamespace  })
       var listener = this.props.ros.setupFrame3DTransformListener(
-        namespace,
+        transfromNamespace,
         this.statusListener
       )
       this.setState({ listener: listener, disabled: false })
@@ -119,9 +120,9 @@ class NepiIF3DTransform extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const transformNamespace = this.props.namespace
-    const namespace = this.state.namespace
-    if (transformNamespace !== namespace) {
+    const transformNamespace = this.props.transfromNamespace
+    const transfromNamespace = this.state.transfromNamespace
+    if (transformNamespace !== transfromNamespace) {
       this.updateListener()
     }
   }
@@ -135,10 +136,10 @@ class NepiIF3DTransform extends Component {
   componentDidMount(){
     this.setState({needs_update: true})
     
-    // Always perform initial setup with the current namespace
-    const { namespace } = this.props
-    if (namespace !== null) {
-      this.setState({namespace: namespace})
+    // Always perform initial setup with the current transfromNamespace
+    const { transfromNamespace } = this.props
+    if (transfromNamespace !== null) {
+      this.setState({transfromNamespace: transfromNamespace})
       this.updateListener()
     } else {
       this.setState({ disabled: true })
@@ -157,14 +158,14 @@ class NepiIF3DTransform extends Component {
 
   renderConfigs(){
     const { sendTriggerMsg } = this.props.ros
-    const namespace = this.state.namespace
+    const transfromNamespace = this.state.transfromNamespace
     return(
       <Columns>
       <Column>
 
 
           <NepiIFConfig
-                        namespace={namespace}
+                        transfromNamespace={transfromNamespace}
                         title={"Nepi_IF_Config"}
           />
 
@@ -180,7 +181,7 @@ class NepiIF3DTransform extends Component {
 
   sendTransformUpdateMessage(){
     const {sendFrame3DTransformMsg} = this.props.ros
-    const namespace = this.state.namespace + "/set_3d_transform"
+    const transfromNamespace = this.state.transfromNamespace + "/set_3d_transform"
     const TX = parseFloat(this.state.transformTX)
     const TY = parseFloat(this.state.transformTY)
     const TZ = parseFloat(this.state.transformTZ)
@@ -189,19 +190,19 @@ class NepiIF3DTransform extends Component {
     const RZ = parseFloat(this.state.transformRZ)
     const HO = parseFloat(this.state.transformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
-    sendFrame3DTransformMsg(namespace,transformList)
+    sendFrame3DTransformMsg(transfromNamespace,transformList)
   }
 
 
   sendTransformClearMessage(){
     const {sendTriggerMsg} = this.props.ros
-    const namespace = this.state.namespace + "/clear_3d_transform"
-    sendTriggerMsg(namespace)
+    const transfromNamespace = this.state.transfromNamespace + "/clear_3d_transform"
+    sendTriggerMsg(transfromNamespace)
   }
 
   renderTransform() {
     const { sendTriggerMsg } = this.props.ros
-    const namespace = this.state.namespace ? this.state.namespace : "None"
+    const transfromNamespace = this.state.transfromNamespace ? this.state.transfromNamespace : "None"
     const has_transform = this.props.has_transform ? this.props.has_transform : true
     if (has_transform === false){
       const msg = ("\n\nData Transformed by Parent")
@@ -317,7 +318,7 @@ class NepiIF3DTransform extends Component {
 
                 <div hidden={updates === false}>
                     <ButtonMenu>
-                        <Button onClick={() => sendTriggerMsg( namespace + "/clear_3d_transform")}>{"Clear Transform"}</Button>
+                        <Button onClick={() => sendTriggerMsg( transfromNamespace + "/clear_3d_transform")}>{"Clear Transform"}</Button>
                     </ButtonMenu>
                 </div>
 
@@ -340,10 +341,10 @@ class NepiIF3DTransform extends Component {
 
   render() {
     const make_section = this.props.make_section ? this.props.make_section : true
-    const namespace = this.state.namespace ? this.state.namespace : 'None'
+    const transfromNamespace = this.state.transfromNamespace ? this.state.transfromNamespace : 'None'
 
 
-    if (namespace !== 'None' && make_section === true){
+    if (transfromNamespace !== 'None' && make_section === true){
       return (
         <Columns>
           <Column>
@@ -356,7 +357,7 @@ class NepiIF3DTransform extends Component {
         </Columns>
       )
     }
-    else if (namespace !== 'None' && make_section === false) {
+    else if (transfromNamespace !== 'None' && make_section === false) {
       return (
         <Section >
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
