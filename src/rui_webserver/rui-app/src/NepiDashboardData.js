@@ -272,7 +272,7 @@ class NepiDashboardData extends Component {
       <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
         <NepiIFSaveData
-        saveNamespace={this.getAllNamespace()}
+        saveNamespace={this.getAllNamespace() + '/save_data'}
         always_show_controls={true}
         make_section={true}
         />
