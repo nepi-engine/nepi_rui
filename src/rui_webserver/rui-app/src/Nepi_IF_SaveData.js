@@ -50,6 +50,9 @@ class NepiIFSaveData extends Component {
     // these states track the values through the components Save Data Status messages
     this.state = {
       saveNamespace: 'None',
+      status_msg: null,
+
+
       lastSaveNamespace: 'None',
       saveRatesMsg: "",
       hasNavpose: false,
@@ -73,7 +76,7 @@ class NepiIFSaveData extends Component {
 
       showControls: false,
 
-      updateNamespace: null,
+      updatedNamespace: null,
       saveStatusListener: null
     }
 
@@ -146,6 +149,7 @@ class NepiIFSaveData extends Component {
 
     if (message.save_data_topic === this.state.saveNamespace){
       this.setState({
+        status_msg: message,
         saveRatesMsg: message.save_data_rates,
         saveAllEnabled: message.save_all_enabled,
         saveAllRate: message.save_all_rate,
@@ -168,20 +172,18 @@ class NepiIFSaveData extends Component {
   }
 
   // Function for configuring and subscribing to Status
-  updateSaveStatusListener() {
-    const allNamespace = this.getAllNamespace()
-    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace !== 'None') ? this.state.saveNamespace :
-                                (this.props.saveNamespace !== undefined && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== 'None/save_data') ? 
-                                 this.props.saveNamespace : allNamespace
+  updateSaveStatusListener(saveNamespace) {
     if (this.state.saveStatusListener != null) {
       this.state.saveStatusListener.unsubscribe()
+      this.setState({saveStatusListener: null, 
+                    status_msg: null})
     }
     if (saveNamespace !== '' &&  saveNamespace !== 'None'){
       var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
             saveNamespace,
             this.saveStatusListener
           )
-      this.setState({ saveNamespace: saveNamespace, updateNamespace: null})
+      this.setState({ saveNamespace: saveNamespace, updatedNamespace: null})
       this.setState({ saveStatusListener: saveStatusListener})
     }
   }
@@ -190,16 +192,15 @@ class NepiIFSaveData extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const allNamespace = this.getAllNamespace()
-    const saveNamespace = (this.state.updateNamespace != null) ? this.state.updateNamespace  : (this.state.saveNamespace !== 'None' && this.state.saveNamespace !== '') ? this.state.saveNamespace :
-                                (this.props.saveNamespace !== undefined && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== 'None/save_data') ? 
-                                 this.props.saveNamespace : allNamespace
-    const needs_update = ((this.state.saveNamespace !== saveNamespace && saveNamespace !== 'None'))
+    const saveNamespace =  (this.state.updatedNamespace != null) ? this.state.updatedNamespace :
+                                  (this.props.saveNamespace !== undefined) ? 
+                                    (this.props.saveNamespace !== '' && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== null) ?
+                                        this.props.saveNamespace : 'None' : 'None' 
+    const needs_update = ((this.state.saveNamespace !== saveNamespace))
   
-    if ((needs_update) && !saveNamespace.includes("null") ) {
-      this.updateSaveStatusListener()
-    }
-    if (saveNamespace === 'None' && allNamespace != null){
-      this.setState({saveNamespace: allNamespace})
+    if (needs_update) {
+      this.setState({saveNamespace: saveNamespace})
+      this.updateSaveStatusListener(saveNamespace)
     }
   }
 
@@ -209,6 +210,8 @@ class NepiIFSaveData extends Component {
     if (this.state.saveStatusListener) {
       this.state.saveStatusListener.unsubscribe()
     }
+    this.setState({saveStatusListener: null, 
+                  status_msg: null})
   }
 
 
@@ -266,7 +269,7 @@ class NepiIFSaveData extends Component {
   onChangeTopicSelection(event){
     this.setState({lastSaveNamespace: this.saveNamespace})
     const selNamespace = event.target.value
-    this.setState({updateNamespace: selNamespace,
+    this.setState({updatedNamespace: selNamespace,
                    needs_update: true
     })
   }
@@ -570,12 +573,12 @@ sendLogRateUpdate(rate) {
     if (enabled === false ) {
       sendBoolMsg(allNamespace + '/save_data_enable',false)
       this.setState({lastSaveNamespace: lastSaveNamespace,
-                    updateNamespace: lastSaveNamespace
+                    updatedNamespace: lastSaveNamespace
       })          
     }
     else {
       this.setState({lastSaveNamespace: saveNamespace,
-                   updateNamespace: allNamespace
+                   updatedNamespace: allNamespace
       })             
     }
     

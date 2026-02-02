@@ -74,23 +74,8 @@ class NepiIFNavPoseViewer extends Component {
   statusListener(message) {
 
     if (message.navpose_topic === this.state.navposeNamespace) {
-      const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
-      const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
-      var status_msg = null
-      var frames_list = null
-      var frame_index = 0
-      if (is_navposes === true){
-        frames_list = message.navpose_frames
-        frame_index = frames_list.indexOf(selected_frame)
-        if ( frame_index !== -1  && selected_frame !== 'None'){
-          status_msg = message.navpose_statuses[frame_index]
-        }
-      }
-      else {
-        status_msg = message
-      }
       this.setState({
-        status_msg: status_msg, 
+        status_msg: message, 
         connected: true
       })
     
@@ -98,151 +83,94 @@ class NepiIFNavPoseViewer extends Component {
   }
 
   dataListener(message) {
-    
-    //console.log("=====dataListener called=====" + message)
-    //console.log("dataListener msg: " + message)
-    //Unused const last_navpose_msg = this.state.data_msg
 
-    const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
-    const selected_frame = (this.props.selected_frame != undefined) ? this.props.selected_frame : this.state.selected_frame
-    var data_msg = null
-    var frames_list = null
-    var frame_index = 0
-    if (is_navposes === true){
-      frames_list = message.navpose_frames
-      frame_index = frames_list.indexOf(selected_frame)
-      if ( frame_index !== -1 && selected_frame !== 'None'){
-        data_msg = message.navposes[frame_index]
-      }
-      else {
-        this.setState({ 
-          navpose_data: null,
-          data_needs_update: true 
-        })        
-      }
-    }
-    else {
-      data_msg = message
-    }
-          
-    if (data_msg != null){
-      const navpose_data = {
-        navpose_frame: data_msg.navpose_frame,
-        navpose_description: data_msg.navpose_description,
-        frame_nav: data_msg.frame_nav,
-        frame_alt: data_msg.frame_alt,
-        latitude: data_msg.latitude,
-        longitude: data_msg.longitude,
-        altitude: data_msg.altitude_m,
-        heading: data_msg.heading_deg,
-        roll: data_msg.roll_deg,
-        pitch: data_msg.pitch_deg,
-        yaw: data_msg.yaw_deg,
-        x_m: data_msg.x_m,
-        y_m: data_msg.y_m,
-        z_m: data_msg.z_m,
-        pan: data_msg.pan_deg,
-        tilt: data_msg.tilt_deg
+     const navpose_data = {
+        navpose_frame: message.navpose_frame,
+        navpose_description: message.navpose_description,
+        frame_nav: message.frame_nav,
+        frame_alt: message.frame_alt,
+        latitude: message.latitude,
+        longitude: message.longitude,
+        altitude: message.altitude_m,
+        heading: message.heading_deg,
+        roll: message.roll_deg,
+        pitch: message.pitch_deg,
+        yaw: message.yaw_deg,
+        x_m: message.x_m,
+        y_m: message.y_m,
+        z_m: message.z_m,
+        pan: message.pan_deg,
+        tilt: message.tilt_deg
       }
 
 
       this.setState({
         data_msg: message,
+        frames_list: message.navpose_frames,
+        frame: message.navpose_frames,
         navpose_data: navpose_data, 
         connected: true
       })
-    }
+
   }
 
-  updateStatusListener() {
-      //console.log("=====updateStatusListener called=====");
-      const navposeNamespace = this.state.navposeNamespace 
-      const navposeTopic = navposeNamespace + '/status'
-      const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
-      var statusListener = null
-      if (this.state.statusListener) {
-        this.state.statusListener.unsubscribe()
-      }
-
-    if (navposeNamespace !== 'None' && navposeNamespace != null){
-      if (is_navposes === true) {
-        statusListener = this.props.ros.setupSaveDataStatusListener(
-          navposeTopic,
-          "nepi_interfaces/NavPosesStatus",
-          this.statusListener 
-        )
-      }
-      else {
-        statusListener = this.props.ros.setupSaveDataStatusListener(
-          navposeTopic,
+  updateStatusListener(navposeNamespace) {
+    if (this.state.statusListener != null) {
+      this.state.statusListener.unsubscribe()
+      this.setState({statusListener: null, status_msg: null, connected: false})
+    }
+    if (this.state.statusListener != 'None') {
+        const statusListener = this.props.ros.setupStatusListener(
+          navposeNamespace + '/status',
           "nepi_interfaces/NavPoseStatus",
           this.statusListener 
         )
-      }
-      
       this.setState({ 
         statusListener: statusListener,
       })
     }
-    this.setState({ 
-      navpose_data: null,
-      data_needs_update: false 
-    })
+ 
   }
 
-  updateDataListener() {
-    const navposeNamespace = this.state.navposeNamespace
-    const navposeTopic = navposeNamespace
-    const is_navposes = (this.props.is_navposes != undefined) ? this.props.is_navposes : false
-    if (this.state.dataListener) {
+
+
+  updateDataListener(navposeNamespace) {
+    if (this.state.dataListener != null) {
       this.state.dataListener.unsubscribe()
+      this.setState({dataListener: null, data_msg: null, 
+                    navpose_data: null, data_needs_update: false})
     }
-    var dataListener = null
-    if (navposeNamespace !== 'None' && navposeNamespace != null){
-      if (is_navposes === true) {
-        dataListener = this.props.ros.setupSaveDataStatusListener(
-          navposeTopic,
-          "nepi_interfaces/NavPoses",
-          this.dataListener 
-        )
-      }
-      else {
-        dataListener = this.props.ros.setupSaveDataStatusListener(
-          navposeTopic,
-          "nepi_interfaces/NavPose",
-          this.dataListener 
-        )
-
-      }
-      
-      this.setState({ 
-        dataListener: dataListener,
-      })
+    if (this.state.dataListener != 'None') {
+        const dataListener = this.props.ros.setupDataListener(
+            navposeNamespace,
+            "nepi_interfaces/NavPose",
+            this.dataListener 
+          )
+        this.setState({ 
+          dataListener: dataListener,
+        })
     }
-    this.setState({ 
-      navpose_data: null,
-      data_needs_update: false 
-    })
-    
+ 
   }
+
+    componentDidMount() {
+      this.setState({needs_update: true, data_needs_update: true})
+    }
+
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var navposeNamespace = (this.props.navposeNamespace != undefined) ? (this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== 'None') ? 
+    var navposeNamespace = (this.props.navposeNamespace != undefined) ? (this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
                              this.props.navposeNamespace : 'None' : 'None'
     if (this.state.navposeNamespace !== navposeNamespace ){
-      if (navposeNamespace !== 'None' &&  navposeNamespace != null) {
         this.setState({
           navposeNamespace: navposeNamespace,
         })
-        this.updateStatusListener()
-        this.updateDataListener()
+        this.updateStatusListener(navposeNamespace)
+        this.updateDataListener(navposeNamespace)
       } 
-      else if (navposeNamespace == null){
-        this.setState({ disabled: true })
-      }
-    }
+
   }
   
   
@@ -252,8 +180,10 @@ class NepiIFNavPoseViewer extends Component {
     if (this.state.statusListener) {
       this.state.statusListener.unsubscribe()
     }
-    if (this.state.dataListener) {
+    if (this.state.dataListener != null) {
       this.state.dataListener.unsubscribe()
+      this.setState({dataListener: null, data_msg: null, 
+                    navpose_data: null, data_needs_update: false})
     }
   }
 

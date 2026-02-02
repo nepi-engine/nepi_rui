@@ -48,7 +48,8 @@ class NepiIF3DTransform extends Component {
     this.state = {
 
       transfromNamespace: 'None',
-      transform_msg: null,
+      status_msg: null,
+      data_msg: null,
       source: '',
       end: '',
 
@@ -77,15 +78,15 @@ class NepiIF3DTransform extends Component {
 
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
-    const last_msg = this.state.transform_msg
+    const last_msg = this.state.data_msg
     this.setState({
-      transform_msg: message,
+      data_msg: message,
       source: message.source_ref_description,
       end: message.end_ref_description
     })
     if (JSON.stringify(message) !== JSON.stringify(last_msg)) {
       this.setState({
-        transform_msg: message,
+        data_msg: message,
         transformTX: message.translate_vector.x,
         transformTY: message.translate_vector.y,
         transformTZ: message.translate_vector.z,
@@ -99,21 +100,26 @@ class NepiIF3DTransform extends Component {
   }
 
   // Function for configuring and subscribing to StatusIDX
-  updateListener() {
-    const transfromNamespace = this.props.transfromNamespace
+  updateListener(transformNamespace) {
     if (this.state.listener != null) {
       this.state.listener.unsubscribe()
       this.setState({listener: null})
     }
-    else {
+    if (transformNamespace !== 'None' && transformNamespace != null){
       this.setState({ transfromNamespace: transfromNamespace  })
       var listener = this.props.ros.setupFrame3DTransformListener(
-        transfromNamespace,
+        transformNamespace,
         this.statusListener
       )
       this.setState({ listener: listener, disabled: false })
     }
 
+  }
+
+
+
+  componentDidMount(){
+    this.setState({needs_update: true})
   }
 
 
@@ -123,14 +129,10 @@ class NepiIF3DTransform extends Component {
     const transformNamespace = this.props.transfromNamespace
     const transfromNamespace = this.state.transfromNamespace
     if (transformNamespace !== transfromNamespace) {
-      this.updateListener()
+      this.updateListener(transformNamespace)
     }
   }
 
-
-  componentDidMount(){
-    this.setState({needs_update: true})
-  }
 
 
   componentDidMount(){

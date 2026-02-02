@@ -1102,13 +1102,14 @@ renderDetectorSettings() {
         title={sel_img_text}
       />
 
+{/*
       { (saveNamespace !== 'None' && connected === true) ?
         <NepiIFSaveData
-              namespace={saveNamespace + '/save_data'}
+              saveNamespace={saveNamespace + '/save_data'}
               title={"Nepi_IF_SaveData"}
           />
       : null }
-
+*/}
       </Column>
       <Column>
 

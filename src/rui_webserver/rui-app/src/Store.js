@@ -1640,7 +1640,20 @@ class ROSConnectionStore {
         messageType: msg_type,
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
+      })
+    }
+  }
+
+  @action.bound
+  setupDataListener(namespace, msg_type, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: msg_type,
+        noPrefix: true,
+        callback: callback,
+
       })
     }
   }
@@ -1653,7 +1666,7 @@ class ROSConnectionStore {
         messageType: "std_msgs/String",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1666,7 +1679,7 @@ class ROSConnectionStore {
         messageType: "geometry_msgs/Vector3",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1679,7 +1692,7 @@ class ROSConnectionStore {
         messageType: "std_msgs/Float32",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1696,7 +1709,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DevicePTXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1709,7 +1722,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DeviceLSXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1734,7 +1747,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DeviceIDXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1747,7 +1760,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/DeviceNPXStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1762,7 +1775,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/SaveDataStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1775,7 +1788,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/SettingsStatus",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }
@@ -1788,7 +1801,7 @@ class ROSConnectionStore {
         messageType: "nepi_interfaces/Frame3DTransform",
         noPrefix: true,
         callback: callback,
-        manageListener: true
+
       })
     }
   }

@@ -164,9 +164,9 @@ class ImageViewer extends Component {
       })
 
     }
-    if (image_topic !=+ 'None'){
+    if (status_topic !== 'None' && status_topic != null ){
       var status_listenter = this.props.ros.setupStatusListener(
-            statusNamespace,
+            status_topic + '/status',
             "nepi_interfaces/ImageStatus",
             this.statusListener
           )
@@ -1596,7 +1596,7 @@ class ImageViewer extends Component {
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
 
                       <NepiIFNavPoseViewer
-                        saveNamespace={this.state.navpose_topic}
+                        navposeNamespace={this.state.navpose_topic}
                         title={"NavPose Data"}
                         make_section={false}
                       />

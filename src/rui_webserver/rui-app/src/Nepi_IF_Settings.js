@@ -69,10 +69,11 @@ class Nepi_IF_Settings extends Component {
 
       last_caps: null,
       settingsListener: null,
+      needs_update: false,
     }
 
     this.updateSettingsListener = this.updateSettingsListener.bind(this)
-    this.settingsStatusListener = this.settingsStatusListener.bind(this)
+    this.settingsListener = this.settingsListener.bind(this)
 
     this.updateCapabilities = this.updateCapabilities.bind(this)
 
@@ -95,7 +96,7 @@ class Nepi_IF_Settings extends Component {
   }
 
   // Callback for handling ROS Settings Status messages
-  settingsStatusListener(message) {
+  settingsListener(message) {
     if (message.settings_topic === this.state.settingsNamespace){
       const lastCaps = this.state.capabilities
       const settings = message.settings_list
@@ -129,68 +130,69 @@ class Nepi_IF_Settings extends Component {
   }
 
   // Function for configuring and subscribing to Settings Status
-  updateSettingsListener() {
-    const settingsNamespace = (this.props.settingsNamespace !== undefined) ? 
-                                (this.props.settingsNamespace !== 'None' && this.props.settingsNamespace !== '') ? 
-                                  this.props.settingsNamespace : 'None' : 'None'
-    if (this.state.settingsListener != null) {
+  updateSettingsListener(settingsNamespace) {
+    if (this.state.settingsListener != null ) {
       this.state.settingsListener.unsubscribe()
-      this.setState({settingsListener: null})
-      this.setState({capSettingsNamesList: [],
-        status_msg: null,
-        capSettingsTypesList: [],
-        capSettingsOptionsLists: [],
-        settingsNamesList: [],
-        settingsTypesList: [],
-        settingsValuesList: [],
-        settings: null,
-        settingsCount: 0,
-        selectedSettingInd: 0,
-        selectedSettingName: "",
-        selectedSettingType: "",
-        selectedSettingValue: "",
-        selectedSettingLowerLimit: "",
-        selectedSettingUpperLimit: "",
-        selectedSettingOptions: [],
-        selectedSettingInput: ""
-        })
+           this.setState({settingsListener: null})
+            this.setState({capSettingsNamesList: [],
+              status_msg: null,
+              capSettingsTypesList: [],
+              capSettingsOptionsLists: [],
+              settingsNamesList: [],
+              settingsTypesList: [],
+              settingsValuesList: [],
+              settings: null,
+              settingsCount: 0,
+              selectedSettingInd: 0,
+              selectedSettingName: "",
+              selectedSettingType: "",
+              selectedSettingValue: "",
+              selectedSettingLowerLimit: "",
+              selectedSettingUpperLimit: "",
+              selectedSettingOptions: [],
+              selectedSettingInput: ""
+              })
     }
-    if (settingsNamespace !== 'None'){
-      const settingsListener = this.props.ros.setupSettingsStatusListener(
-        settingsNamespace + '/status',
-        this.settingsStatusListener
-      )
+    if (settingsNamespace !== '' &&  settingsNamespace !== 'None'){
+      var settingsListener = this.props.ros.setupSettingsStatusListener(
+            settingsNamespace + '/status',
+            this.settingsListener
+          )
+      this.setState({ settingsNamespace: settingsNamespace, updateNamespace: null})
       this.setState({ settingsListener: settingsListener})
-
     }
-    
-    this.setState({settingsNamespace: settingsNamespace})
-      
-    
   }
 
 
-  // Lifecycle method called when compnent updates.
+    componentDidMount() {
+      this.setState({needs_update: true})
+    }
+
+  // Lifecycle method cAlled when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const settingsNamespace = (this.props.settingsNamespace !== undefined) ? (this.props.settingsNamespace !== 'None') ? 
-                              this.props.settingsNamespace  + '/settings': 'None' : 'None'
-    if (settingsNamespace !== prevState.settingsNamespace) {
-      this.updateSettingsListener()
+    const settingsNamespace =  (this.props.settingsNamespace !== undefined) ? (this.props.settingsNamespace !== '' && this.props.settingsNamespace !== 'None' && this.props.settingsNamespace !== null) ?
+                               this.props.settingsNamespace : 'None' : 'None'
+    const needs_update = ((this.state.settingsNamespace !== settingsNamespace))
+  
+    if (needs_update) {
+      this.setState({settingsNamespace: settingsNamespace})
+      this.updateSettingsListener(settingsNamespace)
     }
   }
 
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Settings Status message
+  // Lifecycle method cAlled just before the component umounts.
+  // Used to unsubscribe to Status message
   componentWillUnmount() {
     if (this.state.settingsListener) {
       this.state.settingsListener.unsubscribe()
     }
+    this.setState({settingsListener: null, 
+                  status_msg: null})
   }
 
-    componentDidMount() {
-    this.updateSettingsListener()
-    }
+
+
 
 
   // Function for creating settings options list from capabilities

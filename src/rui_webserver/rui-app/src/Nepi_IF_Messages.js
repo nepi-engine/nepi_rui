@@ -66,7 +66,6 @@ class NepiSystemMessages extends Component {
 
     this.convertStrListToJoinedStr = this.convertStrListToJoinedStr.bind(this)
     this.onClickPause = this.onClickPause.bind(this)
-    this.getAllNamespace = this.getAllNamespace.bind(this)
 
     this.renderShowControl = this.renderShowControl.bind(this)
     this.renderMessages = this.renderMessages.bind(this)
@@ -74,15 +73,6 @@ class NepiSystemMessages extends Component {
     this.updateMessagesStatusListener = this.updateMessagesStatusListener.bind(this)
   }
 
-
-  getAllNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var allNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      allNamespace = "/" + namespacePrefix + "/" + deviceId + "/messages"
-    }
-    return allNamespace
-  }
 
     // Callback for handling ROS Status messages
     messagesStatusListener(message) {
@@ -104,21 +94,21 @@ class NepiSystemMessages extends Component {
     }
 
   // Function for configuring and subscribing to Status
-  updateMessagesStatusListener() {
-    const {topicNames} = this.props.ros
-    const allNamespace = this.getAllNamespace()
-    const { namespace } = this.props
+  updateMessagesStatusListener(namespace) {
 
-    if (this.state.messagesStatusListener) {
+    if (this.state.messagesStatusListener != null) {
       this.state.messagesStatusListener.unsubscribe()
+      this.setState({messagesStatusListener: null})
     }
-    var messagesStatusListener = this.props.ros.setupStatusListener(
-      namespace,
-      "nepi_interfaces/Message",
-      this.messagesStatusListener
-    )
-    this.setState({ namespace: namespace, messagesStatusListener: messagesStatusListener,
-      needs_update: false})
+    if (namespace !== 'None' && namespace != null) {
+      var messagesStatusListener = this.props.ros.setupStatusListener(
+        namespace,
+        "nepi_interfaces/Message",
+        this.messagesStatusListener
+      )
+      this.setState({ messagesStatusListener: messagesStatusListener,
+        needs_update: false})
+    }
   }
 
   // Lifecycle method called when compnent updates.
@@ -132,7 +122,8 @@ class NepiSystemMessages extends Component {
     const needs_update = (this.state.needs_update && namespace !== null && message_publishing === true)
     if (namespace_updated || needs_update) {
       if (namespace.indexOf('null') === -1){
-        this.updateMessagesStatusListener()
+        this.setState({ namespace: namespace})
+        this.updateMessagesStatusListener(namespace)
       }
     }
   }
