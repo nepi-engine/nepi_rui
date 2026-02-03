@@ -136,6 +136,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const use_images_selector = (this.props.use_images_selector != undefined) ? this.props.use_images_selector : false 
     const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : false
     const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
+    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
     return (
 
@@ -149,6 +150,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                 hideQualitySelector={true}
                 show_save_controls={show_save_controls}
                 show_image_controls={show_image_controls}
+                mouse_event_topic={mouse_event_topic}
               />
               : 
                   <ImageViewerSelector
@@ -156,6 +158,8 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                     hideQualitySelector={true}
                     show_save_controls={show_save_controls}
                     show_image_controls={show_image_controls}
+                    mouse_event_topic={mouse_event_topic}
+
                   />
             }
 
