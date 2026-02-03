@@ -399,7 +399,7 @@ class ImageViewer extends Component {
             if (dx > pt && dy > pt){
               const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
               sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
-              const mouse_drag = {x1,y1,r,g,b,a}
+              const mouse_drag = {x:x1,y:y1,r:r,g:g,b:b,a:a}
               if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
                   this.sendImageMouseEventMsg(mouse_event_topic ,
                                                       this.state.image_topic,
@@ -426,8 +426,8 @@ class ImageViewer extends Component {
       this.setState({pixel: null, mouse_drag: false})
       if (pixel !== null){
         const [x1,y1,r,g,b,a] = pixel
-        const mouse_click = {x1,y1,r,g,b,a}
-        const mouse_window = {x1,x2,y1,y2}
+        const mouse_click = {x:x1,y:y1,r:r,g:g,b:b,a:a}
+        const mouse_window = {x_min:x1, x_max:x2, y_min:y1, y_max:y2}
         const dx = Math.abs(x2 - x1) 
         const dy = Math.abs(y2 - y1) 
 
@@ -489,15 +489,16 @@ class ImageViewer extends Component {
       name: namespace,
       messageType: "nepi_interfaces/ImageMouseEvent",
       data: { 
-        data: {
           image_topic: image_topic,
           image_index: image_index,
 
           click_event: true, 
           click_pixel: mouse_click,
-
-          status_msg: status_msg
-        }
+          drag_event: false, 
+          drag_pixel: {x:0,y:0,r:0,g:0,b:0,a:0},
+          window_event: false, 
+          window: {x_min:0, x_max:0, y_min:0, y_max:0},
+          image_status_msg: status_msg
       },
       noPrefix: true
 
@@ -508,7 +509,7 @@ class ImageViewer extends Component {
     this.props.ros.publishMessage({
       name: namespace,
       messageType: "nepi_interfaces/ImageMouseEvent",
-      data: { 
+
         data: {
           image_topic: image_topic,
           image_index: image_index,
@@ -516,11 +517,9 @@ class ImageViewer extends Component {
           drag_event: true, 
           drag_pixel: mouse_drag,
 
-          status_msg: status_msg
-        }
-      },
+          image_status_msg: status_msg
+        },
       noPrefix: true
-
     })
   }
 
@@ -529,15 +528,13 @@ class ImageViewer extends Component {
       name: namespace,
       messageType: "nepi_interfaces/ImageMouseEvent",
       data: { 
-        data: {
           image_topic: image_topic,
           image_index: image_index,
 
           window_event: true, 
           ImageWindow: mouse_window,
 
-          status_msg: status_msg
-        }
+          image_status_msg: status_msg
       },
       noPrefix: true
 
