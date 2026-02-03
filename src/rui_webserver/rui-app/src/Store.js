@@ -265,7 +265,7 @@ class ROSConnectionStore {
     if (this.ros != null && (this.topicQueryLock === false) && (this.connectedToROS === true)) {
       this.topicQueryLock = true
 
-    // Update Topics and Services
+      // Update Topics and Services
       if (this.systemStatusTopics != null && this.systemStatusTopicTypes != null ){
             update_time = 100
             this.topicNames = this.systemStatusTopics
@@ -299,32 +299,36 @@ class ROSConnectionStore {
         if (this.topicNames.length != topicNames.length || 
             this.topicTypes.length != topicTypes.length || 
             this.serviceNames.length != serviceNames.length)
-        {
-          update_time = 2000
-          var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
-          var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
-          var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
-          var newAiDetectorNamespaces = this.updateAiDetectorNamespaces(this.topicNames, this.topicTypes)
-          var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
-          var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
-          var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
-          this.updateAppStatusList(this.topicNames, this.topicTypes)
-          this.updateIDXDevices(this.topicNames, this.topicTypes)
-          this.updatePTXDevices(this.topicNames, this.topicTypes)
-          this.updateLXSDevices(this.topicNames, this.topicTypes)
-          this.updateRBXDevices(this.topicNames, this.topicTypes)
-          this.updateNPXDevices(this.topicNames, this.topicTypes)        
+            {
+              update_time = 2000
+              var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
+              var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
+              var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
+              var newAiDetectorNamespaces = this.updateAiDetectorNamespaces(this.topicNames, this.topicTypes)
+              var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
+              var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
+              var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
+              this.updateIDXDevices(this.topicNames, this.topicTypes)
+              this.updatePTXDevices(this.topicNames, this.topicTypes)
+              this.updateLXSDevices(this.topicNames, this.topicTypes)
+              this.updateRBXDevices(this.topicNames, this.topicTypes)
+              this.updateNPXDevices(this.topicNames, this.topicTypes)        
 
-          if (newPrefix === true){
-            this.setupMgrSystemStatusListener()
-            this.setupRUISettingsListener()    // services
-          }
+              if (newPrefix === true){
+                this.setupMgrSystemStatusListener()
+                this.setupRUISettingsListener()    // services
+              }
 
-          if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
-            this.initializeSystemListeners()
-          }
-      }
+              if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
+                this.initializeSystemListeners()
+              }
 
+            
+            }
+        const newAppTopics = ((this.apps_list_last.length !== this.apps_list.length) || (this.apps_active_list_last.length !== this.apps_active_list.length))
+        if ((this.connectedToNepi === true) && (newAppTopics === true)) {
+          this.updateAppStatusList(this.topicNames, this.topicTypes) 
+        }
       }
     
       this.topicNamesLast = this.topicNames
@@ -906,7 +910,7 @@ class ROSConnectionStore {
 
 
   @observable apps_list =  []
-  @observable apps_list_last = []
+
   @observable apps_group_list = []
   @observable apps_rui_list = []
   @observable apps_active_list = []
@@ -931,14 +935,10 @@ class ROSConnectionStore {
 
       this.connectedToAppsMgr = true
 
-      if (this.apps_list_last != message.apps_ordered_list) {
-          this.updateAppStatusList(this.topicNames,this.topicTypes)
-      }
-      this.apps_list_last = message.apps_ordered_list
-
       }
     })
   }
+
 
 
   //////////////////////////////
@@ -1218,38 +1218,38 @@ class ROSConnectionStore {
 
   @action.bound
   async callAppStatusQueryService(namespace) {
-  if (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + 'apps_mgr/app_status_query') !== -1){
-    const appStatus = await this.callService({
-      name: 'apps_mgr/app_status_query',
-      messageType: "nepi_interfaces/AppStatusQuery",
-      args: {app_name : namespace},
-    })
-    const appsNameList = this.appsNameList
-    const appInd = appsNameList.indexOf(namespace)
-    if (appInd === -1){
-      this.appsStatusList.push(appStatus)
-      this.appsNameList.push(namespace)
+    if ((this.connectedToNepi === true) && (this.serviceNames.indexOf("/" + this.namespacePrefix + "/" + this.deviceId + "/" + 'apps_mgr/app_status_query') !== -1)){
+      const appStatus = await this.callService({
+        name: 'apps_mgr/app_status_query',
+        messageType: "nepi_interfaces/AppStatusQuery",
+        args: {app_name : namespace},
+      })
+      const appsNameList = this.appsNameList
+      const appInd = appsNameList.indexOf(namespace)
+      if (appInd === -1){
+        this.appsStatusList.push(appStatus)
+        this.appsNameList.push(namespace)
 
-    }
-    else {
+      }
+      else {
 
-      this.appsNameList[appInd] = namespace
-      this.appsStatusList[appInd] = appStatus
+        this.appsNameList[appInd] = namespace
+        this.appsStatusList[appInd] = appStatus
+      }
     }
-  }
   }
 
 
     @action.bound
   async callAiDetectorCapabilitiesQueryService(namespace) {
     this.saveDataCaps[namespace] = []
-  if (this.serviceNames.indexOf(namespace + "/detector_info_query") !== -1){
-    const capabilities = await this.callService({
-      name: namespace + "/detector_info_query",
-      messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
-    })
-    this.saveDataCaps[namespace] = capabilities
-  }
+    if ((this.connectedToNepi === true) && (this.serviceNames.indexOf(namespace + "/detector_info_query") !== -1)){
+      const capabilities = await this.callService({
+        name: namespace + "/detector_info_query",
+        messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
+      })
+      this.saveDataCaps[namespace] = capabilities
+    }
   }
 
   /*******************************/
@@ -1299,62 +1299,81 @@ class ROSConnectionStore {
   updateSaveDataNamespaces(topics,types) {
     // Function for updating image topics list
     var newSaveDataNamespaces = []
-    for (var i = 0; i < topics.length; i++) {
-      if (types[i] === "nepi_interfaces/SaveDataStatus"){
-        newSaveDataNamespaces.push(topics[i].replace('/status',''))
+    if (this.connectedToNepi === true) {
+      for (var i = 0; i < topics.length; i++) {
+        if (types[i] === "nepi_interfaces/SaveDataStatus"){
+          newSaveDataNamespaces.push(topics[i].replace('/status',''))
+        }
       }
-    }
 
-    // sort the save topics for comparison to work
-    newSaveDataNamespaces.sort()    
 
-    if (!this.saveDataNamespaces.equals(newSaveDataNamespaces)) {
-      this.saveDataNamespaces = newSaveDataNamespaces
-      for (var i2 = 0; i < this.saveDataNamespaces.length; i2++) {
-            this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i2])
-          }
-      return true
-    } else {
-      return false
+      // sort the save topics for comparison to work
+      newSaveDataNamespaces.sort()    
+    }  
+    else {
+      newSaveDataNamespaces = []
     }
+      if (!this.saveDataNamespaces.equals(newSaveDataNamespaces)) {
+        this.saveDataNamespaces = newSaveDataNamespaces
+        for (var i2 = 0; i < this.saveDataNamespaces.length; i2++) {
+              this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i2])
+            }
+        return true
+      } else {
+        return false
+      }
+
   }
 
     @action.bound
   updateAiDetectorNamespaces(topics,types) {
     // Function for updating image topics list
     var newAiDetectorNamespaces = []
-    for (var i = 0; i < topics.length; i++) {
-      if (types[i] === "nepi_interfaces/AiDetectorStatus"){
-        newAiDetectorNamespaces.push(topics[i].replace('/status',''))
+    if (this.connectedToNepi === true) {
+      
+      for (var i = 0; i < topics.length; i++) {
+        if (types[i] === "nepi_interfaces/AiDetectorStatus"){
+          newAiDetectorNamespaces.push(topics[i].replace('/status',''))
+        }
       }
+
+      // sort the save topics for comparison to work
+      newAiDetectorNamespaces.sort()    
+    }  
+    else {
+      newAiDetectorNamespaces = []
     }
 
-    // sort the save topics for comparison to work
-    newAiDetectorNamespaces.sort()    
+      if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
+        this.aiDetectorNamespaces = newAiDetectorNamespaces
+        for (var i2 = 0; i2 < this.aiDetectorNamespaces.length; i2++) {
+              this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i])
+            }
+        return true
+      } else {
+        return false
+      }
 
-    if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
-      this.aiDetectorNamespaces = newAiDetectorNamespaces
-      for (var i2 = 0; i2 < this.aiDetectorNamespaces.length; i2++) {
-            this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i])
-          }
-      return true
-    } else {
-      return false
-    }
   }
 
   @action.bound
   updateMessageTopics(topics,types) {
     // Function for updating image topics list
     var newMessageTopics = []
-    for (var i = 0; i < topics.length; i++) {
-      if (types[i] === "nepi_interfaces/Message") {
-        newMessageTopics.push(topics[i])
-      }
-    }
+    if (this.connectedToNepi === true) {
 
-    // sort the image topics for comparison to work
-    newMessageTopics.sort()
+      for (var i = 0; i < topics.length; i++) {
+        if (types[i] === "nepi_interfaces/Message") {
+          newMessageTopics.push(topics[i])
+        }
+      }
+
+      // sort the image topics for comparison to work
+      newMessageTopics.sort()
+    }
+    else {
+      newMessageTopics = []
+    }
 
     if (!this.messageTopics.equals(newMessageTopics)) {
       this.messageTopics = newMessageTopics
@@ -1362,6 +1381,7 @@ class ROSConnectionStore {
     } else {
       return false
     }
+
   }
 
 
@@ -1369,15 +1389,20 @@ class ROSConnectionStore {
   updateNavPoseTopics(topics,types) {
     // Function for updating image topics list
     var newNavPoseTopics = []
-    for (var i = 0; i < topics.length; i++) {
-      if (types[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
-        newNavPoseTopics.push(topics[i])
+    if (this.connectedToNepi === true) {
+      
+      for (var i = 0; i < topics.length; i++) {
+        if (types[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
+          newNavPoseTopics.push(topics[i])
+        }
       }
+
+      // sort the image topics for comparison to work
+      newNavPoseTopics.sort()  
+    }  
+    else {
+      newNavPoseTopics = []
     }
-
-    // sort the image topics for comparison to work
-    newNavPoseTopics.sort()    
-
     if (!this.navposeTopics.equals(newNavPoseTopics)) {
       this.navposeTopics = newNavPoseTopics
       for (var i2 = 0; i < this.navposeTopics.length; i2++) {
@@ -1387,6 +1412,7 @@ class ROSConnectionStore {
     } else {
       return false
     }
+
   }
 
   @action.bound
@@ -1394,28 +1420,34 @@ class ROSConnectionStore {
     // Function for updating image topics list
     var newImageTopics = []
     var newImageDetectionTopics = []
-    for (var i = 0; i < topics.length; i++) {
-      if (types[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
-        newImageTopics.push(topics[i])
-        if (topics[i].indexOf('detection_image') !== -1){
-          newImageDetectionTopics.push(topics[i])
+    if (this.connectedToNepi === true) {
+
+      for (var i = 0; i < topics.length; i++) {
+        if (types[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
+          newImageTopics.push(topics[i])
+          if (topics[i].indexOf('detection_image') !== -1){
+            newImageDetectionTopics.push(topics[i])
+          }
         }
       }
-    }
 
-    // sort the image topics for comparison to work
-    newImageTopics.sort()    
-
-    if (!this.imageTopics.equals(newImageTopics)) {
-      this.imageTopics = newImageTopics
-      this.imageDetectionTopics = newImageDetectionTopics
-      for (var i2 = 0; i2 < this.imageTopics.length; i2++) {
-            this.callImageCapabilitiesQueryService(this.imageTopics[i])
-          }
-      return true
-    } else {
-      return false
+      // sort the image topics for comparison to work
+      newImageTopics.sort()    
+    }  
+    else {
+      newImageTopics = []
     }
+      if (!this.imageTopics.equals(newImageTopics)) {
+        this.imageTopics = newImageTopics
+        this.imageDetectionTopics = newImageDetectionTopics
+        for (var i2 = 0; i2 < this.imageTopics.length; i2++) {
+              this.callImageCapabilitiesQueryService(this.imageTopics[i])
+            }
+        return true
+      } else {
+        return false
+      }
+
   }
 
 
@@ -1423,40 +1455,57 @@ class ROSConnectionStore {
   @action.bound
   updatePointcloudTopics(topics,types) {
     // Function for updating image topics list
-    var newPointcloudTopics = []
-    for (var i = 0; i < topics.length; i++) {
-      if (types[i] === "sensor_msgs/PointCloud2") {
-        newPointcloudTopics.push(topics[i])
+      var newPointcloudTopics = []
+    if (this.connectedToNepi === true) {
+
+      for (var i = 0; i < topics.length; i++) {
+        if (types[i] === "sensor_msgs/PointCloud2") {
+          newPointcloudTopics.push(topics[i])
+        }
       }
-    }
 
-    // sort the image topics for comparison to work
-    newPointcloudTopics.sort()
-
-    if (!this.pointcloudTopics.equals(newPointcloudTopics)) {
-      this.pointcloudTopics = newPointcloudTopics
-      return true
-    } else {
-      return false
+      // sort the image topics for comparison to work
+      newPointcloudTopics.sort()
+    }  
+    else {
+      newPointcloudTopics = []
     }
+      if (!this.pointcloudTopics.equals(newPointcloudTopics)) {
+        this.pointcloudTopics = newPointcloudTopics
+        return true
+      } else {
+        return false
+      }
+
   }
+
+
+  @observable apps_list_last = []
+  @observable apps_active_list_last = []
 
   @action.bound
   updateAppStatusList(topics,types) {
-    const appsNameList = this.apps_list
-    const appsNameListLast = this.appsNameListLast
-    if (appsNameList.length > 0 && appsNameList !== appsNameListLast) {
-      for (var i = 0; i < appsNameList.length; i++) {
-          this.callAppStatusQueryService(appsNameList[i])
+    if (this.connectedToNepi === true) {
+      const appsNameList = this.apps_list
+      const appsNameListLast = this.appsNameListLast
+      if ((appsNameList.length > 0) && (appsNameList.length !== appsNameListLast.length)) {
+        for (var i = 0; i < appsNameList.length; i++) {
+            this.callAppStatusQueryService(appsNameList[i])
+        }
+        this.appsNameListLast = appsNameList
       }
-      this.appsNameListLast = appsNameList
     }
+    else {
+      this.appsNameListLast = []
+    }
+    this.apps_list_last = this.apps_list
+    this.apps_active_list_last = this.apps_active_list
 
   }
 
   
   @action.bound
-  updateIDXDevices(topics,types) {
+  updateIDXDevices(topics,types) {    
     var idx_devices_changed = false
     var devices_detected = []
     for (var i = 0; i < topics.length; i++) {

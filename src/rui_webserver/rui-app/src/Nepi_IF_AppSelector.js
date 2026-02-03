@@ -530,6 +530,7 @@ class NepiIFAppSelector extends Component {
   // Function for creating image topic options.
   getAppOptions() {
     const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
+    const {appsNameList, appsStatusList} = this.props.ros
     
     const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'NONE'
 
@@ -567,7 +568,7 @@ class NepiIFAppSelector extends Component {
 
         if (appsList.length > 0){
           for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
               items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
             }
           }
@@ -576,7 +577,7 @@ class NepiIFAppSelector extends Component {
       else if (app_id === 'DATA') {
         if (appsList.length > 0){
           for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "DATA" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            if (groupList[i] === "DATA" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
               items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
             }
           }
@@ -587,7 +588,7 @@ class NepiIFAppSelector extends Component {
         
         if (appsList.length > 0){
           for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
               items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
             }
           }
@@ -614,7 +615,7 @@ class NepiIFAppSelector extends Component {
       else if (app_id === 'AUTOMATION') {
         if (appsList.length > 0){
           for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "AUTOMATION" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 ){
+            if (groupList[i] === "AUTOMATION" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
               items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
             }
           }
@@ -664,7 +665,7 @@ class NepiIFAppSelector extends Component {
  
         if (appsList.length > 0){
           for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "SYSTEM" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1){
+            if (groupList[i] === "SYSTEM" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
               items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
             }
           }

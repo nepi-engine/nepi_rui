@@ -192,10 +192,11 @@ class NepiIFSaveData extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const allNamespace = this.getAllNamespace()
+    const allSaveNamespace = (allNamespace != null) ? allNamespace + '/save_data' : 'None'
     const saveNamespace =  (this.state.updatedNamespace != null) ? this.state.updatedNamespace :
                                   (this.props.saveNamespace !== undefined) ? 
                                     (this.props.saveNamespace !== '' && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== null) ?
-                                        this.props.saveNamespace : 'None' : 'None' 
+                                        this.props.saveNamespace : allSaveNamespace : allSaveNamespace 
     const needs_update = ((this.state.saveNamespace !== saveNamespace))
   
     if (needs_update) {
@@ -1031,7 +1032,17 @@ sendLogRateUpdate(rate) {
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    if (make_section === false){
+    const saveNamespace = this.state.saveNamespace
+    if (saveNamespace === 'None'){
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+    }
+    else if (make_section === false){
       return (
         <Columns>
         <Column>

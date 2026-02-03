@@ -789,7 +789,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
       </div>
 
-      {this.renderDriverInstall()}
+      {/* {this.renderDriverInstall()} */}
 
        </Column>
      </Columns>
