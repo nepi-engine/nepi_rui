@@ -739,17 +739,18 @@ sendLogRateUpdate(rate) {
     var include = true
     var i
     var i2
+    var i3
     for (i = 0; i < saveData_topics.length; i++) {
       topic = saveData_topics[i]
       include = true
       if (topic !== allNamespace && topic.indexOf("None") === -1){
-        for (var i = 0; i < save_exclude_filters.length; i++) {
-          if (topic.indexOf(save_exclude_filters[i]) !== -1 ){
+        for (var i2 = 0; i2 < save_exclude_filters.length; i2++) {
+          if (topic.indexOf(save_exclude_filters[i2]) !== -1 ){
             include = false
           }
         }
-        for (var i2 = 0; i2 < save_include_filters.length; i2++) {
-          if (topic.indexOf(save_include_filters[i2]) === -1 ){
+        for (var i3 = 0; i3 < save_include_filters.length; i3++) {
+          if (topic.indexOf(save_include_filters[i3]) === -1 ){
             include = false
           }
         }
