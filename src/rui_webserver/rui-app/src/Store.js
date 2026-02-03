@@ -296,10 +296,11 @@ class ROSConnectionStore {
       const serviceNames = (this.serviceNamesLast != null) ? this.serviceNamesLast : []
 
       if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
-        if (this.topicNames.length != topicNames.length || 
-            this.topicTypes.length != topicTypes.length || 
-            this.serviceNames.length != serviceNames.length)
-            {
+        // if (this.topicNames.length != topicNames.length || 
+        //     this.topicTypes.length != topicTypes.length || 
+        //     this.serviceNames.length != serviceNames.length)
+
+        if (true) {
               update_time = 2000
               var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
               var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
@@ -1347,7 +1348,7 @@ class ROSConnectionStore {
       if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
         this.aiDetectorNamespaces = newAiDetectorNamespaces
         for (var i2 = 0; i2 < this.aiDetectorNamespaces.length; i2++) {
-              this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i])
+              this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i2])
             }
         return true
       } else {
@@ -1405,8 +1406,8 @@ class ROSConnectionStore {
     }
     if (!this.navposeTopics.equals(newNavPoseTopics)) {
       this.navposeTopics = newNavPoseTopics
-      for (var i2 = 0; i < this.navposeTopics.length; i2++) {
-            this.callNavPoseCapabilitiesQueryService(this.NavPoseTopics[i2])
+      for (var i2 = 0; i < newNavPoseTopics.length; i2++) {
+            this.callNavPoseCapabilitiesQueryService(newNavPoseTopics[i2])
           }
       return true
     } else {
@@ -1440,8 +1441,8 @@ class ROSConnectionStore {
       if (!this.imageTopics.equals(newImageTopics)) {
         this.imageTopics = newImageTopics
         this.imageDetectionTopics = newImageDetectionTopics
-        for (var i2 = 0; i2 < this.imageTopics.length; i2++) {
-              this.callImageCapabilitiesQueryService(this.imageTopics[i])
+        for (var i2 = 0; i2 < newImageTopics.length; i2++) {
+              this.callImageCapabilitiesQueryService(newImageTopics[i2])
             }
         return true
       } else {
