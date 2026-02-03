@@ -47,7 +47,7 @@ const NODE_DISPLAY_NAMES = {
   nepi_link_ros_bridge: "NEPI Connect",
   gpsd_ros_client: "GPSD Client",
   illumination_mgr: "Illumination",
-  automation_mgr: "Automation",
+  scripts_mgr: "Scripts",
   app_image_sequencer: "Sequencer"
 }
 
@@ -323,7 +323,7 @@ class ROSConnectionStore {
           if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
             this.initializeSystemListeners()
           }
-        }
+      }
 
       }
     
@@ -446,7 +446,7 @@ class ROSConnectionStore {
     this.setupAppsMgrStatusListener()
     this.setupAiModelMgrStatusListener()
     
-    // automation manager services
+    // scripts manager services
     this.startPollingGetScriptsService()  // populate listbox with files
     this.startPollingGetRunningScriptsService()  // populate listbox with active files
     //this.startPollingLaunchScriptService() // invoke script execution
@@ -906,6 +906,7 @@ class ROSConnectionStore {
 
 
   @observable apps_list =  []
+  @observable apps_list_last = []
   @observable apps_group_list = []
   @observable apps_rui_list = []
   @observable apps_active_list = []
@@ -929,6 +930,11 @@ class ROSConnectionStore {
       this.apps_rui_list = message.apps_rui_list
 
       this.connectedToAppsMgr = true
+
+      if (this.apps_list_last != message.apps_ordered_list) {
+          this.updateAppStatusList(this.topicNames,this.topicTypes)
+      }
+      this.apps_list_last = message.apps_ordered_list
 
       }
     })

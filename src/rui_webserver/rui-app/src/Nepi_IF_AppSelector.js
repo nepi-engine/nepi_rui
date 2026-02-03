@@ -44,7 +44,7 @@ import NavPoseMgr from "./NepiMgrNavPose"
 import NepiDashboardData from "./NepiDashboardData"
 
 // PROCESS Classes
-import AutomationMgr from "./NepiMgrAutomation"
+import ScriptsMgr from "./NepiMgrScripts"
 
 // AUTO CLASSES
 import AifsMgr from "./NepiSystemAIFs"
@@ -427,7 +427,7 @@ class NepiIFAppSelector extends Component {
         </React.Fragment>
       )
     }
-    else if (sel_app === "Automation Mgr"){
+    else if (sel_app === "Scripts Mgr"){
       return (
         <React.Fragment>
             <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
@@ -436,8 +436,8 @@ class NepiIFAppSelector extends Component {
             <Columns>
             <Column>
 
-              <AutomationMgr
-              title={"Automation Manager"}
+              <ScriptsMgr
+              title={"Scripts Manager"}
               />
 
           </Column>
@@ -657,8 +657,8 @@ class NepiIFAppSelector extends Component {
            items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
         }   
 
-        if (true) { //((appsList.indexOf('automation_mgr') !== -1 ) && (this.props.ros.connectedToAutomationMgr === true) && (userRestrictionsActive.indexOf('automation_manager')) {
-           items.push(<Option value={'Automation Mgr'}>{'Automation Mgr'}</Option>)
+        if (true) { //((appsList.indexOf('automation_mgr') !== -1 ) && (this.props.ros.connectedToScriptsMgr === true) && (userRestrictionsActive.indexOf('automation_manager')) {
+           items.push(<Option value={'Scripts Mgr'}>{'Scripts Mgr'}</Option>)
         }   
         
  

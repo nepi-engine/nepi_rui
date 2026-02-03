@@ -28,7 +28,7 @@ import Input from "./Input"
 import Button, { ButtonMenu } from "./Button"
 import ListBox from './ListBox';
 import './ListBox.css';
-import './Automation.css';
+import './Scripts.css';
 import Styles from "./Styles"
 
 
@@ -41,17 +41,17 @@ function bytesToKBString(bytes) {
 
 @inject("ros")
 @observer
-class AutomationMgr extends Component {
+class ScriptsMgr extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      automationSelectedScript: '',
+      selectedScript: '',
       runningSelectedScript: '',
       needs_update: false
     };
 
-    this.handleAutomationScriptSelect = this.handleAutomationScriptSelect.bind(this)
+    this.handleScriptsScriptSelect = this.handleScriptsScriptSelect.bind(this)
     //this.handleRunningScriptSelect = this.handleRunningScriptSelect.bind(this)
     this.handleStopScriptClick = this.handleStopScriptClick.bind(this)
     this.handleStartScriptClick = this.handleStartScriptClick.bind(this)
@@ -67,9 +67,9 @@ class AutomationMgr extends Component {
     this.setState({needs_update: true})
   }
 
-  handleAutomationScriptSelect = (item) => {
+  handleScriptsScriptSelect = (item) => {
     this.setState({ 
-        automationSelectedScript: item, 
+        selectedScript: item, 
         runningSelectedScript: ''
     });
     this.props.ros.callGetSystemStatsQueryService(item) // get script and system status
@@ -78,7 +78,7 @@ class AutomationMgr extends Component {
 
   handleStartScriptClick = () => {
     // Start the currently selected script
-    const scriptToLaunch = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
+    const scriptToLaunch = (this.state.selectedScript !== '')? this.state.selectedScript : this.state.runningSelectedScript
     if (scriptToLaunch) {
       this.props.ros.startLaunchScriptService(scriptToLaunch);
       this.props.ros.callGetSystemStatsQueryService(scriptToLaunch, false) // Fire off a one-shot request for faster feedback
@@ -87,7 +87,7 @@ class AutomationMgr extends Component {
 
   handleStopScriptClick = () => {
     // Stop the currently selected script
-    const scriptToStop = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
+    const scriptToStop = (this.state.selectedScript !== '')? this.state.selectedScript : this.state.runningSelectedScript
     if (scriptToStop) {
       this.props.ros.stopLaunchScriptService(scriptToStop);
       this.props.ros.callGetSystemStatsQueryService(scriptToStop, false) // Fire off a one-shot request for faster feedback
@@ -95,8 +95,8 @@ class AutomationMgr extends Component {
   };
 
   handleCheckboxChange = (e) => {
-    const script = (this.state.automationSelectedScript !== '')? this.state.automationSelectedScript : this.state.runningSelectedScript
-    this.props.ros.onToggleAutoStartEnabled(this.state.automationSelectedScript, e.target.checked)
+    const script = (this.state.selectedScript !== '')? this.state.selectedScript : this.state.runningSelectedScript
+    this.props.ros.onToggleAutoStartEnabled(this.state.selectedScript, e.target.checked)
     this.props.ros.callGetSystemStatsQueryService(script, false) // Fire off a one-shot request for faster feedback
   }
 
@@ -107,9 +107,9 @@ class AutomationMgr extends Component {
     let filesForListBox = []
     let runningFilesForListBox = [];
 
-    //console.log('Automation scripts:', scripts);
+    //console.log('Scripts scripts:', scripts);
     filesForListBox = toJS(scripts)  
-    //  console.log('Automation scripts (filesForListBox):', filesForListBox);
+    //  console.log('Scripts scripts (filesForListBox):', filesForListBox);
     //console.log('systemStats:', systemStats);
     //_systemStats = toJS(systemStats)
     //console.log('_systemStats:', _systemStats);
@@ -122,19 +122,19 @@ class AutomationMgr extends Component {
     runningFilesForListBox = toJS(running_scripts);
     //console.log('Running scripts (runningFilesForListBox):', runningFilesForListBox);
 
-    const selectedScript = (this.state.automationSelectedScript !== '')? 
-      this.state.automationSelectedScript : this.state.runningSelectedScript
+    const selectedScript = (this.state.selectedScript !== '')? 
+      this.state.selectedScript : this.state.runningSelectedScript
     
     return (
      
       <Columns>
         <Column>
-          <Section title={"Automation Scripts"}>
+          <Section title={"ScriptsScripts"}>
             <ListBox 
-              id="automationScriptsListBox" 
+              id="scriptsListBox" 
               items={filesForListBox.scripts} 
-              selectedItem={this.state.automationSelectedScript} 
-              onSelect={this.handleAutomationScriptSelect} 
+              selectedItem={this.state.selectedScript} 
+              onSelect={this.handleScriptsScriptSelect} 
               style={{ color: 'black', backgroundColor: 'white' }}
             />
           </Section>
@@ -162,9 +162,9 @@ class AutomationMgr extends Component {
     let filesForListBox = []
     let runningFilesForListBox = [];
 
-    //console.log('Automation scripts:', scripts);
+    //console.log('Scripts scripts:', scripts);
     filesForListBox = toJS(scripts)  
-    //  console.log('Automation scripts (filesForListBox):', filesForListBox);
+    //  console.log('Scripts scripts (filesForListBox):', filesForListBox);
     //console.log('systemStats:', systemStats);
     //_systemStats = toJS(systemStats)
     //console.log('_systemStats:', _systemStats);
@@ -177,8 +177,8 @@ class AutomationMgr extends Component {
     runningFilesForListBox = toJS(running_scripts);
     //console.log('Running scripts (runningFilesForListBox):', runningFilesForListBox);
 
-    const selectedScript = (this.state.automationSelectedScript !== '')? 
-      this.state.automationSelectedScript : this.state.runningSelectedScript
+    const selectedScript = (this.state.selectedScript !== '')? 
+      this.state.selectedScript : this.state.runningSelectedScript
     
     return (
      
@@ -307,7 +307,7 @@ class AutomationMgr extends Component {
   renderMessages() {
     const { namespacePrefix, deviceId} = this.props.ros
     const {topicNames} = this.props.ros
-    const script_file = this.state.automationSelectedScript
+    const script_file = this.state.selectedScript
     const check_topic = "/" + namespacePrefix + "/" + deviceId + "/" + script_file.split('.')[0] + "/messages"
     const topic_publishing = topicNames ? topicNames.indexOf(check_topic) !== -1 : false
     const msg_namespace = topic_publishing ? check_topic  : "Waiting for Topic to Publish"
@@ -368,4 +368,4 @@ class AutomationMgr extends Component {
 }
 
 
-export default AutomationMgr
+export default ScriptsMgr
