@@ -78,7 +78,7 @@ class ImageViewer extends Component {
       image_topic: 'None',
       prev_image_topic: 'None',
       image_index: 0,
-      mouse_event_callback: '',
+      mouse_event_topic: '',
       selection_callback: '',
       pixel: null,
       mouse_drag: false,
@@ -125,6 +125,12 @@ class ImageViewer extends Component {
     this.mouseDragEvent = this.mouseDragEvent.bind(this)
     this.mouseUpEvent = this.mouseUpEvent.bind(this)
 
+    this.sendImageMouseEventMsg = this.sendImageMouseEventMsg.bind(this)
+    this.sendMouseClickEventMsg = this.sendMouseClickEventMsg.bind(this)
+    this.sendMouseDragEventMsg = this.sendMouseDragEventMsg.bind(this)
+    this.sendMouseWindowEventMsg = this.sendMouseWindowEventMsg.bind(this)
+
+
     this.onKeySaveInputOverlayValue = this.onKeySaveInputOverlayValue.bind(this)
     this.onUpdateInputOverlayValue = this.onUpdateInputOverlayValue.bind(this)
 
@@ -153,7 +159,8 @@ class ImageViewer extends Component {
     const status_topic = (this.props.status_topic !== undefined) ? this.props.status_topic : image_topic
     const prev_image_topic = (this.state.image_topic != null) ? this.state.image_topic : 'None'
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
-    const mouse_event_callback = (this.props.mouse_event_callback !== undefined) ? this.props.mouse_event_callback : null
+    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
+
     const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : null
     const statusNamespace = status_topic + '/status'
     if (this.state.status_listenter != null) {
@@ -175,7 +182,7 @@ class ImageViewer extends Component {
                     image_topic: image_topic,
                     prev_image_topic: prev_image_topic,
                     image_index: image_index,
-                    mouse_event_callback: mouse_event_callback,
+                    mouse_event_topic: mouse_event_topic,
                     selection_callback: selection_callback
     })
 
@@ -376,6 +383,7 @@ class ImageViewer extends Component {
   mouseDragEvent(canvas,event){
       const {sendImageDragMsg} = this.props.ros
       const namespace = this.state.image_topic
+      const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
       //const rect = canvas.getBoundingClientRect()
 
       const is_drag = this.state.mouse_drag
@@ -392,8 +400,8 @@ class ImageViewer extends Component {
               const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
               sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
               const mouse_drag = {x1,y1,r,g,b,a}
-              if (this.state.mouse_event_callback !== '' && this.state.status_msg != null){
-                  this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_callback ,
+              if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+                  this.sendImageMouseEventMsg(mouse_event_topic ,
                                                       this.state.image_topic,
                                                       this.state.image_index,
                                                       null,
@@ -410,6 +418,7 @@ class ImageViewer extends Component {
   mouseUpEvent(canvas,event){
       const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
       const namespace = this.state.image_topic
+      const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
       //const rect = canvas.getBoundingClientRect()
 
       const [x2,y2] = this.getPixelLoc(canvas, event)
@@ -429,8 +438,8 @@ class ImageViewer extends Component {
           //const cur_ms = Date.now()
           //const last_click_ms = this.state.last_click_ms
           sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
-          if (this.state.mouse_event_callback !== '' && this.state.status_msg != null){
-              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_callback ,
+          if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+              this.sendImageMouseEventMsg(mouse_event_topic ,
                                                   this.state.image_topic,
                                                   this.state.image_index,
                                                   mouse_click,
@@ -447,8 +456,8 @@ class ImageViewer extends Component {
         const wt = Math.max(canvas.width, canvas.height) * 0.05
         if (dx > wt && dy > wt){
           sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
-          if (this.state.mouse_event_callback !== '' && this.state.status_msg != null){
-              this.props.ros.sendImageMouseEventMsg(this.state.mouse_event_callback ,
+          if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+              this.sendImageMouseEventMsg(mouse_event_topic ,
                                                   this.state.image_topic,
                                                   this.state.image_index,
                                                   null, 
@@ -462,7 +471,78 @@ class ImageViewer extends Component {
       }
   }
 
+  sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag, mouse_window, status_msg ) {
+    if (mouse_click !== null){
+      this.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, status_msg )
+    }
+    else if (mouse_drag !== null){
+      this.sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag, status_msg )
+    }
+    else if (mouse_drag !== null){
+      this.sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg )
+    }
 
+  }
+
+  sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, status_msg ) {
+    this.props.ros.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImageMouseEvent",
+      data: { 
+        data: {
+          image_topic: image_topic,
+          image_index: image_index,
+
+          click_event: true, 
+          click_pixel: mouse_click,
+
+          status_msg: status_msg
+        }
+      },
+      noPrefix: true
+
+    })
+  }
+
+  sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag, status_msg ) {
+    this.props.ros.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImageMouseEvent",
+      data: { 
+        data: {
+          image_topic: image_topic,
+          image_index: image_index,
+
+          drag_event: true, 
+          drag_pixel: mouse_drag,
+
+          status_msg: status_msg
+        }
+      },
+      noPrefix: true
+
+    })
+  }
+
+  sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg ) {
+    this.props.ros.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImageMouseEvent",
+      data: { 
+        data: {
+          image_topic: image_topic,
+          image_index: image_index,
+
+          window_event: true, 
+          ImageWindow: mouse_window,
+
+          status_msg: status_msg
+        }
+      },
+      noPrefix: true
+
+    })
+  }
 
 
   getImgInfoText(){

@@ -208,7 +208,7 @@ class ImageViewersSelector extends Component {
     const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
     const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
     const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : [null,null,null,null]
-    const mouse_event_callback = (this.props.mouse_event_callback !== undefined) ? this.props.mouse_event_callback : null
+    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
 
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : this.state.show_image_controls
@@ -239,7 +239,7 @@ class ImageViewersSelector extends Component {
                             show_image_controls={show_image_controls}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
-                            mouse_event_callback={mouse_event_callback}
+                            mouse_event_topic={mouse_event_topic}
                             selection_callback={selection_callback[0]}
                             make_section={false}
                             show_save_controls={false}
@@ -258,7 +258,7 @@ class ImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
-                              mouse_event_callback={mouse_event_callback}
+                              mouse_event_topic={mouse_event_topic}
                               selection_callback={selection_callback[0]}
                               make_section={false}
                               show_save_controls={false}
@@ -287,7 +287,7 @@ class ImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
-                              mouse_event_callback={mouse_event_callback}
+                              mouse_event_topic={mouse_event_topic}
                               selection_callback={selection_callback[0]}
                              make_section={false}
                              show_save_controls={false}
@@ -307,7 +307,7 @@ class ImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
-                              mouse_event_callback={mouse_event_callback}
+                              mouse_event_topic={mouse_event_topic}
                               selection_callback={selection_callback[0]}
                              make_section={false}
                              show_save_controls={false}
