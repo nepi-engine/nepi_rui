@@ -84,7 +84,7 @@ class NepiIFSaveData extends Component {
     this.updateSaveStatusListener = this.updateSaveStatusListener.bind(this)
     this.saveStatusListener = this.saveStatusListener.bind(this)
 
-
+    this.createTopicOptions = this.createTopicOptions.bind(this)
     this.onChangeTopicSelection = this.onChangeTopicSelection.bind(this)
 
     this.renderSaveBar = this.renderSaveBar.bind(this)
@@ -215,92 +215,6 @@ class NepiIFSaveData extends Component {
                   status_msg: null})
   }
 
-
-
-  createTopicOptions() {
-    const { namespacePrefix, deviceId} = this.props.ros
-    const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
-    const save_include_filters = (this.props.save_include_filters !== undefined) ? this.save_include_filters : []
-    const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.save_exclude_filters : []
-    const allNamespace = this.getAllNamespace()
-    var items = []
-    if (show_all_options === true){
-      items.push(<Option value={allNamespace}>{"All"}</Option>)
-    }
-    //items.push(<Option value={"None"}>{"None"}</Option>)
-    const saveData_topics = this.props.ros.saveDataNamespaces
-    var shortname_split = []
-    var shortname_base = ''
-    var shortname_desc = ''
-    var shortname = ''
-    var topic = ""
-    var include = true
-    var i
-    var i2
-    for (i = 0; i < saveData_topics.length; i++) {
-      topic = saveData_topics[i]
-      include = true
-      if (topic !== allNamespace && topic.indexOf("None") === -1){
-        for (var i = 0; i < save_exclude_filters.length; i++) {
-          if (topic.indexOf(save_exclude_filters[i]) !== -1 ){
-            include = false
-          }
-        }
-        for (var i2 = 0; i2 < save_include_filters.length; i2++) {
-          if (topic.indexOf(save_include_filters[i2]) === -1 ){
-            include = false
-          }
-        }
-        if (include === true){
-          shortname_split = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','').split('/')
-          shortname_base = shortname_split[0]
-          shortname_desc = shortname_split[shortname_split.length - 1]
-          shortname = shortname_base
-          if (shortname_desc !== shortname){
-            shortname = shortname + '-' + shortname_desc
-          }
-          items.push(<Option value={topic}>{shortname}</Option>)
-        }
-      }
-    }
-    return items    
-  }
-
-
-  onChangeTopicSelection(event){
-    this.setState({lastSaveNamespace: this.saveNamespace})
-    const selNamespace = event.target.value
-    this.setState({updatedNamespace: selNamespace,
-                   needs_update: true
-    })
-  }
-
-  renderTopicSelector() {
-    const saveTopics = this.createTopicOptions()
-
-    return (
-      <React.Fragment>
-
-      <Columns>
-        <Column>
-
-        <label style={{fontWeight: 'bold'}}>
-            {"Select Save Topic"}
-          </label>
-
-
-            <Select onChange={this.onChangeTopicSelection}
-            id="topicSelecor"
-            value={this.state.saveNamespace}>
-              {saveTopics}
-            </Select>
-
-      </Column>
-      </Columns>
-
-      </React.Fragment>
-    )
-  }
 
 
   // Function for creating configs options list from status msg
@@ -802,6 +716,94 @@ sendLogRateUpdate(rate) {
       </React.Fragment>
     )
   }
+
+
+
+  createTopicOptions() {
+    const { namespacePrefix, deviceId} = this.props.ros
+    const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
+    const save_include_filters = (this.props.save_include_filters !== undefined) ? this.save_include_filters : []
+    const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.save_exclude_filters : []
+    const allNamespace = this.getAllNamespace()
+    var items = []
+    if (show_all_options === true){
+      items.push(<Option value={allNamespace}>{"All"}</Option>)
+    }
+    //items.push(<Option value={"None"}>{"None"}</Option>)
+    const saveData_topics = this.props.ros.saveDataNamespaces
+    var shortname_split = []
+    var shortname_base = ''
+    var shortname_desc = ''
+    var shortname = ''
+    var topic = ""
+    var include = true
+    var i
+    var i2
+    for (i = 0; i < saveData_topics.length; i++) {
+      topic = saveData_topics[i]
+      include = true
+      if (topic !== allNamespace && topic.indexOf("None") === -1){
+        for (var i = 0; i < save_exclude_filters.length; i++) {
+          if (topic.indexOf(save_exclude_filters[i]) !== -1 ){
+            include = false
+          }
+        }
+        for (var i2 = 0; i2 < save_include_filters.length; i2++) {
+          if (topic.indexOf(save_include_filters[i2]) === -1 ){
+            include = false
+          }
+        }
+        if (include === true){
+          shortname_split = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','').split('/')
+          shortname_base = shortname_split[0]
+          shortname_desc = shortname_split[shortname_split.length - 1]
+          shortname = shortname_base
+          if (shortname_desc !== shortname){
+            shortname = shortname + '-' + shortname_desc
+          }
+          items.push(<Option value={topic}>{shortname}</Option>)
+        }
+      }
+    }
+    return items    
+  }
+
+
+  onChangeTopicSelection(event){
+    this.setState({lastSaveNamespace: this.saveNamespace})
+    const selNamespace = event.target.value
+    this.setState({updatedNamespace: selNamespace,
+                   needs_update: true
+    })
+  }
+
+  renderTopicSelector() {
+    const saveTopics = this.createTopicOptions()
+
+    return (
+      <React.Fragment>
+
+      <Columns>
+        <Column>
+
+        <label style={{fontWeight: 'bold'}}>
+            {"Select Save Topic"}
+          </label>
+
+
+            <Select onChange={this.onChangeTopicSelection}
+            id="topicSelecor"
+            value={this.state.saveNamespace}>
+              {saveTopics}
+            </Select>
+
+      </Column>
+      </Columns>
+
+      </React.Fragment>
+    )
+  }
+
 
   renderSaveControls() {
     const allNamespace = this.getAllNamespace()
