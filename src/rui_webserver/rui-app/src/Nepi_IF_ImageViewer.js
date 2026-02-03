@@ -400,8 +400,8 @@ class ImageViewer extends Component {
               const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
               sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
               const mouse_drag = {x1,y1,r,g,b,a}
-              if (this.state.mouse_event_topic !== '' && this.state.mouse_event_topic != null && this.state.status_msg != null){
-                  this.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+              if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+                  this.sendImageMouseEventMsg(mouse_event_topic ,
                                                       this.state.image_topic,
                                                       this.state.image_index,
                                                       null,
@@ -438,8 +438,8 @@ class ImageViewer extends Component {
           //const cur_ms = Date.now()
           //const last_click_ms = this.state.last_click_ms
           sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
-          if (this.state.mouse_event_topic !== '' && this.state.mouse_event_topic != null && this.state.status_msg != null){
-              this.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+          if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+              this.sendImageMouseEventMsg(mouse_event_topic ,
                                                   this.state.image_topic,
                                                   this.state.image_index,
                                                   mouse_click,
@@ -456,8 +456,8 @@ class ImageViewer extends Component {
         const wt = Math.max(canvas.width, canvas.height) * 0.05
         if (dx > wt && dy > wt){
           sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
-          if (this.state.mouse_event_topic !== '' && this.state.mouse_event_topic != null && this.state.status_msg != null){
-              this.sendImageMouseEventMsg(this.state.mouse_event_topic ,
+          if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+              this.sendImageMouseEventMsg(mouse_event_topic ,
                                                   this.state.image_topic,
                                                   this.state.image_index,
                                                   null, 
