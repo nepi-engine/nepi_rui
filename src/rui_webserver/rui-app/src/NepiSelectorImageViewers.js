@@ -14,7 +14,7 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 //import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
-//import Styles from "./Styles"
+import Styles from "./Styles"
 import Label from "./Label"
 import Toggle from "react-toggle"
 
