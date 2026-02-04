@@ -77,7 +77,9 @@ class NepiIFSaveData extends Component {
       showControls: false,
 
       updatedNamespace: null,
-      saveStatusListener: null
+      saveStatusListener: null,
+
+      needs_update: false
     }
 
     this.getAllNamespace = this.getAllNamespace.bind(this)
@@ -145,7 +147,7 @@ class NepiIFSaveData extends Component {
 
   // CAllback for handling ROS Status messages
   saveStatusListener(message) {
-    const do_updates = ((this.state.saveDirPrefix !== message.filename_prefix) ||  (this.state.saveDataSubfolder !== message.save_subfolder))
+    const do_updates = ((this.state.saveDataPrefix !== message.filename_prefix) ||  (this.state.saveDataSubfolder !== message.save_subfolder))
 
     if (message.save_data_topic === this.state.saveNamespace){
       this.setState({
@@ -187,6 +189,11 @@ class NepiIFSaveData extends Component {
       this.setState({ saveStatusListener: saveStatusListener})
     }
   }
+
+
+    componentDidMount() {
+      this.setState({needs_update: true})
+    }
 
   // Lifecycle method cAlled when compnent updates.
   // Used to track changes in the topic
@@ -352,7 +359,6 @@ class NepiIFSaveData extends Component {
         namesList = []
         ratesList = []
         if (topic !== "None" && topic !== allNamespace ){
-              if(saveDataCaps.hasOwnProperty(topic)){
                 save_rates_list = saveDataCaps[topic].save_data_rates
                 if (save_rates_list !== undefined){
                   for (i2 = 0; i2 < save_rates_list.length; i2++) {
@@ -361,6 +367,7 @@ class NepiIFSaveData extends Component {
                   }
                   shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
                   configsStrList.push(shortname + '\n')
+                  configsStrList.push('----------------------\n')
                   for (let ind = 0; ind < namesList.length; ind++) {
                     if (ratesList[ind] > 0){
                         entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
@@ -368,8 +375,8 @@ class NepiIFSaveData extends Component {
                     }
                     
                   }
+                  configsStrList.push('\n')
                 }
-              }
         }
       }
     } 
@@ -629,6 +636,10 @@ sendLogRateUpdate(rate) {
     const diskUsage = this.getDiskUsageRate()
 
 
+    const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
+    const allSaveNamespace = this.getAllNamespace()
+    const saveNamespace = this.state.saveNamespace
+    const is_all_namespace = (saveNamespace === allSaveNamespace)
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
     
@@ -641,27 +652,45 @@ sendLogRateUpdate(rate) {
       <React.Fragment> 
                     <div style={{ display: 'flex' }}>
 
+                        <div style={{ width: '30%' }}>
 
-                        <div style={{ width: '15%' }}>
-                            <div hidden={(allways_show_controls === true)}>
-                                <Label title="Save Controls">
-                                  <Toggle
-                                    checked={showControls===true}
-                                    onClick={() => {this.onClickToggleShowControls()}}>
-                                  </Toggle>
-                              </Label>
-                            </div>
+                        { (show_topic_selector === true) ?
+                          this.renderTopicSelector()
+                        : null }
+
 
                         </div>
 
+
+                        
                         <div style={{ width: '5%' }}>
                           {}
                         </div>
 
+                        
+                        <div style={{ width: '20%' }}>
 
-                        <div style={{ width: '15%' }}>
+                          <Label title={"Save Rate"}>
+                            
+                            <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+                          </Label>
+                        </div>
+
+
+                        <div style={{ width: '10%' }}>
+                          {}
+                        </div>
+
+
+                        <div style={{ width: '10%' }}>
                           
-                                  { (show_all_options === true) ?
+                                { ((show_all_options === true) && (is_all_namespace === true)) ?
+                                <Label title={"All Enabled"}>
+                                  <BooleanIndicator value={(true)} />
+                                </Label>
+                                  : null }
+
+                                  { ((show_all_options === true) && (is_all_namespace === false)) ?
                                       <Label title="Enable All">
                                         <Toggle
                                           checked={ (saveAll === true) }
@@ -673,25 +702,18 @@ sendLogRateUpdate(rate) {
         
                         </div>
 
-                        <div style={{ width: '5%' }}>
-                          {}
-                        </div>
 
-
-                        <div style={{ width: '15%' }}>
-                          <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
-                        </div>
 
                          
 
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '5%' }}>
                           {}
                         </div>
 
             
 
-                        <div style={{ width: '15%' }}>
-                          <Label title={"Save"}>
+                        <div style={{ width: '10%' }}>
+                          <Label title={"Enable Save"}>
                             <Toggle
                               checked={ (save_enabled === true) }
                               onClick={() => {this.onChangeBoolSaveDataValue()}}
@@ -700,12 +722,8 @@ sendLogRateUpdate(rate) {
                         </div>
 
 
-                        <div style={{ width: '5%' }}>
-                          {}
-                        </div>
 
-
-                        <div style={{ width: '15%' }}>
+                        <div style={{ width: '10%' }}>
                            
                        <ButtonMenu >
                         <Button onClick={this.onSnapshotTriggered}>{"Snapshot"}</Button>
@@ -714,6 +732,27 @@ sendLogRateUpdate(rate) {
                         </div>
 
                   </div>
+
+        <div style={{ display: 'flex' }}>
+
+          <div style={{ width: '15%' }}>
+                <div hidden={(allways_show_controls === true)}>
+                    <Label title="Show Save Controls">
+                      <Toggle
+                        checked={showControls===true}
+                        onClick={() => {this.onClickToggleShowControls()}}>
+                      </Toggle>
+                  </Label>
+                </div>
+          </div>
+
+
+
+          <div style={{ width: '85%' }}>
+            {}
+          </div>
+
+        </div>
 
 
       </React.Fragment>
@@ -790,16 +829,14 @@ sendLogRateUpdate(rate) {
       <Columns>
         <Column>
 
-        <label style={{fontWeight: 'bold'}}>
-            {"Select Save Topic"}
-          </label>
 
-
-            <Select onChange={this.onChangeTopicSelection}
-            id="topicSelecor"
-            value={this.state.saveNamespace}>
-              {saveTopics}
-            </Select>
+          <Label title={"Save Select"}>
+                <Select onChange={this.onChangeTopicSelection}
+                id="topicSelecor"
+                value={this.state.saveNamespace}>
+                  {saveTopics}
+                </Select>
+            </Label>
 
       </Column>
       </Columns>
@@ -886,7 +923,7 @@ sendLogRateUpdate(rate) {
                             )}
                         </Label>
 
-                        <div hidden={((isNavposeMgr === true) )}>
+                        {/* <div hidden={((isNavposeMgr === true) )}>
 
                                 <Label title={"Log NavPose"}>
                                   <Toggle
@@ -902,7 +939,7 @@ sendLogRateUpdate(rate) {
                                       onKeyDown= {this.onKeyLogNavRateValue} />
                               </Label>
 
-                        </div>
+                        </div> */}
 
                   </div>
 
@@ -992,7 +1029,7 @@ sendLogRateUpdate(rate) {
 
  renderControlOptions() {
     const saveNamespace = this.state.saveNamespace
-    const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
+    
 
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
@@ -1012,22 +1049,19 @@ sendLogRateUpdate(rate) {
         <React.Fragment>
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
         <div style={{ display: 'flex' }}>
-          <div style={{ width: '30%' }}>
-            { (show_topic_selector === true) ?
-              this.renderTopicSelector()
-            : null }
+
+          <div style={{ width: '65%' }}>
+            {this.renderSaveControls()}
           </div>
 
-          <div style={{ width: '5%' }}>
+          <div style={{ width: '35%' }}>
             {}
           </div>
 
-          <div  style={{ width: '65%' }}>
-
-            {this.renderSaveControls()}
-          </div>
         </div>
+
         </React.Fragment>
       )
     }

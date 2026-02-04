@@ -45,12 +45,26 @@ class ImageViewersSelector extends Component {
       show_selectors: true
     }
 
+    this.getAllSaveNamespace = this.getAllSaveNamespace.bind(this)
+
     this.renderImageControls = this.renderImageControls.bind(this)
     this.renderImageWindows = this.renderImageWindows.bind(this)
+    this.renderSaveData = this.renderSaveData.bind(this)
     this.setNumWindows = this.setNumWindows.bind(this)
     
   }
 
+
+  getAllSaveNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var allNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      allNamespace = "/" + namespacePrefix + "/" + deviceId + '/save_data'
+    }
+    return allNamespace
+  }
+
+  
 
   componentDidMount(){
       this.setState({needs_update: true})
@@ -131,7 +145,7 @@ class ImageViewersSelector extends Component {
 
                       <div style={{ width: '10%' }} centered={"true"} >
                         <ButtonMenu>
-                          <Button onClick={() => this.setNumWindows(3)}>{"3 Windows"}</Button>
+                          <Button onClick={() => this.setNumWindows(4)}>{"4 Windows"}</Button>
                         </ButtonMenu>
                       </div>
 
@@ -140,9 +154,7 @@ class ImageViewersSelector extends Component {
                       </div>
       
                       <div style={{ width: '10%' }} centered={"true"} >
-                        <ButtonMenu>
-                          <Button onClick={() => this.setNumWindows(4)}>{"4 Windows"}</Button>
-                        </ButtonMenu>
+                        {}
                       </div>
 
                       <div style={{ width: '5%' }}>
@@ -325,31 +337,57 @@ class ImageViewersSelector extends Component {
   }
 
 
+    renderSaveData(){
+      const allSaveNamespace = this.getAllSaveNamespace()
+      const saveNamespace = (this.props.saveNamespace !== undefined) ? this.props.saveNamespace : allSaveNamespace
+      const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+
+      if (show_save_controls === false){
+          return (
+            <Columns>
+            <Column>
+
+            </Column>
+            </Columns>
+
+          )
+
+      }
+      else {
+          return (
+        
+              <React.Fragment>
+
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                          
+                          <NepiIFSaveData
+                            saveNamespace={saveNamespace}
+                            make_section={false}
+                            show_all_options={true}
+                            show_topic_selector={true}
+                          />
+        
+              </React.Fragment>
+
+          )
+        }
+  }
+
 
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const saveNamespace = (this.props.saveNamespace !== undefined) ? this.props.saveNamespace : null
-    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
-
+    
+    
     if (make_section === false){
       return (
         <Columns>
         <Column>
               {this.renderImageControls()}
 
-            {this.renderImageWindows()}
+              {this.renderImageWindows()}
 
-            <div align={"left"} textAlign={"left"} 
-            >
-                        {(show_save_controls === true) ?
-                          <NepiIFSaveData
-                          make_section={false}
-                          saveNamespace={saveNamespace}
-                        />
-                      : null }
-
-            </div>
+                {this.renderSaveData()}
 
         </Column>
         </Columns>
@@ -362,17 +400,9 @@ class ImageViewersSelector extends Component {
 
               {this.renderImageControls()}
 
-            {this.renderImageWindows()}
+              {this.renderImageWindows()}
 
-            <div align={"left"} textAlign={"left"} 
-            >
-                        {(show_save_controls === true) ?
-                          <NepiIFSaveData
-                          make_section={false}
-                        />
-                      : null }
-
-            </div>
+                {this.renderSaveData()}
 
       </Section>
       )
