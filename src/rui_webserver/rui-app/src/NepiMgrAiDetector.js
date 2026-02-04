@@ -23,10 +23,10 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
-import Button, { ButtonMenu } from "./Button"
+//import Button, { ButtonMenu } from "./Button"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
-import Input from "./Input"
+//import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Toggle from "react-toggle"
@@ -35,7 +35,7 @@ import {SliderAdjustment} from "./AdjustmentWidgets"
 
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
-import NepiIFSaveData from "./Nepi_IF_SaveData"
+//import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
 import {filterStrList, createMenuFirstLastNames,createMenuBaseNames} from "./Utilities"
@@ -1068,7 +1068,7 @@ renderDetectorSettings() {
     const sel_img = img_publishning? sel_img_topic : "None"
     const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
-    const saveNamespace = this.state.selected_detector
+    const save_data_topic = this.state.selected_detector + '/save_data'
     const connected = this.state.detector_connected
 
 
@@ -1100,6 +1100,7 @@ renderDetectorSettings() {
       <ImageViewer
         image_topic={sel_img}
         title={sel_img_text}
+        save_data_topic={save_data_topic}
       />
 
 {/*
