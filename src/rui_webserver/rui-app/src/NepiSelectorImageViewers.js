@@ -89,9 +89,9 @@ class ImageViewersSelector extends Component {
       this.setState({num_windows: num_windows})
 
       const {sendIntMsg} = this.props.ros
-      const num_windows_namespace = (this.props.num_windows_namespace !== undefined) ? this.props.num_windows_namespace : null
-      if (num_windows_namespace != null){
-          sendIntMsg( num_windows_namespace,num_windows)
+      const num_windows_updated_topic = (this.props.num_windows_updated_topic !== undefined) ? this.props.num_windows_updated_topic : null
+      if (num_windows_updated_topic != null){
+          sendIntMsg( num_windows_updated_topic,num_windows)
       }
 
   }
@@ -195,7 +195,7 @@ class ImageViewersSelector extends Component {
                         {}                      </div>
               </div>
 
-              
+
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                 </Column>
