@@ -40,7 +40,7 @@ import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
-import {  onChangeSwitchStateValue } from "./Utilities"
+import {  onChangeSwitchStateValue, createMenuFirstLastName } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -79,7 +79,7 @@ class ImageViewer extends Component {
       prev_image_topic: 'None',
       image_index: 0,
       mouse_event_topic: '',
-      selection_callback: '',
+      select_updated_topic: '',
       pixel: null,
       mouse_drag: false,
 
@@ -161,7 +161,7 @@ class ImageViewer extends Component {
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
-    const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : null
+    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
     const statusNamespace = status_topic + '/status'
     if (this.state.status_listenter != null) {
       this.state.status_listenter.unsubscribe()
@@ -183,11 +183,11 @@ class ImageViewer extends Component {
                     prev_image_topic: prev_image_topic,
                     image_index: image_index,
                     mouse_event_topic: mouse_event_topic,
-                    selection_callback: selection_callback
+                    select_updated_topic: select_updated_topic
     })
 
-    if (prev_image_topic !== image_topic && selection_callback != null){
-      this.props.ros.sendImageSelectionMsg(selection_callback, image_index, image_topic , prev_image_topic)
+    if (prev_image_topic !== image_topic && select_updated_topic != null){
+      this.props.ros.sendImageSelectionMsg(select_updated_topic, image_index, image_topic , prev_image_topic)
 
     }
   }
@@ -1468,6 +1468,9 @@ class ImageViewer extends Component {
     const show_renders = this.state.show_renders
     const show_navpose = this.state.show_navpose 
 
+    const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
+    
+
     
     return (
       
@@ -1475,9 +1478,10 @@ class ImageViewer extends Component {
       <Column>
               <div style={{ display: 'flex' }}>
 
-                        <div style={{ width: '90%' }}>
-                          {}
+                        <div style={{ width: '90%', align: 'left' }}>
+                          <Label title={title} />
                         </div>
+
 
                         <div style={{ width: '10%' }}>
                             <ButtonMenu>
@@ -1500,7 +1504,7 @@ class ImageViewer extends Component {
                     show_topic_selector={show_topic_selector}
                   />
                 : null }
-                
+
                 {(show_save_controls === true && namespace !== 'None') ?
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 : null }
@@ -1697,11 +1701,11 @@ class ImageViewer extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title = this.props.title ? this.props.title : this.state.image_topic.split('/').pop()
     if (make_section === false){
       return (
         <Columns>
         <Column>
+        
         {this.renderImageViewer()}
         </Column>
         </Columns>
@@ -1710,8 +1714,7 @@ class ImageViewer extends Component {
     else {
       return (
 
-      <Section title={title}>
-
+      <Section>
         {this.renderImageViewer()}
 
       </Section>

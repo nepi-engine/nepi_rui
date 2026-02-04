@@ -202,9 +202,9 @@ class ImageViewerSelector extends Component {
       }
 
       const {sendStringMsg} = this.props.ros
-      const select_updated_namespace = this.props.select_updated_namespace ? this.props.select_updated_namespace : null
-      if ((select_updated_namespace != null) && (updated_image != null)){
-        sendStringMsg(select_updated_namespace,updated_image)
+      const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
+      if ((select_updated_topic != null) && (updated_image != null)){
+        sendStringMsg(select_updated_topic,updated_image)
       }
     }
 
@@ -240,9 +240,9 @@ class ImageViewerSelector extends Component {
     const image_topics = this.state.image_topics
     const index = image_topics.indexOf(image)
     const {sendStringMsg} = this.props.ros
-    const select_updated_namespace = (this.props.select_updated_namespace !== undefined) ? this.props.select_updated_namespace : null
-    if (select_updated_namespace != null){
-      sendStringMsg(select_updated_namespace,image)
+    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
+    if (select_updated_topic != null){
+      sendStringMsg(select_updated_topic,image)
     }
     this.setState({id: id,
                     selected_image: image,
@@ -367,7 +367,7 @@ class ImageViewerSelector extends Component {
     const title = this.state.selected_image_text
     
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
-    const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : [null,null,null,null]
+    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : [null,null,null,null]
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
     const streamingImageQuality = (this.props.streamingImageQuality !== undefined) ? 
@@ -385,7 +385,7 @@ class ImageViewerSelector extends Component {
       title={title}
       image_index={image_index}
       mouse_event_topic={mouse_event_topic}
-      selection_callback={selection_callback}
+      select_updated_topic={select_updated_topic}
       show_image_controls={show_image_controls}
       show_save_controls={show_save_controls}
       save_data_topic={save_data_topic}

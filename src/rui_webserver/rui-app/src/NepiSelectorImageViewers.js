@@ -47,7 +47,7 @@ class ImageViewersSelector extends Component {
 
     this.getAllSaveNamespace = this.getAllSaveNamespace.bind(this)
 
-    this.renderImageControls = this.renderImageControls.bind(this)
+    this.renderControlBar = this.renderControlBar.bind(this)
     this.renderImageWindows = this.renderImageWindows.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
     this.setNumWindows = this.setNumWindows.bind(this)
@@ -97,7 +97,7 @@ class ImageViewersSelector extends Component {
   }
 
 
-  renderImageControls() {
+  renderControlBar() {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
     }
@@ -195,6 +195,8 @@ class ImageViewersSelector extends Component {
                         {}                      </div>
               </div>
 
+              
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                 </Column>
                 </Columns>
@@ -219,9 +221,12 @@ class ImageViewersSelector extends Component {
     const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
     const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
     const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
-    const selection_callback = (this.props.selection_callback !== undefined) ? this.props.selection_callback : [null,null,null,null]
-    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
+    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
+    const select_updated_topics = (this.props.select_updated_topics !== undefined) ? this.props.select_updated_topics : [select_updated_topic,select_updated_topic,select_updated_topic,select_updated_topic]
+   
+    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
+    const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
 
   
     const show_selectors = this.state.show_selectors
@@ -252,8 +257,8 @@ class ImageViewersSelector extends Component {
                             show_image_controls={show_image_controls}
                             show_selector={show_selectors}
                             show_buttons={show_selectors}
-                            mouse_event_topic={mouse_event_topic}
-                            selection_callback={selection_callback[0]}
+                            mouse_event_topic={mouse_event_topics[0]}
+                            select_updated_topic={select_updated_topics[0]}
                             make_section={false}
                             show_save_controls={false}
                           />
@@ -271,8 +276,8 @@ class ImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
-                              mouse_event_topic={mouse_event_topic}
-                              selection_callback={selection_callback[0]}
+                              mouse_event_topic={mouse_event_topics[2]}
+                              select_updated_topic={select_updated_topics[2]}
                               make_section={false}
                               show_save_controls={false}
                             />
@@ -300,8 +305,8 @@ class ImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
-                              mouse_event_topic={mouse_event_topic}
-                              selection_callback={selection_callback[0]}
+                              mouse_event_topic={mouse_event_topics[1]}
+                              select_updated_topic={select_updated_topics[1]}
                              make_section={false}
                              show_save_controls={false}
                             />
@@ -320,8 +325,8 @@ class ImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_buttons={show_selectors}
-                              mouse_event_topic={mouse_event_topic}
-                              selection_callback={selection_callback[0]}
+                              mouse_event_topic={mouse_event_topics[3]}
+                              select_updated_topic={select_updated_topics[3]}
                              make_section={false}
                              show_save_controls={false}
                             />
@@ -383,7 +388,7 @@ class ImageViewersSelector extends Component {
       return (
         <Columns>
         <Column>
-              {this.renderImageControls()}
+              {this.renderControlBar()}
 
               {this.renderImageWindows()}
 
@@ -398,7 +403,7 @@ class ImageViewersSelector extends Component {
 
       <Section>
 
-              {this.renderImageControls()}
+              {this.renderControlBar()}
 
               {this.renderImageWindows()}
 
