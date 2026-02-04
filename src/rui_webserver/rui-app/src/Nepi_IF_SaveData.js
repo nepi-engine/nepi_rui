@@ -183,7 +183,7 @@ class NepiIFSaveData extends Component {
             saveNamespace,
             this.saveStatusListener
           )
-      this.setState({ saveNamespace: saveNamespace, updatedNamespace: null})
+      this.setState({ saveNamespace: saveNamespace})
       this.setState({ saveStatusListener: saveStatusListener})
     }
   }
@@ -192,15 +192,17 @@ class NepiIFSaveData extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const allNamespace = this.getAllNamespace()
-    const allSaveNamespace = (allNamespace != null) ? allNamespace + '/save_data' : 'None'
+    const allSaveNamespace = (allNamespace != null) ? allNamespace: 'None'
     const saveNamespace =  (this.state.updatedNamespace != null) ? this.state.updatedNamespace :
                                   (this.props.saveNamespace !== undefined) ? 
                                     (this.props.saveNamespace !== '' && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== null) ?
                                         this.props.saveNamespace : allSaveNamespace : allSaveNamespace 
-    const needs_update = ((this.state.saveNamespace !== saveNamespace))
+    const needs_update = ((this.state.saveNamespace !== saveNamespace || this.state.needs_update === true))
   
     if (needs_update) {
-      this.setState({saveNamespace: saveNamespace})
+      this.setState({saveNamespace: saveNamespace,
+                    needs_update: false
+      })
       this.updateSaveStatusListener(saveNamespace)
     }
   }
@@ -349,8 +351,8 @@ class NepiIFSaveData extends Component {
         topic_name = topic.replace
         namesList = []
         ratesList = []
-        save_rates_list = saveDataCaps[topic].save_data_rates
         if (topic !== "None" && topic !== allNamespace ){
+              if(saveDataCaps.hasOwnProperty(topic)){
                 save_rates_list = saveDataCaps[topic].save_data_rates
                 if (save_rates_list !== undefined){
                   for (i2 = 0; i2 < save_rates_list.length; i2++) {
@@ -367,6 +369,7 @@ class NepiIFSaveData extends Component {
                     
                   }
                 }
+              }
         }
       }
     } 
@@ -629,7 +632,7 @@ sendLogRateUpdate(rate) {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
     
-    const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
+    const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
 
     const saveAll = this.state.saveAll
     const save_enabled = saveDataEnabled
@@ -721,9 +724,9 @@ sendLogRateUpdate(rate) {
 
   createTopicOptions() {
     const { namespacePrefix, deviceId} = this.props.ros
-    const show_all_options = (this.props.show_all_options !== undefined) ? this.show_all_options : true
-    const save_include_filters = (this.props.save_include_filters !== undefined) ? this.save_include_filters : []
-    const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.save_exclude_filters : []
+    const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
+    const save_include_filters = (this.props.save_include_filters !== undefined) ? this.props.save_include_filters : []
+    const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.props.save_exclude_filters : []
     const allNamespace = this.getAllNamespace()
     var items = []
     if (show_all_options === true){

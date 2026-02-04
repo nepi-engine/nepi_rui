@@ -518,7 +518,7 @@ class ROSConnectionStore {
   @observable resetTopics = []
 
   @observable aiDetectorNamespaces = []
-
+  @observable aiDetectorCaps = {}
 
 
   @observable navSatFixTopics = []
@@ -1243,13 +1243,13 @@ class ROSConnectionStore {
 
     @action.bound
   async callAiDetectorCapabilitiesQueryService(namespace) {
-    this.saveDataCaps[namespace] = []
+    this.aiDetectorCaps[namespace] = []
     if ((this.connectedToNepi === true) && (this.serviceNames.indexOf(namespace + "/detector_info_query") !== -1)){
       const capabilities = await this.callService({
         name: namespace + "/detector_info_query",
         messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
       })
-      this.saveDataCaps[namespace] = capabilities
+      this.aiDetectorCaps[namespace] = capabilities
     }
   }
 
@@ -1316,8 +1316,8 @@ class ROSConnectionStore {
     }
       if (!this.saveDataNamespaces.equals(newSaveDataNamespaces)) {
         this.saveDataNamespaces = newSaveDataNamespaces
-        for (var i2 = 0; i < this.saveDataNamespaces.length; i2++) {
-              this.callSaveDataCapabilitiesQueryService(this.saveDataNamespaces[i2])
+        for (var i2 = 0; i2 < newSaveDataNamespaces.length; i2++) {
+              this.callSaveDataCapabilitiesQueryService(newSaveDataNamespaces[i2])
             }
         return true
       } else {
@@ -1347,8 +1347,8 @@ class ROSConnectionStore {
 
       if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
         this.aiDetectorNamespaces = newAiDetectorNamespaces
-        for (var i2 = 0; i2 < this.aiDetectorNamespaces.length; i2++) {
-              this.callAiDetectorCapabilitiesQueryService(this.aiDetectorNamespaces[i2])
+        for (var i2 = 0; i2 < newAiDetectorNamespaces.length; i2++) {
+              this.callAiDetectorCapabilitiesQueryService(newAiDetectorNamespaces[i2])
             }
         return true
       } else {

@@ -89,10 +89,10 @@ class ImageViewersSelector extends Component {
     }
 
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
-    const show_image_controls_option = (this.props.show_image_controls === undefined)
-    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : this.state.show_image_controls
-    const show_selectors_option = (this.props.show_selectors === undefined)
-    const show_selectors = (this.props.show_selectors !== undefined) ? this.props.show_selectors: this.state.show_selectors
+    const show_image_controls_option = true
+    const show_image_controls = this.state.show_image_controls
+    const show_selectors_option = true
+    const show_selectors = this.state.show_selectors
     return (
       <React.Fragment>
 
@@ -153,7 +153,7 @@ class ImageViewersSelector extends Component {
 
                         <Label title="Show Controls">
                           <Toggle
-                            checked={this.show_image_controls===true}
+                            checked={show_image_controls===true}
                             onClick={() => onChangeSwitchStateValue.bind(this)("show_image_controls",show_image_controls)}>
                           </Toggle>
                       </Label>
@@ -171,7 +171,7 @@ class ImageViewersSelector extends Component {
 
                         <Label title="Show Selectors">
                           <Toggle
-                            checked={this.show_selectors===true}
+                            checked={show_selectors===true}
                             onClick={() => onChangeSwitchStateValue.bind(this)("show_selectors",show_selectors)}>
                           </Toggle>
                       </Label>
@@ -211,8 +211,9 @@ class ImageViewersSelector extends Component {
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
 
-    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : this.state.show_image_controls
-    const show_selectors = (this.props.show_selectors !== undefined) ? this.props.show_selectors: this.state.show_selectors
+  
+    const show_selectors = this.state.show_selectors
+    const show_image_controls = this.state.show_image_controls
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
     const has_col_2 = (num_windows > 1) ? true : false
