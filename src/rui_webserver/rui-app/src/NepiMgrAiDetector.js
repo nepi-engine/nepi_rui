@@ -905,7 +905,7 @@ renderDetectorSettings() {
                   <Label title="Publish Image">
                   <Toggle
                   checked={pub_image_enabled===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_image_process", pub_image_enabled===false)}>
+                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_image_pub", pub_image_enabled===false)}>
                   </Toggle>
                   </Label>
 
