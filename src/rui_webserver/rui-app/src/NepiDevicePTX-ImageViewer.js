@@ -59,7 +59,7 @@ class NepiDevicePTXImageViewer extends Component {
     }
 
 
-    this.renderImageViewer = this.renderImageViewer.bind(this)
+    //this.renderImageViewer = this.renderImageViewer.bind(this)
 
     this.getNamespace = this.getNamespace.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
@@ -131,53 +131,20 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   }
 
 
-  renderImageViewer() {
-  
-    const use_images_selector = (this.props.use_images_selector != undefined) ? this.props.use_images_selector : false 
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : false
-    const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
-    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
-
-    return (
-
-        <React.Fragment >
-
-          <div id={'ptxImageViewer'}>
-
-            {(use_images_selector === true) ?
-              <ImageViewersSelector
-                
-                hideQualitySelector={true}
-                show_save_controls={show_save_controls}
-                show_image_controls={show_image_controls}
-                mouse_event_topic={mouse_event_topic}
-              />
-              : 
-                  <ImageViewerSelector
-                    id={'ptxImageViewer'}
-                    hideQualitySelector={true}
-                    show_save_controls={show_save_controls}
-                    show_image_controls={show_image_controls}
-                    mouse_event_topic={mouse_event_topic}
-
-                  />
-            }
-
-        </div>
-
-  </React.Fragment>
-
-
-
-    )
-  }
-
 
 
   render() {
     const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
     const namespace = (this.props.namespace !== null) ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
+
+    const use_images_selector = (this.props.use_images_selector != undefined) ? this.props.use_images_selector : false 
+    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : false
+    const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
+    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
+
+
+
     var panGoalRatio = 0.5
     var tiltGoalRatio = 0.5
     if (status_msg != null){
@@ -202,11 +169,61 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
     return (
 
+        <React.Fragment >
+
         <Columns>
-          <Column equalWidth = {false} >
+          <Column equalWidth = {false} >        
+
+          <div id={'ptxImageViewer'}>
+
+            {(use_images_selector === true) ?
+              <ImageViewersSelector
+                
+                hideQualitySelector={true}
+                show_save_controls={show_save_controls}
+                show_image_controls={show_image_controls}
+                mouse_event_topic={mouse_event_topic}
+              />
+              : 
+                  <ImageViewerSelector
+                    id={'ptxImageViewer'}
+                    hideQualitySelector={true}
+                    show_save_controls={show_save_controls}
+                    show_image_controls={show_image_controls}
+                    mouse_event_topic={mouse_event_topic}
+
+                  />
+            }
+
+        </div>
+
+          </Column>
+          <Column style={{flex: 0.05}}>
+
+           <div hidden={show_pt_controls === false}>
+
+            <SliderAdjustment
+              title={"Tilt"}
+              msgType={"std_msgs/Float32"}
+              adjustment={tiltGoalRatio}
+              topic={namespace + "/goto_tilt_ratio"}
+              scaled={0.01}
+              min={0}
+              max={100}
+              tooltip={"Tilt as a percentage (0%=min, 100%=max)"}
+              unit={"%"}
+              vertical={true}
+              verticalHeight={tiltSliderHeight}
+              noTextBox={true}
+              noLabel={true}
+            />
+
+          </div>
+
+        </Column>
+        </Columns>
 
 
-            {this.renderImageViewer()}
 
               <div hidden={show_pt_controls === false}>
 
@@ -263,32 +280,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
              </div>
 
-
-          </Column>
-          <Column style={{flex: 0.05}}>
-
-           <div hidden={show_pt_controls === false}>
-
-            <SliderAdjustment
-              title={"Tilt"}
-              msgType={"std_msgs/Float32"}
-              adjustment={tiltGoalRatio}
-              topic={namespace + "/goto_tilt_ratio"}
-              scaled={0.01}
-              min={0}
-              max={100}
-              tooltip={"Tilt as a percentage (0%=min, 100%=max)"}
-              unit={"%"}
-              vertical={true}
-              verticalHeight={tiltSliderHeight}
-              noTextBox={true}
-              noLabel={true}
-            />
-
-          </div>
-
-        </Column>
-        </Columns>
+  </React.Fragment>
 
 
 
