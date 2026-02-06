@@ -196,7 +196,6 @@ class ImageViewersSelector extends Component {
               </div>
 
 
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                 </Column>
                 </Columns>
@@ -362,8 +361,6 @@ class ImageViewersSelector extends Component {
           return (
         
               <React.Fragment>
-
-                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                           
                           <NepiIFSaveData
                             saveNamespace={saveNamespace}
@@ -372,6 +369,7 @@ class ImageViewersSelector extends Component {
                             show_topic_selector={true}
                           />
         
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
               </React.Fragment>
 
           )
@@ -388,11 +386,14 @@ class ImageViewersSelector extends Component {
       return (
         <Columns>
         <Column>
-              {this.renderControlBar()}
+              
+              {this.renderSaveData()}
 
               {this.renderImageWindows()}
 
-                {this.renderSaveData()}
+              {this.renderControlBar()}
+
+               
 
         </Column>
         </Columns>
@@ -403,11 +404,11 @@ class ImageViewersSelector extends Component {
 
       <Section>
 
-              {this.renderControlBar()}
-
+              {this.renderSaveData()}
+              
               {this.renderImageWindows()}
 
-                {this.renderSaveData()}
+              {this.renderControlBar()}
 
       </Section>
       )
