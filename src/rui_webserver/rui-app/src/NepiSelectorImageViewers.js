@@ -115,7 +115,7 @@ class ImageViewersSelector extends Component {
                 <Columns>
                   <Column>
                   
-              
+               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
     
                 <div style={{ display: 'flex' }}>
 
