@@ -1504,14 +1504,14 @@ class ImageViewer extends Component {
                         </div>
 
 
-                        <div style={{ width: '8%' }}>
+                        <div style={{ width: '5%' }}>
                             <ButtonMenu>
                               <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
                             </ButtonMenu>
                         </div>
 
 
-                        <div style={{ width: '2%' }}>
+                        <div style={{ width: '5%' }}>
                           {}
                         </div>
 
