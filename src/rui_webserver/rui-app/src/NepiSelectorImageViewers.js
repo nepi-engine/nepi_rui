@@ -241,10 +241,12 @@ class ImageViewersSelector extends Component {
   
       return (
      
-
+  <React.Fragment>
               <div style={{ display: 'flex' }}>
             
                   <div style={{ width: colFlexSize_1 }}>
+
+                    
                         <div id="Image1Viewer">
                           <ImageViewerSelector
                             id="Image1Viewer"
@@ -263,26 +265,7 @@ class ImageViewersSelector extends Component {
                           />
                         </div>
 
-                        {(num_windows > 2)?
-                          <div id="Image3Viewer">
-                            <ImageViewerSelector
-                              id="Image3Viewer"
-                              image_topic={image_topics[2]}
-                              title={titles[2]}
-                              streamingImageQuality={streamingImageQuality}
-                              exclude_filters={exclude_filters}
-                              include_filters={include_filters}
-                              show_image_controls={show_image_controls}
-                              show_selector={show_selectors}
-                              show_buttons={show_selectors}
-                              mouse_event_topic={mouse_event_topics[2]}
-                              select_updated_topic={select_updated_topics[2]}
-                              make_section={false}
-                              show_save_controls={false}
-                            />
-                          </div>        
-                        : null
-                        }
+ 
                   </div>
 
 
@@ -313,7 +296,47 @@ class ImageViewersSelector extends Component {
                         : null
                         }
 
-                        {(num_windows === 4)?
+                  </div>
+   
+          </div> 
+
+
+              <div style={{ display: 'flex' }}>
+            
+                  <div style={{ width: colFlexSize_1 }}>
+
+                  
+
+                        {(num_windows > 2)?
+                          <div id="Image3Viewer">
+                            <ImageViewerSelector
+                              id="Image3Viewer"
+                              image_topic={image_topics[2]}
+                              title={titles[2]}
+                              streamingImageQuality={streamingImageQuality}
+                              exclude_filters={exclude_filters}
+                              include_filters={include_filters}
+                              show_image_controls={show_image_controls}
+                              show_selector={show_selectors}
+                              show_buttons={show_selectors}
+                              mouse_event_topic={mouse_event_topics[2]}
+                              select_updated_topic={select_updated_topics[2]}
+                              make_section={false}
+                              show_save_controls={false}
+                            />
+                          </div>        
+                        : null
+                        }
+                  </div>
+
+
+                  <div style={{ width: colFlexSize_gap }}>
+                        {}
+                  </div>
+
+                  <div style={{ width: colFlexSize_2 }}>
+
+                         {(num_windows === 4)?
                           <div id="Image4Viewer">
                             <ImageViewerSelector
                               id="Image4Viewer"
@@ -335,6 +358,7 @@ class ImageViewersSelector extends Component {
                   </div>
    
           </div> 
+    </React.Fragment>
 
       )
     

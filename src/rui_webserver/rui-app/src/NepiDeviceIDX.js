@@ -64,7 +64,11 @@ class NepiDeviceIDX extends Component {
 
   setDeviceSelection(namespace) {
       this.setState({
-        namespace: namespace,
+        namespace: namespace,   
+            data_topic: "None",
+            data_product: "None", 
+            data_image_topic: 'None'   
+
       })
   }
 

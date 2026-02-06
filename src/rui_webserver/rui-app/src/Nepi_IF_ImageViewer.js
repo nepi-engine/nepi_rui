@@ -1476,39 +1476,42 @@ class ImageViewer extends Component {
       
       <Columns>
       <Column>
+
+
+                <div align={"left"} textAlign={"left"} >
+                            {(show_save_controls === true && namespace !== 'None') ?
+                              <NepiIFSaveData
+                              saveNamespace={save_data_topic}
+                              make_section={false}
+                              show_all_options={show_all_options}
+                              show_topic_selector={show_topic_selector}
+                            />
+                          : null }
+
+                          {(show_save_controls === true && namespace !== 'None') ?
+                            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                          : null }
+
+                </div>
+                
               <div style={{ display: 'flex' }}>
 
 
 
-                        <div align={"left"} textAlign={"left"} >
-                                    {(show_save_controls === true && namespace !== 'None') ?
-                                      <NepiIFSaveData
-                                      saveNamespace={save_data_topic}
-                                      make_section={false}
-                                      show_all_options={show_all_options}
-                                      show_topic_selector={show_topic_selector}
-                                    />
-                                  : null }
 
-                                  {(show_save_controls === true && namespace !== 'None') ?
-                                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                                  : null }
-
-                        </div>
-
-                        <div style={{ width: '80%', align: 'left' }}>
+                        <div style={{ width: '90%', align: 'left' }}>
                           <Label title={title} />
                         </div>
 
 
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '8%' }}>
                             <ButtonMenu>
                               <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
                             </ButtonMenu>
                         </div>
 
 
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '2%' }}>
                           {}
                         </div>
 

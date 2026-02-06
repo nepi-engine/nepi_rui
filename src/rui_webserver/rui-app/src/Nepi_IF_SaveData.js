@@ -652,7 +652,28 @@ sendLogRateUpdate(rate) {
       <React.Fragment> 
                     <div style={{ display: 'flex' }}>
 
-                        <div style={{ width: '30%' }}>
+                            
+
+
+                        
+                        <div style={{ width: '15%' }}>
+
+                            <div hidden={(allways_show_controls === true)}>
+                                <Label title="Show Save Controls">
+                                  <Toggle
+                                    checked={showControls===true}
+                                    onClick={() => {this.onClickToggleShowControls()}}>
+                                  </Toggle>
+                              </Label>
+                            </div>
+                        </div>
+
+                        <div style={{ width: '5%' }}>
+                          {}
+                        </div>
+
+
+                    <div style={{ width: '30%' }}>
 
                         { (show_topic_selector === true) ?
                           this.renderTopicSelector()
@@ -661,23 +682,7 @@ sendLogRateUpdate(rate) {
 
                         </div>
 
-
-                        
-                        <div style={{ width: '5%' }}>
-                          {}
-                        </div>
-
-                        
-                        <div style={{ width: '20%' }}>
-
-                          <Label title={"Save Rate"}>
-                            
-                            <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
-                          </Label>
-                        </div>
-
-
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '15%' }}>
                           {}
                         </div>
 
@@ -733,24 +738,29 @@ sendLogRateUpdate(rate) {
 
                   </div>
 
-        <div style={{ display: 'flex' }}>
 
-          <div style={{ width: '15%' }}>
-                <div hidden={(allways_show_controls === true)}>
-                    <Label title="Show Save Controls">
-                      <Toggle
-                        checked={showControls===true}
-                        onClick={() => {this.onClickToggleShowControls()}}>
-                      </Toggle>
-                  </Label>
-                </div>
-          </div>
+      <div hidden={(save_enabled === false)}>
+
+            <div style={{ display: 'flex' }}>
+
+              <div style={{ width: '15%' }}>
 
 
 
-          <div style={{ width: '85%' }}>
-            {}
-          </div>
+                              <Label title={"Save Rate"}>
+                                
+                                <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+                              </Label>
+
+              </div>
+
+
+
+              <div style={{ width: '85%' }}>
+                {}
+              </div>
+
+            </div>
 
         </div>
 
@@ -954,14 +964,12 @@ sendLogRateUpdate(rate) {
                           <BooleanIndicator value={(saveDataEnabled === true)} />
                         </Label>
 
-{/*
-                        <Label title={"Example Filename"}>
-                        </Label>
+                          <Label title={"Save Rate"}>
+                            
+                            <Input disabled value={roundWithSuffix(diskUsage, 3, "MB/s")} />
+                          </Label>
 
-                        <pre style={{ height: "100px", overflowY: "auto" }}>
-                          {this.state.exp_filename}
-                        </pre>
-*/}
+
                       <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                         <Label title="Filter Active">
