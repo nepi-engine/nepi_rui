@@ -157,7 +157,7 @@ class ImageViewersSelector extends Component {
                         {}
                       </div>
 
-                      <div style={{ width: '5%' }}>
+                      <div style={{ width: '15%' }}>
                         {}
                       </div>
 
@@ -191,10 +191,7 @@ class ImageViewersSelector extends Component {
                     </div>
 
 
-                      <div style={{ width: '10%' }}>
-                        {}                      </div>
-              </div>
-
+                </div>
 
 
                 </Column>
@@ -246,7 +243,7 @@ class ImageViewersSelector extends Component {
             
                   <div style={{ width: colFlexSize_1 }}>
 
-                    
+
                         <div id="Image1Viewer">
                           <ImageViewerSelector
                             id="Image1Viewer"
@@ -341,6 +338,7 @@ class ImageViewersSelector extends Component {
                             <ImageViewerSelector
                               id="Image4Viewer"
                               image_topic={image_topics[3]}
+                              title={titles[3]}
                               streamingImageQuality={streamingImageQuality}
                               exclude_filters={exclude_filters}
                               include_filters={include_filters}

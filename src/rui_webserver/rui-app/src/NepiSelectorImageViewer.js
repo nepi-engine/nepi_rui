@@ -37,7 +37,7 @@ import Select, { Option } from "./Select"
 import ImageViewer from "./Nepi_IF_ImageViewer"
 import {  onChangeSwitchStateValue } from "./Utilities"
 
-import {createShortValuesFromNamespaces} from "./Utilities"
+import {createMenuFirstLastName, createMenuFirstLastNames} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -123,7 +123,7 @@ class ImageViewerSelector extends Component {
       }
     }
 
-    const item_names = createShortValuesFromNamespaces(items)
+    const item_names = createMenuFirstLastNames(items)
     var sorted_names = item_names.slice()
     sorted_names.sort()
     var sorted_items = []
@@ -149,7 +149,7 @@ class ImageViewerSelector extends Component {
       } 
       var selected_ind = this.state.selected_image_index
       var selected_text = this.state.selected_image_text
-      const names = createShortValuesFromNamespaces(sorted_items)
+      const names = createMenuFirstLastNames(sorted_items)
       var index = 0
       var index_changed = false
       var index_name = ''
@@ -309,7 +309,6 @@ class ImageViewerSelector extends Component {
 
   stepItem(step){
     const image_topics = this.state.image_topics
-    const image_topics_names = this.state.image_topics_names
     var index = this.state.selected_image_index
     index = index + step
     if (index < 0){
@@ -321,7 +320,7 @@ class ImageViewerSelector extends Component {
 
     this.setState({selected_image_index: index,
                  selected_image: image_topics[index],
-                 selected_image_text: image_topics_names[index]})
+                 selected_image_text: createMenuFirstLastName(image_topics[index])})
     this.setState({hide_list: true})
 
   }
@@ -364,7 +363,7 @@ class ImageViewerSelector extends Component {
   renderImageViewer() {
 
     const image_topic = this.state.selected_image
-    const title = this.state.selected_image_text
+    const title = createMenuFirstLastName(image_topic)
     
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : [null,null,null,null]
