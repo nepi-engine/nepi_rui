@@ -261,7 +261,7 @@ class ImageViewerSelector extends Component {
 
 
     const show_selector = this.props.show_selector !== undefined ? this.props.show_selector : true
-    const show_buttons = this.props.show_buttons !== undefined ? this.props.show_buttons : true
+    const show_selector_buttons = this.props.show_selector_buttons !== undefined ? this.props.show_selector_buttons : true
     const show_controls = (menu_options.length > 0) && (show_selector === true )
     return (
       <React.Fragment>
@@ -332,8 +332,8 @@ class ImageViewerSelector extends Component {
 
 
     const show_selector = this.props.show_selector !== undefined ? this.props.show_selector : true
-    const show_buttons = this.props.show_buttons !== undefined ? this.props.show_buttons : true
-    const show_controls = (image_topics.length > 0) && (show_buttons === true )
+    const show_selector_buttons = this.props.show_selector_buttons !== undefined ? this.props.show_selector_buttons : true
+    const show_controls = (image_topics.length > 0) && (show_selector_buttons === true )
     return (
       <React.Fragment>
 
@@ -367,6 +367,7 @@ class ImageViewerSelector extends Component {
     
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : [null,null,null,null]
+    const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
     const streamingImageQuality = (this.props.streamingImageQuality !== undefined) ? 
@@ -387,6 +388,7 @@ class ImageViewerSelector extends Component {
       select_updated_topic={select_updated_topic}
       show_image_controls={show_image_controls}
       show_save_controls={show_save_controls}
+      allow_pan_zoom={allow_pan_zoom}
       save_data_topic={save_data_topic}
       make_section={false}
       streamingImageQuality={streamingImageQuality}

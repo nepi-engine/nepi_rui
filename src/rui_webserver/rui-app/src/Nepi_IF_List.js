@@ -175,7 +175,7 @@ import Button, { ButtonMenu } from "./Button"
 
 
   renderEnableControlsVert() {
-    const { sendTriggerMsg, sendUpdateStateMsg } = this.props.ros
+    const { sendTriggerMsg, sendUpdateBoolMsg } = this.props.ros
 
     return (
       <React.Fragment>
@@ -192,7 +192,7 @@ import Button, { ButtonMenu } from "./Button"
       <Label title="Enable/Disable">
           <Toggle
             checked={this.state.driver_active_state===true}
-            onClick={() => sendUpdateStateMsg(this.state.listNamespace + "/update_state", this.state.driver_pkg, !this.state.driver_active_state)}>
+            onClick={() => sendUpdateBoolMsg(this.state.listNamespace + "/update_state", this.state.driver_pkg, !this.state.driver_active_state)}>
           </Toggle>
         </Label>
 

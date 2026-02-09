@@ -37,7 +37,7 @@ class ImageViewersSelector extends Component {
     this.state = {
 
       image_topics: ['None','None','None','None'],
-      num_windows: 1,
+      num_windows: 0,
 
       needs_update: false,
 
@@ -85,13 +85,31 @@ class ImageViewersSelector extends Component {
 
 
   setNumWindows(num_windows){
+      var cur_num_windows = this.state.num_windows
 
-      this.setState({num_windows: num_windows})
+      if (num_windows === 0 || num_windows > 4){
+          num_windows = 1
+      }
 
-      const {sendIntMsg} = this.props.ros
-      const num_windows_updated_topic = (this.props.num_windows_updated_topic !== undefined) ? this.props.num_windows_updated_topic : null
-      if (num_windows_updated_topic != null){
-          sendIntMsg( num_windows_updated_topic,num_windows)
+      if (num_windows !== cur_num_windows){
+        const {sendIntMsg, sendTriggerMsg} = this.props.ros     
+        const num_windows_updated_topic = (this.props.num_windows_updated_topic !== undefined) ? this.props.num_windows_updated_topic : null
+        const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
+        this.setState({num_windows: num_windows})
+
+        if (num_windows_updated_topic != null){
+            sendIntMsg( num_windows_updated_topic,num_windows)
+        }
+        
+        var image_topic = ''
+        if (num_windows > 1){
+          for (var i = 0; i < image_topics.length; i++) {
+            image_topic = image_topics[i]
+            if (image_topic != null && image_topic !== 'None' && image_topic !== ''){
+              sendTriggerMsg( image_topic + "/reset_renders")
+            }
+          }
+        }
       }
 
   }
@@ -163,12 +181,12 @@ class ImageViewersSelector extends Component {
 
                       <div style={{ width: '10%' }} centered={"true"} hidden={show_image_controls_option === false}>
 
-                        <Label title="Show Controls">
+                        {/* <Label title="Show Controls">
                           <Toggle
                             checked={show_image_controls===true}
                             onClick={() => onChangeSwitchStateValue.bind(this)("show_image_controls",show_image_controls)}>
                           </Toggle>
-                      </Label>
+                      </Label> */}
 
                     </div>
 
@@ -213,6 +231,7 @@ class ImageViewersSelector extends Component {
     }
 
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
+    this.setNumWindows(num_windows)
     const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
     const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
     const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
@@ -226,7 +245,9 @@ class ImageViewersSelector extends Component {
 
   
     const show_selectors = this.state.show_selectors
-    const show_image_controls = this.state.show_image_controls
+    const show_image_controls = (num_windows === 1) //this.state.show_image_controls
+    const show_reset_button = (num_windows === 1)
+    const allow_pan_zoom = (num_windows === 1)
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
     const has_col_2 = (num_windows > 1) ? true : false
@@ -254,7 +275,9 @@ class ImageViewersSelector extends Component {
                             include_filters={include_filters}
                             show_image_controls={show_image_controls}
                             show_selector={show_selectors}
-                            show_buttons={show_selectors}
+                            show_selector_buttons={show_selectors}
+                            show_reset_button={show_reset_button}
+                            allow_pan_zoom={allow_pan_zoom}
                             mouse_event_topic={mouse_event_topics[0]}
                             select_updated_topic={select_updated_topics[0]}
                             make_section={false}
@@ -283,7 +306,9 @@ class ImageViewersSelector extends Component {
                               include_filters={include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
-                              show_buttons={show_selectors}
+                              show_selector_buttons={show_selectors}
+                              show_reset_button={show_reset_button}
+                              allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
                               select_updated_topic={select_updated_topics[1]}
                              make_section={false}
@@ -315,7 +340,9 @@ class ImageViewersSelector extends Component {
                               include_filters={include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
-                              show_buttons={show_selectors}
+                              show_selector_buttons={show_selectors}
+                              show_reset_button={show_reset_button}
+                              allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
                               select_updated_topic={select_updated_topics[2]}
                               make_section={false}
@@ -344,7 +371,9 @@ class ImageViewersSelector extends Component {
                               include_filters={include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
-                              show_buttons={show_selectors}
+                              show_selector_buttons={show_selectors}
+                              show_reset_button={show_reset_button}
+                              allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
                               select_updated_topic={select_updated_topics[3]}
                              make_section={false}

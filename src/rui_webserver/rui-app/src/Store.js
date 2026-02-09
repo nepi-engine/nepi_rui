@@ -2047,6 +2047,10 @@ class ROSConnectionStore {
     })
   }
 
+
+
+
+
   @action.bound
   sendBoolMsg(namespace, value) {
     this.publishMessage({
@@ -2059,11 +2063,40 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  sendUpdateBoolMsg(namespace, name, value) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateBool",
+      data: {
+        name: name,
+        value: value
+      },
+      noPrefix: true
+    })
+  }
+
+
+
+
+  @action.bound
   sendStringMsg(namespace,str) {
     this.publishMessage({
       name: namespace,
       messageType: "std_msgs/String",
       data: {'data':str},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  sendUpdateStringMsg(namespace, name, value) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateString",
+      data: {
+        name: name,
+        value: value
+      },
       noPrefix: true
     })
   }
@@ -2093,6 +2126,21 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  sendUpdateIntMsg(namespace, name, value, name2 = '', name3 = '') {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateInt",
+      data: {
+        name: name,
+        name2: name2,
+        name3: name3,
+        value: value
+      },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
   sendInt8Msg(namespace, int_str) {
     let intVal = parseInt(int_str, 10)
     if (!isNaN(intVal)) {
@@ -2118,6 +2166,21 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
+  sendUpdateFloatMsg(namespace, name, value, name2 = '', name3 = '') {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateFloat",
+      data: {
+        name: name,
+        name2: name2,
+        name3: name3,
+        value: value
+      },
+      noPrefix: true
+    })
+  }
+
 
   @action.bound
   sendErrorBoundsMsg(namespace, max_m,max_d,min_stab) {
@@ -2135,58 +2198,6 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  sendUpdateOptionMsg(namespace, comp_name, option_str) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/UpdateOption",
-
-        data: {
-        name: comp_name,
-        option_str: option_str
-      },
-      noPrefix: true
-    })
-  }
-
-  @action.bound
-  sendUpdateOrderMsg(namespace, comp_name, move_cmd) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/UpdateOrder",
-      data: {    
-        name: comp_name,
-        move_cmd: move_cmd
-      },
-      noPrefix: true
-    })
-  }
-
-  @action.bound
-  sendUpdateStateMsg(namespace, comp_name, active_state) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/UpdateState",
-      data: {
-        name: comp_name,
-        active_state: active_state
-      },
-      noPrefix: true
-    })
-  }
-
-  @action.bound
-  sendUpdateRatioMsg(namespace, comp_name, ratio) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/UpdateRatio",
-      data: {
-        name: comp_name,
-        active_state: ratio
-      },
-      noPrefix: true
-    })
-  }
 
   @action.bound
   sendUpdateRangeWindowMsg(namespace, comp_name, min, max, throttle = true) {
@@ -2209,6 +2220,22 @@ class ROSConnectionStore {
     } else {
       console.warn("publishRangeWindow: namespace not set")
     }
+  }
+
+
+  @action.bound
+  sendUpdateOrderMsg(namespace, name, move_cmd, name2 = '', name3 = '') {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateOrder",
+      data: {    
+        name: name,
+        name2: name2,
+        name3: name3,
+        move_cmd: move_cmd
+      },
+      noPrefix: true
+    })
   }
 
   @action.bound
@@ -2370,14 +2397,6 @@ class ROSConnectionStore {
     })
   }
 
-  /*******************************/
-  // Custom Send Data Functions
-  /*******************************/
-
-
-
-
-///// Node IF Calls
 
 @action.bound
 saveConfigTriggered(namespace) {
@@ -2417,8 +2436,8 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
   })
 }
 
-  @action.bound
-  updateSetting(namespace,nameStr,typeStr,valueStr) {
+@action.bound
+updateSetting(namespace,nameStr,typeStr,valueStr) {
     this.publishMessage({
       name: namespace + "/update_setting",
       messageType: "nepi_interfaces/Setting",
@@ -2446,61 +2465,32 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
 
 
 
-  
-  ///// NavPose IF Calls
-
-  @action.bound
-  updateNavPoseTopic(namespace, name, topic, apply_transform, transform_list) {
-    const apply_tf = apply_transform ? apply_transform : false
-    const transform = transform_list ? 
-              (transform_list.length === 7 ? transform_list : [0,0,0,0,0,0,0]) :
-              [0,0,0,0,0,0,0]
-
-    this.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/UpdateNavPoseTopic",
-      data: { 
-          name: name,
-          topic: topic,
-          apply_transform: apply_tf,
-          transform: {
-            translate_vector: {
-              x: transform[0],
-              y: transform[1],
-              z: transform[2]
-            },
-            rotate_vector: {
-              x: transform[3],
-              y: transform[4],
-              z: transform[5]
-            },
-            heading_offset: transform[6]
-          }
-      },
-      noPrefix: true
-    })
-  }  
 
 
   @action.bound
   sendNavPoseMsg(namespace,navpose_data){
       this.publishMessage({
-        name: namespace + '/set_navpose/',
+        name: namespace,
         messageType: "nepi_interfaces/NavPose",
         data: navpose_data,
         noPrefix: true
       })
     }
 
-    @action.bound
-    sendInitNavPoseMsg(namespace,navpose_data){
-      this.publishMessage({
-        name: namespace + '/set_init_navpose/',
-        messageType: "nepi_interfaces/NavPose",
-        data: navpose_data,
-        noPrefix: true
-      })
-    }
+  @action.bound
+  sendUpdateNavposeMsg(namespace,name, navpose_msg, name2 = '', name3 = '') {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateNavPose",
+      data: {         
+        name: name,
+        name2: name2,
+        name3: name3,
+        navpose: navpose_msg
+      },
+      noPrefix: true
+    })
+  }
 
     @action.bound
     sendNavPoseLocationMsg(namespace,lat,long,init_np){
@@ -2634,13 +2624,15 @@ updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
   
     
     @action.bound
-    sendFrame3DTransformUpdateMsg(namespace, name, transformFloatList) {
+    sendUpdateFrame3DTransformMsg(namespace, name, transformFloatList, name2 = '', name3 = '') {
       if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
           messageType: "nepi_interfaces/UpdateFrame3DTransform",
           data: { 
             name: name,
+            name2: name2,
+            name3: name3,
             transform: {
               translate_vector: {
                 x: transformFloatList[0],

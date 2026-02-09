@@ -442,10 +442,10 @@ export function onDropdownSelectedSendIndex8(event, namespace) {
 }
 
 export function onDropdownSelectedSendDriverOption(event, namespace) {
-  const {driverUpdateOptionMsg} = this.props.ros
+  const {sendUpdateStringMsg} = this.props.ros
   const driver_name = this.state.driver_name
   const option_str = event.target.value
-  driverUpdateOptionMsg(namespace, driver_name, option_str)
+  sendUpdateStringMsg(namespace, driver_name, option_str)
 }
 
 /////////////////////////////

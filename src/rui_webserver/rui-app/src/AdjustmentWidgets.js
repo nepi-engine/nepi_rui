@@ -121,7 +121,7 @@ function sendUpdate(props, new_value, throttle) {
   const noPrefix = (props.topic.startsWith('/'))
   const comp_name = props.comp_name ? props.comp_name : null
   if (comp_name != null) {
-    props.ros.sendUpdateRatioMsg(props.topic,props.comp_name,new_value)
+    props.ros.sendUpdateFloatMsg(props.topic,props.comp_name,new_value)
   }
   else {
     props.ros.publishValue(

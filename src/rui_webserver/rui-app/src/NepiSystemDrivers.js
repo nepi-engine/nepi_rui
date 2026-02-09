@@ -350,12 +350,12 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
 
   onDropdownSelectedSendDriverOption(event) {
-    const {sendUpdateOptionMsg} = this.props.ros
+    const {sendUpdateStringMsg} = this.props.ros
     const topic = event.target.id
     const namespace = this.state.mgrNamespace + "/" + topic
     const driver_pkg = this.state.driver_pkg
     const option_str = event.target.value
-    sendUpdateOptionMsg(namespace, driver_pkg, option_str)
+    sendUpdateStringMsg(namespace, driver_pkg, option_str)
   }
 
 
@@ -377,7 +377,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
   }
 
   renderDriverConfigure() {
-    const { sendStringMsg, sendUpdateOrderMsg, sendUpdateStateMsg, } = this.props.ros
+    const { sendStringMsg, sendUpdateOrderMsg, sendUpdateBoolMsg, } = this.props.ros
     //Unused const NoneOption = <Option>None</Option>
     const namespace = this.getSettingsNamespace()
     const check_topic = namespace + "/settings/status"
@@ -411,7 +411,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
         <Label title="Enable/Disable Driver">
           <Toggle
             checked={this.state.driver_active_state===true}
-            onClick={() => sendUpdateStateMsg(this.state.mgrNamespace + "/update_state", this.state.driver_pkg, !this.state.driver_active_state)}>
+            onClick={() => sendUpdateBoolMsg(this.state.mgrNamespace + "/update_state", this.state.driver_pkg, !this.state.driver_active_state)}>
           </Toggle>
           </Label>
 

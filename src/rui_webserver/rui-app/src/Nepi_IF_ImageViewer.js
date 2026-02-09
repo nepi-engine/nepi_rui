@@ -383,11 +383,12 @@ class ImageViewer extends Component {
   mouseDragEvent(canvas,event){
       const {sendImageDragMsg} = this.props.ros
       const namespace = this.state.image_topic
+      const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
       const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
       //const rect = canvas.getBoundingClientRect()
 
       const is_drag = this.state.mouse_drag
-      if (is_drag === true){
+      if (is_drag === true && allow_pan_zoom === true){
           const [x2,y2] = this.getPixelLoc(canvas, event)
           const pixel = this.state.pixel
           if (pixel !== null){
@@ -418,6 +419,7 @@ class ImageViewer extends Component {
   mouseUpEvent(canvas,event){
       const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
       const namespace = this.state.image_topic
+      const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
       const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
       //const rect = canvas.getBoundingClientRect()
 
@@ -454,7 +456,7 @@ class ImageViewer extends Component {
         }
 
         const wt = Math.max(canvas.width, canvas.height) * 0.05
-        if (dx > wt && dy > wt){
+        if (dx > wt && dy > wt && allow_pan_zoom === true){
           sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
           if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
               this.sendImageMouseEventMsg(mouse_event_topic ,
@@ -671,7 +673,7 @@ class ImageViewer extends Component {
          
                             <Toggle
                               checked={filter_enabled === true}
-                              onClick={() => this.props.ros.sendUpdateStateMsg(namespace + "/set_filter_enable",filter_name,!filter_enabled)}>
+                              onClick={() => this.props.ros.sendUpdateBoolMsg(namespace + "/set_filter_enable",filter_name,!filter_enabled)}>
                             </Toggle>
                       
                       </Label>
@@ -1462,6 +1464,7 @@ class ImageViewer extends Component {
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
+    const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const save_data_topic = (this.props.save_data_topic !== undefined) ? this.props.save_data_topic :  this.state.save_data_topic
     const show_status = this.state.show_status
     const show_controls = this.state.show_controls
@@ -1500,11 +1503,14 @@ class ImageViewer extends Component {
                           <Label title={title} />
                         </div>
 
-
+                        
                         <div style={{ width: '10%' }}>
-                            <ButtonMenu>
-                              <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
-                            </ButtonMenu>
+
+                          {(show_reset_button === true) ?
+                                <ButtonMenu>
+                                  <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
+                                </ButtonMenu>
+                          : null }
                         </div>
 
 
