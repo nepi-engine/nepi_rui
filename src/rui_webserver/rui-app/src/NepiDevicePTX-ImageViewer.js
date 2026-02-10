@@ -33,7 +33,6 @@ import Styles from "./Styles"
 
 import { SliderAdjustment } from "./AdjustmentWidgets"
 
-import ImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFImageViewersSelector from "./Nepi_IF_ImageViewerSelector"
 

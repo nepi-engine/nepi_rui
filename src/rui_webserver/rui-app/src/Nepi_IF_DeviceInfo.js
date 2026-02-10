@@ -34,7 +34,7 @@ import Input from "./Input"
 @observer
 
 // NEPI Device Info Interface
-class NepiDeviceInfo extends Component {
+class NepiIFDeviceInfo extends Component {
   constructor(props) {
     super(props)
 
@@ -207,4 +207,4 @@ class NepiDeviceInfo extends Component {
   }
 
 }
-export default NepiDeviceInfo
+export default NepiIFDeviceInfo

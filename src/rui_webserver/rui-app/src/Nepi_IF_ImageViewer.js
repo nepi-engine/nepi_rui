@@ -69,7 +69,7 @@ const ROS_WEBCAM_URL_BASE = `http://${
 
 @inject("ros")
 @observer
-class ImageViewer extends Component {
+class Nepi_IF_ImageViewer extends Component {
   constructor(props) {
     super(props)
 
@@ -1741,7 +1741,7 @@ class ImageViewer extends Component {
 
 }
 
-ImageViewer.defaultProps = {
+Nepi_IF_ImageViewer.defaultProps = {
   imageRecognitions: [
     // {
     //   label: "foobar",
@@ -1750,4 +1750,4 @@ ImageViewer.defaultProps = {
   ]
 }
 
-export default ImageViewer
+export default Nepi_IF_ImageViewer

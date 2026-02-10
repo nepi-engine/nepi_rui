@@ -26,7 +26,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 
 
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 
 import NepiDeviceIDXControls from "./NepiDeviceIDX-Controls"
@@ -250,7 +250,7 @@ class NepiDeviceIDX extends Component {
           <Column equalWidth={false}>
 
 
-            <ImageViewer
+            <NepiIFImageViewer
               image_topic={image_topic}
               title={image_text}
               hideQualitySelector={false}

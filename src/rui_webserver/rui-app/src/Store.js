@@ -233,20 +233,19 @@ class ROSConnectionStore {
 
 
     if (this.ros != null ) {
-      delay_time = 1500
+      delay_time = 2000
       if (this.connectedToNepi === true && this.watchdogNepi === false ) {
           this.connectedToNepi = false
           this.destroyROSConnection()
       }
-      this.watchdogNepi = false
     }
-
 
     if (this.rosAutoReconnect) {
       setTimeout(async () => {
         await this.checkROSConnection()
       }, delay_time)
     }
+    
   }
 
   @action.bound
@@ -658,6 +657,7 @@ class ROSConnectionStore {
   @observable userRestrictionsEnabled = []
   @observable userRestrictionsActive = []
 
+  @observable systemRunMode = null
 
   @observable diskUsagePercent = null
 
@@ -702,12 +702,14 @@ class ROSConnectionStore {
         this.systemDebugEnabled = message.sys_debug_enabled
         this.systemAdminEnabled=message.sys_admin_enabled
 
-        this.systemManagersOptions = message.system_managers_options
-        this.systemManagersEnabled = message.system_managers_enabled
+        this.systemManagersOptions = message.sys_managers_options
+        this.systemManagersEnabled = message.sys_managers_enabled
 
         this.userRestrictionsOptons = message.user_restrictions_options
-        this.userRestrictionsEnabled = message.user_restrictions_enabled
-        this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions_enabled
+        this.userRestrictionsEnabled = message.user_restrictions
+
+        this.systemRunMode=message.sys_run_mode
+        this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions
 
 
         
@@ -734,8 +736,15 @@ class ROSConnectionStore {
           this.hearbeatNepi = false
         }, 500)
 
-        this.connectedToNepi = true
         this.watchdogNepi = true
+        this.connectedToNepi = true
+        
+        // // reset watchdogNepi every in two seconds
+        // this.watchdogNepi = true
+        // setTimeout(() => {
+        //   this.watchdogNepi = false
+        // }, 2000)
+
 
         ///////////////////
 
@@ -1829,6 +1838,20 @@ class ROSConnectionStore {
       return this.addListener({
         name: namespace + "/status",
         messageType: "nepi_interfaces/SaveDataStatus",
+        noPrefix: true,
+        callback: callback,
+
+      })
+    }
+  }
+
+
+  @action.bound
+  setupMessagesListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_interfaces/Message",
         noPrefix: true,
         callback: callback,
 

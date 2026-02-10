@@ -26,7 +26,7 @@ import Styles from "./Styles"
 
 import NavPoseMgr from "./NepiMgrNavPose"
 
-import AppRender from "./Nepi_IF_Apps"
+import NepiIFApps from "./Nepi_IF_Apps"
 
 @inject("ros")
 @observer
@@ -277,7 +277,7 @@ class NavPoseSelector extends Component {
 
     else if (appNameList.indexOf(sel_app) !== -1){
      return (
-        <AppRender
+        <NepiIFApps
         sel_app={sel_app}
         />
       );

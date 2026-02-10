@@ -28,7 +28,7 @@ import Styles from "./Styles"
 
 // import {onChangeSwitchStateValue} from "./Utilities"
 
-import NepiSystemMessages from "./Nepi_IF_Messages"
+import NepiIFMessages from "./Nepi_IF_Messages"
 
 
 import { createMenuBaseNames} from "./Utilities"
@@ -36,7 +36,7 @@ import { createMenuBaseNames} from "./Utilities"
 @inject("ros")
 @observer
 
-class NepiMessagesSelector extends Component {
+class NepiIFMessagesSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -125,7 +125,7 @@ class NepiMessagesSelector extends Component {
 
 
   renderApplication() {
-    const msg_namespace = this.state.selected_topic
+    const messagesNamespace = this.state.selected_topic
 
     return (
       <React.Fragment>
@@ -133,10 +133,10 @@ class NepiMessagesSelector extends Component {
       <Columns>
         <Column>
 
-        <NepiSystemMessages
-        namespace={msg_namespace}
+        <NepiIFMessages
+        messagesNamespace={messagesNamespace}
         hide_control={true}
-        title={"NepiSystemMessages"}
+        title={"NepiIFMessages"}
         />
 
       </Column>
@@ -179,4 +179,4 @@ class NepiMessagesSelector extends Component {
 
 }
 
-export default NepiMessagesSelector
+export default NepiIFMessagesSelector

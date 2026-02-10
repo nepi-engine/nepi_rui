@@ -34,7 +34,7 @@ import BooleanIndicator from "./BooleanIndicator"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 
 
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 //import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
@@ -1097,7 +1097,7 @@ renderDetectorSettings() {
           </Columns>
 
 
-      <ImageViewer
+      <NepiIFImageViewer
         image_topic={sel_img}
         title={sel_img_text}
         save_data_topic={save_data_topic}

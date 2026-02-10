@@ -21,6 +21,8 @@ import React, { Component } from "react"
 import { Route, Switch, withRouter } from "react-router-dom"
 import { observer, inject } from "mobx-react"
 
+
+
 import Page from "./Page"
 import Nav from "./Nav"
 import HorizontalDivider from "./HorizontalDivider"
@@ -29,16 +31,8 @@ import HorizontalDivider from "./HorizontalDivider"
 
 import Dashboard from "./NepiDashboard"
 
-import NepiIFAppSelector from "./Nepi_IF_AppSelector"
-// import DevicesSelector from "./NepiSelectorDevices"
-// import AutoSelector from "./NepiSelectorAuto"
-// import DataSelector from "./NepiSelectorData"
-// import ProcessSelector from "./NepiSelectorProcess"
-// import SystemSelector from "./NepiSelectorSystem"
-
-
-
-
+import MainMenuDevelop from "./MainMenuDevelop"
+import MainMenuDeploy from "./MainMenuDeploy"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -52,81 +46,46 @@ class App extends Component {
   }
 
   render() {
-    const { license_valid, license_server, license_type } = this.props.ros
-    const unlicensed = (license_server !== null) && 
-      (license_server.readyState === 1) && 
-      (license_valid === false) 
+    const systemMgrStatus = this.props.ros.systemMgrStatus
+    const systemRunMode = this.props.ros.systemRunMode
+
+    if (systemMgrStatus == null) {
+
+      const { license_valid, license_server, license_type } = this.props.ros
+      const unlicensed = (license_server !== null) && 
+        (license_server.readyState === 1) && 
+        (license_valid === false) 
       return (
       <Page>
         <Nav
           unlicensed={unlicensed}
           license_type={license_type}
           pages={[
-            { path: "/", label: "Dashboard" },
-            { path: "/devices_selector", label: "Devices"},
-            { path: "/data_selector", label: "Data"},
-            { path: "/process_selector", label: "Process"},
-            { path: "/auto_selector", label: "Automation"},
-            { path: "/system_selector", label: "System"},
-            {
-              path: "/help",
-              label: "Help",
-              subItems: [
-                { path: "/docs", label: "Docs" },
-                { path: "/tuts", label: "Tutorials" },
-                { path: "/vids", label: "Videos" },
-              ]
-            }
+            { path: "/", label: "Connecting" },
           ]}
         />
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-
-          <Route 
-            path="/devices_selector" 
-            render={(props) => <NepiIFAppSelector {...props} app_id={'DEVICE'} />} 
-          />
-          <Route 
-            path="/data_selector" 
-            render={(props) => <NepiIFAppSelector {...props} app_id={'DATA'} />} 
-          />
-          <Route 
-            path="/process_selector"
-            render={(props) => <NepiIFAppSelector {...props} app_id={'PROCESS'} />} 
-          />
-          <Route 
-             path="/auto_selector" 
-            render={(props) => <NepiIFAppSelector {...props} app_id={'AUTOMATION'} />} 
-          />
-          <Route 
-            path="/system_selector" 
-            render={(props) => <NepiIFAppSelector {...props} app_id={'SYSTEM'} />} 
-          />
-
-          {/* <Route path="/devices_selector" component={DevicesSelector} />      
-          <Route path="/data_selector" component={DataSelector} /> 
-          <Route path="/process_selector" component={ProcessSelector} />
-          <Route path="/auto_selector" component={AutoSelector} />
-          <Route path="/system_selector" component={SystemSelector} /> */}
-          
-
-          <Route path='/docs' component={() => {
-             window.location.href = 'https://nepi.com/documentation/';
-             return null;
-            }}/>
-          <Route path='/tuts' component={() => {
-             window.location.href = 'https://nepi.com/tutorials/';
-             return null;
-            }}/>
-          <Route path='/vids' component={() => {
-             window.location.href = 'https://nepi.com/videos/';
-             return null;
-            }}/>
           
         </Switch>
       </Page>
-    )
+      )
+    }
+    else if (systemRunMode === 'deploy'){
+      return (
+      <React.Fragment>
+        <MainMenuDeploy/>
+      </React.Fragment>
+      )
+    }
+    else {
+      return (
+      <React.Fragment>
+        <MainMenuDevelop/>
+      </React.Fragment>
+      )
+    }
   }
 }
 

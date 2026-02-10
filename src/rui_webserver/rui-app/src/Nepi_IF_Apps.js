@@ -35,7 +35,7 @@ const appsClassMap = new Map([
 @observer
 
 // Pointcloud Application page
-class AppRender extends Component {
+class NepiIFApps extends Component {
   constructor(props) {
     super(props)
 
@@ -93,4 +93,4 @@ class AppRender extends Component {
 
 }
 
-export default AppRender
+export default NepiIFApps

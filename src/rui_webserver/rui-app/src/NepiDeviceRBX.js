@@ -26,7 +26,7 @@ import Label from "./Label"
 import Select, { Option } from "./Select"
 
 
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 
 //import NepiDeviceRBXControls from "./NepiDeviceRBX-Controls"
@@ -142,7 +142,7 @@ class NepiDeviceRBX extends Component {
     return (
       <React.Fragment>
 
-            <ImageViewer
+            <NepiIFImageViewer
               image_topic={image_topic}
               title={image_text}
               hideQualitySelector={false}

@@ -33,7 +33,7 @@ import {Queue, onChangeSwitchStateValue} from "./Utilities"
 @inject("ros")
 @observer
 
-class NepiSystemMessages extends Component {
+class NepiIFMessages extends Component {
   constructor(props) {
     super(props)
 
@@ -41,10 +41,10 @@ class NepiSystemMessages extends Component {
     const show_messages = (show_control === false)
 
 
-    // these states track the values through  Status messages
+    // these states track the values through   messages
     this.state = {
 
-      namespace: null,
+      messagesNamespace: null,
 
       msg_queue_size: 50,
       status_msg: null,
@@ -58,7 +58,7 @@ class NepiSystemMessages extends Component {
 
       connected: false,
 
-      messagesStatusListener: null,
+      messagesListener: null,
 
     }
 
@@ -69,13 +69,13 @@ class NepiSystemMessages extends Component {
 
     this.renderShowControl = this.renderShowControl.bind(this)
     this.renderMessages = this.renderMessages.bind(this)
-    this.messagesStatusListener = this.messagesStatusListener.bind(this)
-    this.updateMessagesStatusListener = this.updateMessagesStatusListener.bind(this)
+    this.messagesListener = this.messagesListener.bind(this)
+    this.updateMessagesListener = this.updateMessagesListener.bind(this)
   }
 
 
-    // Callback for handling ROS Status messages
-    messagesStatusListener(message) {
+    // Callback for handling ROS  messages
+    messagesListener(message) {
       const msg_str = message.message
       const paused = this.state.paused
       const queue_size = this.state.queue_size
@@ -93,21 +93,22 @@ class NepiSystemMessages extends Component {
       })
     }
 
-  // Function for configuring and subscribing to Status
-  updateMessagesStatusListener(namespace) {
-
-    if (this.state.messagesStatusListener != null) {
-      this.state.messagesStatusListener.unsubscribe()
-      this.setState({messagesStatusListener: null})
-    }
-    if (namespace !== 'None' && namespace != null) {
-      var messagesStatusListener = this.props.ros.setupStatusListener(
-        namespace,
-        "nepi_interfaces/Message",
-        this.messagesStatusListener
-      )
-      this.setState({ messagesStatusListener: messagesStatusListener,
-        needs_update: false})
+  // Function for configuring and subscribing to 
+  updateMessagesListener() {
+    const namespace = this.state.messagesNamespace
+    if (namespace != null){
+      if (this.state.messagesListener != null) {
+        this.state.messagesListener.unsubscribe()
+        this.setState({messagesListener: null})
+      }
+      if (namespace !== 'None' && namespace != null) {
+        var messagesListener = this.props.ros.setupMessagesListener(
+          namespace,
+          this.messagesListener
+        )
+        this.setState({ messagesListener: messagesListener,
+          needs_update: false})
+      }
     }
   }
 
@@ -115,24 +116,24 @@ class NepiSystemMessages extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     const {topicNames} = this.props.ros
-    const { namespace } = this.props
-
-    const namespace_updated = (this.state.namespace !== namespace && namespace !== null)
-    const message_publishing = topicNames.indexOf(namespace) !== -1
-    const needs_update = (this.state.needs_update && namespace !== null && message_publishing === true)
-    if (namespace_updated || needs_update) {
-      if (namespace.indexOf('null') === -1){
-        this.setState({ namespace: namespace})
-        this.updateMessagesStatusListener(namespace)
+    const namespace = (this.props.messagesNamespace !== undefined) ? this.props.messagesNamespace : null
+    if (namespace != null){
+      const namespace_updated = (this.state.messagesNamespace !== namespace)
+      const message_publishing = (topicNames.indexOf(namespace) !== -1)
+      if (((namespace_updated === true) || (this.state.needs_update === true)) && (message_publishing === true)) {
+        if (namespace.indexOf('null') === -1){
+          this.setState({ messagesNamespace: namespace})
+          this.updateMessagesListener()
+        }
       }
     }
   }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status message
+  // Used to unsubscribe to  message
   componentWillUnmount() {
-    if (this.state.messagesStatusListener) {
-      this.state.messagesStatusListener.unsubscribe()
+    if (this.state.messagesListener) {
+      this.state.messagesListener.unsubscribe()
     }
   }
 
@@ -300,4 +301,4 @@ class NepiSystemMessages extends Component {
 
 
 }
-export default NepiSystemMessages
+export default NepiIFMessages

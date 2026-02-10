@@ -26,7 +26,7 @@ import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 
 
-import AppRender from "./Nepi_IF_Apps"
+import NepiIFApps from "./Nepi_IF_Apps"
 
 
 // DEVICE Classes
@@ -487,7 +487,7 @@ class NepiIFAppSelector extends Component {
 
     else if (appsNameList.indexOf(sel_app) !== -1){
       return (
-         <AppRender
+         <NepiIFApps
          sel_app={sel_app}
          />
        );

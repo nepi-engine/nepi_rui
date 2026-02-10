@@ -32,7 +32,7 @@ import NepiIFSettings from "./Nepi_IF_Settings"
 
 
                     // <div hidden={(!deviceSelected)}>
-                    //   <NepiDeviceInfo
+                    //   <NepiIFDeviceInfo
                     //         namespace={namespace}
                     //         status_topic={"npx/status"}
                     //         status_msg_type={"nepi_interfaces/DeviceNPXStatus"}

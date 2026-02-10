@@ -25,7 +25,7 @@ import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Label from "./Label"
 
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 
 import NepiDeviceLSXControls from "./NepiDeviceLSX-Controls"
@@ -134,7 +134,7 @@ class NepiControlsLights extends Component {
       <React.Fragment>
 
              
-                  <ImageViewer
+                  <NepiIFImageViewer
                     id="lsxImageViewer"
                   />
                

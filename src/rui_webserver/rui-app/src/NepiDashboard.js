@@ -30,7 +30,7 @@ import BooleanIndicator from "./BooleanIndicator"
 import Styles from "./Styles"
 import {createShortUniqueValues} from "./Utilities"
 
-import NepiMessagesSelector from "./NepiSelectorMessages"
+import NepiIFMessagesSelector from "./Nepi_IF_MessagesSelector"
 
 
 // TODO: This is redundant with the one defined in APP.js
@@ -289,8 +289,8 @@ class NepiDashboard extends Component {
 
       <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-      <NepiMessagesSelector
-        title={"NepiMessagesSelector.js"}
+      <NepiIFMessagesSelector
+        title={"NepiIFMessagesSelector.js"}
         />
 
     </React.Fragment>
