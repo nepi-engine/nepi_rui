@@ -20,7 +20,7 @@ import Toggle from "react-toggle"
 
 import {onChangeSwitchStateValue} from "./Utilities"
 
-import ImageViewerSelector from "./NepiSelectorImageViewer"
+import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
@@ -29,7 +29,7 @@ import NepiIFSaveData from "./Nepi_IF_SaveData"
 @observer
 
 // MultiImageViewer 
-class ImageViewersSelector extends Component {
+class NepiIFImageViewersSelector extends Component {
 
   constructor(props) {
     super(props)
@@ -266,7 +266,7 @@ class ImageViewersSelector extends Component {
 
 
                         <div id="Image1Viewer">
-                          <ImageViewerSelector
+                          <NepiIFImageViewerSelector
                             id="Image1Viewer"
                             image_topic={image_topics[0]}
                             title={titles[0]}
@@ -297,7 +297,7 @@ class ImageViewersSelector extends Component {
 
                         {(num_windows > 1)?
                           <div id="Image2Viewer">
-                            <ImageViewerSelector
+                            <NepiIFImageViewerSelector
                               id="Image2Viewer"
                               image_topic={image_topics[1]}
                               title={titles[1]}
@@ -331,7 +331,7 @@ class ImageViewersSelector extends Component {
 
                         {(num_windows > 2)?
                           <div id="Image3Viewer">
-                            <ImageViewerSelector
+                            <NepiIFImageViewerSelector
                               id="Image3Viewer"
                               image_topic={image_topics[2]}
                               title={titles[2]}
@@ -362,7 +362,7 @@ class ImageViewersSelector extends Component {
 
                          {(num_windows === 4)?
                           <div id="Image4Viewer">
-                            <ImageViewerSelector
+                            <NepiIFImageViewerSelector
                               id="Image4Viewer"
                               image_topic={image_topics[3]}
                               title={titles[3]}
@@ -469,4 +469,4 @@ class ImageViewersSelector extends Component {
 
 }
 
-export default ImageViewersSelector
+export default NepiIFImageViewersSelector

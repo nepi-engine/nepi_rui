@@ -42,6 +42,8 @@ import {
 } from "./Utilities"
 
 
+//Unused import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
+import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -61,6 +63,8 @@ class MgrNavPose extends Component {
       mgrName: "navpose_mgr",
       namespace: null,
       base_namespace: null,
+
+      selected_frame: 'nepi_base',
 
       message: null,
 
@@ -86,7 +90,7 @@ class MgrNavPose extends Component {
       depth_fixed: false,
       pan_tilt_fixed: false,
       
-      fixed_npData_navpose_frame: 'nepi_frame',
+      fixed_npData_frame_3d: 'nepi_frame',
       fixed_npData_frame_nav: 'ENU',
       fixed_npData_frame_altitude: 'WGS84',
       fixed_npData_frame_depth: 'MSL',
@@ -255,11 +259,11 @@ class MgrNavPose extends Component {
   // --- helper: force a section to Fixed, then run an action
   ensureFixedAnd = async (name, action) => {
     try {
-      const { updateNavPoseTopic } = this.props.ros
+      const { UpdateNavPoseComp } = this.props.ros
       const namespace = this.state.namespace + "/set_topic"
       // Set to Fixed if not already fixed
       if (!this.state[name + "_fixed"]) {
-        await updateNavPoseTopic(namespace, name, "Fixed", false)
+        await UpdateNavPoseComp(namespace, name, "Fixed", false)
         this.setState({ [name + "_fixed"]: true })
       }
       await action()
@@ -329,7 +333,7 @@ class MgrNavPose extends Component {
   navposeListener(message) {
     //Unused const last_navpose_msg = this.state.navpose_msg
     const navpose_data = {
-      navpose_frame: message.navpose_frame,
+      frame_3d: message.frame_3d,
       frame_nav: message.frame_nav,
       frame_alt: message.frame_alt,
       latitude: message.latitude,
@@ -490,12 +494,13 @@ class MgrNavPose extends Component {
 
   // Handler for IDX Sensor topic selection
   onTopicSelected(event) {
-    const {updateNavPoseTopic} = this.props.ros
-    const name = event.target.id
+    const {UpdateNavPoseComp} = this.props.ros
+    const frame_name = this.selected_frame
+    const comp_name = event.target.id
     const topic = event.target.value
     const apply_tf = false
     const namespace = this.state.namespace + "/set_topic"
-    updateNavPoseTopic(namespace, name, topic, apply_tf)
+    UpdateNavPoseComp(namespace,frame_name, comp_name, topic, apply_tf)
   }
 
   sendTransformUpdateMessage(name){
@@ -1217,12 +1222,12 @@ class MgrNavPose extends Component {
       <div style={{ display: 'flex' }}>
         <div style={{ width: "65%" }}>
           <NepiIFNavPoseViewer
-            navposeNamespace={base_namespace  + "/navpose"}
+            namespace={base_namespace  + "/navpose"}
             title={"NavPose Data"}
           />
           <div hidden={(!connected)}>
             <NepiIFSaveData
-              saveNamespace={namespace + '/save_data'}
+              namespace={namespace + '/save_data'}
               title={"Nepi_IF_SaveData"}
             />
           </div>

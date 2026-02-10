@@ -34,8 +34,8 @@ import Styles from "./Styles"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
-import ImageViewerSelector from "./NepiSelectorImageViewer"
-import ImageViewersSelector from "./NepiSelectorImageViewers"
+import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
+import NepiIFImageViewersSelector from "./Nepi_IF_ImageViewerSelector"
 
 
 function round(value, decimals = 0) {
@@ -177,7 +177,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
           <div id={'ptxImageViewer'}>
 
             {(use_images_selector === true) ?
-              <ImageViewersSelector
+              <NepiIFImageViewersSelector
                 
                 hideQualitySelector={true}
                 show_save_controls={show_save_controls}
@@ -185,7 +185,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                 mouse_event_topic={mouse_event_topic}
               />
               : 
-                  <ImageViewerSelector
+                  <NepiIFImageViewerSelector
                     id={'ptxImageViewer'}
                     hideQualitySelector={true}
                     show_save_controls={show_save_controls}

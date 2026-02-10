@@ -47,7 +47,7 @@ function round(value, decimals = 0) {
 
 @inject("ros")
 @observer
-class ImageViewerSelector extends Component {
+class NepiIFImageViewerSelector extends Component {
   constructor(props) {
     super(props)
 
@@ -66,7 +66,7 @@ class ImageViewerSelector extends Component {
 
       connected: true
     }
-    this.renderImageViewerSelector = this.renderImageViewerSelector.bind(this)
+    this.renderNepiIFImageViewerSelector = this.renderNepiIFImageViewerSelector.bind(this)
     this.renderButtonControls = this.renderButtonControls.bind(this)
   
     this.getListMenu = this.getListMenu.bind(this)
@@ -252,7 +252,7 @@ class ImageViewerSelector extends Component {
 
   }
 
-  renderImageViewerSelector() {
+  renderNepiIFImageViewerSelector() {
     const hide_list = ((this.state.hide_list === true) || (this.state.connected === false))
     const menu_options = this.getListMenu()
     const selected_item = this.state.selected_image
@@ -413,7 +413,7 @@ class ImageViewerSelector extends Component {
 
         <div style={{ display: 'flex' }}>
               <div style={{ width: '30%' }}>
-                {this.renderImageViewerSelector()}
+                {this.renderNepiIFImageViewerSelector()}
               </div>
 
                 <div style={{ width: '50%' }}>
@@ -440,7 +440,7 @@ class ImageViewerSelector extends Component {
 
           <div style={{ display: 'flex' }}>
               <div style={{ width: '30%' }}>
-                {this.renderImageViewerSelector()}
+                {this.renderNepiIFImageViewerSelector()}
               </div>
 
                 <div style={{ width: '50%' }}>
@@ -461,4 +461,4 @@ class ImageViewerSelector extends Component {
 
 }
 
-export default ImageViewerSelector
+export default NepiIFImageViewerSelector

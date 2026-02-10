@@ -29,12 +29,12 @@ import Button, { ButtonMenu } from "./Button"
 @observer
   
 
-  class NepiListIF extends Component {
+  class NepiIFSelector extends Component {
     constructor(props) {
       super(props)
   
       this.state = {
-      listNamespace: null,
+      selectorNamespace: null,
 
       viewableList: false,
 
@@ -68,7 +68,7 @@ import Button, { ButtonMenu } from "./Button"
     this.renderRefreshControl = this.renderRefreshControl.bind(this)
     this.renderResetControl = this.renderResetControl.bind(this)
     this.renderButtonControls = this.renderButtonControls.bind(this)
-    this.renderList = this.renderList.bind(this)
+    this.renderSelector = this.renderSelector.bind(this)
   
   }
 
@@ -88,13 +88,13 @@ import Button, { ButtonMenu } from "./Button"
 
   // Function for configuring and subscribing to Status
   updateMgrListStatusListener() {
-    const statusNamespace = this.state.listNamespace + '/status'
+    const statusNamespace = this.state.selectorNamespace + '/status'
     if (this.state.listListener) {
       this.state.listListener.unsubscribe()
     }
     var listListener = this.props.ros.setupStatusListener(
           statusNamespace,
-          "nepi_interfaces/ListIFStatus",
+          "nepi_interfaces/SelelctorStatus",
           this.listStatusListener
         )
     this.setState({ listListener: listListener})
@@ -121,12 +121,12 @@ import Button, { ButtonMenu } from "./Button"
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.state.listNamespace
-    const namespace_updated = (prevState.listNamespace !== namespace && namespace !== null)
+    const namespace = this.state.selectorNamespace
+    const namespace_updated = (prevState.selectorNamespace !== namespace && namespace !== null)
     if (namespace_updated) {
       if (namespace.indexOf('null') === -1){
         this.setState({
-          listNamespace: namespace
+          selectorNamespace: namespace
         })
         this.updateListStatusListener()
       } 
@@ -151,19 +151,19 @@ import Button, { ButtonMenu } from "./Button"
 
 
         <ButtonMenu>
-        <Button onClick={() => sendUpdateOrderMsg(this.state.listNamespace + "/update_order", this.state.item, "top")}>{"Top"}</Button>
+        <Button onClick={() => sendUpdateOrderMsg(this.state.selectorNamespace + "/update_order", this.state.item, "top")}>{"Top"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-        <Button onClick={() => sendUpdateOrderMsg(this.state.listNamespace + "/update_order", this.state.item, "up")}>{"Up"}</Button>
+        <Button onClick={() => sendUpdateOrderMsg(this.state.selectorNamespace + "/update_order", this.state.item, "up")}>{"Up"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(this.state.listNamespace + "/update_order", this.state.item, "down")}>{"Down"}</Button>
+          <Button onClick={() => sendUpdateOrderMsg(this.state.selectorNamespace + "/update_order", this.state.item, "down")}>{"Down"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(this.state.listNamespace + "/update_order", this.state.item, "bottom")}>{"Bottom"}</Button>
+          <Button onClick={() => sendUpdateOrderMsg(this.state.selectorNamespace + "/update_order", this.state.item, "bottom")}>{"Bottom"}</Button>
         </ButtonMenu>
 
 
@@ -182,17 +182,17 @@ import Button, { ButtonMenu } from "./Button"
 
   
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/enable_all_list")}>{"Enable All"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.selectorNamespace + "/enable_all_list")}>{"Enable All"}</Button>
       </ButtonMenu>
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/disable_all_list")}>{"Disable All"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.selectorNamespace + "/disable_all_list")}>{"Disable All"}</Button>
       </ButtonMenu>
 
       <Label title="Enable/Disable">
           <Toggle
             checked={this.state.driver_active_state===true}
-            onClick={() => sendUpdateBoolMsg(this.state.listNamespace + "/update_state", this.state.driver_pkg, !this.state.driver_active_state)}>
+            onClick={() => sendUpdateBoolMsg(this.state.selectorNamespace + "/update_state", this.state.driver_pkg, !this.state.driver_active_state)}>
           </Toggle>
         </Label>
 
@@ -210,7 +210,7 @@ import Button, { ButtonMenu } from "./Button"
 
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/refresh_list")}>{"Refresh"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.selectorNamespace + "/refresh_list")}>{"Refresh"}</Button>
       </ButtonMenu>
       
       </React.Fragment>
@@ -225,7 +225,7 @@ import Button, { ButtonMenu } from "./Button"
       <React.Fragment>
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/remove_item")}>{"Remove"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.selectorNamespace + "/remove_item")}>{"Remove"}</Button>
       </ButtonMenu>
 
       
@@ -260,7 +260,7 @@ import Button, { ButtonMenu } from "./Button"
 
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.listNamespace + "/reset_list")}>{"Reset"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.selectorNamespace + "/reset_list")}>{"Reset"}</Button>
       </ButtonMenu>
 
       
@@ -283,7 +283,7 @@ import Button, { ButtonMenu } from "./Button"
     var item_ind = this.ordered_items_list.index(item)
     if (item_ind != -1){
       this.setState({selected_item: item, selected_item_ind: item_ind})
-      const selectNamespace = this.state.listNamespace + "/select_item"
+      const selectNamespace = this.state.selectorNamespace + "/select_item"
       sendStringMsg(selectNamespace,item)
     }
 
@@ -315,6 +315,100 @@ import Button, { ButtonMenu } from "./Button"
   
 
 
+  ///// Single Select
+
+
+
+  // Function for creating topic options for Select input
+  createPtMenuOptions() {
+    const {sendStringMsg} = this.props.ros
+    const namespace = this.getAppNamespace()
+    const topics = this.state.available_pan_tilts
+    const sel_topic = this.state.selected_pan_tilt
+    var items = []
+    var i
+    //var unique_names = createShortUniqueValues(topics)
+    var device_name = ""
+
+
+    items.push(<Option value={"None Availble"}>{"None"}</Option>)
+
+    if (topics.length > 0){
+      for (i = 0; i < topics.length; i++) {
+        device_name = topics[i].split('/ptx')[0].split('/').pop()
+        items.push(<Option value={topics[i]}>{device_name}</Option>)
+      }
+    }
+    if (sel_topic === 'None' && topics.length > 0){
+          this.setState({selected_pan_tilt: topics[0]})
+          const selectNamespace = namespace + "/select_pt_device"
+          sendStringMsg(selectNamespace,topics[0])
+    }
+    return items
+  }
+
+
+
+
+  onClickToggleShowSettings(){
+    const currentVal = this.state.showSettings 
+    this.setState({showSettings: !currentVal})
+    this.render()
+  }
+
+  onPtDeviceSelected(event) {
+    const {sendStringMsg} = this.props.ros
+    const namespace = this.getAppNamespace()
+    const item = event.target.value
+    //var item_ind = this.ordered_items_list.index(item)
+    //if (item_ind != -1){
+    this.setState({selected_pan_tilt: item})
+    const selectNamespace = namespace + "/select_pt_device"
+    sendStringMsg(selectNamespace,item)
+   // }
+  }
+
+
+  renderControls() {
+
+    const appNamespace = this.getAppNamespace()
+    const selected_pan_tilt = this.state.selected_pan_tilt
+    const ptConnected = this.state.connected
+    const ptMenuItems = this.createPtMenuOptions()
+    return (
+
+
+
+
+      
+      <React.Fragment>
+
+          { (ptConnected === true) ? 
+
+            <NepiAppPTAutoControls
+                namespace={appNamespace}
+                make_section={true}
+
+                title={"Auto Controls"}
+            />
+          : null }
+
+          <Section>
+              <Label title={"Device"}>
+                  <Select
+                    onChange={this.onPtDeviceSelected}
+                    value={selected_pan_tilt}
+                  >
+                    {ptMenuItems}
+                  </Select>
+                </Label>
+
+
+
+
+  //// Mulitselect
+
+
   toggleViewableList() {
     const set = !this.state.viewableList
     this.setState({viewableList: set})
@@ -340,13 +434,16 @@ import Button, { ButtonMenu } from "./Button"
 
 
 
+
+  
+
   onToggleListSelection(event){
     const {sendStringMsg} = this.props.ros
     const item = event.target.value
     var item_ind = this.ordered_items_list.index(item)
     if (item_ind != -1){
       this.setState({selected_item: item, selected_item_ind: item_ind})
-      const selectNamespace = this.state.listNamespace + "/select_item"
+      const selectNamespace = this.state.selectorNamespace + "/select_item"
       sendStringMsg(selectNamespace,item)
     }
   }
@@ -354,14 +451,14 @@ import Button, { ButtonMenu } from "./Button"
 
   sendListUpdateOrder(){
     const {sendUpdateOrderMsg} = this.props.ros
-    var namespace = this.state.listNamespace
+    var namespace = this.state.selectorNamespace
     var item = this.state.selected_item
     var move_cmd = this.state.move_cmd
     sendUpdateOrderMsg(namespace,item,move_cmd)
   }
 
 
-  renderList() {
+  renderSelector() {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
     }
@@ -404,4 +501,4 @@ import Button, { ButtonMenu } from "./Button"
 
 }
 
-export default NepiListIF
+export default NepiIFSelector
