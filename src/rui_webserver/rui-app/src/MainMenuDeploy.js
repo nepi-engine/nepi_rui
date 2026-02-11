@@ -40,6 +40,7 @@ import NepiIFAppSelector from "./Nepi_IF_AppSelector"
 class MainMenuDeploy extends Component {
 
   componentDidMount() {
+    this.props.ros.watchdogNepi = true
     this.props.ros.checkROSConnection()
   }
 

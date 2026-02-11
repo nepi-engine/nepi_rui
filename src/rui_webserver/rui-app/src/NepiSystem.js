@@ -21,6 +21,7 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import {Link} from "react-router-dom"
 import Toggle from "react-toggle"
+//Unused import { displayNameFromNodeName, nodeNameFromDisplayName } from "./Store"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -29,9 +30,6 @@ import Button, { ButtonMenu } from "./Button"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
-
-
-import NepiIFAdmin from "./Nepi_IF_Admin"
 
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
@@ -75,7 +73,8 @@ class NepiSystemDevice extends Component {
       autoRateUserEditing: false,
       ipAddrVal: "0.0.0.0/24",
       configSubsys: "All",
-
+      advancedConfigEnabled: false,
+      updatedDeviceId: "",
       selectedWifiNetwork: "",
       wifiClientSSID: "",
       wifiClientPassphrase: "",
@@ -98,8 +97,7 @@ class NepiSystemDevice extends Component {
       timeListener: null,
       timezones_list_viewable: false,
 
-      updatedDeviceId: "",
-
+      adminPassword: ''
 
     }
 
@@ -107,8 +105,17 @@ class NepiSystemDevice extends Component {
     this.getNetMgrNamespace = this.getNetMgrNamespace.bind(this)
     this.getTimeMgrNamespace = this.getTimeMgrNamespace.bind(this)
 
-    // this.onDeviceIdChange = this.onDeviceIdChange.bind(this)
-    // this.onDeviceIdKey = this.onDeviceIdKey.bind(this)
+
+
+    
+
+    this.onToggleAdvancedConfig = this.onToggleAdvancedConfig.bind(this)
+    // this.onConfigSubsysSelected = this.onConfigSubsysSelected.bind(this)
+    // this.createConfigSubsysOptions = this.createConfigSubsysOptions.bind(this)
+    this.onSaveCfg = this.onSaveCfg.bind(this)
+    this.onUserReset = this.onUserReset.bind(this)
+    this.onDeviceIdChange = this.onDeviceIdChange.bind(this)
+    this.onDeviceIdKey = this.onDeviceIdKey.bind(this)
     this.renderDeviceConfiguration = this.renderDeviceConfiguration.bind(this)
 
 
@@ -138,6 +145,17 @@ class NepiSystemDevice extends Component {
     this.renderNetworkMgr = this.renderNetworkMgr.bind(this)
 
 
+    this.onClickToggleAdminMode = this.onClickToggleAdminMode.bind(this)
+    this.onUpdateAdminPasswordText = this.onUpdateAdminPasswordText.bind(this)
+    this.onKeyAdminPasswordText = this.onKeyAdminPasswordText.bind(this)
+    this.renderAdminSelect = this.renderAdminSelect.bind(this)
+
+    this.createRunModeMenuOptions = this.createRunModeMenuOptions.bind(this)
+    this.onRunModeSelected = this.onRunModeSelected.bind(this)
+    this.onSystemSave = this.onSystemSave.bind(this)
+    this.onSystemReset = this.onSystemReset.bind(this)
+    this.onFactoryReset = this.onFactoryReset.bind(this)
+    this.renderAdminControls = this.renderAdminControls.bind(this)
 
     this.updateMgrNetStatusListener = this.updateMgrNetStatusListener.bind(this)
     this.netStatusListener = this.netStatusListener.bind(this)
@@ -277,30 +295,297 @@ updateMgrTimeStatusListener() {
   }
 
 
+  /////////////////
+  //// ADMIN SECTIONS
+  /////////////////
+
+  onUpdateAdminPasswordText(e) {
+    this.setState({adminPassword: e.target.value});
+    var textbox = document.getElementById(e.target.id)
+    styleTextEdited(textbox)
+  }
+
+  onKeyAdminPasswordText(e) {
+    const value = e.target.value
+    const {sendStringMsg} = this.props.ros
+    if(e.key === 'Enter'){
+      const namespace = this.getBaseNamespace() + "/set_admin_password"
+      sendStringMsg(namespace,value)
+      this.setState({adminPassword: ''});
+      styleTextUnedited(rate_limit_textbox)
+    }
+  }
 
 
-  // async onDeviceIdChange(e) {
-  //   this.setState({ updatedDeviceId: e.target.value })
-  //   var device_id_textbox = document.getElementById(e.target.id)
-  //   styleTextEdited(device_id_textbox)
+  renderAdminSelect() {
+    const admin_mode = this.props.ros.systemAdminEnabled
+    const admin_password_valid = this.props.ros.systemAdminPasswordValid
+    const namespace = this.getBaseNamespace()
+    return (
+
+      <React.Fragment>
+
+              <Columns>
+              <Column>
+
+                  <Label title="Enable Admin Mode">
+                        <Toggle
+                        checked={admin_mode}
+                        onClick={() => this.props.ros.sendBoolMsg(namespace + "/admin_mode_enable", !admin_mode)}>
+                      </Toggle>
+                  </Label>
+
+ 
+
+                  </Column>
+                  <Column>
+ 
+                  { (admin_password_valid === false) ?
+                      <Label title={"Enter Admin Password"}>
+                        <Input
+                          id="admin_password"
+                          value={this.state.adminPassword}
+                          onChange={this.onUpdateAdminPasswordText}
+                          onKeyDown={this.onKeyAdminPasswordText}
+                        />
+                      </Label>
+                  : null }
+
+                </Column>
+                  </Columns>
+
+
+      </React.Fragment>
+    )
+  }
+
+
+
+  // Function for creating run mode options menu
+  createRunModeMenuOptions() {
+    const options = this.props.ros.systemRunModeOptions
+    const sel_option = this.props.ros.systemRunModeOptions
+    var items = []
+    var i
+    //var unique_names = createShortUniqueValues(options)
+    var display_name = ""
+
+    if (options.length > 0){
+      for (i = 0; i < options.length; i++) {
+        display_name = options[i]
+        items.push(<Option value={options[i]}>{display_name}</Option>)
+      }
+    }
+    //items.push(<Option value={"None Availble"}>{"None"}</Option>)
+    return items
+  }
+
+
+  onRunModeSelected(event) {
+    const {sendStringMsg} = this.props.ros
+    const namespace = this.getBaseNamespace() + "/set_run_mode"
+    const item = event.target.value
+    sendStringMsg(namespace,item)
+  }
+
+
+
+  async onSystemReset() {
+    const { systemReset } = this.props.ros
+    var node_name = this.state.configSubsys
+    if (node_name !== 'UNKNOWN_NODE') {
+      systemReset(node_name, 1) // Value 1 per Reset.msg
+    }
+  }
+
+  async onFactoryReset() {
+    const { systemReset } = this.props.ros
+    var node_name = this.state.configSubsys
+    if (node_name !== 'UNKNOWN_NODE') {
+      systemReset(node_name, 1) // Value 1 per Reset.msg
+    }
+  }
+
+  async onSoftwareReset() {
+    const { systemReset } = this.props.ros
+    var node_name = this.state.configSubsys
+    if (node_name !== 'UNKNOWN_NODE') {
+      systemReset(node_name, 2) // Value 1 per Reset.msg
+    }
+  }
+
+  async onHardwareReset() {
+    const { systemReset } = this.props.ros
+    var node_name = this.state.configSubsys
+    if (node_name !== 'UNKNOWN_NODE') {
+      systemReset(node_name, 3) // Value 1 per Reset.msg
+    }
+  }
+
+
+  renderAdminControls() {
+    const admin_mode_set = this.props.ros.systemAdminModeSet
+
+    if (admin_mode_set === true) {
+      return(
+              <Columns>
+              <Column>
+
+
+              </Column>
+              </Columns>
+
+      )
+
+    }
+    else {
+        
+      
+        const run_mode_menu = this.createRunModeMenuOptions()
+        const run_mode = this.props.ros.systemRunMode
+
+        //const debug_mode = this.props.ros.systemDebugEnabled
+        //const { userRestrictionsEnabled} = this.props.ros
+        //const device_restricted = userRestrictionsEnabled.indexOf('device_id') !== -1
+
+      
+
+        
+        return (
+
+          <React.Fragment>
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                  <Columns>
+                  <Column>
+
+                      <Label title={"Set Run Mode"}>
+                          <Select
+                              onChange={this.onRunModeSelected}
+                              value={run_mode}
+                              >
+                              {run_mode_menu}
+                          </Select>
+                      </Label>
+
+
+
+                      </Column>
+                      <Column>
+    
+                              {/* 
+                              <Label title="System Debug Mode">
+                                    <Toggle
+                                    checked={debug_mode}
+                                    onClick={() => this.props.ros.sendBoolMsg("debug_mode_enable", !debug_mode)}>
+                                  </Toggle>
+                              </Label>
+                              */}
+
+                    </Column>
+                      </Columns>
+
+
+
+                                <ButtonMenu>
+                                  <Button onClick={this.onSystemSave}>{"System Save"}</Button>
+                                  <Button onClick={this.onSystemReset}>{"System Reset"}</Button>
+                                  <Button onClick={this.onFactoryCfgRestore}>{"Factory Reset"}</Button>
+                                  {/*
+                                  <Button onClick={this.onUserReset}>{"System Reset"}</Button>
+                                  <Button onClick={this.onFactoryReset}>{"Factory Reset"}</Button>
+
+                                  <Button onClick={this.onSoftwareReset}>{"Software Reset"}</Button>
+                                  <Button onClick={this.onHardwareReset}>{"Hardware Reset"}</Button>
+                                  */}
+                                </ButtonMenu>
+
+                  
+
+
+          </React.Fragment>
+        )
+    }
+  }
+
+
+
+
+
+
+  async onToggleAdvancedConfig() {
+    var enabled = this.state.advancedConfigEnabled
+    this.setState({advancedConfigEnabled: !enabled})
+  }
+
+
+  async onUserReset() {
+    const { systemReset } = this.props.ros
+    var node_name = this.state.configSubsys
+    if (node_name !== 'UNKNOWN_NODE') {
+      systemReset(node_name, 0) // Value 1 per Reset.msg
+    }
+  }
+
+
+  async onSaveCfg() {
+    const { saveCfg } = this.props.ros
+    var node_name = this.state.configSubsys
+    if (node_name !== 'UNKNOWN_NODE') {
+      saveCfg({baseTopic: node_name})
+    }
+  }
+
+  // async onConfigSubsysSelected(e) {
+  //   await this.setState({configSubsys: e.target.value})
   // }
 
-  // async onDeviceIdKey(e) {
-  //   const {setDeviceID} = this.props.ros
-  //   if(e.key === 'Enter'){
-  //     setDeviceID({newDeviceID: this.state.updatedDeviceId})
-  //     var device_id_textbox = document.getElementById(e.target.id)
-  //     styleTextUnedited(device_id_textbox)
+
+  // createConfigSubsysOptions(resetTopics) {
+  //   var subsys_options = []
+  //   subsys_options.push(<Option value={resetTopics[0]}>{'All'}</Option>)
+  //   for (var i = 1; i < resetTopics.length; i++) { // Skip the first one -- it is global /numurus/dev_3dx/<s/n>
+  //     var node_name = resetTopics[i].split("/").pop()
+  //     subsys_options.push(<Option value={resetTopics[i]}>{node_name}</Option>)
   //   }
+  //   return subsys_options
   // }
 
 
+
+
+
+  async onDeviceIdChange(e) {
+    this.setState({ updatedDeviceId: e.target.value })
+    var device_id_textbox = document.getElementById(e.target.id)
+    styleTextEdited(device_id_textbox)
+  }
+
+  async onDeviceIdKey(e) {
+    const {setDeviceID} = this.props.ros
+    if(e.key === 'Enter'){
+      setDeviceID({newDeviceID: this.state.updatedDeviceId})
+      var device_id_textbox = document.getElementById(e.target.id)
+      styleTextUnedited(device_id_textbox)
+    }
+  }
 
   renderDeviceConfiguration() {
     const { systemMgrStatus} = this.props.ros
     const {deviceId} = this.props.ros
 
 
+    const { userRestrictionsEnabled} = this.props.ros
+    const device_restricted = userRestrictionsEnabled.indexOf('device_id') !== -1
+
+    if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
+      this.setState({updatedDeviceId:deviceId})
+    }
+    //Unused const updatedDeviceId = this.state.updatedDeviceId
+      
+
+    
     return (
 
       <Section title={"System Settings"}>
@@ -313,7 +598,9 @@ updateMgrTimeStatusListener() {
                     <Input
                       id={"device_id_update_text"}
                       value={deviceId }
-                      disabled={true}
+                      disabled={device_restricted===true}
+                      onChange={this.onDeviceIdChange}
+                      onKeyDown={this.onDeviceIdKey}
                     />
                   </Label>
 
@@ -332,8 +619,6 @@ updateMgrTimeStatusListener() {
                       disabled={true}
                     />
                   </Label>
-
-
 
 
                   </Column>
@@ -356,19 +641,9 @@ updateMgrTimeStatusListener() {
                   </Columns>
 
 
-
-                <NepiIFAdmin
-                    title={"Advanced Settings"}
-                    make_section={false}
-              />
-            
       </Section>
     )
   }
-
-
-
-
 
   renderLicense() {
     const {license_info} = this.props.ros

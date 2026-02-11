@@ -47,7 +47,7 @@ class App extends Component {
 
   render() {
     const systemMgrStatus = this.props.ros.systemMgrStatus
-    const systemRunMode = this.props.ros.systemRunMode
+    const systemDevelopEnabled = this.props.ros.systemDevelopEnabled
 
     if (systemMgrStatus == null) {
 
@@ -72,7 +72,7 @@ class App extends Component {
       </Page>
       )
     }
-    else if (systemRunMode === 'deploy'){
+    else if (systemDevelopEnabled === false){
       return (
       <React.Fragment>
         <MainMenuDeploy/>

@@ -238,6 +238,7 @@ class ROSConnectionStore {
           this.connectedToNepi = false
           this.destroyROSConnection()
       }
+      //this.watchdogNepi = false
     }
 
     if (this.rosAutoReconnect) {
@@ -647,17 +648,8 @@ class ROSConnectionStore {
   @observable systemDefsDiskCapacityMB = null
 
 
-  @observable systemDebugEnabled = false
-  @observable systemAdminEnabled = false
 
-  @observable systemManagersOptions = []
-  @observable systemManagersEnabled = []
 
-  @observable userRestrictionsOptons = []
-  @observable userRestrictionsEnabled = []
-  @observable userRestrictionsActive = []
-
-  @observable systemRunMode = null
 
   @observable diskUsagePercent = null
 
@@ -666,6 +658,25 @@ class ROSConnectionStore {
   @observable triggerStatus = null
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
+
+
+
+  @observable systemAdminEnabled = false
+  @observable systemAdminPasswordValid = false
+  @observable systemAdminModeSet = false
+
+  @observable systemDevelopEnabled = false
+  @observable systemDebugEnabled = false
+
+  @observable systemManagersOptions = []
+  @observable systemManagersEnabled = []
+
+  @observable userRestrictionsOptons = []
+  @observable userRestrictionsEnabled = []
+  @observable userRestrictionsActive = []
+
+  @observable systemRunModeOptions = []
+  @observable systemRunMode = null
 
 
   @action.bound
@@ -699,19 +710,6 @@ class ROSConnectionStore {
         this.systemDefsFirmwareVersion = message.firmware_version
         this.systemDefsDiskCapacityMB = message.disk_capacity
 
-        this.systemDebugEnabled = message.sys_debug_enabled
-        this.systemAdminEnabled=message.sys_admin_enabled
-
-        this.systemManagersOptions = message.sys_managers_options
-        this.systemManagersEnabled = message.sys_managers_enabled
-
-        this.userRestrictionsOptons = message.user_restrictions_options
-        this.userRestrictionsEnabled = message.user_restrictions
-
-        this.systemRunMode=message.sys_run_mode
-        this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions
-
-
         
         this.diskUsagePercent = `${parseInt(
           100 * this.systemStatusDiskUsageMB / this.systemDefsDiskCapacityMB,
@@ -726,6 +724,28 @@ class ROSConnectionStore {
         for(i in message.info_strings) {
           this.rosLog(message.info_strings[i].payload)
         }
+
+        ///////////////////
+        // NEPI Configuration
+
+        this.systemAdminEnabled=message.sys_admin_enabled
+        this.systemAdminPasswordValid=message.sys_admin_password_valid
+        this.systemAdminModeSet = message.sys_admin_mode_set
+
+        this.systemDevelopEnabled = message.sys_develop_enabled
+        this.systemDebugEnabled = message.sys_debug_enabled
+
+
+        this.systemManagersOptions = message.sys_managers_options
+        this.systemManagersEnabled = message.sys_managers_enabled
+
+        this.userRestrictionsOptons = message.user_restrictions_options
+        this.userRestrictionsEnabled = message.user_restrictions
+        this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions
+
+        this.systemRunModeOptions=message.sys_run_mode_options
+        this.systemRunMode=message.sys_run_mode
+
 
         ///////////////////
         // NEPI connection updates
@@ -3088,45 +3108,9 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
     })
   }
 
-  @action.bound
-  saveCfg({baseTopic}) {
-    this.publishMessage({
-      name: baseTopic + "/save_config",
-      messageType: "std_msgs/Empty",
-      data: {},
-      noPrefix: true
-    })
-  }
 
-  @action.bound
-  systemReset(baseTopic, reset_type) {
-    this.publishMessage({
-      name: baseTopic + "/factory_reset_config",
-      messageType: "nepi_interfaces/Reset",
-      data: {
-        reset_type: reset_type
-      },
-      noPrefix: true
-    })
-  }
 
-  @action.bound
-  onUserCfgRestore() {
-    this.publishMessage({
-      name: "full_user_restore",
-      messageType: "std_msgs/Empty",
-      data: {}
-    })
-  }
 
-  @action.bound
-  onFactoryCfgRestore() {
-    this.publishMessage({
-      name: "full_factory_restore",
-      messageType: "std_msgs/Empty",
-      data: {}
-    })
-  }
 
   @action.bound
   saveSettingsFilePrefix({newFilePrefix}) {
