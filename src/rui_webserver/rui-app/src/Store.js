@@ -198,6 +198,9 @@ class ROSConnectionStore {
       this.systemManagersOptions = []
       this.systemManagersEnabled = []
 
+      this.systemNodeNameKeys = []
+      this.systemNodeNameAliases = []
+
       this.userRestrictionsOptons = []
       this.userRestrictionsEnabled = []
       this.userRestrictionsActive = []
@@ -727,12 +730,17 @@ class ROSConnectionStore {
   @observable systemManagersOptions = []
   @observable systemManagersEnabled = []
 
+  @observable systemRunModeOptions = []
+  @observable systemRunMode = null
+
+  @observable systemNodeNameKeys = []
+  @observable systemNodeNameAliases = []
+
   @observable userRestrictionsOptons = []
   @observable userRestrictionsEnabled = []
   @observable userRestrictionsActive = []
 
-  @observable systemRunModeOptions = []
-  @observable systemRunMode = null
+
 
 
   @action.bound
@@ -795,12 +803,17 @@ class ROSConnectionStore {
         this.systemManagersOptions = message.sys_managers_options
         this.systemManagersEnabled = message.sys_managers_enabled
 
+        this.systemRunModeOptions = message.sys_run_mode_options
+        this.systemRunMode = message.sys_run_mode
+
+        this.systemNodeNameKeys = message.sys_node_name_keys
+        this.systemNodeNameAliases = message.sys_node_name_aliases
+
         this.userRestrictionsOptons = message.user_restrictions_options
         this.userRestrictionsEnabled = message.user_restrictions
         this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions
 
-        this.systemRunModeOptions=message.sys_run_mode_options
-        this.systemRunMode=message.sys_run_mode
+
 
 
         ///////////////////

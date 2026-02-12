@@ -107,6 +107,14 @@ export class Queue {
   }
 }
 
+export function getCleanName(name, replacement = '_'){
+  // Regex: 
+  // <>:"/\\|?* : Reserved filename characters
+  // \x00-\x1F : Control characters
+  const invalidChars = /[<>:"/\\|?*\x00-\x1F]/g;
+  return name.replace(invalidChars, replacement);
+}
+
 /////////////////////////////
 // TOGGLE FUNCTIONS
 

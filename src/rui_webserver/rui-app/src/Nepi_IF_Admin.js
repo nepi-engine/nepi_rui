@@ -23,12 +23,16 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import Toggle from "react-toggle"
 import Input from "./Input"
-import Button, { ButtonMenu } from "./Button"
+//import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
 
 import {  onChangeSwitchStateValue } from "./Utilities"
+
+import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
+import NepiIFAdminNodeName from "./Nepi_IF_AdminNodeName"
+import NepiIFAdminModes from "./Nepi_IF_AdminModes"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -188,52 +192,6 @@ class NepiIFAdmin extends Component {
                 </Column>
                   </Columns>
 
-
-            { (admin_mode_set === true ) ?
-                <ButtonMenu>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/save_system_cfgs")}>{"System Save"}</Button>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_system_cfgs")}>{"System Reset"}</Button>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_factory_cfgs")}>{"Factory Reset"}</Button>
-                </ButtonMenu>
-
-            :
-                <ButtonMenu>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_system_cfgs")}>{"System Reset"}</Button>
-                </ButtonMenu>
-            }
-
-
-
-              <Columns>
-              <Column>
-
-
-                  { (admin_mode_set === true) ?
-                    <Label title="Enable Develop Mode">
-                        <Toggle
-                        checked={develop_mode}
-                        onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/develop_mode_enable", !develop_mode)}>
-                      </Toggle>
-                  </Label>
-                  : null }
- 
-
-                  </Column>
-                  <Column>
- 
-                  { (admin_mode_set === true) ?
-                    <Label title="Enable Debug Mode">
-                        <Toggle
-                        checked={debug_mode}
-                        onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/debug_mode_enable", !debug_mode)}>
-                      </Toggle>
-                  </Label>
-                  : null }
-
-                </Column>
-                  </Columns>
-
-
       </React.Fragment>
     )
   }
@@ -247,7 +205,12 @@ class NepiIFAdmin extends Component {
     const base_namespace = this.getBaseNamespace()
     const show_advanced_option = (this.props.show_advanced_option !== undefined) ? this.props.show_advanced_option : true
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    
+    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : false
+    const show_admin_node_name = (this.props.show_admin_node_name !== undefined)? this.props.show_admin_node_name : false
+    const show_admin_modes = (this.props.show_admin_modes !== undefined)? this.props.show_admin_modes : false
+    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
+
+
     if (base_namespace == null){
       return (
   
@@ -273,6 +236,27 @@ class NepiIFAdmin extends Component {
                   this.renderAdminSelect()
                 }
 
+                { (show_admin_config === true) ?
+                  <NepiIFAdminConfig
+                  make_section={false}
+                  />
+                : null }
+
+                { (show_admin_node_name === true) ?
+                  <NepiIFAdminNodeName
+                  namespace={namespace}
+                  make_section={false}
+                  />
+                : null }
+
+
+                { (show_admin_modes === true) ?
+                  <NepiIFAdminModes
+                  make_section={false}
+                  />
+                : null }
+
+
           </React.Fragment>
       )
     }
@@ -286,6 +270,27 @@ class NepiIFAdmin extends Component {
                 :
                   this.renderAdminSelect()
                 }
+
+                 { (show_admin_config === true) ?
+                  <NepiIFAdminConfig
+                  make_section={false}
+                  />
+                : null }
+
+                { (show_admin_node_name === true) ?
+                  <NepiIFAdminNodeName
+                  namespace={namespace}
+                  make_section={false}
+                  />
+                : null }
+
+
+                { (show_admin_modes === true) ?
+                  <NepiIFAdminModes
+                  make_section={false}
+                  />
+                : null }
+
 
         </Section>
      )
