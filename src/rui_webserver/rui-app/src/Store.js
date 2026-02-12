@@ -143,7 +143,7 @@ class ROSConnectionStore {
 
   @action.bound
   resetStates(){
-
+      this.ros = null
       this.connectedToRos = false
 
       this.connectedToNepi = false
@@ -154,18 +154,77 @@ class ROSConnectionStore {
       this.topicTypes = []
       this.serviceNames = []
 
+
+      //////// System Mgr
       this.connectedToSystemMgr = false
       this.systemMgrStatus = null
       this.systemStatusTopics = null
       this.systemStatusTopicTypes = null
       this.systemStatusServices = null
 
+      this.systemHwType = null
+      this.systemHwModel = null
+      this.systemInContainer = false
+      this.systemManagesSSH = false
+      this.systemManagesSHARE = false
+      this.systemManagesTime = false
+      this.systemManagesNetwork = false
+
+      this.systemStatusDiskUsageMB = null
+      this.systemStatusDiskRate = null
+      this.systemStatusTempC = null
+      this.systemStatusWarnings = []
+
+      this.systemDefsFirmwareVersion = null
+      this.systemDefsDiskCapacityMB = null
+
+      this.diskUsagePercent = null
+
+      this.saveFreqHz = null
+
+      this.triggerStatus = false
+      this.triggerAutoRateHz = 0
+      this.triggerMask = TRIGGER_MASKS.DEFAULT
+
+
+
+      this.systemAdminEnabled = false
+      this.systemAdminPasswordValid = false
+      this.systemAdminModeSet = false
+
+      this.systemDevelopEnabled = false
+      this.systemDebugEnabled = false
+
+      this.systemManagersOptions = []
+      this.systemManagersEnabled = []
+
+      this.userRestrictionsOptons = []
+      this.userRestrictionsEnabled = []
+      this.userRestrictionsActive = []
+
+      this.systemRunModeOptions = []
+      this.systemRunMode = null
+
+
+      //////// Other Mgrs
       this.connectedToSoftwareMgr = false
       this.softwareMgrStatus = null
-      
 
       this.connectedToTimeMgr = false
       this.timeMgrStatus = null
+
+      this.timeStatusTime = null
+      this.timeStatusTimeStr = null
+      this.timeStatusTimezone = null
+      this.timeStatusDateStr = null
+      this.clockUTCMode = false
+      this.available_timezones = []
+
+      this.clockTZ = this.get_timezone_desc()
+      this.clockNTP = false
+      this.ntp_sources = []
+      this.clockPPS = false
+
 
       this.connectedToDriversMgr = false
       this.driversMgrStatus = null
@@ -234,11 +293,11 @@ class ROSConnectionStore {
 
     if (this.ros != null ) {
       delay_time = 2000
-      if (this.connectedToNepi === true && this.watchdogNepi === false ) {
+      if (this.connectedToNepi === true && this.watchdogNepiCounter >= this.watchdogNepiMax ) {
           this.connectedToNepi = false
           this.destroyROSConnection()
       }
-      //this.watchdogNepi = false
+      this.watchdogNepiCounter++
     }
 
     if (this.rosAutoReconnect) {
@@ -356,7 +415,7 @@ class ROSConnectionStore {
   @action.bound
   destroyROSConnection() {
     if (this.ros != null){
-      this.rosAutoReconnect = false
+      //this.rosAutoReconnect = false
       this.ros.off("connection", this.onConnectedToROS)
       this.ros.off("error", this.onErrorConnectingToROS)
       this.ros.off("close", this.onDisconnectedToROS)
@@ -492,7 +551,8 @@ class ROSConnectionStore {
 
   @observable connectedToNepi = false
   @observable hearbeatNepi = false
-  @observable watchdogNepi = false
+  @observable watchdogNepiMax = 5
+  @observable watchdogNepiCounter = 0
 
 
 
@@ -631,8 +691,8 @@ class ROSConnectionStore {
   @observable systemStatusTopics = null
   @observable systemStatusTopicTypes = null
   @observable systemStatusServices = null
-  @observable systemHwType = "Unknown"
-  @observable systemHwModel = "Unknown"
+  @observable systemHwType = null
+  @observable systemHwModel = null
   @observable systemInContainer = false
   @observable systemManagesSSH = false
   @observable systemManagesSHARE = false
@@ -647,15 +707,11 @@ class ROSConnectionStore {
   @observable systemDefsFirmwareVersion = null
   @observable systemDefsDiskCapacityMB = null
 
-
-
-
-
   @observable diskUsagePercent = null
 
-  @observable saveFreqHz = 1.0
+  @observable saveFreqHz = null
 
-  @observable triggerStatus = null
+  @observable triggerStatus = false
   @observable triggerAutoRateHz = 0
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
@@ -756,14 +812,9 @@ class ROSConnectionStore {
           this.hearbeatNepi = false
         }, 500)
 
-        this.watchdogNepi = true
+        this.watchdogNepiCounter = 0
         this.connectedToNepi = true
-        
-        // // reset watchdogNepi every in two seconds
-        // this.watchdogNepi = true
-        // setTimeout(() => {
-        //   this.watchdogNepi = false
-        // }, 2000)
+      
 
 
         ///////////////////

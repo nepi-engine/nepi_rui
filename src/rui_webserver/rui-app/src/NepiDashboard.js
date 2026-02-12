@@ -172,7 +172,7 @@ class NepiDashboard extends Component {
         <Label title={"Clock Synced"}>
           <BooleanIndicator value={clock_synced} />
         </Label>
-        <Label title={"NTP Status"}>
+        <Label title={"NTP Connected"}>
           <BooleanIndicator value={clockNTP} />
         </Label>
         <Label title={"Time"}>
