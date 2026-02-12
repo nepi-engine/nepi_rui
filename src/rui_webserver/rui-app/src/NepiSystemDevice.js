@@ -357,10 +357,13 @@ updateMgrTimeStatusListener() {
 
 
 
-                <NepiIFAdmin
-                    title={"Advanced Settings"}
-                    make_section={false}
-              />
+                { <NepiIFAdmin
+                              title={"Advanced Settings"}
+                              show_advanced_option={true}
+                              show_admin_config={true}
+                              show_admin_modes={true}
+                              make_section={false}
+                        /> }
             
       </Section>
     )

@@ -76,6 +76,7 @@ class NepiIFAdmin extends Component {
     this.onUpdateAdminPasswordText = this.onUpdateAdminPasswordText.bind(this)
     this.onKeyAdminPasswordText = this.onKeyAdminPasswordText.bind(this)
     this.renderAdminSelect = this.renderAdminSelect.bind(this)
+    this.renderAdmin = this.renderAdmin.bind(this)
 
 
 
@@ -117,8 +118,14 @@ class NepiIFAdmin extends Component {
                 </Column>
                   </Columns>
 
+
                 { (this.state.advancedConfigEnabled===true) ? 
-                  this.renderAdminSelect()
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                : null }
+
+
+                { (this.state.advancedConfigEnabled===true) ? 
+                  this.renderAdmin()
                 : null }
 
           </React.Fragment>
@@ -178,7 +185,7 @@ class NepiIFAdmin extends Component {
                   </Column>
                   <Column>
  
-                  { (admin_password_valid === false) ?
+                  { (admin_password_valid === false && admin_mode === true) ?
                       <Label title={"Enter Admin Password"}>
                         <Input
                           id="admin_password"
@@ -197,6 +204,50 @@ class NepiIFAdmin extends Component {
   }
 
 
+  renderAdmin(){
+    const base_namespace = this.getBaseNamespace()
+    const show_advanced_option = (this.props.show_advanced_option !== undefined) ? this.props.show_advanced_option : true
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : false
+    const show_admin_node_name = (this.props.show_admin_node_name !== undefined)? this.props.show_admin_node_name : false
+    const show_admin_modes = (this.props.show_admin_modes !== undefined)? this.props.show_admin_modes : false
+    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
+
+    return (
+
+        <React.Fragment>
+      
+
+              { (show_admin_config === true) ?
+                <NepiIFAdminConfig
+                make_section={false}
+                />
+              : null }
+
+              { (show_admin_node_name === true) ?
+                <NepiIFAdminNodeName
+                namespace={namespace}
+                make_section={false}
+                />
+              : null }
+
+
+              { (show_admin_modes === true) ?
+                <NepiIFAdminModes
+                make_section={false}
+                />
+              : null }
+
+
+              {this.renderAdminSelect()}
+
+
+        </React.Fragment>
+    )
+  }
+
+
+  
 
 
 
@@ -233,28 +284,8 @@ class NepiIFAdmin extends Component {
                 { ( show_advanced_option === true) ?
                   this.renderAdvancedOptions()
                 :
-                  this.renderAdminSelect()
+                  this.renderAdmin()
                 }
-
-                { (show_admin_config === true) ?
-                  <NepiIFAdminConfig
-                  make_section={false}
-                  />
-                : null }
-
-                { (show_admin_node_name === true) ?
-                  <NepiIFAdminNodeName
-                  namespace={namespace}
-                  make_section={false}
-                  />
-                : null }
-
-
-                { (show_admin_modes === true) ?
-                  <NepiIFAdminModes
-                  make_section={false}
-                  />
-                : null }
 
 
           </React.Fragment>
@@ -268,28 +299,8 @@ class NepiIFAdmin extends Component {
                 { ( show_advanced_option === true) ?
                   this.renderAdvancedOptions()
                 :
-                  this.renderAdminSelect()
+                  this.renderAdmin()
                 }
-
-                 { (show_admin_config === true) ?
-                  <NepiIFAdminConfig
-                  make_section={false}
-                  />
-                : null }
-
-                { (show_admin_node_name === true) ?
-                  <NepiIFAdminNodeName
-                  namespace={namespace}
-                  make_section={false}
-                  />
-                : null }
-
-
-                { (show_admin_modes === true) ?
-                  <NepiIFAdminModes
-                  make_section={false}
-                  />
-                : null }
 
 
         </Section>
