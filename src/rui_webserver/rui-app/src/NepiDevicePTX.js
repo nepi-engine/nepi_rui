@@ -27,6 +27,8 @@ import Select, { Option } from "./Select"
 import Label from "./Label"
 
 import NepiIFSettings from "./Nepi_IF_Settings"
+import NepiIFAdminDevelop from "./Nepi_IF_Admin"
+
 
 import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
 import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
@@ -203,7 +205,15 @@ class NepiDevicePTX extends Component {
                         />
                         : null}
 
-
+                    {(device_selected == true) ?
+                      <NepiIFAdminDevelop
+                          title={"Advanced Settings"}
+                          show_advanced_option={false}
+                          show_admin_node_names={true}
+                          namespace={namespace}
+                          make_section={true}
+                    />
+                    : null}
 
               </div>
 

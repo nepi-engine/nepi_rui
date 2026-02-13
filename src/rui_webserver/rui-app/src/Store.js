@@ -198,12 +198,21 @@ class ROSConnectionStore {
       this.systemManagersOptions = []
       this.systemManagersEnabled = []
 
+      this.deployNodesOrdered = []
+      this.deployNodesCommands = []
+      this.deployNodesEnabled = []
+
+
       this.systemNodeNameKeys = []
       this.systemNodeNameAliases = []
 
       this.userRestrictionsOptons = []
-      this.userRestrictionsEnabled = []
-      this.userRestrictionsActive = []
+      this.userRestrictionsDescriptions = []
+      this.userRestrictions = []
+      this.userRestricted = []
+
+      this.ruiRestrictions = []
+      this.ruiRestricted = []
 
       this.systemRunModeOptions = []
       this.systemRunMode = null
@@ -506,7 +515,6 @@ class ROSConnectionStore {
     this.startPollingIPAddrQueryService()
     this.startPollingBandwidthUsageService()
     this.startPollingWifiQueryService()
-    this.startPollingOpEnvironmentQueryService()
     this.setupMgrSoftwareStatusListener()
     this.startPollingTimeMgrStatusService()
     this.setupDriversMgrStatusListener()
@@ -736,9 +744,21 @@ class ROSConnectionStore {
   @observable systemNodeNameKeys = []
   @observable systemNodeNameAliases = []
 
+  @observable deployNodesOrdered = []
+  @observable deployNodesCommands = []
+  @observable deployNodesEnabled = []
+
+
+  @observable systemNodeNameKeys = []
+  @observable systemNodeNameAliases = []
+
   @observable userRestrictionsOptons = []
-  @observable userRestrictionsEnabled = []
-  @observable userRestrictionsActive = []
+  @observable userRestrictionsDescriptions = []
+  @observable userRestrictions = []
+  @observable userRestricted = []
+
+  @observable ruiRestrictions = []
+  @observable ruiRestricted = []
 
 
 
@@ -809,11 +829,21 @@ class ROSConnectionStore {
         this.systemNodeNameKeys = message.sys_node_name_keys
         this.systemNodeNameAliases = message.sys_node_name_aliases
 
+        this.deployNodesOrdered = message.deploy_nodes_ordered
+        this.deployNodesCommands = message.deploy_nodes_commands
+        this.deployNodesEnabled = message.deploy_nodes_enabled
+
+
+        this.systemNodeNameKeys = message.sys_node_name_keys
+        this.systemNodeNameAliases = message.sys_node_name_aliases
+
         this.userRestrictionsOptons = message.user_restrictions_options
-        this.userRestrictionsEnabled = message.user_restrictions
-        this.userRestrictionsActive = (this.systemAdminEnabled === true) ? [] : message.user_restrictions
+        this.userRestrictionsDescriptions = message.user_restrictions_descriptions
+        this.userRestrictions = message.user_restrictions
+        this.userRestricted = message.user_restricted
 
-
+        this.ruiRestrictions = message.rui_restrictions
+        this.ruiRestricted = message.rui_restricted
 
 
         ///////////////////
@@ -2025,27 +2055,6 @@ class ROSConnectionStore {
     _pollOnce()    
   }
 
-  async startPollingOpEnvironmentQueryService() {
-    const _pollOnce = async () => {
-      if  (this.connectedToNepi === true && (this.serviceNames.some(str => str.includes("ip_addr_query")))){
-        this.opEnv = await this.callService({
-          name: "op_environment_query",
-          messageType: "nepi_interfaces/OpEnvironmentQuery",
-          msgKey: "op_env"
-        })
-
-
-        this.deviceInWater = (this.opEnv === "water")
-      }
-      if (this.connectedToROS) {
-        setTimeout(_pollOnce, 5000)
-      }
-    }
-
-    _pollOnce()
-  }
-
-
 
 
   async startPollingGetScriptsService() {
@@ -2799,19 +2808,6 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
       data: { data: newDeviceID }
     })
   }
-
-  @action.bound
-  onToggleDeviceInWater() {
-    this.deviceInWater = !this.deviceInWater
-
-    let newOpEnv = (this.deviceInWater === true)? "water" : "air"
-    this.publishMessage({
-      name: "set_op_environment",
-      messageType: "std_msgs/String",
-      data: { data: newOpEnv }
-    })
-  }
-
 
 
   get_timezone_desc(){

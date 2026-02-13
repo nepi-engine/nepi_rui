@@ -375,6 +375,7 @@ class NepiIFImageViewerSelector extends Component {
                 : null
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
     const save_data_topic = this.props.save_data_topic
     
     return (
@@ -388,6 +389,7 @@ class NepiIFImageViewerSelector extends Component {
       select_updated_topic={select_updated_topic}
       show_image_controls={show_image_controls}
       show_save_controls={show_save_controls}
+      show_save_bottom={show_save_bottom}
       allow_pan_zoom={allow_pan_zoom}
       save_data_topic={save_data_topic}
       make_section={false}

@@ -1462,6 +1462,7 @@ class Nepi_IF_ImageViewer extends Component {
     const { sendTriggerMsg } = this.props.ros
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
     const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
@@ -1481,8 +1482,7 @@ class Nepi_IF_ImageViewer extends Component {
       <Column>
 
 
-                <div align={"left"} textAlign={"left"} >
-                            {(show_save_controls === true && namespace !== 'None') ?
+                            {(show_save_controls === true && show_save_bottom === false && namespace !== 'None') ?
                               <NepiIFSaveData
                               saveNamespace={save_data_topic}
                               make_section={false}
@@ -1491,15 +1491,15 @@ class Nepi_IF_ImageViewer extends Component {
                             />
                           : null }
 
-                          {(show_save_controls === true && namespace !== 'None') ?
+                          {(show_save_controls === true && show_save_bottom === false && namespace !== 'None') ?
                             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                           : null }
 
-                </div>
-                
-              ````<div style={{ display: 'flex' }}>
+                  
+                  
+                  <div style={{ display: 'flex' }}>
 
-                        <div style={{ width: '85%', align: 'left' }}>
+                        <div style={{ width: '90%', align: 'left' }}>
                           <Label title={title} />
                         </div>
 
@@ -1513,10 +1513,10 @@ class Nepi_IF_ImageViewer extends Component {
                           : null }
                         </div>
 
-
+{/* 
                         <div style={{ width: '5%' }}>
                           {}
-                        </div>
+                        </div> */}
 
                   </div>
 
@@ -1524,6 +1524,24 @@ class Nepi_IF_ImageViewer extends Component {
 
 
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
+
+
+
+
+
+                            {(show_save_controls === true && show_save_bottom === true && namespace !== 'None') ?
+                              <NepiIFSaveData
+                              saveNamespace={save_data_topic}
+                              make_section={false}
+                              show_all_options={show_all_options}
+                              show_topic_selector={show_topic_selector}
+                            />
+                          : null }
+
+
+                          {(show_save_controls === true && show_save_bottom === true && show_image_controls === true && namespace !== 'None') ?
+                            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                          : null }
 
 
       <div align={"left"} textAlign={"left"} hidden={(show_image_controls === false || namespace === 'None')}>

@@ -62,83 +62,17 @@ class NepiIFConfig extends Component {
     super(props)
     this.state = {
 
-      advancedConfigEnabled: false,
-
     }
    
-    this.renderAdvancedOptions = this.renderAdvancedOptions.bind(this)
-
-
   }
 
 
 
-
-
-  renderAdvancedOptions() {
-        const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-        const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : false
-
-
-
-
-
-        
-        return (
-
-          <React.Fragment>
-
-              <Columns>
-              <Column>
-
-                  <Label title="Show Advanced Options">
-                    <Toggle
-                      checked={this.state.advancedConfigEnabled===true}
-                      onClick={() => onChangeSwitchStateValue.bind(this)("advancedConfigEnabled",this.state.advancedConfigEnabled)}>
-                    </Toggle>
-                </Label>
-
-
-
-
-                  </Column>
-                  <Column>
- 
-
-                </Column>
-                  </Columns>
-
-
-                  <Columns>
-                  <Column>
-
-
-                    { (show_save_all === true) ?
-                        <ButtonMenu>
-                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config_all")}>{"Save"}</Button>
-                      </ButtonMenu>
-                    : null }
-
-                  </Column>
-                  <Column>
- 
-
-                </Column>
-                  </Columns>
-
-
-
-
-          </React.Fragment>
-
-
-        )
-  }
 
 
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-    const show_advanced_options = (this.props.show_advanced_options !== undefined) ? this.props.show_advanced_options : false
+    const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : false
     if (namespace === 'None'){
       return (
   
@@ -167,6 +101,11 @@ class NepiIFConfig extends Component {
                           <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config")}>{"Save"}</Button>
                     </ButtonMenu>
 
+                    { (show_save_all === true) ?
+                        <ButtonMenu>
+                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_all")}>{"Save"}</Button>
+                      </ButtonMenu>
+                    : null }
 
 
                       </Column>
@@ -181,17 +120,12 @@ class NepiIFConfig extends Component {
                     <Column>
 
                     <ButtonMenu>
-                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/factory_reset_config")}>{"Factory"}</Button>
+                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/factory_reset_config")}>{"Restore"}</Button>
                     </ButtonMenu>
 
 
                     </Column>
                   </Columns>
-
-                { (this.state.show_advanced_options===true) ? 
-                  this.renderAdvancedOptions()
-                : null }
-
 
 
           </Column>

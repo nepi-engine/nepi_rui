@@ -138,7 +138,7 @@ class NepiDashboard extends Component {
       systemManagesTime,
       clockNTP,
       syncTime2Device,
-      userRestrictionsEnabled,
+      userRestricted,
       timeStatusTime,
       timeStatusTimeStr,
       timeStatusDateStr,
@@ -158,7 +158,7 @@ class NepiDashboard extends Component {
     var show_sync_button = false
 
     if (timeMgrStatus != null){
-      time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
+      time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
       clock_synced = timeMgrStatus.clock_synced
       auto_sync_clocks = timeMgrStatus.auto_sync_clocks
       show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )

@@ -28,6 +28,8 @@ import Select, { Option } from "./Select"
 
 import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
+import NepiIFAdminDevelop from "./Nepi_IF_Admin"
+
 
 //import NepiDeviceRBXControls from "./NepiDeviceRBX-Controls"
 
@@ -208,7 +210,15 @@ class NepiDeviceRBX extends Component {
                         />
                         : null}
 
-
+                        {(device_selected == true) ?
+                          <NepiIFAdminDevelop
+                              title={"Advanced Settings"}
+                              show_advanced_option={false}
+                              show_admin_node_names={true}
+                              namespace={namespace}
+                              make_section={true}
+                        />
+                        : null}
 
               </div>
 

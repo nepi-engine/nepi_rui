@@ -131,7 +131,7 @@ class NepiIFAdminNodeName extends Component {
 
   renderAdminNodeNames() {
     const base_namespace = this.getBaseNamespace()
-    const { userRestrictionsEnabled} = this.props.ros
+    const { userRestricted} = this.props.ros
     const node_names = this.props.ros.systemNodeNameKeys
     const node_aliases = this.props.ros.systemNodeNameAliases
 
@@ -141,7 +141,7 @@ class NepiIFAdminNodeName extends Component {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const namespace_parts = namespace.split('/')
     const node_name = (this.state.updatedNodeName != null) ? this.state.updatedNodeName :   namespace_parts.pop()
-    const node_name_restricted = userRestrictionsEnabled.indexOf('node_name') !== -1
+    const node_name_restricted = userRestricted.indexOf('node_name') !== -1
     const needs_reset = (node_aliases.indexOf(node_name) !== -1)
 
     return (

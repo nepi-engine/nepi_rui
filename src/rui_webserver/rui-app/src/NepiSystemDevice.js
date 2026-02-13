@@ -30,8 +30,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-
-import NepiIFAdmin from "./Nepi_IF_Admin"
+import NepiIFAdminDevelop from "./Nepi_IF_Admin"
 
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
@@ -354,16 +353,6 @@ updateMgrTimeStatusListener() {
 
                 </Column>
                   </Columns>
-
-
-
-                { <NepiIFAdmin
-                              title={"Advanced Settings"}
-                              show_advanced_option={true}
-                              show_admin_config={true}
-                              show_admin_modes={true}
-                              make_section={false}
-                        /> }
             
       </Section>
     )
@@ -391,8 +380,8 @@ updateMgrTimeStatusListener() {
       license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
  
 
-    const { userRestrictionsEnabled} = this.props.ros
-    //Unused const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
+    const { userRestricted} = this.props.ros
+    //Unused const license_restricted = userRestricted.indexOf('License') !== -1
 
 
       return (
@@ -466,8 +455,8 @@ updateMgrTimeStatusListener() {
 
     var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : ""
 
-    const { userRestrictionsEnabled} = this.props.ros
-    const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
+    const { userRestricted} = this.props.ros
+    const license_restricted = userRestricted.indexOf('License') !== -1
 
 
     if (license_request_mode === true) {
@@ -567,7 +556,7 @@ updateMgrTimeStatusListener() {
     const {
       sendBoolMsg,
       systemManagesTime,
-      userRestrictionsEnabled,
+      userRestricted,
       ntp_sources,
       clockNTP,
       syncTime2Device,
@@ -596,8 +585,8 @@ updateMgrTimeStatusListener() {
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
     if (timeStatusTime && timeStatus){
-      time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
-      time_ntp_restricted = userRestrictionsEnabled.indexOf('Time_NTP') !== -1
+      time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+      time_ntp_restricted = userRestricted.indexOf('Time_NTP') !== -1
       clock_synced = timeStatus.clock_synced
       auto_sync_clocks = timeStatus.auto_sync_clocks
       auto_sync_timezones = timeStatus.auto_sync_timezones
@@ -817,12 +806,12 @@ updateMgrTimeStatusListener() {
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-    const { systemManagesNetwork, userRestrictionsEnabled} = this.props.ros
-    //Unused const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
-    //Unused const time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
-    const network_restricted = userRestrictionsEnabled.indexOf('Network') !== -1
-    //Unused const wifi_restricted = userRestrictionsEnabled.indexOf('WiFi') !== -1
-    //Unused const ap_restricted = userRestrictionsEnabled.indexOf('Access Point') !== -1
+    const { systemManagesNetwork, userRestricted} = this.props.ros
+    //Unused const license_restricted = userRestricted.indexOf('License') !== -1
+    //Unused const time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+    const network_restricted = userRestricted.indexOf('Network') !== -1
+    //Unused const wifi_restricted = userRestricted.indexOf('WiFi') !== -1
+    //Unused const ap_restricted = userRestricted.indexOf('Access Point') !== -1
 
 
     if (systemManagesNetwork === false){
@@ -1071,12 +1060,12 @@ updateMgrTimeStatusListener() {
     const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
     const connect_value = (wifi_client_connected === true) ? true : connecting
     
-    const { systemManagesNetwork, userRestrictionsEnabled} = this.props.ros
-    //Unused const license_restricted = userRestrictionsEnabled.indexOf('License') !== -1
-    //Unused const time_sync_restricted = userRestrictionsEnabled.indexOf('Time_Sync_Clocks') !== -1
-    //Unused const network_restricted = userRestrictionsEnabled.indexOf('Network') !== -1
-    const wifi_restricted = userRestrictionsEnabled.indexOf('WiFi') !== -1
-    const ap_restricted = userRestrictionsEnabled.indexOf('Access Point') !== -1
+    const { systemManagesNetwork, userRestricted} = this.props.ros
+    //Unused const license_restricted = userRestricted.indexOf('License') !== -1
+    //Unused const time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+    //Unused const network_restricted = userRestricted.indexOf('Network') !== -1
+    const wifi_restricted = userRestricted.indexOf('WiFi') !== -1
+    const ap_restricted = userRestricted.indexOf('Access Point') !== -1
 
 
     // Update on User Change
@@ -1279,7 +1268,11 @@ updateMgrTimeStatusListener() {
         <Column>
           {this.renderDeviceConfiguration()}
           {this.renderLicenseInfo()}
-
+          {<NepiIFAdminDevelop
+              title={"Advanced Settings"}
+              show_advanced_option={false}
+              make_section={true}
+        />}
         </Column>
         <Column>
 

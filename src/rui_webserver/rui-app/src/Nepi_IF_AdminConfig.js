@@ -86,26 +86,17 @@ class NepiIFAdminConfig extends Component {
 
   renderAdminConfig() {
     const base_namespace = this.getBaseNamespace()
-    const admin_mode_set = this.props.ros.systemAdminModeSet
+
 
     return (
 
       <React.Fragment>
 
-
-
-            { (admin_mode_set === true ) ?
                 <ButtonMenu>
                   <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/save_system_cfgs")}>{"System Save"}</Button>
                   <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_system_cfgs")}>{"System Reset"}</Button>
                   <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_factory_cfgs")}>{"Factory Reset"}</Button>
                 </ButtonMenu>
-
-            :
-                <ButtonMenu>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_system_cfgs")}>{"System Reset"}</Button>
-                </ButtonMenu>
-            }
 
       </React.Fragment>
     )
@@ -115,10 +106,10 @@ class NepiIFAdminConfig extends Component {
 
   render() {
     const base_namespace = this.getBaseNamespace()
-    //const admin_mode_set = this.props.ros.systemAdminModeSet
+    const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     
-    if (base_namespace == null){
+    if (base_namespace == null || admin_mode_set === false){
       return (
   
         <Columns>

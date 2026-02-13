@@ -395,20 +395,8 @@ class NepiIFImageViewersSelector extends Component {
     renderSaveData(){
       const allSaveNamespace = this.getAllSaveNamespace()
       const saveNamespace = (this.props.saveNamespace !== undefined) ? this.props.saveNamespace : allSaveNamespace
-      const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
 
-      if (show_save_controls === false){
-          return (
-            <Columns>
-            <Column>
-
-            </Column>
-            </Columns>
-
-          )
-
-      }
-      else {
+    
           return (
         
               <React.Fragment>
@@ -420,27 +408,45 @@ class NepiIFImageViewersSelector extends Component {
                             show_topic_selector={true}
                           />
         
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
               </React.Fragment>
 
           )
-        }
+        
   }
 
 
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
+    const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
     
     if (make_section === false){
       return (
         <Columns>
         <Column>
               
-              {this.renderSaveData()}
+                {(show_save_controls === true && show_save_bottom === false) ?
+                 this.renderSaveData()
+              : null }
+
+              {(show_save_controls === true && show_save_bottom === false) ?
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+              : null }
 
               {this.renderImageWindows()}
+
+
+
+              {(show_save_controls === true && show_save_bottom === true) ?
+                this.renderSaveData()
+            : null }
+
+
+            {(show_save_controls === true && show_save_bottom === true && show_controls_bar === true) ?
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+            : null }              
 
               {this.renderControlBar()}
 

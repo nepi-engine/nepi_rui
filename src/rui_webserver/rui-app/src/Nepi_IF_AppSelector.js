@@ -57,6 +57,7 @@ import AiDetectorMgr from "./NepiMgrAiDetector"
 
 // Other SYSTEM Classes
 import DeviceMgr from "./NepiSystemDevice"
+import NEPIMgr from "./NepiSystemNEPI"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AppsMgr from "./NepiSystemApps"
 
@@ -427,6 +428,25 @@ class NepiIFAppSelector extends Component {
         </React.Fragment>
       )
     }
+    else if (sel_app === "NEPI Manager"){
+      return (
+        <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+            </label>
+            <Columns>
+            <Column>
+
+              <NEPIMgr
+              title={"NEPI Manager"}
+              />
+
+          </Column>
+          </Columns>  
+        </React.Fragment>
+      )
+    }
+
     else if (sel_app === "Scripts Mgr"){
       return (
         <React.Fragment>
@@ -629,6 +649,9 @@ class NepiIFAppSelector extends Component {
             items.push(<Option value={'Device Manager'}>{'Device Manager'}</Option>)
         }   
         
+        if (true) { //((userRestrictionsActive.indexOf('device_manager')) {
+            items.push(<Option value={'NEPI Manager'}>{'NEPI Manager'}</Option>)
+        }   
 
         if (true) { //((userRestrictionsActive.indexOf('data_manager')) {
           items.push(<Option value={"Data Manager"}>{"Data Manager"}</Option>)

@@ -485,6 +485,7 @@ class NepiControlsLightsControls extends Component {
             <NepiIFConfig
                 namespace={namespace}
                 title={"Nepi_IF_Conig"}
+                show_save_all={true}
           />
 
         </React.Fragment>

@@ -153,11 +153,11 @@ class NepiIFAdminRun extends Component {
         const run_mode = this.props.ros.systemRunMode
 
         //const debug_mode = this.props.ros.systemDebugEnabled
-        //const { userRestrictionsEnabled} = this.props.ros
-        //const device_restricted = userRestrictionsEnabled.indexOf('device_id') !== -1
+        //const { userRestricted} = this.props.ros
+        //const device_restricted = userRestricted.indexOf('device_id') !== -1
 
-        // const { userRestrictionsEnabled} = this.props.ros
-        // const device_restricted = userRestrictionsEnabled.indexOf('device_id') !== -1
+        // const { userRestricted} = this.props.ros
+        // const device_restricted = userRestricted.indexOf('device_id') !== -1
 
         // if (this.state.advancedConfigEnabled === false && deviceId !== this.state.updatedDeviceId){
         //   this.setState({updatedDeviceId:deviceId})
