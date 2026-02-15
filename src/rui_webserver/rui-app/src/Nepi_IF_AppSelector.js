@@ -587,18 +587,18 @@ class NepiIFAppSelector extends Component {
   
 
         if (appsList.length > 0){
-          for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "DEVICE" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
-              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          for (var i1 = 0; i1 < ruiList.length; i1++) {
+            if (groupList[i1] === "DEVICE" && ruiList[i1] !== "None" && activeAppList.indexOf(appsList[i1]) !== -1 && appsNameList.indexOf(appsList[i1]) !== -1 ){
+              items.push(<Option value={appsList[i1]}>{ruiList[i1]}</Option>)
             }
           }
         }
       }
       else if (app_id === 'DATA') {
         if (appsList.length > 0){
-          for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "DATA" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
-              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          for (var i2 = 0; i2 < ruiList.length; i2++) {
+            if (groupList[i2] === "DATA" && ruiList[i2] !== "None" && activeAppList.indexOf(appsList[i2]) !== -1 && appsNameList.indexOf(appsList[i2]) !== -1 ){
+              items.push(<Option value={appsList[i2]}>{ruiList[i2]}</Option>)
             }
           }
         }
@@ -607,9 +607,9 @@ class NepiIFAppSelector extends Component {
       else if (app_id === 'PROCESS') {
         
         if (appsList.length > 0){
-          for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "PROCESS" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
-              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          for (var i3 = 0; i3 < ruiList.length; i3++) {
+            if (groupList[i3] === "PROCESS" && ruiList[i3] !== "None" && activeAppList.indexOf(appsList[i3]) !== -1 && appsNameList.indexOf(appsList[i3]) !== -1 ){
+              items.push(<Option value={appsList[i3]}>{ruiList[i3]}</Option>)
             }
           }
         }
@@ -634,9 +634,9 @@ class NepiIFAppSelector extends Component {
 
       else if (app_id === 'AUTOMATION') {
         if (appsList.length > 0){
-          for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "AUTOMATION" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
-              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          for (var i4 = 0; i4 < ruiList.length; i4++) {
+            if (groupList[i4] === "AUTOMATION" && ruiList[i4] !== "None" && activeAppList.indexOf(appsList[i4]) !== -1 && appsNameList.indexOf(appsList[i4]) !== -1 ){
+              items.push(<Option value={appsList[i4]}>{ruiList[i4]}</Option>)
             }
           }
         }
@@ -687,9 +687,9 @@ class NepiIFAppSelector extends Component {
         
  
         if (appsList.length > 0){
-          for (var i = 0; i < ruiList.length; i++) {
-            if (groupList[i] === "SYSTEM" && ruiList[i] !== "None" && activeAppList.indexOf(appsList[i]) !== -1 && appsNameList.indexOf(appsList[i]) !== -1 ){
-              items.push(<Option value={appsList[i]}>{ruiList[i]}</Option>)
+          for (var i5 = 0; i5 < ruiList.length; i5++) {
+            if (groupList[i5] === "SYSTEM" && ruiList[i5] !== "None" && activeAppList.indexOf(appsList[i5]) !== -1 && appsNameList.indexOf(appsList[i5]) !== -1 ){
+              items.push(<Option value={appsList[i5]}>{ruiList[i5]}</Option>)
             }
           }
         }
