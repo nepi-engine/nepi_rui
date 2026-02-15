@@ -44,7 +44,6 @@ class NepiDeviceIDX extends Component {
       namespace: 'None',
       data_topic: 'None',
       data_product: 'None',
-      data_image_topic: 'None'
     }
 
 
@@ -60,6 +59,8 @@ class NepiDeviceIDX extends Component {
     this.createDataProductOptions = this.createDataProductOptions.bind(this)
     this.onDataProductSelected = this.onDataProductSelected.bind(this)
 
+    this.findImageTopic = this.findImageTopic.bind(this)
+
   }
 
 
@@ -67,8 +68,7 @@ class NepiDeviceIDX extends Component {
       this.setState({
         namespace: namespace,   
             data_topic: "None",
-            data_product: "None", 
-            data_image_topic: 'None'   
+            data_product: "None"
 
       })
   }
@@ -77,8 +77,7 @@ class NepiDeviceIDX extends Component {
     this.setState({
       namespace: 'None',
       data_topic: "None",
-      data_product: "None",      
-      data_image_topic: 'None'
+      data_product: "None"
     })
   }
 
@@ -118,7 +117,6 @@ class NepiDeviceIDX extends Component {
     const namespace = this.state.namespace ? this.state.namespace : "None"
     const capabilities = this.props.ros.idxDevices[namespace]
     const data_products = capabilities ? capabilities.data_products : []
-    const data_product_image_topics = capabilities ? capabilities.data_product_image_topics : []
 
     var items = []
     var data_product
@@ -138,15 +136,13 @@ class NepiDeviceIDX extends Component {
           this.setState({
             data_topic: "None",
             data_product: "None", 
-            data_image_topic: 'None'   
           })       
       }
     }
     else if (sel_data_topic === 'None' || sel_data_topic == null){
           this.setState({
             data_topic: namespace + '/' + data_products[0],
-            data_product: data_products[0],   
-            data_image_topic: data_product_image_topics[0]  
+            data_product: data_products[0],    
           })    
     }
 
@@ -161,19 +157,16 @@ class NepiDeviceIDX extends Component {
     const namespace = this.state.namespace ? this.state.namespace : "None"
     const capabilities = this.props.ros.idxDevices[namespace]
     const data_products = capabilities ? capabilities.data_products : []
-    const data_product_image_topics = capabilities ? capabilities.data_product_image_topics : []
 
     const index = event.nativeEvent.target.selectedIndex
     const text = event.nativeEvent.target[index].text
     const value = event.target.value
 
     const data_index = data_products.indexOf(value)
-    const image_topic = (data_index !== -1) ? data_product_image_topics[data_index] : "None"
 
     this.setState({
       data_topic: value,
       data_product: text,
-      data_image_topic: image_topic
     })
   }
 
@@ -241,8 +234,25 @@ class NepiDeviceIDX extends Component {
 
   }
 
+
+  findImageTopic(data_product){
+    const namespace = this.state.namespace ? this.state.namespace : "None"
+    const dp_namespace = namespace + '/' + data_product
+    var image_topic = 'None'
+    const { imageTopics } = this.props.ros
+    var image_name = ''
+    for (var i = 0; i < imageTopics.length; i++) {
+      image_name = imageTopics[i].split('/').pop()
+      if ((imageTopics[i].indexOf(dp_namespace) !== -1) && (image_name != 'depth_map')) {
+        image_topic = imageTopics[i]
+        break
+      }
+    }
+    return image_topic
+  }
+
   renderImageViewer() {
-    const image_topic = this.state.data_image_topic
+    const image_topic = this.findImageTopic(this.state.data_product)
 
     const image_text = image_topic.split('/idx')[0].split('/').pop() + '-' + this.state.data_product
     return (

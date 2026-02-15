@@ -297,6 +297,7 @@ class ROSConnectionStore {
           else {
             this.ros.connect(ROS_WS_URL)
             this.checkTopicsServices = true
+            this.topicQueryLock = false
             this.updateTopicsServices()
           }
 
@@ -311,6 +312,7 @@ class ROSConnectionStore {
       if (this.connectedToRos === true && this.connectedToNepi === false) {
           this.watchdogNepiCounter = 0
           this.checkTopicsServices = true
+          this.topicQueryLock = false
           this.updateTopicsServices()
       }
 
@@ -349,11 +351,16 @@ class ROSConnectionStore {
               this.topicTypes = this.systemStatusTopicTypes
         }
         else {
-          update_time = 2000
-          this.ros.getTopics(result => {
-              this.topicNames = result.topics
-              this.topicTypes = result.types
-              })
+          update_time = 1000
+          try {
+            this.ros.getTopics(result => {
+                this.topicNames = result.topics
+                this.topicTypes = result.types
+                })
+          } catch (error) {
+              this.topicNames = []
+              this.topicTypes = []
+          }
         }
 
         if (this.systemStatusServices != null){
@@ -361,10 +368,14 @@ class ROSConnectionStore {
               this.serviceNames = this.systemStatusServices
         }
         else {
-          this.ros.getServices(result => {
-            update_time = 2000
-            this.serviceNames = result
-          })
+          try {
+            this.ros.getServices(result => {
+              update_time = 2000
+              this.serviceNames = result
+            })
+          } catch (error) {
+            this.serviceNames = []
+          }
         }
 
 
@@ -373,11 +384,10 @@ class ROSConnectionStore {
         const serviceNames = (this.serviceNamesLast != null) ? this.serviceNamesLast : []
 
         if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
-          // if (this.topicNames.length != topicNames.length || 
-          //     this.topicTypes.length != topicTypes.length || 
-          //     this.serviceNames.length != serviceNames.length)
+          if (this.topicNames.length != topicNames.length || 
+              this.topicTypes.length != topicTypes.length || 
+              this.serviceNames.length != serviceNames.length) {
 
-          if (true) {
                 update_time = 2000
                 var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
                 var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
@@ -945,12 +955,13 @@ class ROSConnectionStore {
 
         if (response != null){
           // if last_ntp_sync is 10y, no sync has happened
-          this.timeMgrStatus
+          this.timeMgrStatus = response.time_status
           this.connectedToTimeMgr = true
 
-          this.ntp_sources = this.timeMgrStatus.time_status.ntp_sources
+          this.available_timezones = response.available_timezones
+          this.ntp_sources = this.timeMgrStatus.ntp_sources
           this.clockNTP = false
-          const currentlySyncd = this.timeMgrStatus.time_status.currently_syncd
+          const currentlySyncd = this.timeMgrStatus.currently_syncd
           currentlySyncd &&
           currentlySyncd.length &&
           currentlySyncd.forEach(syncd => {
@@ -958,23 +969,22 @@ class ROSConnectionStore {
                 this.clockNTP = true
               }
             })
-          this.available_timezones = this.timeMgrStatus.available_timezones
           // if last_pps – current_time < 1 second no sync has happened
           this.clockPPS = true
-          const lastPPSTS = moment.unix(this.timeMgrStatus.time_status.last_pps).unix()
-          this.timeStatusTime = moment.unix(this.timeMgrStatus.time_status.current_time)
-          this.timeStatusTimeStr =this.timeMgrStatus.time_status.time_str
-          this.timeStatusDateStr = this.timeMgrStatus.time_status.date_str
-          this.timeStatusTimezone = this.timeMgrStatus.time_status.timezone
-          this.timeStatusTimezoneDesc = this.timeMgrStatus.time_status.timezone_description
+          const lastPPSTS = moment.unix(this.timeMgrStatus.last_pps).unix()
+          this.timeStatusTime = moment.unix(this.timeMgrStatus.current_time)
+          this.timeStatusTimeStr =this.timeMgrStatus.time_str
+          this.timeStatusDateStr = this.timeMgrStatus.date_str
+          this.timeStatusTimezone = this.timeMgrStatus.timezone
+          this.timeStatusTimezoneDesc = this.timeMgrStatus.timezone_description
           const currTS = this.timeStatusTime && this.timeStatusTime.unix()
           if (currTS && lastPPSTS - currTS < 1) {
             this.clockPPS = false
           }     
           const IS_LOCAL = window.location.hostname === "localhost"
-          const clock_synced = this.timeMgrStatus.time_status.clock_synced
+          const clock_synced = this.timeMgrStatus.clock_synced
 
-          const auto_sync_clocks = this.timeMgrStatus.time_status.auto_sync_clocks
+          const auto_sync_clocks = this.timeMgrStatus.auto_sync_clocks
 
           const should_sync = (IS_LOCAL === false && this.systemManagesTime === true && clock_synced === false && auto_sync_clocks === true)
 
@@ -1371,23 +1381,21 @@ class ROSConnectionStore {
   @observable appsStatusList = []
 
   @action.bound
-  async callAppStatusQueryService(namespace) {
+  async callAppStatusQueryService(app_name) {
       const response = await this.callService({
         name: 'apps_mgr/app_status_query',
         messageType: "nepi_interfaces/AppStatusQuery",
-        args: {app_name : namespace},
+        args: {app_name : app_name},
       })
       if (response != null){
-        const appsNameList = this.appsNameList
-        const appInd = appsNameList.indexOf(namespace)
+        const appInd = this.appsNameList.indexOf(app_name)
         if (appInd === -1){
+          this.appsNameList.push(app_name)
           this.appsStatusList.push(response)
-          this.appsNameList.push(namespace)
 
         }
         else {
-
-          this.appsNameList[appInd] = namespace
+          this.appsNameList[appInd] = app_name
           this.appsStatusList[appInd] = response
         }
       }
@@ -2924,7 +2932,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
       .unix()
 
     if (this.timeMgrStatus != null) {
-      const auto_sync_timezones = this.timeMgrStatus.time_status.auto_sync_timezones
+      const auto_sync_timezones = this.timeMgrStatus.auto_sync_timezones
 
       if ( auto_sync_timezones === true){
           this.publishMessage({
