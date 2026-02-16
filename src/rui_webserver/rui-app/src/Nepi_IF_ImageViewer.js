@@ -786,7 +786,7 @@ class Nepi_IF_ImageViewer extends Component {
                           min={0}
                           max={100}
                           tooltip={"Adjustable Adjust"}
-                          unit={"%"}
+                          noTextBox={true}
                       />
 
             </div>
@@ -802,7 +802,7 @@ class Nepi_IF_ImageViewer extends Component {
                           min={0}
                           max={100}
                           tooltip={"Adjustable brightness"}
-                          unit={"%"}
+                          noTextBox={true}
                       />
 
             </div>
@@ -818,7 +818,7 @@ class Nepi_IF_ImageViewer extends Component {
                         min={0}
                         max={100}
                         tooltip={"Adjustable contrast"}
-                        unit={"%"}
+                        noTextBox={true}
                       />
 
             </div>
@@ -833,7 +833,7 @@ class Nepi_IF_ImageViewer extends Component {
                           min={0}
                           max={100}
                           tooltip={"Adjustable threshold"}
-                          unit={"%"}
+                          noTextBox={true}
                       />
               </div>
 
@@ -924,9 +924,44 @@ class Nepi_IF_ImageViewer extends Component {
                       max_limit_m={1.0}
                       topic={namespace + "/set_range_ratios"}
                       tooltip={"Adjustable range ratio"}
-                      unit={"%"}
+                      noTextBox={true}
                     />
           </div>
+
+
+          <Columns>
+          <Column>
+
+              <div hidden={hide_range}>
+                <Label title={"Max Range (m)"}>
+                <Input
+                  value={this.state.rangeLimitMinMAdj}
+                  disabled={true}
+                  style={{ width: "80%" }}
+                />
+                </Label>
+
+            </div>
+
+
+              </Column>
+              <Column>
+
+              <div hidden={hide_range}>
+                <Label title={"Min Range (m)"}>
+                <Input
+                  value={this.state.rangeLimitMaxMAdj}
+                 disabled={true}
+                  style={{ width: "80%" }}
+                />
+                </Label>
+
+            </div>
+
+
+              </Column>
+            </Columns>  
+
 
 
           <div hidden={(has_zoom !== true )}>
@@ -941,7 +976,7 @@ class Nepi_IF_ImageViewer extends Component {
                             max={100}
                             disabled={false}
                             tooltip={"Zoom controls"}
-                            unit={"%"}
+                            noTextBox={true}
                         />
           </div>
 
@@ -958,7 +993,7 @@ class Nepi_IF_ImageViewer extends Component {
                             max={100}
                             disabled={false}
                             tooltip={"Pan left-right controls"}
-                            unit={"%"}
+                            noTextBox={true}
                         />
 
                   
@@ -975,7 +1010,7 @@ class Nepi_IF_ImageViewer extends Component {
                       max_limit_m={1.0}
                       disabled={true}
                       tooltip={"Adjustable x_min and x_max ratios"}
-                      unit={"%"}
+                      noTextBox={true}
                     />
 
                  
@@ -995,7 +1030,7 @@ class Nepi_IF_ImageViewer extends Component {
                             max={100}
                             disabled={false}
                             tooltip={"Pan up-down controls"}
-                            unit={"%"}
+                            noTextBox={true}
                         />
 
           </div>
@@ -1012,7 +1047,7 @@ class Nepi_IF_ImageViewer extends Component {
                       max_limit_m={1.0}
                       disabled={true}
                       tooltip={"Adjustable y_min and y_max ratios"}
-                      unit={"%"}
+                      noTextBox={true}
                     />
           </div>
 
@@ -1028,7 +1063,7 @@ class Nepi_IF_ImageViewer extends Component {
                             max={100}
                             disabled={false}
                             tooltip={"Rotate controls"}
-                            unit={"%"}
+                            noTextBox={true}
                         />
 
           </div>
@@ -1045,7 +1080,7 @@ class Nepi_IF_ImageViewer extends Component {
                             max={100}
                             disabled={false}
                             tooltip={"Tilt controls"}
-                            unit={"%"}
+                            noTextBox={true}
                         />
           </div>
 
@@ -1197,7 +1232,7 @@ class Nepi_IF_ImageViewer extends Component {
                                   min={0}
                                   max={100}
                                   tooltip={"Adjustable Resolution"}
-                                  unit={"%"}
+                                  noTextBox={true}
                               />
 
               </div>
@@ -1302,7 +1337,7 @@ class Nepi_IF_ImageViewer extends Component {
                             max={100}
                             disabled={false}
                             tooltip={"Overlay size controls"}
-                            unit={"%"}
+                            noTextBox={true}
                         />
 
 
@@ -1475,6 +1510,10 @@ class Nepi_IF_ImageViewer extends Component {
     const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
     
 
+    const single_slider_topic = (this.props.single_slider_topic !== undefined) ? this.props.single_slider_topic : null
+    const single_slider_value = (this.props.single_slider_value !== undefined) ? this.props.single_slider_value : 0.5
+    const double_slider_topic = (this.props.double_slider_topic !== undefined) ? this.props.double_slider_topic : null
+    const double_slider_values = (this.props.double_slider_values !== undefined) ? (this.props.double_slider_values.length === 2) ? this.props.double_slider_values : [0,0,1.0] : [0,0,1.0]
     
     return (
       
@@ -1526,7 +1565,39 @@ class Nepi_IF_ImageViewer extends Component {
                   <canvas style={styles.canvas} ref={this.onCanvasRef} />
 
 
+                          <div hidden={single_slider_topic === null}>
+                              <SliderAdjustment
+                                title={"Single Image Slider"}
+                                msgType={"std_msgs/Float32"}
+                                adjustment={single_slider_value}
+                                topic={single_slider_topic}
+                                scaled={0.01}
+                                min={0}
+                                max={100}
+                                unit={"%"}
+                                noTextBox={true}
+                                noLabel={true}
+                              />
+                            </div>
 
+
+                          <div hidden={double_slider_topic === null}>
+                                <RangeAdjustment
+                                  title="Double Image Slider"
+                                  min={double_slider_values[0]}
+                                  max={double_slider_values[1]}
+                                  min_limit_m={0}
+                                  max_limit_m={1}
+                                  topic={namespace + "/set_range_window"}
+                                  tooltip={"Adjustable range"}
+                                  noTextBox={true}
+                                />
+                        
+                            </div>
+                    
+                          {((single_slider_topic === true || double_slider_topic === true) && (show_save_controls === true || show_save_bottom === true || show_image_controls === true) && namespace !== 'None') ?
+                            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                          : null }
 
 
                             {(show_save_controls === true && show_save_bottom === true && namespace !== 'None') ?
@@ -1539,7 +1610,7 @@ class Nepi_IF_ImageViewer extends Component {
                           : null }
 
 
-                          {(show_save_controls === true && show_save_bottom === true && show_image_controls === true && namespace !== 'None') ?
+                          {((show_save_controls === true) && (show_save_bottom === true || show_image_controls === true) && namespace !== 'None') ?
                             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                           : null }
 

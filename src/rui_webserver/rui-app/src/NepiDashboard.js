@@ -169,12 +169,6 @@ class NepiDashboard extends Component {
     
     return (
       <Section title={"System Clock"}>
-        <Label title={"Clock Synced"}>
-          <BooleanIndicator value={clock_synced} />
-        </Label>
-        <Label title={"NTP Connected"}>
-          <BooleanIndicator value={clockNTP} />
-        </Label>
         <Label title={"Time"}>
           <Input disabled value={time_str} />
         </Label>
@@ -184,7 +178,12 @@ class NepiDashboard extends Component {
         <Label title={"Timezone"}>
           <Input disabled value={timezone} />
         </Label>
-
+        <Label title={"Clock Synced"}>
+          <BooleanIndicator value={clock_synced} />
+        </Label>
+        <Label title={"NTP Connected"}>
+          <BooleanIndicator value={clockNTP} />
+        </Label>
         <div hidden={show_sync_button===false}>
     
 

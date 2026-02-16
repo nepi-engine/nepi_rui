@@ -253,8 +253,10 @@ class NepiDeviceIDX extends Component {
 
   renderImageViewer() {
     const image_topic = this.findImageTopic(this.state.data_product)
-
+    const namespace = this.state.namespace ? this.state.namespace : "None"
     const image_text = image_topic.split('/idx')[0].split('/').pop() + '-' + this.state.data_product
+
+    //const double_slider_topic = (this.state.data_product === 'depth_map') ? namespace + "/set_range_window" : null
     return (
       <React.Fragment>
         <Columns>
@@ -318,7 +320,8 @@ class NepiDeviceIDX extends Component {
                           <NepiDeviceIDXControls
                               namespace={namespace}
                               dataProduct={data_product}
-                              title={ "Publish Controls"}
+                              show_controls_option={false}
+                              title={ null}
                         />
                         : null}
 

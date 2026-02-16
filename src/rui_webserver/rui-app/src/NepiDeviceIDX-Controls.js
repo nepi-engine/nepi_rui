@@ -34,7 +34,6 @@ import Input from "./Input"
 import { Column, Columns } from "./Columns"
 import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
 
-import NepiIFReset from "./Nepi_IF_Reset"
 import NepiIFConfig from "./Nepi_IF_Config" 
 
 @inject("ros")
@@ -71,6 +70,8 @@ class NepiDeviceIDXControls extends Component {
       rangeMin: null,
       rangeLimitMinM: null,
       rangeLimitMaxM: null,
+      rangeLimitMinMAdj: null,
+      rangeLimitMaxMAdj: null,
       zoomAdjustment: null,
       rotateAdjustment: null,
       tiltAdjustment: null,
@@ -113,6 +114,8 @@ class NepiDeviceIDXControls extends Component {
       rangeMin: message.range_window_ratios.start_range,
       rangeLimitMinM: message.min_range_m,
       rangeLimitMaxM: message.max_range_m,
+      rangeLimitMinMAdj: message.min_range_m_adj,
+      rangeLimitMaxMAdj: message.max_range_m_adj,
     })
     
     if (last_msg != null) {
@@ -258,27 +261,16 @@ class NepiDeviceIDXControls extends Component {
     const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
     const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
 
-
-
+    const min_range_m_adj = round(this.state.rangeLimitMinMAdj,1)
+    const max_range_m_adj = round(this.state.rangeLimitMaxMAdj,1)
       return (
         <React.Fragment>
 
             <Columns>
               <Column>
 
-
-              <div hidden={(hide_framerate)}>
-                  <Label title={"Max Framerate"}>
-                <Input
-                  value={this.state.max_framerate}
-                  disabled
-                  style={{ width: "100%" }}
-                />
-              </Label>
-
-              </div>
-              <div hidden={(hide_framerate)}>
-                  <Label title={"Pub Framerate"}>
+              
+                  <Label title={"Framerate"}>
                 <Input
                   value={pub_framerate}
                   disabled
@@ -286,32 +278,46 @@ class NepiDeviceIDXControls extends Component {
                 />
               </Label>
 
-            </div>
+          
 
 
             </Column>
             <Column>
 
-            <Label title={"Image Size"}>
-            <Input
-              value={this.state.resolutionString}
-              id="size"
-              style={{ width: "80%" }}
-              disabled={true}
-            />
-          </Label>
+
 
               </Column>
             </Columns>  
 
 
+             <Label title={"Image Size"}>
+                <Input
+                  value={this.state.resolutionString}
+                  id="size"
+                  style={{ width: "80%" }}
+                  disabled={true}
+                />
+                </Label>
+
+
           <Columns>
           <Column>
+
+              <div hidden={hide_range}>
+                <Label title={"Min Range (m)"}>
+                <Input
+                  value={min_range_m_adj}
+                  disabled={true}
+                  style={{ width: "80%" }}
+                />
+                </Label>
+
+            </div>
 
           <Label title={"Width (Deg)"}>
             <Input
               value={this.state.width_deg}
-              disabled
+              disabled={true}
               style={{ width: "80%" }}
             />
           </Label>
@@ -320,10 +326,22 @@ class NepiDeviceIDXControls extends Component {
               </Column>
               <Column>
 
+              <div hidden={hide_range}>
+                <Label title={"Max Range (m)"}>
+                <Input
+                  value={max_range_m_adj}
+                 disabled={true}
+                  style={{ width: "80%" }}
+                />
+                </Label>
+
+            </div>
+
+
               <Label title={"Height (Deg)"}>
             <Input
               value={this.state.height_deg}
-              disabled
+              disabled={true}
               style={{ width: "80%" }}
             />
           </Label>
@@ -381,14 +399,12 @@ class NepiDeviceIDXControls extends Component {
     const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
 
 
+    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : true
+    const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false
+    const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
 
-    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
-    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
-
-
-    if (never_show_controls === true){
+    if (hide_controls === true){
               <Columns>
                 <Column>
 
@@ -397,7 +413,7 @@ class NepiDeviceIDXControls extends Component {
 
     }
 
-    else if (show_controls === false){
+    else if (show_controls_option === true){
       return(
               <Columns>
                 <Column>
@@ -424,7 +440,7 @@ class NepiDeviceIDXControls extends Component {
               <Columns>
                 <Column>
 
-                    {(allways_show_controls === false) ?
+                    {(show_controls_option === true) ?
                     <Label title="Show Controls">
                         <Toggle
                           checked={show_controls===true}
@@ -441,7 +457,7 @@ class NepiDeviceIDXControls extends Component {
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-
+                      <Label title={"Controls"}></Label>
 
                       <Columns>
                         <Column>
@@ -505,7 +521,7 @@ class NepiDeviceIDXControls extends Component {
                                         min={0}
                                         max={100}
                                         tooltip={"Adjustable Resolution"}
-                                        unit={"%"}
+                                        noTextBox={true}
                                     />
               
 
@@ -526,7 +542,7 @@ class NepiDeviceIDXControls extends Component {
                                 min={0}
                                 max={100}
                                 tooltip={"Adjustable brightness"}
-                                unit={"%"}
+                                noTextBox={true}
                             />
 
                           </div>
@@ -542,7 +558,7 @@ class NepiDeviceIDXControls extends Component {
                               min={0}
                               max={100}
                               tooltip={"Adjustable contrast"}
-                              unit={"%"}
+                              noTextBox={true}
                             />
 
                           </div>
@@ -557,7 +573,7 @@ class NepiDeviceIDXControls extends Component {
                                 min={0}
                                 max={100}
                                 tooltip={"Adjustable threshold"}
-                                unit={"%"}
+                                noTextBox={true}
                             />
                           </div>
 
@@ -575,7 +591,7 @@ class NepiDeviceIDXControls extends Component {
                             max_limit_m={this.state.rangeLimitMaxM}
                             topic={namespace + "/set_range_window"}
                             tooltip={"Adjustable range"}
-                            unit={"m"}
+                            noTextBox={true}
                           />
                         </div>
 
@@ -609,7 +625,9 @@ class NepiDeviceIDXControls extends Component {
                             </Column>
                           </Columns>  
 
-
+                        <ButtonMenu>
+                          <Button  onClick={() => this.props.ros.sendTriggerMsg(namespace + '/reset_controls')}>{"Reset"}</Button>
+                        </ButtonMenu>
 
                     <NepiIFConfig
                         namespace={namespace}
@@ -659,7 +677,7 @@ class NepiDeviceIDXControls extends Component {
     else {
       return (
 
-          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
+          <Section title={(this.props.title != undefined) ? this.props.title : null}>
 
               { this.renderControlData()}
               { this.renderControlPanel()}

@@ -508,20 +508,26 @@ class ROSConnectionStore {
     else {
       const service_namespace = name.startsWith('/')? name : `${this.rosPrefix}/${name}`
       if ( this.serviceNames.indexOf(service_namespace) !== -1) {
-        return new Promise(resolve => {
-          const client = new ROS.Service({
-            ros: this.ros,
-            name: service_namespace,
-            serviceType: messageType
-          })
-          const request = new ROS.ServiceRequest(args)
-          client.callService(
-            request,
-            action(result => {
-              resolve(msgKey ? result[msgKey] : result)
-            })
-          )
-        })
+
+        try {
+                return new Promise(resolve => {
+                  const client = new ROS.Service({
+                    ros: this.ros,
+                    name: service_namespace,
+                    serviceType: messageType
+                  })
+                  const request = new ROS.ServiceRequest(args)
+                  client.callService(
+                    request,
+                    action(result => {
+                      resolve(msgKey ? result[msgKey] : result)
+                    })
+                  )
+                })
+        }
+        catch (e) {
+          return null
+        }
       }
       else{
         return null
