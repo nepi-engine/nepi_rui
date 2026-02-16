@@ -902,7 +902,8 @@ class Nepi_IF_ImageViewer extends Component {
       const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
       const hide_window = (!has_window || auto_controls.indexOf('window') !== -1)
 
-
+      const min_range_m_adj = round( message.min_range_m_adj,1)
+      const max_range_m_adj = round(message.max_range_m_adj,1)
 
       return (
 
@@ -933,9 +934,9 @@ class Nepi_IF_ImageViewer extends Component {
           <Column>
 
               <div hidden={hide_range}>
-                <Label title={"Max Range (m)"}>
+                <Label title={"Min Range (m)"}>
                 <Input
-                  value={this.state.rangeLimitMinMAdj}
+                  value={min_range_m_adj}
                   disabled={true}
                   style={{ width: "80%" }}
                 />
@@ -948,9 +949,9 @@ class Nepi_IF_ImageViewer extends Component {
               <Column>
 
               <div hidden={hide_range}>
-                <Label title={"Min Range (m)"}>
+                <Label title={"Max Range (m)"}>
                 <Input
-                  value={this.state.rangeLimitMaxMAdj}
+                  value={max_range_m_adj}
                  disabled={true}
                   style={{ width: "80%" }}
                 />
