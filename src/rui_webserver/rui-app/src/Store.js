@@ -145,6 +145,7 @@ class ROSConnectionStore {
   resetStates(){
       this.ros = null
       this.rosCheckStarted = false
+      this.rosAutoReconnect = false
       this.connectedToRos = false
 
       this.connectedToNepi = false
@@ -367,16 +368,19 @@ class ROSConnectionStore {
               update_time = 100
               this.serviceNames = this.systemStatusServices
         }
-        else {
-          try {
-            this.ros.getServices(result => {
-              update_time = 2000
-              this.serviceNames = result
-            })
-          } catch (error) {
-            this.serviceNames = []
-          }
+        else{
+          this.serviceNames = []
         }
+        // else {
+        //   try {
+        //     this.ros.getServices(result => {
+        //       update_time = 2000
+        //       this.serviceNames = result
+        //     })
+        //   } catch (error) {
+        //     this.serviceNames = []
+        //   }
+        // }
 
 
         const topicNames = (this.topicNamesLast != null) ? this.topicNamesLast : []
