@@ -360,7 +360,7 @@ class Nepi_IF_ImageViewer extends Component {
 
       // pixelData is a Uint8ClampedArray with 4 values: [R, G, B, A]
       const ctx = canvas.getContext('2d')
-      const imageData = ctx.getImageData(x, y, 1, 1)
+      const imageData = ctx.getImageData(x, y, 1, 1, { willReadFrequently: true })
       const pixelData = imageData.data // This is a Uint8ClampedArray [R, G, B, A]
       const r = pixelData[0]
       const g = pixelData[1]
@@ -1265,7 +1265,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
           <ButtonMenu>
-            <Button onClick={() => sendTriggerMsg( namespace + "/reset_res_orients")}>{"Reset Controls"}</Button>
+            <Button onClick={() => sendTriggerMsg( namespace + "/reset_settings")}>{"Reset Controls"}</Button>
           </ButtonMenu>
 
 
