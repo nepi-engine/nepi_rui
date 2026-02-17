@@ -1100,6 +1100,7 @@ renderDetectorSettings() {
       <NepiIFImageViewer
         image_topic={sel_img}
         title={sel_img_text}
+        show_res_orient={false}
         save_data_topic={save_data_topic}
       />
 
