@@ -60,9 +60,9 @@ class NepiIFImageViewerSelector extends Component {
       image_topics_names: [],
       filter_list: [],
       id: '0',
-      selected_image: (this.props.image_topic !== undefined) ? this.props.image_topic : 'None',
+      selected_image: 'None',
       selected_image_index: -1,
-      selected_image_text: (this.props.title !== undefined) ? this.props.title : 'None',
+      selected_image_text: 'None',
 
       connected: true
     }
@@ -139,14 +139,12 @@ class NepiIFImageViewerSelector extends Component {
 
     // Update Class Variables
     const id = this.props.id
+    if (id === this.state.id){
     //var selected_image = this.props.image_topic !== undefined ? this.props.image_topic : this.state.selected_image
+    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
     var selected_image = this.state.selected_image
 
-    const class_id = this.state.id
-    if ((id === class_id) || (selected_image === 'None')){
-      if ((selected_image === 'None') && (this.props.image_topic !== undefined)) {
-        selected_image = this.props.image_topic
-      } 
+
       var selected_ind = this.state.selected_image_index
       var selected_text = this.state.selected_image_text
       const names = createMenuFirstLastNames(sorted_items)
@@ -154,8 +152,7 @@ class NepiIFImageViewerSelector extends Component {
       var index_changed = false
       var index_name = ''
       var index_name_changed = false
-      var updated_image = null
-      const image_topics = this.state.image_topics
+      var updated_image = false
       if (JSON.stringify(image_topics) !== JSON.stringify(sorted_items)) {
         index = sorted_items.indexOf(selected_image)
         if (selected_ind !== index || selected_text !== names[index]) {
@@ -168,21 +165,23 @@ class NepiIFImageViewerSelector extends Component {
       
       }
 
-      if (sorted_items.indexOf(selected_image) === -1 ) {
+      if (selected_image === 'None' ) {
         if (sorted_items.length > 0) {
+          selected_image = sorted_items[0]
           this.setState({id: id,
-                        selected_image: sorted_items[0],
+                        selected_image: selected_image,
                         selected_image_index: 0,
                         selected_image_text: names[0]})
-          updated_image = selected_image
+          updated_image = true
         }
         else if (selected_image !== 'None') {
+          selected_image = 'None'
           this.setState({
             id: id,
-            selected_image: 'None',
+            selected_image: selected_image,
             selected_image_index: -1,
             selected_image_text: 'None'})
-          updated_image = selected_image
+          updated_image = true
         }
         
       }
@@ -196,15 +195,18 @@ class NepiIFImageViewerSelector extends Component {
             id: id,
             selected_image_index: index,
             selected_image_text: index_name})
-          updated_image = selected_image
+          updated_image = true
           }
           
       }
 
+      // if (selected_image !== image_topic && image_topic === 'None') {
+      //   updated_image = true
+      // }
       const {sendStringMsg} = this.props.ros
       const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
-      if ((select_updated_topic != null) && (updated_image != null)){
-        sendStringMsg(select_updated_topic,updated_image)
+      if ((select_updated_topic != null) && (updated_image === true)){
+        sendStringMsg(select_updated_topic,selected_image)
       }
     }
 
@@ -362,7 +364,7 @@ class NepiIFImageViewerSelector extends Component {
 
   renderImageViewer() {
 
-    const image_topic = this.state.selected_image
+    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
     const title = createMenuFirstLastName(image_topic)
     
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
@@ -376,6 +378,7 @@ class NepiIFImageViewerSelector extends Component {
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
+    const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const save_data_topic = this.props.save_data_topic
     
     return (
@@ -390,6 +393,7 @@ class NepiIFImageViewerSelector extends Component {
       show_image_controls={show_image_controls}
       show_save_controls={show_save_controls}
       show_save_bottom={show_save_bottom}
+      show_reset_button={show_reset_button}
       allow_pan_zoom={allow_pan_zoom}
       save_data_topic={save_data_topic}
       make_section={false}

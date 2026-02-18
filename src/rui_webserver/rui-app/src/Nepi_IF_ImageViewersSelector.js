@@ -51,6 +51,8 @@ class NepiIFImageViewersSelector extends Component {
     this.renderImageWindows = this.renderImageWindows.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
     this.setNumWindows = this.setNumWindows.bind(this)
+
+    this.renderImageViewersSelection = this.renderImageViewersSelection.bind(this)
     
   }
 
@@ -85,7 +87,7 @@ class NepiIFImageViewersSelector extends Component {
 
 
   setNumWindows(num_windows){
-      var cur_num_windows = this.state.num_windows
+      var cur_num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
 
       if (num_windows === 0 || num_windows > 4){
           num_windows = 1
@@ -133,49 +135,35 @@ class NepiIFImageViewersSelector extends Component {
                 <Columns>
                   <Column>
                   
-               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-    
+   
                 <div style={{ display: 'flex' }}>
 
-                      <div style={{ width: '5%' }}>
-                        {}
-                      </div>
+ 
 
-                      <div style={{ width: '10%' }} centered={"true"} >
+                      <div style={{ width: '15%' }} centered={"true"} >
                         <ButtonMenu>
-                          <Button onClick={() => this.setNumWindows(1)}>{"1 Window"}</Button>
+                          <Button onClick={() => this.setNumWindows(1)}>{"1 Image"}</Button>
                         </ButtonMenu>
                       </div>
 
-                      <div style={{ width: '5%' }}>
-                        {}
-                      </div>
 
-                      <div style={{ width: '10%' }} centered={"true"} >
+
+                      <div style={{ width: '15%' }} centered={"true"} >
                         <ButtonMenu>
-                          <Button onClick={() => this.setNumWindows(2)}>{"2 Windows"}</Button>
+                          <Button onClick={() => this.setNumWindows(2)}>{"2 Images"}</Button>
                         </ButtonMenu>
                       </div>
 
-                      <div style={{ width: '5' }}>
-                        {}
-                      </div>
 
-                      <div style={{ width: '10%' }} centered={"true"} >
+
+                      <div style={{ width: '15%' }} centered={"true"} >
                         <ButtonMenu>
-                          <Button onClick={() => this.setNumWindows(4)}>{"4 Windows"}</Button>
+                          <Button onClick={() => this.setNumWindows(4)}>{"4 Images"}</Button>
                         </ButtonMenu>
                       </div>
 
-                      <div style={{ width: '5%' }}>
-                        {}
-                      </div>
-      
-                      <div style={{ width: '10%' }} centered={"true"} >
-                        {}
-                      </div>
 
-                      <div style={{ width: '15%' }}>
+                      <div style={{ width: '30%' }}>
                         {}
                       </div>
 
@@ -232,6 +220,11 @@ class NepiIFImageViewersSelector extends Component {
 
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
     this.setNumWindows(num_windows)
+
+    var show_selector_buttons = false
+    if (this.state.num_windows === 1){
+      show_selector_buttons = true
+    }
     const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
     const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
     const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
@@ -242,7 +235,6 @@ class NepiIFImageViewersSelector extends Component {
    
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
     const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
-
   
     const show_selectors = this.state.show_selectors
     const show_image_controls = (num_windows === 1) //this.state.show_image_controls
@@ -275,7 +267,7 @@ class NepiIFImageViewersSelector extends Component {
                             include_filters={include_filters}
                             show_image_controls={show_image_controls}
                             show_selector={show_selectors}
-                            show_selector_buttons={show_selectors}
+                            show_selector_buttons={show_selector_buttons}
                             show_reset_button={show_reset_button}
                             allow_pan_zoom={allow_pan_zoom}
                             mouse_event_topic={mouse_event_topics[0]}
@@ -306,7 +298,7 @@ class NepiIFImageViewersSelector extends Component {
                               include_filters={include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
-                              show_selector_buttons={show_selectors}
+                              show_selector_buttons={show_selector_buttons}
                               show_reset_button={show_reset_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
@@ -340,7 +332,7 @@ class NepiIFImageViewersSelector extends Component {
                               include_filters={include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
-                              show_selector_buttons={show_selectors}
+                              show_selector_buttons={show_selector_buttons}
                               show_reset_button={show_reset_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
@@ -371,7 +363,7 @@ class NepiIFImageViewersSelector extends Component {
                               include_filters={include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
-                              show_selector_buttons={show_selectors}
+                              show_selector_buttons={show_selector_buttons}
                               show_reset_button={show_reset_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
@@ -415,17 +407,24 @@ class NepiIFImageViewersSelector extends Component {
   }
 
 
-
-  render() {
-    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+  renderImageViewersSelection() {
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
+    const show_constrols_bar_bottom = (this.props.show_constrols_bar_bottom !== undefined) ? this.props.show_constrols_bar_bottom : false
     
-    if (make_section === false){
-      return (
-        <Columns>
-        <Column>
+     return (
+        
+        <React.Fragment>
+
+            {(show_controls_bar === true && show_constrols_bar_bottom === false) ?
+               this.renderControlBar()
+            : null }      
+
+            {(show_controls_bar === true && show_constrols_bar_bottom === false) ?
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+            : null }              
+         
               
                 {(show_save_controls === true && show_save_bottom === false) ?
                  this.renderSaveData()
@@ -444,12 +443,38 @@ class NepiIFImageViewersSelector extends Component {
             : null }
 
 
-            {(show_save_controls === true && show_save_bottom === true && show_controls_bar === true) ?
+            {(show_save_controls === true && show_save_bottom === true && show_controls_bar === true && show_constrols_bar_bottom === true) ?
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
             : null }              
 
-              {this.renderControlBar()}
 
+            {(show_controls_bar === true && show_constrols_bar_bottom === true) ?
+               this.renderControlBar()
+            : null }        
+
+          </React.Fragment>
+
+      )
+
+  }
+
+
+
+
+
+  render() {
+    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
+    const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
+    const show_constrols_bar_bottom = (this.props.show_constrols_bar_bottom !== undefined) ? this.props.show_constrols_bar_bottom : false
+    
+    if (make_section === false){
+      return (
+        <Columns>
+        <Column>
+ 
+            {this.renderImageViewersSelection()}    
                
 
         </Column>
@@ -461,11 +486,7 @@ class NepiIFImageViewersSelector extends Component {
 
       <Section>
 
-              {this.renderSaveData()}
-              
-              {this.renderImageWindows()}
-
-              {this.renderControlBar()}
+            {this.renderImageViewersSelection()} 
 
       </Section>
       )

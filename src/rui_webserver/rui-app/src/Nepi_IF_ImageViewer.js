@@ -1544,13 +1544,13 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
                         
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '10%' }} hidden={(show_reset_button === false)}>
 
-                          {(show_reset_button === true) ?
+
                                 <ButtonMenu>
                                   <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset"}</Button>
                                 </ButtonMenu>
-                          : null }
+
                         </div>
 
 {/* 

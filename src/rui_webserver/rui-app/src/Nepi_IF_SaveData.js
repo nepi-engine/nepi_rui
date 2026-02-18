@@ -283,7 +283,7 @@ class NepiIFSaveData extends Component {
     var ratesList = []
     var configsStr = ""
     var entryStr
-    var configsStrList = [""]
+    var configsStrList = ['\n']
     var i = 0
     var i2 = 0
     var save_rates_list = []
@@ -302,10 +302,10 @@ class NepiIFSaveData extends Component {
                       ratesList.push(round(save_rates_list[i2].save_rate_hz,2))
                   }
                   shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
-                  configsStrList.push(shortname + '\n')
-                  configsStrList.push('----------------------\n')
+                  configsStrList.push(shortname + '    \n')
+                  configsStrList.push('----------------------    \n')
                   for (let ind = 0; ind < namesList.length; ind++) {
-                        entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                        entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz    \n"
                         configsStrList.push(entryStr)
                     
                   }
@@ -322,7 +322,7 @@ class NepiIFSaveData extends Component {
       for (let ind = 0; ind < namesList.length; ind++) {
         if (namesList[ind] !== "None" && namesList[ind] !== "All" ){
          
-            entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+            entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz    \n"
             configsStrList.push(entryStr)
         
         }
@@ -347,7 +347,7 @@ class NepiIFSaveData extends Component {
     var ratesList = []
     var configsStr = ""
     var entryStr
-    var configsStrList = [""]
+    var configsStrList = ['\n']
     var save_rates_list = {}
     var i = 0
     var i2 = 0
@@ -366,11 +366,11 @@ class NepiIFSaveData extends Component {
                       ratesList.push(round(save_rates_list[i2].save_rate_hz,2))
                   }
                   shortname = topic.replace("/" + namespacePrefix + "/" + deviceId + '/','' ).replace('/save_data','')  
-                  configsStrList.push(shortname + '\n')
-                  configsStrList.push('----------------------\n')
+                  configsStrList.push(shortname + '    \n')
+                  configsStrList.push('----------------------    \n')
                   for (let ind = 0; ind < namesList.length; ind++) {
                     if (ratesList[ind] > 0){
-                        entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+                        entryStr = "  " + namesList[ind] + " : " + ratesList[ind] +  " Hz    \n"
                         configsStrList.push(entryStr)
                     }
                     
@@ -388,7 +388,7 @@ class NepiIFSaveData extends Component {
       for (let ind = 0; ind < namesList.length; ind++) {
         if (namesList[ind] !== "None" && namesList[ind] !== "All" ){
           if (ratesList[ind] > 0){
-            entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz\n"
+            entryStr = namesList[ind] + " : " + ratesList[ind] +  " Hz    \n"
             configsStrList.push(entryStr)
           }
         }
@@ -983,8 +983,8 @@ sendLogRateUpdate(rate) {
 
 
 
-                        <Label title={"All Data Save Settings"}>
-                        </Label>
+                        {/* <Label title={"All Data Save Settings"}>
+                        </Label> */}
 
                         <pre style={{ height: "400px", overflowY: "auto" }}>
                           {this.getSaveConfigString()}
@@ -996,8 +996,8 @@ sendLogRateUpdate(rate) {
                   <div  hidden={show_active_settings === false}>
 
 
-                        <Label title={"Active Data Save Settings"}>
-                        </Label>
+                        {/* <Label title={"Active Data Save Settings"}>
+                        </Label> */}
 
                         <pre style={{ height: "200px", overflowY: "auto" }}>
                           {this.getActiveConfigString()}

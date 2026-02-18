@@ -212,7 +212,7 @@ class NepiDeviceRBX extends Component {
 
                         {(device_selected == true) ?
                           <NepiIFAdminDevelop
-                              title={"Advanced Settings"}
+                              title={"Admin Settings"}
                               show_advanced_option={false}
                               show_admin_node_names={true}
                               namespace={namespace}

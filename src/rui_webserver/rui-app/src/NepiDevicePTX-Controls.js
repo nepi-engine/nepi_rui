@@ -94,6 +94,7 @@ class NepiDevicePTXControls extends Component {
     const tiltHardStopMin = round(message.tilt_max_hardstop_deg, 1)
     const panHardStopMax = round(message.pan_min_hardstop_deg, 1)
     const tiltHardStopMax = round(message.tilt_min_hardstop_deg, 1)
+    const panSoftStopMin = round(message.pan_min_softstop_deg, 1)
     const tiltSoftStopMin = round(message.pan_min_softstop_deg, 1)
     const panSoftStopMax = round(message.pan_max_softstop_deg, 1)
     const tiltSoftStopMax = round(message.tilt_min_softstop_deg, 1)
@@ -105,18 +106,20 @@ class NepiDevicePTXControls extends Component {
           tiltHardStopMin !== this.state.tiltHardStopMin ||
           panHardStopMax !== this.state.panHardStopMax ||
           tiltHardStopMax !== this.state.tiltHardStopMax ||
+          panSoftStopMin !== this.state.panSoftStopMin ||
           tiltSoftStopMin !== this.state.tiltSoftStopMin ||
           panSoftStopMax !== this.state.panSoftStopMax ||
           tiltSoftStopMax !== this.state.tiltSoftStopMax
     )
     if (needs_update === true){
       this.setState({  
-          panHomePos : null,
+          panHomePos : panHomePos,
           tiltHomePos : tiltHomePos,
           panHardStopMin : panHardStopMin,
           tiltHardStopMin : tiltHardStopMin,
           panHardStopMax : panHardStopMax,
           tiltHardStopMax : tiltHardStopMax,
+          panSoftStopMin : panSoftStopMin,
           tiltSoftStopMin : tiltSoftStopMin,
           panSoftStopMax : panSoftStopMax,
           tiltSoftStopMax : tiltSoftStopMax
@@ -138,6 +141,7 @@ class NepiDevicePTXControls extends Component {
                     panHardStopMax : null,
                     tiltHardStopMax : null,
                     tiltSoftStopMin : null,
+                    panSoftStopMin : null,
                     panSoftStopMax : null,
                     tiltSoftStopMax : null,
                     statusListener: null
@@ -314,7 +318,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   
 
   renderControlData() {
-    const { onPTXGoHome,} = this.props.ros
+    const { onPTXGoHome,onPTXStop} = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
 
@@ -394,7 +398,24 @@ componentDidUpdate(prevProps, prevState, snapshot) {
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-          <Label title={"PT CONTROLS"} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          { (has_homing === false) ?
+
+
+          <ButtonMenu>
+            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+          </ButtonMenu>
+
+          :
+
+          <ButtonMenu>
+            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
+          </ButtonMenu>
+
+          }
+
+
+          <Label title={""} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
             <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
           </Label>
@@ -422,13 +443,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
           </div>
 
-          <div hidden={(has_homing === false)}>
 
-          <ButtonMenu>
-            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
-          </ButtonMenu>
-
-        </div>
 
       </React.Fragment>
       )
@@ -492,7 +507,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               <Columns>
                 <Column>
 
-                    <Label title="Show Controls">
+                    <Label title="Show Options">
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -668,6 +683,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
                         <ButtonMenu>
+
                           <Button disabled={!has_homing} onClick={() => onPTXSetHomeHere(namespace)}>{"Set Home Here"}</Button>
                         </ButtonMenu>
 
