@@ -152,16 +152,16 @@ class NepiDashboard extends Component {
     var date_str = ""
     var timezone = ""
 
-    var time_sync_restricted = true
+    var time_restricted = true
     var clock_synced = false
     var auto_sync_clocks = false
     var show_sync_button = false
 
     if (timeMgrStatus != null){
-      time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+      time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
       clock_synced = timeMgrStatus.clock_synced
       auto_sync_clocks = timeMgrStatus.auto_sync_clocks
-      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
+      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_restricted === false )
       time_str = timeStatusTimeStr
       date_str = timeStatusDateStr
       timezone = timeStatusTimezoneDesc

@@ -67,7 +67,7 @@ class NepiSystemDevice extends Component {
       netMgrName: "network_mgr",
       netMgrNamespace: null,
 
-      timeMgrName: "time_sync_mgr",
+      timeMgrName: "time_mgr",
       timeMgrNamespace: null,
 
       autoRate: this.props.ros.triggerAutoRateHz,
@@ -574,7 +574,7 @@ updateMgrTimeStatusListener() {
     var date_str = ""
     var timezone = ""
 
-    var time_sync_restricted = true
+    var time_restricted = true
     var time_ntp_restricted = true
     var clock_synced = false
     var auto_sync_clocks = false
@@ -585,13 +585,13 @@ updateMgrTimeStatusListener() {
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
     if (timeStatusTime && timeStatus){
-      time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+      time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
       time_ntp_restricted = userRestricted.indexOf('Time_NTP') !== -1
       clock_synced = timeStatus.clock_synced
       auto_sync_clocks = timeStatus.auto_sync_clocks
       auto_sync_timezones = timeStatus.auto_sync_timezones
 
-      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_sync_restricted === false )
+      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_restricted === false )
       time_str = timeStatusTimeStr
       date_str = timeStatusDateStr
       timezone = timeStatusTimezoneDesc
@@ -616,7 +616,7 @@ updateMgrTimeStatusListener() {
         </Label>
 
 
-        {(IS_LOCAL === false && systemManagesTime === true && time_sync_restricted === false) &&
+        {(IS_LOCAL === false && systemManagesTime === true && time_restricted === false) &&
 
           <Columns>
           <Column>
@@ -808,7 +808,7 @@ updateMgrTimeStatusListener() {
     
     const { systemManagesNetwork, userRestricted} = this.props.ros
     //Unused const license_restricted = userRestricted.indexOf('License') !== -1
-    //Unused const time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+    //Unused const time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
     const network_restricted = userRestricted.indexOf('Network') !== -1
     //Unused const wifi_restricted = userRestricted.indexOf('WiFi') !== -1
     //Unused const ap_restricted = userRestricted.indexOf('Access Point') !== -1
@@ -1062,7 +1062,7 @@ updateMgrTimeStatusListener() {
     
     const { systemManagesNetwork, userRestricted} = this.props.ros
     //Unused const license_restricted = userRestricted.indexOf('License') !== -1
-    //Unused const time_sync_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
+    //Unused const time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
     //Unused const network_restricted = userRestricted.indexOf('Network') !== -1
     const wifi_restricted = userRestricted.indexOf('WiFi') !== -1
     const ap_restricted = userRestricted.indexOf('Access Point') !== -1

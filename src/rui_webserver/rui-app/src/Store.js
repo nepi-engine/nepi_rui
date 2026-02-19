@@ -42,7 +42,7 @@ const NODE_DISPLAY_NAMES = {
   network_mgr: "Network",
   ai_detector_mgr: "Classifier",
   system_mgr: "System",
-  time_sync_mgr: "Time Sync",
+  time_mgr: "Time Sync",
   trigger_mgr: "Triggering",
   nepi_link_ros_bridge: "NEPI Connect",
   gpsd_ros_client: "GPSD Client",
