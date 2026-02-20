@@ -336,25 +336,27 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       has_homing = capabilities && (capabilities.has_homing)
     }
 
-    const panPosition = status_msg.pan_now_deg
+     const panPosition = status_msg.pan_now_deg
     const tiltPosition = status_msg.tilt_now_deg
-
-    const speed_pan_dps = status_msg.speed_pan_dps
-    const speed_tilt_dps = status_msg.speed_tilt_dps
-
 
     const panPositionClean = panPosition + .001
     const tiltPositionClean = tiltPosition + .001
 
+    const panMove = status_msg.pan_goal_deg
+    const tiltMove = status_msg.tilt_goal_deg
 
+    const panMoveClean = panMove + .001
+    const tiltMoveClean = tiltMove + .001
+
+
+
+
+    const speed_pan_dps = status_msg.speed_pan_dps
+    const speed_tilt_dps = status_msg.speed_tilt_dps
+   
       
       return (
         <React.Fragment>
-
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
-          </label>
-
 
 
           <Label title={""}>
@@ -366,7 +368,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
           <div hidden={(has_abs_pos === false)}>
 
-              <Label title={"Present Position"}>
+              <Label title={"Current Position"}>
                 <Input
                   disabled
                   style={{ width: "45%", float: "left" }}
@@ -376,6 +378,19 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                   disabled
                   style={{ width: "45%" }}
                   value={round(tiltPositionClean, 2)}
+                />
+              </Label>
+
+              <Label title={"Move Position"}>
+                <Input
+                  disabled
+                  style={{ width: "45%", float: "left" }}
+                  value={round(panMoveClean, 2)}
+                />
+                <Input
+                  disabled
+                  style={{ width: "45%" }}
+                  value={round(tiltMoveClean, 2)}
                 />
               </Label>
 
@@ -409,7 +424,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
           <ButtonMenu>
             <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
-            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"Go Home"}</Button>
+            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"GO HOME"}</Button>
           </ButtonMenu>
 
           }
@@ -492,6 +507,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
     const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
+    const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : true
 
     if (never_show_controls === true){
               <Columns>
@@ -547,7 +563,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-
+                      <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                        {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
+                      </label>
 
 
                         <Label title={""}>
@@ -724,14 +742,12 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
       return (
 
-          <Columns>
-            <Column >
+    <React.Fragment>
 
               { this.renderControlData()}
               { this.renderControlPanel()}
 
-            </Column>
-          </Columns>
+    </React.Fragment>
       )
     }
     else {

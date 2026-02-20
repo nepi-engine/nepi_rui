@@ -348,15 +348,13 @@ class NepiIF3DTransform extends Component {
 
     if (transfromNamespace !== 'None' && make_section === true){
       return (
-        <Columns>
-          <Column>
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"3D Transforms"}
-         </label>
-          {this.renderTransform()}
+          <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {"3D Transforms"}
+          </label>
+            {this.renderTransform()}
 
-          </Column>
-        </Columns>
+          </React.Fragment>
       )
     }
     else if (transfromNamespace !== 'None' && make_section === false) {

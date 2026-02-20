@@ -1092,12 +1092,10 @@ sendLogRateUpdate(rate) {
     }
     else if (make_section === false){
       return (
-        <Columns>
-        <Column>
+        <React.Fragment>
         {this.renderSaveBar()}
          {this.renderControlOptions()}
-        </Column>
-        </Columns>
+        </React.Fragment>
       )
     }
     else {

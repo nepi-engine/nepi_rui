@@ -242,16 +242,13 @@ class NepiDeviceNPXControls extends Component {
     else if (make_section === false){
 
       return (
-
-          <Columns>
-            <Column >
+          <React.Fragment>
 
               { this.renderControlData()}
               { this.renderControlPanel()}
 
 
-            </Column>
-          </Columns>
+          </React.Fragment>
       )
     }
     else {

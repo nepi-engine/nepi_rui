@@ -1808,12 +1808,10 @@ class Nepi_IF_ImageViewer extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     if (make_section === false){
       return (
-        <Columns>
-        <Column>
+          <React.Fragment>
         
         {this.renderImageViewer()}
-        </Column>
-        </Columns>
+          </React.Fragment>
       )
     }
     else {

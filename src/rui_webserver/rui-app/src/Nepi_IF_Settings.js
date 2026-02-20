@@ -569,14 +569,12 @@ class Nepi_IF_Settings extends Component {
 
       return (
 
-          <Columns>
-            <Column >
+          <React.Fragment>
 
                {this.renderSettings()}
 
 
-            </Column>
-          </Columns>
+          </React.Fragment>
       )
     }
     else {

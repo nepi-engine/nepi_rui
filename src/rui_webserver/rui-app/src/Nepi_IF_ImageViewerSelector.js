@@ -414,8 +414,7 @@ class NepiIFImageViewerSelector extends Component {
 
     if (make_section === false){
       return (
-        <Columns>
-        <Column>
+          <React.Fragment>
 
         <div style={{ display: 'flex' }}>
               <div style={{ width: '30%' }}>
@@ -435,8 +434,7 @@ class NepiIFImageViewerSelector extends Component {
         <div  hidden={hide_image}>
           {this.renderImageViewer()}
         </div>
-        </Column>
-        </Columns>
+          </React.Fragment>
       )
     }
     else {

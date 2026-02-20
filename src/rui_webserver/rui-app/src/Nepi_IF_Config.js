@@ -109,8 +109,7 @@ class NepiIFConfig extends Component {
 
         return (
 
-          <Columns>
-          <Column>
+          <React.Fragment>
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                   <Columns>
@@ -152,8 +151,7 @@ class NepiIFConfig extends Component {
                     : null }
 
 
-          </Column>
-          </Columns>
+          </React.Fragment>
         )
       }
   }

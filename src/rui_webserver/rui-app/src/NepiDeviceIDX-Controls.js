@@ -664,14 +664,12 @@ class NepiDeviceIDXControls extends Component {
 
       return (
 
-          <Columns>
-            <Column >
+    <React.Fragment>
               { this.renderControlData()}
               { this.renderControlPanel()}
 
 
-            </Column>
-          </Columns>
+    </React.Fragment>
       )
     }
     else {

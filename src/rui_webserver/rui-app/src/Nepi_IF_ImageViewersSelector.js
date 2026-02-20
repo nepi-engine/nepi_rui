@@ -42,7 +42,7 @@ class NepiIFImageViewersSelector extends Component {
       needs_update: false,
 
       show_image_controls: false,
-      show_selectors: true
+      show_selectors: false
     }
 
     this.getAllSaveNamespace = this.getAllSaveNamespace.bind(this)
@@ -123,8 +123,9 @@ class NepiIFImageViewersSelector extends Component {
     }
 
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
-    const show_image_controls_option = true
-    const show_image_controls = this.state.show_image_controls
+    const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
+    const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
     const show_selectors_option = true
     const show_selectors = this.state.show_selectors
     return (
@@ -169,12 +170,12 @@ class NepiIFImageViewersSelector extends Component {
 
                       <div style={{ width: '10%' }} centered={"true"} hidden={show_image_controls_option === false}>
 
-                        {/* <Label title="Show Controls">
+                        <Label title="Show Controls">
                           <Toggle
                             checked={show_image_controls===true}
                             onClick={() => onChangeSwitchStateValue.bind(this)("show_image_controls",show_image_controls)}>
                           </Toggle>
-                      </Label> */}
+                      </Label>
 
                     </div>
 
@@ -237,7 +238,8 @@ class NepiIFImageViewersSelector extends Component {
     const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
   
     const show_selectors = this.state.show_selectors
-    const show_image_controls = (num_windows === 1) //this.state.show_image_controls
+    const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
     const show_reset_button = (num_windows === 1)
     const allow_pan_zoom = (num_windows === 1)
 
@@ -246,7 +248,7 @@ class NepiIFImageViewersSelector extends Component {
     const colFlexSize_1 = (has_col_2 === false)? "100%" : "49%"
     const colFlexSize_gap = (has_col_2 === false)? "0%" : "2%"
     const colFlexSize_2 = (has_col_2 === false)? "0%" : "49%"
-    
+    const make_section = (num_windows !== 1)
     
   
       return (
@@ -272,7 +274,7 @@ class NepiIFImageViewersSelector extends Component {
                             allow_pan_zoom={allow_pan_zoom}
                             mouse_event_topic={mouse_event_topics[0]}
                             select_updated_topic={select_updated_topics[0]}
-                            make_section={false}
+                            make_section={make_section}
                             show_save_controls={false}
                           />
                         </div>
@@ -303,7 +305,7 @@ class NepiIFImageViewersSelector extends Component {
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
                               select_updated_topic={select_updated_topics[1]}
-                             make_section={false}
+                             make_section={make_section}
                              show_save_controls={false}
                             />
                           </div>          
@@ -337,7 +339,7 @@ class NepiIFImageViewersSelector extends Component {
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
                               select_updated_topic={select_updated_topics[2]}
-                              make_section={false}
+                              make_section={make_section}
                               show_save_controls={false}
                             />
                           </div>        
@@ -368,7 +370,7 @@ class NepiIFImageViewersSelector extends Component {
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
                               select_updated_topic={select_updated_topics[3]}
-                             make_section={false}
+                             make_section={make_section}
                              show_save_controls={false}
                             />
                           </div>          
@@ -471,14 +473,12 @@ class NepiIFImageViewersSelector extends Component {
     
     if (make_section === false){
       return (
-        <Columns>
-        <Column>
+          <React.Fragment>
  
             {this.renderImageViewersSelection()}    
                
 
-        </Column>
-        </Columns>
+          </React.Fragment>
       )
     }
     else {
