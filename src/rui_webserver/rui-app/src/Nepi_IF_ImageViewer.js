@@ -105,6 +105,8 @@ class Nepi_IF_ImageViewer extends Component {
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
       status_listenter: null,
 
+      click_count: 0,
+
       connected: false
     }
     this.updateFrame = this.updateFrame.bind(this)
