@@ -27,8 +27,9 @@ import HorizontalDivider from "./HorizontalDivider"
 //import PageLock from "./PageLock"
 
 
-import Dashboard from "./NepiDashboard"
 
+import Dashboard from "./NepiDashboard"
+import NepiAdmin from "./NepiAdmin"
 import NepiIFAppSelector from "./Nepi_IF_AppSelector"
 
 
@@ -78,7 +79,8 @@ class MainMenuDevelop extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-
+          <Route exact path="/admin" component={NepiAdmin} />
+          
           <Route 
             path="/devices_selector" 
             render={(props) => <NepiIFAppSelector {...props} app_id={'DEVICE'} />} 

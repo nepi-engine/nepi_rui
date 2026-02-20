@@ -60,7 +60,7 @@ const styles = Styles.Create({
 
 @inject("ros")
 @observer
-class NEPIMgr extends Component {
+class NepiAdmin extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -254,4 +254,4 @@ class NEPIMgr extends Component {
   }
 
 }
-export default NEPIMgr
+export default NepiAdmin

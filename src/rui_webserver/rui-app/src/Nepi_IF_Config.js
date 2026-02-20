@@ -133,7 +133,7 @@ class NepiIFConfig extends Component {
                     <Column>
 
                     <ButtonMenu>
-                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/factory_reset_config")}>{"Restore"}</Button>
+                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/system_reset_config")}>{"Restore"}</Button>
                     </ButtonMenu>
 
 

@@ -29,6 +29,7 @@ import HorizontalDivider from "./HorizontalDivider"
 //import PageLock from "./PageLock"
 
 
+import Background from "./Background"
 import Dashboard from "./NepiDashboard"
 
 import MainMenuDevelop from "./MainMenuDevelop"
@@ -61,13 +62,14 @@ class App extends Component {
         <Nav
           unlicensed={unlicensed}
           license_type={license_type}
+          connected={false}
           pages={[
             { path: "/", label: "Connecting" },
           ]}
         />
         <HorizontalDivider />
         <Switch>
-          <Route exact path="/" component={Dashboard} />
+          <Route exact path="/" component={Background} />
           
         </Switch>
       </Page>

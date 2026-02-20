@@ -795,6 +795,10 @@ class ROSConnectionStore {
   @observable userRestrictions = []
   @observable userRestricted = []
 
+  @observable ruiLoginEnabled = false
+  @observable uiLoginPasswordValid = false
+  @observable uiLoginModeSet = false
+
   @observable ruiRestrictions = []
   @observable ruiRestricted = []
 
@@ -879,6 +883,11 @@ class ROSConnectionStore {
         this.userRestrictionsDescriptions = message.user_restrictions_descriptions
         this.userRestrictions = message.user_restrictions
         this.userRestricted = message.user_restricted
+
+
+        this.ruiLoginEnabled=message.rui_login_enabled
+        this.ruiLoginPasswordValid=message.rui_login_password_valid
+        this.ruiLoginModeSet = message.rui_login_mode_set
 
         this.ruiRestrictions = message.rui_restrictions
         this.ruiRestricted = message.rui_restricted

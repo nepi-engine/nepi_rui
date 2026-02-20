@@ -24,8 +24,9 @@ import { Columns, Column } from "./Columns"
 import Styles from "./Styles"
 import Label from "./Label"
 
-import logo from "./logos/logo.webp"
-import powered_by_nepi from "./logos/powered_by_nepi.webp"
+import logo from "./assets/logo.webp"
+import powered_by_nepi from "./assets/powered_by_nepi.webp"
+
 
 const styles = Styles.Create({
   logo: {
@@ -165,12 +166,17 @@ NavItem.defaultProps = {
 }
 
 class Nav extends Component {
+  
   render() {
     const { pages, unlicensed, license_type} = this.props
+    const connected = (this.props.connected !== undefined) ? this.props.connected : true
     return (
       <div style={styles.root}>
         <Columns>
           <Column>
+
+
+          {(connected === true)?
             <Columns alignColumns={"flex-end" /* Bottom-justified logo images */}>
                 <Column>
                   <div style={styles.logo}>
@@ -183,6 +189,9 @@ class Nav extends Component {
                   </div>
                 </Column>
             </Columns>
+          : null }
+
+
           </Column>
           <Column style={{ flex: 3 }}>
             {pages.map(({ path, label, subItems }) => {
@@ -198,20 +207,25 @@ class Nav extends Component {
             })}
           </Column>
         </Columns>
-        {unlicensed?
+
+
+        {(unlicensed === true && connected === true)?
           <Label
             labelStyle={{ color: Styles.vars.colors.red, fontWeight: "bold", fontSize: Styles.vars.fontSize.medium}}
             title={"UNLICENSED - DEMO USE ONLY"}
           />
           : null
         }
-        {(license_type === "education" || license_type === "Education") ?
+        {((license_type === "education" || license_type === "Education") && connected === true) ?
           <Label
             labelStyle={{ fontWeight: "bold", fontSize: Styles.vars.fontSize.medium}}
             title={"EDUCATION LICENSE"}
           />
           : null
         }
+
+
+
       </div>
     )
   }
