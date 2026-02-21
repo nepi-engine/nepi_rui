@@ -76,6 +76,7 @@ class AppsMgr extends Component {
       apps_path: null,
       app_options_menu: null,
       active_state: null,
+      running_state: null,
 
       backup_removed_apps: true,
 
@@ -195,6 +196,7 @@ class AppsMgr extends Component {
       license_type: message.license_type,
       license_link: message.license_link,
       active_state: message.active_state,
+      running_state: message.running_state,
       order: message.order,
       msg_str: message.msg_str
     })
@@ -391,8 +393,8 @@ class AppsMgr extends Component {
       <Column>
 
 
-      <Label title={"App Enabled"}>
-          <BooleanIndicator value={(this.state.active_state !== null)? this.state.active_state : false} />
+      <Label title={"App Running"}>
+          <BooleanIndicator value={(this.state.running_state !== null)? this.state.running_state : false} />
         </Label>
 
       </Column>

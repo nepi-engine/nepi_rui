@@ -441,16 +441,26 @@ class Nepi_IF_ImageViewer extends Component {
           const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
           //const cur_ms = Date.now()
           //const last_click_ms = this.state.last_click_ms
+
+          // Send Mouse Click Event
           sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
+          const click_count = this.state.click_count
           if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
-              this.sendImageMouseEventMsg(mouse_event_topic ,
-                                                  this.state.image_topic,
-                                                  this.state.image_index,
-                                                  mouse_click,
-                                                  null, 
-                                                  null, 
-                                                  this.state.status_msg
-                                                  )
+              this.setState.click_count = click_count + 1
+              if (click_count === 0){
+                setTimeout(() => {
+                    this.sendImageMouseEventMsg(mouse_event_topic ,
+                                                        this.state.image_topic,
+                                                        this.state.image_index,
+                                                        mouse_click,
+                                                        null, 
+                                                        null, 
+                                                        this.state.status_msg
+                                                        );
+                }, 500);
+                
+              }
+
 
           }
 
@@ -459,6 +469,8 @@ class Nepi_IF_ImageViewer extends Component {
 
         const wt = Math.max(canvas.width, canvas.height) * 0.05
         if (dx > wt && dy > wt && allow_pan_zoom === true){
+          // Send Mouse Window Event
+          this.setState({click_count: 0})
           sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
           if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
               this.sendImageMouseEventMsg(mouse_event_topic ,
@@ -497,6 +509,7 @@ class Nepi_IF_ImageViewer extends Component {
           image_index: image_index,
 
           click_event: true, 
+          click_count: this.state.click_count,
           click_pixel: mouse_click,
           drag_event: false, 
           drag_pixel: {x:0,y:0,r:0,g:0,b:0,a:0},
@@ -507,6 +520,7 @@ class Nepi_IF_ImageViewer extends Component {
       noPrefix: true
 
     })
+    this.setState({click_count: 0})
   }
 
   sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag, status_msg ) {
