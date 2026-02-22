@@ -143,36 +143,6 @@ class AppsMgr extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const needs_update = this.state.needs_update
     if (needs_update === true) {
-       
-        const selected_app = this.state.selected_app
-        const apps_list = this.props.ros.apps_list
-        var app_status_msg = null
-        if (apps_list.indexOf(selected_app) !== -1 && selected_app !== 'None'){
-            app_status_msg = this.props.ros.callAppStatusQueryService(selected_app)
-        }
-
-        if ( app_status_msg != null) {
-          this.setState({
-            app_status_msg: app_status_msg,
-            app_name: app_status_msg.name,
-            display_name: app_status_msg.display_name,
-            app_description: app_status_msg.description,
-            pkg_name: app_status_msg.pkg_name,
-            group: app_status_msg.group_name,
-            node_name: app_status_msg.node_name,
-
-            license_type: app_status_msg.license_type,
-            license_link: app_status_msg.license_link,
-            enabled: app_status_msg.enabled,
-            running: app_status_msg.running,
-            order: app_status_msg.order,
-            msg_str: app_status_msg.msg_str
-          })
-
-        }
-        else {
-          this.setState({app_status_msg: null})
-        }
         this.setState({needs_update: false})
       }
   }
@@ -272,134 +242,110 @@ class AppsMgr extends Component {
 
     const mgrNamespace = this.getMgrNamespace()
     const selected_app = this.state.selected_app
-    const selected_app_index = this.props.ros.apps_list.indexOf(selected_app) 
 
-    const display_name = (selected_app_index !== -1) ? this.props.ros.apps_name_list[selected_app_index] : ''
-    const msg = (selected_app_index !== -1) ? this.props.ros.apps_msg_list[selected_app_index] : ''
+    const apps_list = this.props.ros.apps_list
+    const app_index = (apps_list.indexOf(selected_app))
+    var app_status_msg = null
+    if  (app_index !== -1 && selected_app !== 'None'){
+        app_status_msg = this.props.ros.apps_status_list[app_index]
+    }
 
-    const enabled = this.props.ros.apps_active_list.indexOf(selected_app) !== -1
-    const running = this.props.ros.apps_running_list.indexOf(selected_app) !== -1
+    const display_name = (app_status_msg != null) ? app_status_msg.display_name : ''
+    const description = (app_status_msg != null) ? app_status_msg.description : ''
+    const pkg_name = (app_status_msg != null) ? app_status_msg.pkg_name : ''
+    const group = (app_status_msg != null) ? app_status_msg.group : ''
+    const node_name = (app_status_msg != null) ? app_status_msg.node_name : ''
+    const license_type = (app_status_msg != null) ? app_status_msg.license_type : ''
+    const license_link = (app_status_msg != null) ? app_status_msg.license_link : ''
+        
+    const enabled = (app_status_msg != null) ? app_status_msg.enabled : false
+    const running = (app_status_msg != null) ? app_status_msg.running : false
+    const order = (app_status_msg != null) ? app_status_msg.order : null
+    const msg_str = (app_status_msg != null) ? app_status_msg.msg_str : ''
+
     const disable_enable = (enabled === false && running === true)
     return (
       <React.Fragment>
 
-        <Section title={"Configure App"}>
+        <Section title={display_name}>
 
-        <Label title={"Turn off unused apps for faster startup times"}> </Label>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {display_name}
-          </label>
   
-          <Columns equalWidth={true}>
-      <Column>
-
-
-        <Label title="Enable/Disable App"> 
-          <Toggle
-            checked={enabled===true}
-            onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_state", selected_app, !enabled)}
-            disabled={disable_enable}>
-          </Toggle>
-      </Label>
-
-
-      </Column>
-      <Column>
-
-
-      <Label title={"App Running"}>
-          <BooleanIndicator value={running} />
-        </Label>
-
-      </Column>
-      <Column>
-
-
-      </Column>
-      </Columns>
-
-          <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"Description: " + this.state.app_description}
-          </pre>
-
-          <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"Status: " + msg}
-          </pre>
-
-          <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"License Type: " + this.state.license_type}
-          </pre>
-
-          <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"License Link: " + this.state.license_link}
-          </pre>
-
-
-
       <Columns equalWidth={true}>
       <Column>
 
-      <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"Group: " + this.state.group}
-          </pre>
 
-      </Column>
-      <Column>
-
-      <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"Node: " + this.state.node_name}
-          </pre>
+              <Label title="Enable/Disable App"> 
+                <Toggle
+                  checked={enabled===true}
+                  onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_state", selected_app, !enabled)}
+                  disabled={disable_enable}>
+                </Toggle>
+            </Label>
 
 
+            </Column>
+            <Column>
 
-      </Column>
-      <Column>
-      <pre style={{ height: "50px", overflowY: "auto" }}>
-          {"Package: " + this.state.pkg_name}
-          </pre>
+
+            <Label title={"App Running"}>
+                <BooleanIndicator value={running} />
+              </Label>
+
+            </Column>
+            <Column>
+
+
       </Column>
       </Columns>
 
+
+
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                <label style={{fontWeight: 'bold'}}>
+                    {"App Info"}
+                  </label>
+
+
+            <pre style={{ height: "150px", overflowY: "auto" }}>
+            {"\nDescription: " + description + 
+            "\nStatus: " + msg_str +
+            "\nGroup: " + group  + "     "  + "Node: " + node_name  + "     "  + "Package: " + pkg_name
+            }
+            </pre>
+
+
+
         <Columns equalWidth={true}>
           <Column>
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-      <Label title={"Application Name"}>
-        <Input disabled value={selected_app} />
-      </Label>
- 
+                <label style={{fontWeight: 'bold'}}>
+                    {"Start Order"}
+                  </label>
 
+                  <Input disabled value={order} />
 
-   
+              <ButtonMenu>
+              <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "top")}>{"Move to Top"}</Button>
+              </ButtonMenu>
 
-      </Column>
-      <Column>
+              <ButtonMenu>
+              <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "up")}>{"Move Up"}</Button>
+              </ButtonMenu>
 
+              <ButtonMenu>
+                <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "down")}>{"Move Down"}</Button>
+              </ButtonMenu>
 
-        <Label title={"Start Order"}>
-          <Input disabled value={this.state.order} />
-        </Label>
+              <ButtonMenu>
+                <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "bottom")}>{"Move to Bottom"}</Button>
+              </ButtonMenu>
 
+            </Column>
+            <Column>
 
-        <ButtonMenu>
-        <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "top")}>{"Move to Top"}</Button>
-        </ButtonMenu>
-
-        <ButtonMenu>
-        <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "up")}>{"Move Up"}</Button>
-        </ButtonMenu>
-
-        <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "down")}>{"Move Down"}</Button>
-        </ButtonMenu>
-
-        <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "bottom")}>{"Move to Bottom"}</Button>
-        </ButtonMenu>
         </Column>
         </Columns>
 
@@ -571,7 +517,7 @@ class AppsMgr extends Component {
       </Column>
       <Column>
 
-      { (app_status_msg != null && selected_app !== 'None') ?
+      { (selected_app !== 'None') ?
         this.renderAppConfigure()
       : null }
 

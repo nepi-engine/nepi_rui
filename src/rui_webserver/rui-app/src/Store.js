@@ -227,12 +227,13 @@ class ROSConnectionStore {
       this.apps_list = []
       this.apps_name_list = []
       this.apps_group_list = []
-      this.apps_msg_list = []
+      this.apps_status_list = []
       
       this.apps_active_list = []
 
       this.apps_running_list = []
       this.apps_running_name_list = []
+      this.apps_running_group_list = []
 
 
       // Time Manager
@@ -260,7 +261,7 @@ class ROSConnectionStore {
       this.drivers_name_list = []
       this.drivers_type_list = []
       this.drivers_group_id_list = []
-      this.drivers_msg_list = []
+      this.drivers_status_list = []
 
       this.drivers_active_list = []
       this.drivers_active_name_list = []
@@ -1081,7 +1082,7 @@ class ROSConnectionStore {
   @observable drivers_name_list = []
   @observable drivers_type_list = []
   @observable drivers_group_id_list = []
-  @observable drivers_msg_list = []
+  @observable drivers_status_list = []
 
   @observable drivers_active_list = []
   @observable drivers_active_name_list = []
@@ -1107,7 +1108,7 @@ class ROSConnectionStore {
       this.drivers_name_list = message.drivers_ordered_name_list
       this.drivers_type_list = message.drivers_ordered_type_list
       this.drivers_group_id_list = message.drivers_ordered_group_id_list
-      this.drivers_msg_list = message.drivers_ordered_msg_list
+      this.drivers_status_list = message.drivers_ordered_status_list
 
       this.drivers_active_list = message.drivers_active_list
       this.drivers_active_name_list = message.drivers_active_name_list
@@ -1137,12 +1138,13 @@ class ROSConnectionStore {
   @observable apps_list =  []
   @observable apps_name_list = []
   @observable apps_group_list = []
-  @observable apps_msg_list = []
+  @observable apps_status_list = []
 
   @observable apps_active_list = []
 
   @observable apps_running_list = []
   @observable apps_running_name_list = []
+  @observable apps_running_group_list = []
 
 
   
@@ -1160,12 +1162,13 @@ class ROSConnectionStore {
       this.apps_list = message.apps_ordered_list
       this.apps_name_list = message.apps_ordered_name_list
       this.apps_group_list = message.apps_ordered_group_list
-      this.apps_msg_list = message.apps_ordered_msg_list
+      this.apps_status_list = message.apps_ordered_status_list
       
       this.apps_active_list = message.apps_active_list
 
       this.apps_running_list = message.apps_running_list
       this.apps_running_name_list = message.apps_running_name_list
+      this.apps_running_group_list = message.apps_running_group_list
 
 
       this.connectedToAppsMgr = true

@@ -132,35 +132,6 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
   componentDidUpdate(prevProps, prevState, snapshot) {
     const needs_update = this.state.needs_update
     if (needs_update === true) {
-
-        const selected_driver = this.state.selected_driver
-        const drivers_list = this.props.ros.drivers_list
-        var driver_status_msg = null
-        if (drivers_list.indexOf(selected_driver) !== -1 && selected_driver !== 'None'){
-            driver_status_msg = this.props.ros.callDriverStatusQueryService(selected_driver)
-        }
-
-        if ( driver_status_msg != null) {
-          this.setState({
-            driver_status_msg: driver_status_msg,
-
-            driver_pkg: driver_status_msg.pkg_name,
-            driver_display_name: driver_status_msg.display_name,
-            driver_description: driver_status_msg.description,
-            
-            driver_type: driver_status_msg.type,
-            driver_group_id: driver_status_msg.group_id,
-
-            driver_enabled: driver_status_msg.enabled,
-            driver_running: driver_status_msg.running,
-            driver_order: driver_status_msg.order,
-            driver_msg_str: driver_status_msg.msg_str
-          })
-
-        }
-        else {
-          this.setState({driver_status_msg: null, driver_settings_topic: 'None'})
-        }
         this.setState({needs_update: false})
     }
 
@@ -253,20 +224,32 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
     const { sendUpdateOrderMsg, sendUpdateBoolMsg, } = this.props.ros
     const mgrNamespace = this.getMgrNamespace()
 
-    const settings_namespace = this.state.driver_settings_topic
-
     const selected_driver = this.state.selected_driver
-    const selected_driver_index = this.props.ros.drivers_list.indexOf(selected_driver) 
 
-    const display_name = (selected_driver_index !== -1) ? this.props.ros.drivers_name_list[selected_driver_index] : ''
-    const msg = (selected_driver_index !== -1) ? this.props.ros.drivers_msg_list[selected_driver_index] : ''
+    const drivers_list = this.props.ros.drivers_list
+    const driver_index = (drivers_list.indexOf(selected_driver))
+    var driver_status_msg = null
+    if  (driver_index !== -1 && selected_driver !== 'None'){
+        driver_status_msg = this.props.ros.drivers_status_list[driver_index]
+    }
 
-    const enabled = this.props.ros.drivers_active_list.indexOf(selected_driver) !== -1
-    const running = this.props.ros.drivers_running_list.indexOf(selected_driver) !== -1
-    const disable_enable = (enabled === false && running === true)
+    const driver_pkg = (driver_status_msg != null) ? driver_status_msg.driver_name : ''
+    const display_name = (driver_status_msg != null) ? driver_status_msg.display_name : ''
+    const description = (driver_status_msg != null) ? driver_status_msg.description : ''
     
+    const type = (driver_status_msg != null) ? driver_status_msg.type : ''
+    const group_id = (driver_status_msg != null) ? driver_status_msg.group_id : ''
 
-    if (this.state.selected_driver === 'None') {
+    const settings_namespace = (driver_status_msg != null) ? driver_status_msg.settings_topic : 'None'
+
+    const enabled = (driver_status_msg != null) ? driver_status_msg.enabled : false
+    const running = (driver_status_msg != null) ? driver_status_msg.running : false
+    const order = (driver_status_msg != null) ? driver_status_msg.order : null
+    const msg_str = (driver_status_msg != null) ? driver_status_msg.msg_str : ''
+
+    const disable_enable = (enabled === false && running === true)
+
+    if (selected_driver === 'None') {
       return (
         <React.Fragment>
 
@@ -283,114 +266,104 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
       return (
         <React.Fragment>
 
-          <Section title={this.state.driver_display_name}>
+          <Section title={display_name}>
 
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+      <Columns equalWidth={true}>
+      <Column>
 
-            <label style={{}} align={"left"} textAlign={"left"}>
-              {this.state.driver_display_name}
-            </label>
-      
-
-            <pre style={{ height: "50px", overflowY: "auto" }}>
-            {this.state.driver_description}
-            </pre>
-
-
-        <Columns equalWidth={true}>
-        <Column>
-
-          <Label title="Enable/Disable Driver">
-            <Toggle
-              checked={enabled}
-              onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_driver_state", this.state.selected_driver, !enabled)}
-              disabled={disable_enable}>
-            </Toggle>
-            </Label>
+                <Label title="Enable/Disable Driver">
+                  <Toggle
+                    checked={enabled}
+                    onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_driver_state", selected_driver, !enabled)}
+                    disabled={disable_enable}>
+                  </Toggle>
+                  </Label>
 
 
-        </Column>
-        <Column>
+              </Column>
+              <Column>
 
-        <Label title={"Driver Running"}>
-            <BooleanIndicator value={running} />
-          </Label>
-          
-        </Column>
-        <Column>
-
-        <pre style={{ height: "50px", overflowY: "auto" }}>
-            {"Subtype: " + this.state.driver_group_id}
-            </pre>
+              <Label title={"Driver Running"}>
+                  <BooleanIndicator value={running} />
+                </Label>
+                
+              </Column>
+              <Column>
+              
+         
 
         </Column>
         </Columns>
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                <label style={{fontWeight: 'bold'}}>
+                    {"Driver Info"}
+                  </label>
 
 
-          <Columns equalWidth={true}>
-            <Column>
-
-
-        <Label title={"Type"}>
-          <Input disabled value={this.state.driver_type} />
-        </Label>
-        <Label title={"Group ID"}>
-          <Input disabled value={this.state.driver_group_id} />
-        </Label>
-
-        </Column>
-        <Column>
-
-        <Label title={"Package"}>
-          <Input disabled value={this.state.selected_driver} />
-        </Label>
+            <pre style={{ height: "150px", overflowY: "auto" }}>
+            {"\nDescription: " + description + 
+            "\nStatus: " + msg_str +
+            "\nType: " + type  + "     "  + "Group: " + group_id + "     "  + "Package: " + driver_pkg
+            }
+            </pre>
 
 
 
-        </Column>
-        <Column>
-
-
-          <Label title={"Driver Start Order"}>
-            <Input disabled value={this.state.driver_order} />
-          </Label>
-
-
-          <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", this.state.selected_driver, "top")}>{"Move to Top"}</Button>
-          </ButtonMenu>
-
-          <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", this.state.selected_driver, "up")}>{"Move    Up"}</Button>
-          </ButtonMenu>
-
-          <ButtonMenu>
-            <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", this.state.selected_driver, "down")}>{"Move Down"}</Button>
-          </ButtonMenu>
-
-          <ButtonMenu>
-            <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", this.state.selected_driver, "bottom")}>{"Move to Bottom"}</Button>
-          </ButtonMenu>
-          </Column>
-          </Columns>
-
-
-          <div hidden={settings_namespace === 'None'}>
+        <Columns equalWidth={true}>
+          <Column>
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-              <label style={{fontWeight: 'bold'}}>
-                  {"Discovery Options Settings"}
-                </label>
+
+                <label style={{fontWeight: 'bold'}}>
+                    {"Start Order"}
+                  </label>
+
+                  <Input disabled value={order} />
+              
+
+              </Column>
+              <Column>
+
+                <ButtonMenu>
+                <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "top")}>{"Move to Top"}</Button>
+                </ButtonMenu>
+
+                <ButtonMenu>
+                <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "up")}>{"Move    Up"}</Button>
+                </ButtonMenu>
+
+                <ButtonMenu>
+                  <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "down")}>{"Move Down"}</Button>
+                </ButtonMenu>
+
+                <ButtonMenu>
+                  <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "bottom")}>{"Move to Bottom"}</Button>
+                </ButtonMenu>
+
+              </Column>
+              <Column>
+
+            </Column>
+            </Columns>
 
 
-                <NepiIFSettings
-                  settingsNamespace={settings_namespace}
-                  make_section={false}
-                  allways_show_settings={true}
-                  title={"Driver Discovery Options"}
-                />
+                <div hidden={settings_namespace === ''}>
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-            </div>
+                    <label style={{fontWeight: 'bold'}}>
+                        {"Discovery Options Settings"}
+                      </label>
+
+
+                      <NepiIFSettings
+                        settingsNamespace={settings_namespace}
+                        make_section={false}
+                        allways_show_settings={true}
+                        title={"Driver Discovery Options"}
+                      />
+
+                  </div>
 
           </Section>
         
@@ -557,7 +530,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
       
 
 
-              {(this.state.driver_status_msg != null) ?
+              {(selected_driver !== 'None') ?
                 this.renderDriverConfigure()
               : null}
 
