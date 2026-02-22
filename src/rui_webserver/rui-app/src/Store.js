@@ -220,10 +220,22 @@ class ROSConnectionStore {
       this.systemRunMode = null
 
 
-      //////// Other Mgrs
-      this.connectedToSoftwareMgr = false
-      this.softwareMgrStatus = null
+      // App Manager
+      this.connectedToAppsMgr = false
+      this.appsMgrStatus = null
 
+      this.apps_list = []
+      this.apps_name_list = []
+      this.apps_group_list = []
+      this.apps_msg_list = []
+      
+      this.apps_active_list = []
+
+      this.apps_running_list = []
+      this.apps_running_name_list = []
+
+
+      // Time Manager
       this.connectedToTimeMgr = false
       this.timeMgrStatus = null
 
@@ -240,14 +252,47 @@ class ROSConnectionStore {
       this.clockPPS = false
 
 
+      // Drivers Manager
       this.connectedToDriversMgr = false
       this.driversMgrStatus = null
 
-      this.connectedToAppsMgr = false
-      this.appsMgrStatus = null
+      this.drivers_list = []
+      this.drivers_name_list = []
+      this.drivers_type_list = []
+      this.drivers_group_id_list = []
+      this.drivers_msg_list = []
 
+      this.drivers_active_list = []
+      this.drivers_active_name_list = []
+      this.drivers_active_type_list = []
+
+      this.drivers_running_list = []
+
+      this.drivers_retry_enabled = []
+
+
+      // AI Model Manager
       this.connectedToAiModelMgr = false
       this.aiModelMgrStatus = null
+
+
+      this.frameworks_list = []
+      this.active_framework = "None"
+
+      this.models_list = []
+      this.models_aifs = []
+      this.models_types = []
+
+      this.active_models_list = []
+      this.active_models_types = []
+  
+      this.running_models_list = []
+
+
+      // Software Manager
+      this.connectedToSoftwareMgr = false
+      this.softwareMgrStatus = null
+
 
 
 
@@ -415,12 +460,7 @@ class ROSConnectionStore {
                   this.initializeSystemListeners()
                 }
 
-              
               }
-          const newAppTopics = ((this.apps_list_last.length !== this.apps_list.length) || (this.apps_active_list_last.length !== this.apps_active_list.length))
-          if ((this.connectedToNepi === true) && (newAppTopics === true)) {
-            this.updateAppStatusList(this.topicNames, this.topicTypes) 
-          }
         }
       
         this.topicNamesLast = this.topicNames
@@ -965,6 +1005,11 @@ class ROSConnectionStore {
   @observable gpsClockSyncEnabled = false
 
 
+
+
+
+
+
   startPollingTimeMgrStatusService() {
     const _pollOnce = async () => {
          const response = await this.callService({
@@ -1032,22 +1077,20 @@ class ROSConnectionStore {
   @observable connectedToDriversMgr = false
   @observable driversMgrStatus = null
 
-
   @observable drivers_list = []
-  @observable drivers_active_list = []
-  @observable drivers_active_type_list = []
-  @observable drivers_install_path = ''
-  @observable drivers_install_list = []
-  
-
-
-  @observable drivers_rui_list = []
+  @observable drivers_name_list = []
   @observable drivers_type_list = []
+  @observable drivers_group_id_list = []
+  @observable drivers_msg_list = []
 
-  @observable drv_name = 'NONE'
-  @observable drv_description = ''
-  @observable drivers_path = ''
-  @observable drv_options_menu = []
+  @observable drivers_active_list = []
+  @observable drivers_active_name_list = []
+  @observable drivers_active_type_list = []
+
+  @observable drivers_running_list = []
+
+  @observable drivers_retry_enabled = []
+  
 
 
   @action.bound
@@ -1060,10 +1103,19 @@ class ROSConnectionStore {
         
       this.driversMgrStatus = message
 
-      this.drivers_list = message.pkg_list
-      this.drivers_type_list = message.type_list
-      this.drivers_active_list = message.active_pkg_list
-      this.drivers_active_type_list = message.active_type_list
+      this.drivers_list = message.drivers_ordered_list
+      this.drivers_name_list = message.drivers_ordered_name_list
+      this.drivers_type_list = message.drivers_ordered_type_list
+      this.drivers_group_id_list = message.drivers_ordered_group_id_list
+      this.drivers_msg_list = message.drivers_ordered_msg_list
+
+      this.drivers_active_list = message.drivers_active_list
+      this.drivers_active_name_list = message.drivers_active_name_list
+      this.drivers_active_type_list = message.drivers_active_type_list
+
+      this.drivers_running_list = message.drivers_running_list
+
+      this.drivers_retry_enabled = message.retry_enabled
 
       this.connectedToDriversMgr = true
 
@@ -1082,15 +1134,18 @@ class ROSConnectionStore {
   @observable connectedToAppsMgr = false
   @observable appsMgrStatus = null
 
-
   @observable apps_list =  []
-
+  @observable apps_name_list = []
   @observable apps_group_list = []
-  @observable apps_rui_list = []
+  @observable apps_msg_list = []
+
   @observable apps_active_list = []
 
+  @observable apps_running_list = []
+  @observable apps_running_name_list = []
 
 
+  
  
   @action.bound
   setupAppsMgrStatusListener() {
@@ -1103,9 +1158,15 @@ class ROSConnectionStore {
       this.appsMgrStatus = message
 
       this.apps_list = message.apps_ordered_list
-      this.apps_group_list = message.apps_group_list
+      this.apps_name_list = message.apps_ordered_name_list
+      this.apps_group_list = message.apps_ordered_group_list
+      this.apps_msg_list = message.apps_ordered_msg_list
+      
       this.apps_active_list = message.apps_active_list
-      this.apps_rui_list = message.apps_rui_list
+
+      this.apps_running_list = message.apps_running_list
+      this.apps_running_name_list = message.apps_running_name_list
+
 
       this.connectedToAppsMgr = true
 
@@ -1127,11 +1188,15 @@ class ROSConnectionStore {
 
   @observable frameworks_list = []
   @observable active_framework = "None"
+
   @observable models_list = []
   @observable models_aifs = []
   @observable models_types = []
+
   @observable active_models_list = []
   @observable active_models_types = []
+  
+  @observable running_models_list = []
 
 
   setupAiModelMgrStatusListener() {
@@ -1150,6 +1215,8 @@ class ROSConnectionStore {
       this.active_framework = message.active_ai_framework
       this.active_models_list = message.active_ai_models
       this.active_models_types = message.active_ai_models_types
+
+      this.running_models_list = message.running_models_list
 
       this.connectedToAiModelMgr = true
 
@@ -1395,29 +1462,32 @@ class ROSConnectionStore {
   // }
 
 
-  @observable appsNameListLast = []
-  @observable appsNameList = []
-  @observable appsStatusList = []
 
   @action.bound
   async callAppStatusQueryService(app_name) {
-      const response = await this.callService({
-        name: 'apps_mgr/app_status_query',
-        messageType: "nepi_interfaces/AppStatusQuery",
-        args: {app_name : app_name},
-      })
-      if (response != null){
-        const appInd = this.appsNameList.indexOf(app_name)
-        if (appInd === -1){
-          this.appsNameList.push(app_name)
-          this.appsStatusList.push(response)
-
-        }
-        else {
-          this.appsNameList[appInd] = app_name
-          this.appsStatusList[appInd] = response
-        }
+      var response = null
+      if (this.apps_list.indexOf(app_name) !== -1){
+        response = await this.callService({
+          name: 'apps_mgr/app_status_query',
+          messageType: "nepi_interfaces/AppStatusQuery",
+          args: {app_name : app_name},
+        })
       }
+      return response
+  }
+
+  @action.bound
+  async callDriverStatusQueryService(driver_name) {
+      var response = null
+      if (this.drivers_list.indexOf(driver_name) !== -1){
+        response = await this.callService({
+        name: 'drivers_mgr/driver_status_query',
+        messageType: "nepi_interfaces/DriverStatusQuery",
+        args: {driver_name : driver_name},
+      })
+      }
+      return response
+
   }
 
 
@@ -1657,30 +1727,6 @@ class ROSConnectionStore {
       } else {
         return false
       }
-
-  }
-
-
-  @observable apps_list_last = []
-  @observable apps_active_list_last = []
-
-  @action.bound
-  updateAppStatusList(topics,types) {
-    if (this.connectedToNepi === true) {
-      const appsNameList = this.apps_list
-      const appsNameListLast = this.appsNameListLast
-      if ((appsNameList.length > 0) && (appsNameList.length !== appsNameListLast.length)) {
-        for (var i = 0; i < appsNameList.length; i++) {
-            this.callAppStatusQueryService(appsNameList[i])
-        }
-        this.appsNameListLast = appsNameList
-      }
-    }
-    else {
-      this.appsNameListLast = []
-    }
-    this.apps_list_last = this.apps_list
-    this.apps_active_list_last = this.apps_active_list
 
   }
 

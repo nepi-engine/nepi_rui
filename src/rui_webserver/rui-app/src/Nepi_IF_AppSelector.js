@@ -47,7 +47,7 @@ import NepiDashboardData from "./NepiDashboardData"
 import ScriptsMgr from "./NepiMgrScripts"
 
 // AUTO CLASSES
-import AifsMgr from "./NepiSystemAIFs"
+import AiModelsMgr from "./NepiSystemAiModels"
 
 import AiDetectorMgr from "./NepiMgrAiDetector"
 //import AiSegmentorMgr from "./NepiMgrAiSegmentor"
@@ -78,8 +78,8 @@ class NepiIFAppSelector extends Component {
       connectedToAppsMgr: false,
       connectedToDriversMgr: false,
       connectedToAiModelsMgr: false,
-      app_id: 'NONE',
-      selected_app: 'NONE',
+      app_id: 'None',
+      selected_app: 'None',
       full_screen: false,
 
       needs_update: false
@@ -98,8 +98,8 @@ class NepiIFAppSelector extends Component {
     const { connectedToNepi , connectedToAppsMgr, connectedToDriversMgr, connectedToAiModelsMgr} = this.props.ros
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
-                    app_id: 'NONE',
-                    selected_app: 'NONE', needs_update: true})
+                    app_id: 'None',
+                    selected_app: 'None', needs_update: true})
     }
     if (this.state.connectedToAppsMgr !== connectedToAppsMgr  || 
          this.state.connectedToDriversMgr !== connectedToDriversMgr || 
@@ -136,7 +136,7 @@ class NepiIFAppSelector extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-      this.setState({selected_app: 'NONE'})
+      this.setState({selected_app: 'None'})
   }
 
 
@@ -145,9 +145,9 @@ class NepiIFAppSelector extends Component {
 
   renderApplication() {
     const sel_app = this.state.selected_app
-    const {appsNameList, appsStatusList} = this.props.ros
+    const {apps_list} = this.props.ros
 
-    if (sel_app === "NONE"){
+    if (sel_app === "None"){
       return (
         <React.Fragment>
       <Columns>
@@ -399,7 +399,7 @@ class NepiIFAppSelector extends Component {
             <Columns>
             <Column>
 
-              <AifsMgr
+              <AiModelsMgr
               title={"AI Model Manager"}
               />
 
@@ -505,7 +505,7 @@ class NepiIFAppSelector extends Component {
 
 
 
-    else if (appsNameList.indexOf(sel_app) !== -1){
+    else if (apps_list.indexOf(sel_app) !== -1){
       return (
          <NepiIFApps
          sel_app={sel_app}
@@ -515,6 +515,9 @@ class NepiIFAppSelector extends Component {
 
 
     else {
+      if (sel_app !== 'None'){
+        this.setState({selected_app: 'None'})
+      }
       return (
         <React.Fragment>
             {/* <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
@@ -538,7 +541,7 @@ class NepiIFAppSelector extends Component {
 
   onToggleAppSelection(event){
     const app_name = event.target.value
-    if (app_name === 'Connecting' || app_name === 'NONE'){
+    if (app_name === 'Connecting' || app_name === 'None'){
       this.setState({full_screen: false })
     }
     else {
@@ -550,16 +553,16 @@ class NepiIFAppSelector extends Component {
   // Function for creating image topic options.
   getAppOptions() {
     const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
-    const {appsNameList, appsStatusList} = this.props.ros
     
-    const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'NONE'
+    const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'None'
 
     const connected = this.state.connectedToNepi
 
     const appsList = this.props.ros.apps_list
-    const ruiList = this.props.ros.apps_rui_list 
+
     const groupList = this.props.ros.apps_group_list
-    const activeAppList = this.props.ros.apps_active_list
+    const runningList = this.props.ros.apps_running_list
+    const nameList = this.props.ros.apps_running_name_list 
 
     var items = []
     if (connected !== true){
@@ -587,18 +590,18 @@ class NepiIFAppSelector extends Component {
   
 
         if (appsList.length > 0){
-          for (var i1 = 0; i1 < ruiList.length; i1++) {
-            if (groupList[i1] === "DEVICE" && ruiList[i1] !== "None" && activeAppList.indexOf(appsList[i1]) !== -1 && appsNameList.indexOf(appsList[i1]) !== -1 ){
-              items.push(<Option value={appsList[i1]}>{ruiList[i1]}</Option>)
+          for (var i1 = 0; i1 < nameList.length; i1++) {
+            if (groupList[i1] === "DEVICE" && nameList[i1] !== "None" && runningList.indexOf(appsList[i1]) !== -1){
+              items.push(<Option value={appsList[i1]}>{nameList[i1]}</Option>)
             }
           }
         }
       }
       else if (app_id === 'DATA') {
         if (appsList.length > 0){
-          for (var i2 = 0; i2 < ruiList.length; i2++) {
-            if (groupList[i2] === "DATA" && ruiList[i2] !== "None" && activeAppList.indexOf(appsList[i2]) !== -1 && appsNameList.indexOf(appsList[i2]) !== -1 ){
-              items.push(<Option value={appsList[i2]}>{ruiList[i2]}</Option>)
+          for (var i2 = 0; i2 < nameList.length; i2++) {
+            if (groupList[i2] === "DATA" && nameList[i2] !== "None" && runningList.indexOf(appsList[i2]) !== -1 ){
+              items.push(<Option value={appsList[i2]}>{nameList[i2]}</Option>)
             }
           }
         }
@@ -607,9 +610,9 @@ class NepiIFAppSelector extends Component {
       else if (app_id === 'PROCESS') {
         
         if (appsList.length > 0){
-          for (var i3 = 0; i3 < ruiList.length; i3++) {
-            if (groupList[i3] === "PROCESS" && ruiList[i3] !== "None" && activeAppList.indexOf(appsList[i3]) !== -1 && appsNameList.indexOf(appsList[i3]) !== -1 ){
-              items.push(<Option value={appsList[i3]}>{ruiList[i3]}</Option>)
+          for (var i3 = 0; i3 < nameList.length; i3++) {
+            if (groupList[i3] === "PROCESS" && nameList[i3] !== "None" && runningList.indexOf(appsList[i3]) !== -1){
+              items.push(<Option value={appsList[i3]}>{nameList[i3]}</Option>)
             }
           }
         }
@@ -634,9 +637,9 @@ class NepiIFAppSelector extends Component {
 
       else if (app_id === 'AUTOMATION') {
         if (appsList.length > 0){
-          for (var i4 = 0; i4 < ruiList.length; i4++) {
-            if (groupList[i4] === "AUTOMATION" && ruiList[i4] !== "None" && activeAppList.indexOf(appsList[i4]) !== -1 && appsNameList.indexOf(appsList[i4]) !== -1 ){
-              items.push(<Option value={appsList[i4]}>{ruiList[i4]}</Option>)
+          for (var i4 = 0; i4 < nameList.length; i4++) {
+            if (groupList[i4] === "AUTOMATION" && nameList[i4] !== "None" && runningList.indexOf(appsList[i4]) !== -1){
+              items.push(<Option value={appsList[i4]}>{nameList[i4]}</Option>)
             }
           }
         }
@@ -672,7 +675,7 @@ class NepiIFAppSelector extends Component {
         }   
         
 
-        if (true) { //((appsList.indexOf('ai_model_mgr') !== -1 ) && (this.props.ros.connectedToAiModelMgr === true) && (userRestrictionsActive.indexOf('ai_model_manager')) {
+        if (true) { //((appsList.indexOf('ai_model_mgr') !== -1 ) && (this.props.ros.connectedToAiModelsMgr === true) && (userRestrictionsActive.indexOf('ai_model_manager')) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
         }   
         
@@ -687,9 +690,9 @@ class NepiIFAppSelector extends Component {
         
  
         if (appsList.length > 0){
-          for (var i5 = 0; i5 < ruiList.length; i5++) {
-            if (groupList[i5] === "SYSTEM" && ruiList[i5] !== "None" && activeAppList.indexOf(appsList[i5]) !== -1 && appsNameList.indexOf(appsList[i5]) !== -1 ){
-              items.push(<Option value={appsList[i5]}>{ruiList[i5]}</Option>)
+          for (var i5 = 0; i5 < nameList.length; i5++) {
+            if (groupList[i5] === "SYSTEM" && nameList[i5] !== "None" && runningList.indexOf(appsList[i5]) !== -1){
+              items.push(<Option value={appsList[i5]}>{nameList[i5]}</Option>)
             }
           }
         }
@@ -697,7 +700,7 @@ class NepiIFAppSelector extends Component {
     }
 
     if (items.length === 0){
-      items.push(<Option value={'NONE'}>{'Waiting for Apps'}</Option>)
+      items.push(<Option value={'None'}>{'Waiting for Apps'}</Option>)
     }
 
 
@@ -745,13 +748,13 @@ class NepiIFAppSelector extends Component {
 
 
   render() {
-    const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'NONE'
+    const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'None'
     if (this.state.app_id !== app_id){
       this.setState({app_id: app_id,
-                    selected_app: 'NONE', needs_update: true})
+                    selected_app: 'None', needs_update: true})
 
     }
-    const app_selected = (this.state.selected_app !== 'NONE')
+    const app_selected = (this.state.selected_app !== 'None')
     const full_screen = (this.state.full_screen === true) && (app_selected === true)
     const sel_col_width = (full_screen === false) ? '12%' : '3%'
     const app_col_width = (full_screen === false) ? '85%' : '94%'

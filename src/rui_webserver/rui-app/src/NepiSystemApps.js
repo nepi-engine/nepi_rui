@@ -50,46 +50,35 @@ class AppsMgr extends Component {
       viewableApps: false,
       viewableGroups: false,
 
-      apps_list: [],
-      last_apps_list: [],
-      apps_active_list: [],
-      apps_group_list: [],
-      apps_rui_list: [],
-      apps_install_path: null,
-      apps_install_list: [],
-      selected_app: null,
+
+
 
 
       group_list: ['DEVICE','DATA','NAVPOSE','AI','AUTOMATION','DRIVER'],
       group_names: ['Device','Data','NavPose','AI','Automation','Driver'],
       selected_group: "All",
 
+      selected_app: 'None',
 
+      app_status_msg: null,
       app_name: 'None',
-      rui_name: 'None',
+      display_name: 'None',
       pkg_name: 'None',
       group: 'None',
       node_name: 'None',
       app_description: null,
       license_type: null,
       license_link: null,
-      apps_path: null,
       app_options_menu: null,
-      active_state: null,
-      running_state: null,
+      enabled: null,
+      running: null,
 
       backup_removed_apps: true,
+      restart_enabled: false,
+      selected_app_install_pkg: null,
 
       connected: false,
 
-      restart_enabled: false,
-
-      appsListener: null,
-      appListener: null,
-
-
-
-      selected_app_install_pkg: null,
       needs_update: false
     }
     this.checkConnection = this.checkConnection.bind(this)
@@ -100,26 +89,27 @@ class AppsMgr extends Component {
     this.toggleViewableApps = this.toggleViewableApps.bind(this)
     this.toggleViewableGroups = this.toggleViewableGroups.bind(this)
     this.getAppOptions = this.getAppOptions.bind(this)
-    this.getInstallOptions = this.getInstallOptions.bind(this)
     this.getGroupOptions = this.getGroupOptions.bind(this)
     this.onChangeGroupSelection = this.onChangeGroupSelection.bind(this)
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)
 
-    this.updateMgrAppsStatusListener = this.updateMgrAppsStatusListener.bind(this)
-    this.appsStatusListener = this.appsStatusListener.bind(this)
-
-    this.updateAppStatusListener = this.updateAppStatusListener.bind(this)
-    this.statusAppListener = this.statusAppListener.bind(this)
-    this.statusAppListener = this.statusAppListener.bind(this)
 
     this.getDisabledStr = this.getDisabledStr.bind(this)
     this.getActiveStr = this.getActiveStr.bind(this)
-    this.getReadyStr = this.getReadyStr.bind(this)
+
 
     this.getShortName = this.getShortName.bind(this)
   
   }
 
+  getMgrNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var mgrNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.props.ros.appsMgrName
+    }
+    return mgrNamespace
+  }
 
 
 
@@ -127,11 +117,12 @@ class AppsMgr extends Component {
     const { connectedToNepi , connectedToAppsMgr, connectedToDriversMgr, connectedToAiModelsMgr} = this.props.ros
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
-                    selected_app: 'NONE', needs_update: true})
+                    app_status_msg: null,
+                    selected_app: 'None', needs_update: true})
     }
     if (this.state.connectedToAppsMgr !== connectedToAppsMgr )
     {
-      this.setState({needs_update: true})
+      this.setState({connected: true, needs_update: true})
     }
 
     setTimeout(async () => {
@@ -140,89 +131,6 @@ class AppsMgr extends Component {
   }
 
 
-  getMgrNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var mgrNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
-    }
-    return mgrNamespace
-  }
-
-  // Callback for handling ROS Status messages
-  appsStatusListener(message) {
-    this.setState({
-      apps_path: message.apps_path,
-      apps_list: message.apps_ordered_list,
-      apps_group_list: message.apps_group_list,
-      apps_rui_list: message.apps_rui_list,
-      apps_active_list: message.apps_active_list,
-      apps_install_path: message.apps_install_path,
-      apps_install_list: message.apps_install_list,
-      backup_removed_apps: message.backup_removed_apps,
-      selected_app: message.selected_app,
-      restart_enabled: message.restart_enabled,
-      connected: true
-    })    
-
-    this.props.ros.appNames = message.apps_ordered_list
-  }
-
-  // Function for configuring and subscribing to Status
-  updateMgrAppsStatusListener() {
-    const statusNamespace = this.getMgrNamespace() + '/status'
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
-    }
-    var appsListener = this.props.ros.setupStatusListener(
-          statusNamespace,
-          "nepi_interfaces/MgrAppsStatus",
-          this.appsStatusListener
-        )
-    this.setState({ appsListener: appsListener,
-      needs_update: false})
-  }
-
-
-  statusAppListener(message) {
-    this.setState({
-  
-      app_name: message.name,
-      rui_name: message.rui_menu_name,
-      pkg_name: message.pkg_name,
-      group: message.group_name,
-      node_name: message.node_name,
-      app_description: message.description,
-      license_type: message.license_type,
-      license_link: message.license_link,
-      active_state: message.active_state,
-      running_state: message.running_state,
-      order: message.order,
-      msg_str: message.msg_str
-    })
-
-    const groups = this.state.group_list
-    const group_index = groups.indexOf(message.group)
-    const group_names = this.state.group_names
-    if ( group_index !== -1){
-      this.setState({group_name: group_names[group_index]})
-    }
-  }
-
-    // Function for configuring and subscribing to Status
-    updateAppStatusListener() {
-      const namespace = this.getMgrNamespace()
-      const statusNamespace = namespace + '/status_app'
-      if (this.state.appListener) {
-        this.state.appListener.unsubscribe()
-      }
-      var appListener = this.props.ros.setupStatusListener(
-            statusNamespace,
-            "nepi_interfaces/AppStatus",
-            this.statusAppListener
-          )
-      this.setState({ appListener: appListener})
-    }
 
 
 
@@ -233,26 +141,46 @@ class AppsMgr extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const namespace = this.getMgrNamespace()
-    const namespace_updated = (prevState.mgrNamespace !== namespace && namespace !== null)
-    if (namespace_updated) {
-      if (namespace.indexOf('null') === -1){
-        this.setState({
-          mgrNamespace: namespace
-        })
-        this.updateMgrAppsStatusListener()
-        this.updateAppStatusListener()
-      } 
-    }
+    const needs_update = this.state.needs_update
+    if (needs_update === true) {
+       
+        const selected_app = this.state.selected_app
+        const apps_list = this.props.ros.apps_list
+        var app_status_msg = null
+        if (apps_list.indexOf(selected_app) !== -1 && selected_app !== 'None'){
+            app_status_msg = this.props.ros.callAppStatusQueryService(selected_app)
+        }
+
+        if ( app_status_msg != null) {
+          this.setState({
+            app_status_msg: app_status_msg,
+            app_name: app_status_msg.name,
+            display_name: app_status_msg.display_name,
+            app_description: app_status_msg.description,
+            pkg_name: app_status_msg.pkg_name,
+            group: app_status_msg.group_name,
+            node_name: app_status_msg.node_name,
+
+            license_type: app_status_msg.license_type,
+            license_link: app_status_msg.license_link,
+            enabled: app_status_msg.enabled,
+            running: app_status_msg.running,
+            order: app_status_msg.order,
+            msg_str: app_status_msg.msg_str
+          })
+
+        }
+        else {
+          this.setState({app_status_msg: null})
+        }
+        this.setState({needs_update: false})
+      }
   }
 
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status message
   componentWillUnmount() {
-    if (this.state.appsListener) {
-      this.state.appsListener.unsubscribe()
-      this.state.appListener.unsubscribe()
-    }
+    this.setState({connected: false})
   }
 
   toggleViewableApps() {
@@ -273,19 +201,21 @@ class AppsMgr extends Component {
 
   // Function for creating image topic options.
   getAppOptions() {
-    const appsList = this.state.apps_list  
-    const groupsList = this.state.apps_group_list
-    const ruiList = this.state.apps_rui_list
+
+
+    const appsList = this.props.ros.apps_list 
+    const groupsList = this.props.ros.apps_group_list
+    const nameList = this.props.ros.apps_name_list
     const sel_group = this.state.selected_group
     var items = []
     var app_name = ""
-    var rui_name = ""
+    var display_name = ""
     if (appsList.length > 0){
       for (var i = 0; i < appsList.length; i++) {
           if (sel_group === "All" || groupsList[i] === sel_group){
             app_name = appsList[i]
-            rui_name = ruiList[i]
-            items.push(<Option value={app_name}>{rui_name}</Option>)
+            display_name = nameList[i]
+            items.push(<Option value={app_name}>{display_name}</Option>)
           }
      }
     }
@@ -299,7 +229,7 @@ class AppsMgr extends Component {
 
   // Function for creating group topic options.
   getGroupOptions() { 
-    const groups = this.state.apps_group_list
+    const groups = this.props.ros.apps_group_list
     const groupIds = this.state.group_list
     const groupNames = this.state.group_names
     var items = []
@@ -320,48 +250,36 @@ class AppsMgr extends Component {
   onToggleAppSelection(event){
     const {sendStringMsg} = this.props.ros
     const app_name = event.target.value
-    const selectNamespace = this.state.mgrNamespace + "/select_app"
-    sendStringMsg(selectNamespace,app_name)
+    this.setState({selected_app: app_name})
+    this.setState({needs_update: true})
   }
 
 
   sendAppUpdateOrder(){
     const {sendUpdateOrderMsg} = this.props.ros
-    var namespace = this.state.mgrNamespace
+    const namespace = this.getMgrNamespace()
     var app_name = this.state.app_name
     var move_cmd = this.state.move_cmd
     sendUpdateOrderMsg(namespace,app_name,move_cmd)
+    this.setState({needs_update: true})
   }
 
-
-  // Function for creating image topic options.
-  getInstallOptions() {
-    const appsList = this.state.apps_install_list
-    var items = []
-    const connected = this.state.connected
-    if (connected !== true){
-      items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
-    }
-    else{
-      if (appsList.length > 0){
-        for (var i = 0; i < appsList.length; i++) {
-            items.push(<Option value={appsList[i]}>{this.getShortName(appsList[i])}</Option>)
-        }
-      }
-      else{
-        items.push(<Option value={'None'}>{'None'}</Option>)
-        //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-        //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
-      }
-    }
-    return items
-  }option
 
 
 
   renderAppConfigure() {
-    const { sendStringMsg, sendUpdateOrderMsg, sendUpdateBoolMsg} = this.props.ros
-    const rui_name = this.state.rui_name
+    const { sendUpdateOrderMsg, sendUpdateBoolMsg} = this.props.ros
+
+    const mgrNamespace = this.getMgrNamespace()
+    const selected_app = this.state.selected_app
+    const selected_app_index = this.props.ros.apps_list.indexOf(selected_app) 
+
+    const display_name = (selected_app_index !== -1) ? this.props.ros.apps_name_list[selected_app_index] : ''
+    const msg = (selected_app_index !== -1) ? this.props.ros.apps_msg_list[selected_app_index] : ''
+
+    const enabled = this.props.ros.apps_active_list.indexOf(selected_app) !== -1
+    const running = this.props.ros.apps_running_list.indexOf(selected_app) !== -1
+    const disable_enable = (enabled === false && running === true)
     return (
       <React.Fragment>
 
@@ -371,10 +289,9 @@ class AppsMgr extends Component {
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-        <div hidden={(this.state.app_name === 'None')}>
 
           <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {rui_name}
+            {display_name}
           </label>
   
           <Columns equalWidth={true}>
@@ -383,8 +300,9 @@ class AppsMgr extends Component {
 
         <Label title="Enable/Disable App"> 
           <Toggle
-            checked={this.state.active_state===true}
-            onClick={() => sendUpdateBoolMsg(this.state.mgrNamespace + "/update_state", this.state.app_name, !this.state.active_state)}>
+            checked={enabled===true}
+            onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_state", selected_app, !enabled)}
+            disabled={disable_enable}>
           </Toggle>
       </Label>
 
@@ -394,7 +312,7 @@ class AppsMgr extends Component {
 
 
       <Label title={"App Running"}>
-          <BooleanIndicator value={(this.state.running_state !== null)? this.state.running_state : false} />
+          <BooleanIndicator value={running} />
         </Label>
 
       </Column>
@@ -409,12 +327,18 @@ class AppsMgr extends Component {
           </pre>
 
           <pre style={{ height: "50px", overflowY: "auto" }}>
+          {"Status: " + msg}
+          </pre>
+
+          <pre style={{ height: "50px", overflowY: "auto" }}>
           {"License Type: " + this.state.license_type}
           </pre>
 
           <pre style={{ height: "50px", overflowY: "auto" }}>
           {"License Link: " + this.state.license_link}
           </pre>
+
+
 
       <Columns equalWidth={true}>
       <Column>
@@ -431,6 +355,7 @@ class AppsMgr extends Component {
           </pre>
 
 
+
       </Column>
       <Column>
       <pre style={{ height: "50px", overflowY: "auto" }}>
@@ -444,7 +369,7 @@ class AppsMgr extends Component {
 
 
       <Label title={"Application Name"}>
-        <Input disabled value={this.state.app_name} />
+        <Input disabled value={selected_app} />
       </Label>
  
 
@@ -461,81 +386,22 @@ class AppsMgr extends Component {
 
 
         <ButtonMenu>
-        <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.app_name, "top")}>{"Move to Top"}</Button>
+        <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "top")}>{"Move to Top"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-        <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.app_name, "up")}>{"Move Up"}</Button>
+        <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "up")}>{"Move Up"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.app_name, "down")}>{"Move Down"}</Button>
+          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "down")}>{"Move Down"}</Button>
         </ButtonMenu>
 
         <ButtonMenu>
-          <Button onClick={() => sendUpdateOrderMsg(this.state.mgrNamespace + "/update_order", this.state.app_name, "bottom")}>{"Move to Bottom"}</Button>
+          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_order", selected_app, "bottom")}>{"Move to Bottom"}</Button>
         </ButtonMenu>
         </Column>
         </Columns>
-
-
-        <Columns equalWidth={true}>
-          <Column>
-
-{/*
-          <Label title="Show Remove App">
-                <Toggle
-                checked={this.state.show_delete_app===true}
-                onClick={() => onChangeSwitchStateValue.bind(this)("show_delete_app",this.state.show_delete_app)}>
-                </Toggle>
-          </Label>
-          
- */}
-
-      </Column>
-      <Column>
-
-
-      </Column>
-      <Column>
-
-      </Column>
-      <Column>
-
-        </Column>
-        </Columns>
-
-
-      <div hidden={true}>
-
-        <Columns equalWidth={true}>
-          <Column>
-
-
-        <Label title="Backup on Remove">
-                <Toggle
-                checked={this.state.backup_removed_apps===true}
-                onClick={() => this.props.ros.sendBoolMsg(this.state.mgrNamespace + "/backup_on_remeove", this.state.backup_removed_apps===false)}>
-                </Toggle>
-        </Label>
-
-
-      </Column>
-      <Column>
-
-      <ButtonMenu>
-        <Button onClick={() => sendStringMsg(this.state.mgrNamespace + "/remove_app", this.state.selected_app)}>{"Remove App"}</Button>
-      </ButtonMenu>
-
-      </Column>
-      <Column>
-
-        </Column>
-        </Columns>
-
-        </div>
-
-        </div>
 
         </Section>
 
@@ -544,63 +410,16 @@ class AppsMgr extends Component {
     )
   }
 
-  
- 
-  renderAppInstall() {
-    const selected_install_pkg = this.state.selected_app_install_pkg ? this.state.selected_app_install_pkg : "None"
-    const install_options = this.getInstallOptions()
-    const {sendStringMsg} = this.props.ros
-    return (
-      <React.Fragment>
-
-        <Section title={"Install/Update Apps"}>
-
-        <Label title="Install"> 
-        <Select
-          id="app_install"
-          onChange={(event) => onDropdownSelectedSetState.bind(this)(event, "selected_app_install_pkg")}
-          value={this.state.selected_app_install_pkg}
-          >
-          {install_options}
-        </Select>
-        </Label>
-
-        <Label title="Show Install App">
-                <Toggle
-                checked={this.state.show_install_app===true}
-                onClick={() => onChangeSwitchStateValue.bind(this)("show_install_app",this.state.show_install_app)}>
-                </Toggle>
-          </Label>
-
-          <div hidden={!this.state.show_install_app}>
-      <ButtonMenu>
-        <Button onClick={() => sendStringMsg(this.state.mgrNamespace + "/install_app_pkg", selected_install_pkg)}>{"Install App"}</Button>
-      </ButtonMenu>
-      </div>
-
-          <Label title={"Install Folder"} >
-          </Label>
-
-          <pre style={{ height: "20Spx", overflowY: "auto" }}>
-            {this.state.apps_install_path}
-          </pre>
-
-
-
-        </Section>
-        
-      </React.Fragment>
-    )
-  }
 
   getActiveStr(){
-    const active =  this.state.apps_active_list
-    const app_list = this.state.apps_list
-    const rui_list = this.state.apps_rui_list
+    const active =  this.props.ros.apps_active_list
+    const app_list = this.props.ros.apps_list
+    const app_name_list = this.props.ros.apps_name_list
+
     var config_str_list = []
     for (var i = 0; i < app_list.length; i++) {
       if (active.indexOf(app_list[i]) !== -1){
-        config_str_list.push(rui_list[i])
+        config_str_list.push(app_name_list[i])
         config_str_list.push("\n")
       }
     }
@@ -610,13 +429,13 @@ class AppsMgr extends Component {
 
   
   getDisabledStr(){
-    const active =  this.state.apps_active_list
-    const app_list = this.state.apps_list
-    const rui_list = this.state.apps_rui_list
+    const active =  this.props.ros.apps_active_list
+    const app_list = this.props.ros.apps_list
+    const app_name_list = this.props.ros.apps_name_list
     var config_str_list = []
     for (var i = 0; i < app_list.length; i++) {
       if (active.indexOf(app_list[i]) === -1){
-        config_str_list.push(rui_list[i])
+        config_str_list.push(app_name_list[i])
         config_str_list.push("\n")
       }
     }
@@ -625,31 +444,22 @@ class AppsMgr extends Component {
   }
 
 
-  getReadyStr(){
-    const ready = this.state.apps_install_list
-    var config_str_list = []
-    for (var i = 0; i < ready.length; i++) {
-      config_str_list.push(this.getShortName(ready[i]))
-      config_str_list.push("\n")
-    }
-    const config_str =config_str_list.join("")
-    return config_str
-  }
-
   onChangeGroupSelection(event){
     var selected_group = event.target.value
     this.setState({selected_group: selected_group})
   }
 
   render() {
-    if (this.state.needs_update === true){
-      this.setState({needs_update: false})
-    }
+    const mgrNamespace = this.getMgrNamespace()
+    // if (this.state.needs_update === true){
+    //   this.setState({needs_update: false})
+    // }
     const selected_app = this.state.selected_app
     const app_options = this.getAppOptions()
-    const active_app_list = this.state.apps_active_list
+    const active_app_list = this.props.ros.apps_active_list
     const hide_app_list = !this.state.viewableApps && !this.state.connected
     const app_group_options = this.getGroupOptions()
+    const app_status_msg = this.state.app_status_msg
 
     return (
 
@@ -723,42 +533,32 @@ class AppsMgr extends Component {
         {this.getDisabledStr()}
         </pre>
 
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>  
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Install Apps List "}
-          </label>
-
-        <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
-        {this.getReadyStr()}
-        </pre>
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
 
       </Column>
       <Column>
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/enable_all_apps")}>{"Enable All"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(mgrNamespace + "/enable_all_apps")}>{"Enable All"}</Button>
       </ButtonMenu>
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/disable_all_apps")}>{"Disable All"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(mgrNamespace + "/disable_all_apps")}>{"Disable All"}</Button>
       </ButtonMenu>
 
 
       <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/refresh_apps")}>{"Refresh"}</Button>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(mgrNamespace + "/refresh_apps")}>{"Refresh"}</Button>
       </ButtonMenu>
 
-        <ButtonMenu>
-        <Button onClick={() => this.props.ros.sendTriggerMsg(this.state.mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
-      </ButtonMenu>
+        {/* <ButtonMenu>
+        <Button onClick={() => this.props.ros.sendTriggerMsg(mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
+      </ButtonMenu> */}
 
 
       <Label title="Allow Restart on Crash">
           <Toggle
             checked={this.state.restart_enabled}
-            onClick={() => this.props.ros.sendBoolMsg(this.state.mgrNamespace + "/enable_restart", !this.state.restart_enabled)}>
+            onClick={() => this.props.ros.sendBoolMsg(mgrNamespace + "/enable_restart", !this.state.restart_enabled)}>
           </Toggle>
           </Label>
 
@@ -771,11 +571,10 @@ class AppsMgr extends Component {
       </Column>
       <Column>
 
-      {this.renderAppConfigure()}
+      { (app_status_msg != null && selected_app !== 'None') ?
+        this.renderAppConfigure()
+      : null }
 
-{/*
-      {this.renderAppInstall()}
-*/}
 
        </Column>
      </Columns>

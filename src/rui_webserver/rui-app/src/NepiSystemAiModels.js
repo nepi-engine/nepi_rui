@@ -32,7 +32,7 @@ import Button, { ButtonMenu } from "./Button"
 @inject("ros")
 @observer
 
-class AisMgr extends Component {
+class AiModelsMgr extends Component {
   constructor(props) {
     super(props)
 
@@ -639,4 +639,4 @@ render() {
 }
 
 
-export default AisMgr
+export default AiModelsMgr
