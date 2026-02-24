@@ -28,7 +28,7 @@ import Styles from "./Styles"
 import Select from "./Select"
 import Input from "./Input"
 
-import NepiIFConfig from "./Nepi_IF_Config"
+import {renderConfig} from "./Nepi_SDK"
 
 import { createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
 
@@ -526,10 +526,7 @@ class Nepi_IF_Settings extends Component {
       <Column>
 
 
-          <NepiIFConfig
-                        namespace={settingsNamespace}
-                        title={"Nepi_IF_Config"}
-          />
+          { renderConfig.bind(this)(settingsNamespace)}
 
         </Column>
         </Columns>

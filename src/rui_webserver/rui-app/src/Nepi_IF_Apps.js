@@ -47,11 +47,11 @@ class NepiIFApps extends Component {
 
   render() {
     const sel_app = this.props.sel_app
-    const {apps_list, appsStatusList} = this.props.ros
+    const {apps_list, apps_status_list} = this.props.ros
     const appInd = apps_list.indexOf(sel_app)
     var appStatusMsg = null
     if (appInd !== -1){
-      appStatusMsg =appsStatusList[appInd]
+      appStatusMsg =apps_status_list[appInd]
     }
     var rui_main_class = ""
     var rui_menu_name = ""
