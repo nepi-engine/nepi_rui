@@ -590,8 +590,8 @@ class NepiIFAppSelector extends Component {
   
 
         if (appsList.length > 0){
-          for (var i1 = 0; i1 < nameList.length; i1++) {
-            if (groupList[i1] === "DEVICE" && nameList[i1] !== "None" && runningList.indexOf(appsList[i1]) !== -1){
+          for (var i1 = 0; i1 < appsList.length; i1++) {
+            if (groupList[i1] === "DEVICE" && appsList[i1] !== "None" && runningList.indexOf(appsList[i1]) !== -1){
               items.push(<Option value={appsList[i1]}>{nameList[i1]}</Option>)
             }
           }
@@ -599,8 +599,8 @@ class NepiIFAppSelector extends Component {
       }
       else if (app_id === 'DATA') {
         if (appsList.length > 0){
-          for (var i2 = 0; i2 < nameList.length; i2++) {
-            if (groupList[i2] === "DATA" && nameList[i2] !== "None" && runningList.indexOf(appsList[i2]) !== -1 ){
+          for (var i2 = 0; i2 < appsList.length; i2++) {
+            if (groupList[i2] === "DATA" && appsList[i2] !== "None" && runningList.indexOf(appsList[i2]) !== -1 ){
               items.push(<Option value={appsList[i2]}>{nameList[i2]}</Option>)
             }
           }
@@ -610,15 +610,15 @@ class NepiIFAppSelector extends Component {
       else if (app_id === 'PROCESS') {
         
         if (appsList.length > 0){
-          for (var i3 = 0; i3 < nameList.length; i3++) {
-            if (groupList[i3] === "PROCESS" && nameList[i3] !== "None" && runningList.indexOf(appsList[i3]) !== -1){
+          for (var i3 = 0; i3 < appsList.length; i3++) {
+            if (groupList[i3] === "PROCESS" && appsList[i3] !== "None" && runningList.indexOf(appsList[i3]) !== -1){
               items.push(<Option value={appsList[i3]}>{nameList[i3]}</Option>)
             }
           }
         }
 
         if (true) { //((userRestrictionsActive.indexOf('ai_management')) {
-            const activeModelTypes = this.props.ros.active_models_types
+            const activeModelTypes = this.props.ros.ai_models_running_type_list
 
             if (activeModelTypes.indexOf('detection') !== -1){
               items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
@@ -637,8 +637,8 @@ class NepiIFAppSelector extends Component {
 
       else if (app_id === 'AUTOMATION') {
         if (appsList.length > 0){
-          for (var i4 = 0; i4 < nameList.length; i4++) {
-            if (groupList[i4] === "AUTOMATION" && nameList[i4] !== "None" && runningList.indexOf(appsList[i4]) !== -1){
+          for (var i4 = 0; i4 < appsList.length; i4++) {
+            if (groupList[i4] === "AUTOMATION" && appsList[i4] !== "None" && runningList.indexOf(appsList[i4]) !== -1){
               items.push(<Option value={appsList[i4]}>{nameList[i4]}</Option>)
             }
           }
@@ -675,7 +675,7 @@ class NepiIFAppSelector extends Component {
         }   
         
 
-        if (true) { //((appsList.indexOf('ai_model_mgr') !== -1 ) && (this.props.ros.connectedToAiModelsMgr === true) && (userRestrictionsActive.indexOf('ai_model_manager')) {
+        if (true) { //((appsList.indexOf('ai_models_mgr') !== -1 ) && (this.props.ros.connectedToAiModelsMgr === true) && (userRestrictionsActive.indexOf('ai_model_manager')) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
         }   
         
@@ -690,8 +690,8 @@ class NepiIFAppSelector extends Component {
         
  
         if (appsList.length > 0){
-          for (var i5 = 0; i5 < nameList.length; i5++) {
-            if (groupList[i5] === "SYSTEM" && nameList[i5] !== "None" && runningList.indexOf(appsList[i5]) !== -1){
+          for (var i5 = 0; i5 < appsList.length; i5++) {
+            if (groupList[i5] === "SYSTEM" && appsList[i5] !== "None" && runningList.indexOf(appsList[i5]) !== -1){
               items.push(<Option value={appsList[i5]}>{nameList[i5]}</Option>)
             }
           }

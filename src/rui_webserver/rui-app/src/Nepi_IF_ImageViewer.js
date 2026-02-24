@@ -188,7 +188,7 @@ class Nepi_IF_ImageViewer extends Component {
                     select_updated_topic: select_updated_topic
     })
 
-    if (prev_image_topic !== image_topic && select_updated_topic != null){
+    if ((prev_image_topic !== image_topic && prev_image_topic != 'None') && select_updated_topic != null){
       this.props.ros.sendImageSelectionMsg(select_updated_topic, image_index, image_topic , prev_image_topic)
 
     }

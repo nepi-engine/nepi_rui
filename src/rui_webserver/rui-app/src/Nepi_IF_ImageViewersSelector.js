@@ -226,7 +226,7 @@ class NepiIFImageViewersSelector extends Component {
     if (this.state.num_windows === 1){
       show_selector_buttons = true
     }
-    const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
+    const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : ['None','None','None','None']
     const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
     const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
     const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
@@ -237,7 +237,17 @@ class NepiIFImageViewersSelector extends Component {
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
     const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
   
-    const show_selectors = this.state.show_selectors
+    const show_selectors = ((image_topics.length > 0 && image_topics[0] === 'None') || 
+                                      (num_windows === 2 && image_topics.length > 0 && image_topics[1] === 'None') || 
+                                      (num_windows === 4 && image_topics.indexOf('None') !== -1)) ? true :
+                                            this.props.show_selectors !== undefined ? this.props.show_selectors : this.state.show_selectors
+
+    if (show_selectors !== this.state.show_selectors){
+      this.setState({show_selectors: show_selectors})
+    }
+
+
+
     const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
     const show_reset_button = (num_windows === 1)
@@ -261,7 +271,8 @@ class NepiIFImageViewersSelector extends Component {
 
                         <div id="Image1Viewer">
                           <NepiIFImageViewerSelector
-                            id="Image1Viewer"
+                            id="0"
+                            image_index={0}
                             image_topic={image_topics[0]}
                             title={titles[0]}
                             streamingImageQuality={streamingImageQuality}
@@ -292,7 +303,8 @@ class NepiIFImageViewersSelector extends Component {
                         {(num_windows > 1)?
                           <div id="Image2Viewer">
                             <NepiIFImageViewerSelector
-                              id="Image2Viewer"
+                              id="1"
+                              image_index={1}
                               image_topic={image_topics[1]}
                               title={titles[1]}
                               streamingImageQuality={streamingImageQuality}
@@ -326,7 +338,8 @@ class NepiIFImageViewersSelector extends Component {
                         {(num_windows > 2)?
                           <div id="Image3Viewer">
                             <NepiIFImageViewerSelector
-                              id="Image3Viewer"
+                              id="2"
+                              image_index={2}
                               image_topic={image_topics[2]}
                               title={titles[2]}
                               streamingImageQuality={streamingImageQuality}
@@ -357,7 +370,8 @@ class NepiIFImageViewersSelector extends Component {
                          {(num_windows === 4)?
                           <div id="Image4Viewer">
                             <NepiIFImageViewerSelector
-                              id="Image4Viewer"
+                              id="3"
+                              image_index={3}
                               image_topic={image_topics[3]}
                               title={titles[3]}
                               streamingImageQuality={streamingImageQuality}

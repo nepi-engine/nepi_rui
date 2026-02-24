@@ -56,41 +56,15 @@ class AiDetectorMgr extends Component {
 
     this.state = {
 
-      mgrName: "ai_model_mgr",
-      all_namespace: null,
+      connectedToNepi: false,
+      connectedToAiModelsMgr: false,
+
+
       status_msg: null,
-
-      modelMgrListener: null,
-      model_mgr_connected: false,
-
-      frameworks_list: [],
-      active_framework: "None",
-
-      models_list: [],
-      models_names: [],
-      models_frameworks: [],
-      models_types: [],
-
-      active_models_list: [],
-      active_models_names: [],
-      active_models_types: [],
-      active_models_nodes: [],
-      active_models_namespaces: [],
-
-
-
-      detectorMgrListener: null,
-
-
-      detectorListener: null,
-      detector_connected: false,
 
 
       selected_detector: "None",
       last_selected_detector: "None",
-      selected_detector_namespace: "None",
-      detector_info_resp: null,
-
 
       img_list_viewable: false,
       img_filter_str_list: ['detection_image','targeting_image','alert_image','tracking_image'],
@@ -106,19 +80,19 @@ class AiDetectorMgr extends Component {
       showSettingsControl: this.props.showSettingsControl ? this.props.showSettingsControl : false,      
       showSettings: false,
 
-      needs_update: true
+      statusListener: null,
+      connected: false,
+
+      needs_update: false
 
 
     }
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
-    this.getMgrNamespace = this.getMgrNamespace.bind(this)
 
-    this.updateModelMgrStatusListener = this.updateModelMgrStatusListener.bind(this)
-    this.modelMgrStatusListener = this.modelMgrStatusListener.bind(this)
 
-    this.updateDetectorStatusListeners = this.updateDetectorStatusListeners.bind(this)
-    this.detectorStatusListener = this.detectorStatusListener.bind(this)
+    this.updateStatusListeners = this.updateStatusListeners.bind(this)
+    this.statusListener = this.statusListener.bind(this)
 
     this.getDetectorOptions = this.getDetectorOptions.bind(this)
     this.onDetectorSelected = this.onDetectorSelected.bind(this)
@@ -148,102 +122,70 @@ class AiDetectorMgr extends Component {
     return baseNamespace
   }
 
-
-  getMgrNamespace(){
-    const { namespacePrefix, deviceId} = this.props.ros
-    var mgrNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
-      mgrNamespace = "/" + namespacePrefix + "/" + deviceId + "/" + this.state.mgrName
+  async checkConnection() {
+    const { connectedToNepi , connectedToAiModelsMgr} = this.props.ros
+    if (this.state.connectedToNepi !== connectedToNepi){
+      this.setState({connectedToNepi: connectedToNepi,
+                    model_status_msg: null,
+                    selected_model: 'None', needs_update: true})
     }
-    return mgrNamespace
+    if (this.state.connectedToAiModelsMgr !== connectedToAiModelsMgr )
+    {
+      this.setState({connected: true, needs_update: true})
+    }
+
+    setTimeout(async () => {
+      await this.checkConnection()
+    }, 1000)
+  }
+
+
+
+
+
+  componentDidMount(){
+    this.checkConnection()
   }
 
   // Callback for handling ROS Status messages
-  modelMgrStatusListener(message) {
-
-    this.setState({
-      frameworks_list: message.ai_frameworks,
-      active_framework: message.active_ai_framework,
-
-      models_list: message.ai_models,
-      models_names: message.ai_models_names,
-      models_frameworks: message.ai_models_frameworks,
-      models_types: message.ai_models_types,
-
-      active_models_list: message.active_ai_models,
-      active_models_names: message.active_ai_models_names,
-      active_models_types: message.active_ai_models_types,
-      active_mdoels_nodes: message.active_ai_models_nodes,
-      active_models_namespaces: message.active_ai_models_namespaces,
-
-   
-      all_namespace: message.all_namespace,
-      model_mgr_connected: true
-    })    
-
-
-  }
-
-  // Function for configuring and subscribing to Status
-  updateModelMgrStatusListener() {
-    const statusNamespace = this.getMgrNamespace() + '/status'
-    if (this.state.modelMgrListener !== null) {
-      this.state.modelMgrListener.unsubscribe()
-      this.setState({status_msg: null, det_mgr_status_msg: null})
-    }
-    var modelMgrListener = this.props.ros.setupStatusListener(
-          statusNamespace,
-          "nepi_interfaces/MgrAiModelsStatus",
-          this.modelMgrStatusListener
-        )
-    this.setState({ modelMgrListener: modelMgrListener,
-      model_mgr_connected: true,
-      needs_update: false})
-  }
-
-
-
-
-  // Callback for handling ROS Status messages
-  detectorStatusListener(message) {
+  statusListener(message) {
     const sel_detector = this.state.selected_detector
     const got_detector = message.ai_detector_namespace
 
     if (sel_detector === got_detector){
       this.setState({
       status_msg: message,
-      detector_connected: true
+      connected: true
       })
     }
 
   }
 
   // Function for configuring and subscribing to Status
-  updateDetectorStatusListeners() {
+  updateStatusListeners() {
 
-    if (this.state.detectorListener != null) {
-      this.state.detectorListener.unsubscribe()
-      this.setState({detector_namespace: null, 
+    if (this.state.statusListener != null) {
+      this.state.statusListener.unsubscribe()
+      this.setState({
         status_msg: null,
-        detector_connected: false,
-        detectorListener: null,
+        connected: false,
+        statusListener: null,
       selected_display_topic: "None",
       selected_display_text: "None"
     })
     }
-    const active_models_namespaces = this.state.active_models_namespaces
+    const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
     const selected_detector = this.state.selected_detector
-    const detector_ind = active_models_namespaces.indexOf(selected_detector)
+    const detector_ind = ai_models_namespaces.indexOf(selected_detector)
     if (detector_ind !== -1){
 
-      var detectorListener = this.props.ros.setupStatusListener(
+      var statusListener = this.props.ros.setupStatusListener(
         selected_detector + '/status',
         "nepi_interfaces/AiDetectorStatus",
-        this.detectorStatusListener
+        this.statusListener
       )
       this.setState({ 
-        detectorListener: detectorListener,
-        detector_namespace: selected_detector
+        statusListener: statusListener,
       })
     }
 
@@ -254,24 +196,15 @@ class AiDetectorMgr extends Component {
     this.setState({
       selected_detector: "None",
       last_selected_detector: "None", 
-      selected_detector_namespace: "None",
       status_msg: null,
-      detector_connected: false
+      connected: false
     })
   }
 
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    // First update manager status
-    const model_mgr_namespace = this.getMgrNamespace()
-    const needs_update = (this.state.needs_update && model_mgr_namespace !== null)
-    if (needs_update) {
-        this.updateModelMgrStatusListener()
-    } 
-
-    // Once manager is connected update Model status on change
-    if (this.state.model_mgr_connected === true){
+    if (this.state.connectedToAiModelsMgr === true){
       const selected_detector = this.state.selected_detector
       const last_detector = this.state.last_selected_detector
 
@@ -280,7 +213,7 @@ class AiDetectorMgr extends Component {
             status_msg: null,
             last_selected_detector: selected_detector
           })  
-          this.updateDetectorStatusListeners()
+          this.updateStatusListeners()
 
       }
     }
@@ -288,44 +221,42 @@ class AiDetectorMgr extends Component {
   }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to Status message
+  // Used to unsubscribe to Status3DX message
   componentWillUnmount() {
-    if (this.state.modelMgrListener) {
-      this.state.modelMgrListener.unsubscribe()
+    if (this.state.statusListener) {
+      this.state.statusListener.unsubscribe()
+      this.setState({statusListener : null})
     }
   }
 
 
 
-
-
   // Function for creating image topic options.
   getDetectorOptions() {
-    const active_models_namespaces = this.state.active_models_namespaces
-    const shortnames = createMenuBaseNames(active_models_namespaces)
-    //const active_models_names = this.state.active_models_names
-    const active_models_types = this.state.active_models_types
+    const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
+    const ai_models_display_names = this.props.ros.ai_models_running_name_list
+    const ai_models_types = this.props.ros.ai_models_running_type_list
     const selected_detector = this.state.selected_detector
     var items = []
     var check_type = 'detection'
     var type = 'Unknown'
 
-    if (active_models_namespaces.length === 0) {
+    if (ai_models_namespaces.length === 0) {
       items.push(<Option value={'None'}>{'None'}</Option>)
     }
     else {
-      for (var i = 0; i < active_models_namespaces.length; i++) {
-          type = active_models_types[i]
+      for (var i = 0; i < ai_models_namespaces.length; i++) {
+          type = ai_models_types[i]
           if (type === check_type ){
-            //items.push(<Option value={active_models_namespaces[i]}>{active_models_names[i]}</Option>)
-            items.push(<Option value={active_models_namespaces[i]}>{shortnames[i]}</Option>)
+            //items.push(<Option value={ai_models_namespaces[i]}>{ai_models_names[i]}</Option>)
+            items.push(<Option value={ai_models_namespaces[i]}>{ai_models_display_names[i]}</Option>)
           }
       }
     }
 
-    if ( active_models_namespaces.indexOf(selected_detector) === -1){
-      if (active_models_namespaces.length > 0){
-        this.setState({selected_detector: active_models_namespaces[0]})
+    if ( ai_models_namespaces.indexOf(selected_detector) === -1){
+      if (ai_models_namespaces.length > 0){
+        this.setState({selected_detector: ai_models_namespaces[0]})
       }
       else if (selected_detector !== 'None') {
         this.setState({selected_detector: 'None'})
@@ -340,68 +271,18 @@ class AiDetectorMgr extends Component {
   }
 
   renderAiDetector() {
-    const {sendTriggerMsg} = this.props.ros
-    const model_mgr_namespace = this.getMgrNamespace()
-    const model_mgr_connected = this.state.model_mgr_connected === true
-
-    const has_framework = this.active_framework !== "None"
 
     const detector_options = this.getDetectorOptions()
-    const has_models = detector_options.length > 0
 
     const selected_detector = this.state.selected_detector
-    const detector_selected = (selected_detector !== "None")
 
     const status_msg = this.state.status_msg
-    const detector_name = status_msg == null? "None" : status_msg.name
-    const detector_loading = (detector_name === selected_detector && selected_detector !== "None")? this.state.detector_connected === false : selected_detector !== "None"
-    const detector_connected = (detector_name === selected_detector)? (this.state.detector_connected === true && detector_name === selected_detector):false
+    const detector_namespace = (status_msg == null) ? "None" : status_msg.namespace
+    const connected = (detector_namespace === selected_detector)? this.state.connected : false
 
     const Spacer = ({ size }) => <div style={{ height: size, width: size }}></div>;
 
-    if (model_mgr_connected === false){
-      return(
-        <Columns>
-        <Column>
 
-        <pre style={{ height: "50px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-                  {"LOADING..."}
-                  </pre>
-   
-        </Column>
-        </Columns>
-      )
-    }
-
-    else if (has_framework === false){
-      return(
-        <Columns>
-        <Column>
-
-        <pre style={{ height: "50px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-                  {"NO AI FRAMEWORK FOUND.  Enable frameworks on the AI Model Manager page"}
-                  </pre>
-   
-        </Column>
-        </Columns>
-      )
-    }
-
-    else if (has_models === false){
-      return(
-        <Columns>
-        <Column>
-
-        <pre style={{ height: "50px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-                  {"No AI MODELS FOUND.  Enable models on the AI Model Manager page"}
-                  </pre>
-   
-        </Column>
-        </Columns>
-      )
-    }
-
-    else{
       return (
 
 
@@ -430,17 +311,16 @@ class AiDetectorMgr extends Component {
           </Column>
           </Columns>
 
-          <div hidden={status_msg === null}>
    
-                        {this.renderDetectorSettings()}
+              { (status_msg != null && connected === true) ? this.renderDetectorSettings() : null}
 
-          </div>
+
 
   
           </Section>
 
       )
-    }
+  
 
   }
 
@@ -580,12 +460,13 @@ renderDetectorSettings() {
   const selected_detector = this.state.selected_detector
   const status_msg = this.state.status_msg
   if (status_msg != null){
-    const detector_name = status_msg.name
-    const detector_namespace = status_msg.ai_detector_namespace
+    const detector_name = status_msg.ai_detector_name
+
+    const detector_namespace = status_msg.namespace
     if (selected_detector === detector_namespace){
       
 
-
+      const display_name = status_msg.display_name
       const has_sleep = status_msg.has_sleep
       const sleep_enabled = status_msg.sleep_enabled
       const sleep_suspend_sec = status_msg.sleep_suspend_sec
@@ -641,7 +522,7 @@ renderDetectorSettings() {
 
       const img_list_viewable = this.state.img_list_viewable
 
-      const detector_display_name = detector_name.toUpperCase()
+      const detector_display_name = display_name.toUpperCase()
 
       return (
       <Columns>
@@ -1034,7 +915,7 @@ renderDetectorSettings() {
     var detector_name = 'None'
     var img_name = 'None'
     if (status_msg != null){
-      detector_name = status_msg.name 
+      detector_name = status_msg.ai_detector_name 
       img_name = detector_name + img_topic.split(detector_name)[1]
     }
     this.setState({selected_display_topic: img_topic,
@@ -1069,7 +950,7 @@ renderDetectorSettings() {
     const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
     const save_data_topic = this.state.selected_detector + '/save_data'
-    const connected = this.state.detector_connected
+    const connected = this.state.connected
 
 
     return (

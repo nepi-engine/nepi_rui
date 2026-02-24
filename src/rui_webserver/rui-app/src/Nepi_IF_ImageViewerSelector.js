@@ -138,11 +138,8 @@ class NepiIFImageViewerSelector extends Component {
     }
 
     // Update Class Variables
-    const id = this.props.id
-    if (id === this.state.id){
-    //var selected_image = this.props.image_topic !== undefined ? this.props.image_topic : this.state.selected_image
-    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
-    var selected_image = this.state.selected_image
+
+    var selected_image = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
 
 
       var selected_ind = this.state.selected_image_index
@@ -153,11 +150,11 @@ class NepiIFImageViewerSelector extends Component {
       var index_name = ''
       var index_name_changed = false
       var updated_image = false
-      if (JSON.stringify(image_topics) !== JSON.stringify(sorted_items)) {
+      if (JSON.stringify(this.state.image_topics) !== JSON.stringify(sorted_items)) {
         index = sorted_items.indexOf(selected_image)
         if (selected_ind !== index || selected_text !== names[index]) {
           this.setState({
-            id: id,
+
             selected_image_index: index,
             selected_image_text: names[index]})
           }      
@@ -168,7 +165,7 @@ class NepiIFImageViewerSelector extends Component {
       if (selected_image === 'None' ) {
         if (sorted_items.length > 0) {
           selected_image = sorted_items[0]
-          this.setState({id: id,
+          this.setState({
                         selected_image: selected_image,
                         selected_image_index: 0,
                         selected_image_text: names[0]})
@@ -177,7 +174,7 @@ class NepiIFImageViewerSelector extends Component {
         else if (selected_image !== 'None') {
           selected_image = 'None'
           this.setState({
-            id: id,
+           
             selected_image: selected_image,
             selected_image_index: -1,
             selected_image_text: 'None'})
@@ -192,7 +189,6 @@ class NepiIFImageViewerSelector extends Component {
         index_name_changed = (selected_text !== index_name)
         if ( index_changed || index_name_changed ) {
           this.setState({
-            id: id,
             selected_image_index: index,
             selected_image_text: index_name})
           updated_image = true
@@ -203,12 +199,12 @@ class NepiIFImageViewerSelector extends Component {
       // if (selected_image !== image_topic && image_topic === 'None') {
       //   updated_image = true
       // }
-      const {sendStringMsg} = this.props.ros
-      const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
-      if ((select_updated_topic != null) && (updated_image === true)){
-        sendStringMsg(select_updated_topic,selected_image)
-      }
-    }
+      // const {sendStringMsg} = this.props.ros
+      // const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
+      // if ((select_updated_topic != null) && (updated_image === true)){
+      //   sendStringMsg(select_updated_topic,selected_image)
+      // }
+
 
 
 
@@ -236,7 +232,7 @@ class NepiIFImageViewerSelector extends Component {
 
 
   onToggleListSelection(event){
-    const id = this.props.id
+
     const image = event.target.value
     const text = event.target.text
     const image_topics = this.state.image_topics
@@ -246,7 +242,7 @@ class NepiIFImageViewerSelector extends Component {
     if (select_updated_topic != null){
       sendStringMsg(select_updated_topic,image)
     }
-    this.setState({id: id,
+    this.setState({
                     selected_image: image,
                     selected_image_index: index,
                   selected_image_text: text})
@@ -262,8 +258,11 @@ class NepiIFImageViewerSelector extends Component {
     const active_list = []
 
 
-    const show_selector = this.props.show_selector !== undefined ? this.props.show_selector : true
-    const show_selector_buttons = this.props.show_selector_buttons !== undefined ? this.props.show_selector_buttons : true
+    const image_topics = this.state.image_topics
+    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
+    const show_selector = (image_topics.length > 0) && (this.props.show_selector !== undefined ? this.props.show_selector : true)
+
+
     const show_controls = (menu_options.length > 0) && (show_selector === true )
     return (
       <React.Fragment>
@@ -330,10 +329,7 @@ class NepiIFImageViewerSelector extends Component {
   renderButtonControls() {
     const { sendTriggerMsg } = this.props.ros
     const image_topics = this.state.image_topics
-    
 
-
-    const show_selector = this.props.show_selector !== undefined ? this.props.show_selector : true
     const show_selector_buttons = this.props.show_selector_buttons !== undefined ? this.props.show_selector_buttons : true
     const show_controls = (image_topics.length > 0) && (show_selector_buttons === true )
     return (
@@ -368,7 +364,7 @@ class NepiIFImageViewerSelector extends Component {
     const title = createMenuFirstLastName(image_topic)
     
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
-    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : [null,null,null,null]
+    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
     const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 

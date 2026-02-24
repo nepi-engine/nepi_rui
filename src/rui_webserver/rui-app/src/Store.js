@@ -277,17 +277,24 @@ class ROSConnectionStore {
       this.aiModelMgrStatus = null
 
 
-      this.frameworks_list = []
-      this.active_framework = "None"
+      this.ai_frameworks_list = []
+      this.ai_frameworks_folder_list = []
+      this.ai_frameworks_active_list = []
 
-      this.models_list = []
-      this.models_aifs = []
-      this.models_types = []
+      this.ai_models_ordered_list = []
+      this.ai_models_ordered_name_list = []
+      this.ai_models_ordered_framework_list = []
+      this.ai_models_ordered_type_list = []
+      this.ai_models_ordered_status_list = []
 
-      this.active_models_list = []
-      this.active_models_types = []
-  
-      this.running_models_list = []
+
+      this.ai_models_active_list = []
+
+
+      this.ai_models_running_list = []
+      this.ai_models_running_name_list = []
+      this.ai_models_running_type_list = []
+      this.ai_models_running_namespace_list = []
 
 
       // Software Manager
@@ -1183,43 +1190,59 @@ class ROSConnectionStore {
   // AI Model Manager
   ////////////////////////////// 
 
-  @observable aiModelMgrName = 'ai_model_mgr'
+  @observable aiModelsMgrName = 'ai_models_mgr'
 
   @observable connectedToAiModelMgr = false
   @observable aiModelMgrStatus = null
   
 
-  @observable frameworks_list = []
-  @observable active_framework = "None"
+  @observable ai_frameworks_list = []
+  @observable ai_frameworks_folder_list = []
+  @observable ai_frameworks_active_list = []
 
-  @observable models_list = []
-  @observable models_aifs = []
-  @observable models_types = []
+  @observable ai_models_list = []
+  @observable ai_models_name_list = []
+  @observable ai_models_framework_list = []
+  @observable ai_models_type_list = []
+  @observable ai_models_status_list = []
 
-  @observable active_models_list = []
-  @observable active_models_types = []
-  
-  @observable running_models_list = []
+
+  @observable ai_models_active_list = []
+
+
+  @observable ai_models_running_list = []
+  @observable ai_models_running_name_list = []
+  @observable ai_models_running_type_list = []
+  @observable ai_models_running_namespace_list = []
 
 
   setupAiModelMgrStatusListener() {
     this.addListener({
-      name: this.aiModelMgrName + '/status',
+      name: this.aiModelsMgrName + '/status',
       messageType: "nepi_interfaces/MgrAiModelsStatus",
       manageListener: true,
       callback: message => {
 
       this.aiModelMgrStatus = message
 
-      this.frameworks_list = message.ai_frameworks
-      this.models_list = message.ai_models
-      this.models_aifs = message.ai_models_frameworks
-      this.models_types = message.ai_models_types
-      this.active_framework = message.active_ai_framework
-      this.active_models_list = message.active_ai_models
-      this.active_models_types = message.active_ai_models_types
+      this.ai_frameworks_list = message.ai_frameworks_list
+      this.ai_frameworks_folder_list = message.ai_frameworks_folder_list
+      this.ai_frameworks_active_list = message.ai_frameworks_active_list
 
-      this.running_models_list = message.running_models_list
+      this.ai_models_list = message.ai_models_ordered_list
+      this.ai_models_name_list = message.ai_models_ordered_name_list
+      this.ai_models_framework_list = message.ai_models_ordered_framework_list
+      this.ai_models_type_list = message.ai_models_ordered_type_list
+      this.ai_models_status_list = message.ai_models_ordered_status_list
+
+
+      this.ai_models_active_list = message.ai_models_active_list
+
+
+      this.ai_models_running_list = message.ai_models_running_list
+      this.ai_models_running_name_list = message.ai_models_running_name_list
+      this.ai_models_running_type_list = message.ai_models_running_type_list
+      this.ai_models_running_namespace_list = message.ai_models_running_namespace_list
 
       this.connectedToAiModelMgr = true
 
