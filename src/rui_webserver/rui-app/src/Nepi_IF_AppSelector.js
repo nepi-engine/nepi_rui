@@ -87,6 +87,7 @@ class NepiIFAppSelector extends Component {
 
 
     this.checkConnection = this.checkConnection.bind(this)
+    this.getAppOptions = this.getAppOptions.bind(this)
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)  
 
     
@@ -559,10 +560,11 @@ class NepiIFAppSelector extends Component {
     const connected = this.state.connectedToNepi
 
     const appsList = this.props.ros.apps_list
+    const nameList = this.props.ros.apps_name_list 
 
     const groupList = this.props.ros.apps_group_list
     const runningList = this.props.ros.apps_running_list
-    const nameList = this.props.ros.apps_running_name_list 
+
 
     var items = []
     if (connected !== true){
