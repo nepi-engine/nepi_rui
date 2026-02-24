@@ -89,7 +89,7 @@ class AiDetectorMgr extends Component {
     }
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
-
+    this.checkConnection = this.checkConnection.bind(this)
 
     this.updateStatusListeners = this.updateStatusListeners.bind(this)
     this.statusListener = this.statusListener.bind(this)
@@ -126,20 +126,19 @@ class AiDetectorMgr extends Component {
     const { connectedToNepi , connectedToAiModelsMgr} = this.props.ros
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
-                    model_status_msg: null,
-                    selected_model: 'None', needs_update: true})
+                    status_msg: null,
+                    selected_model: 'None'})
     }
     if (this.state.connectedToAiModelsMgr !== connectedToAiModelsMgr )
     {
-      this.setState({connected: true, needs_update: true})
+      this.setState({connectedToAiModelsMgr: connectedToAiModelsMgr, connected: true})
+      this.setState({needs_update: true})
     }
 
     setTimeout(async () => {
       await this.checkConnection()
     }, 1000)
   }
-
-
 
 
 
@@ -150,7 +149,7 @@ class AiDetectorMgr extends Component {
   // Callback for handling ROS Status messages
   statusListener(message) {
     const sel_detector = this.state.selected_detector
-    const got_detector = message.ai_detector_namespace
+    const got_detector = message.namespace
 
     if (sel_detector === got_detector){
       this.setState({
@@ -170,8 +169,8 @@ class AiDetectorMgr extends Component {
         status_msg: null,
         connected: false,
         statusListener: null,
-      selected_display_topic: "None",
-      selected_display_text: "None"
+        selected_display_topic: "None",
+        selected_display_text: "None"
     })
     }
     const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
@@ -192,30 +191,22 @@ class AiDetectorMgr extends Component {
   }
 
 
-  componentDidMount(){
-    this.setState({
-      selected_detector: "None",
-      last_selected_detector: "None", 
-      status_msg: null,
-      connected: false
-    })
-  }
-
+  
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (this.state.connectedToAiModelsMgr === true){
+    if (this.state.needs_update === true){
       const selected_detector = this.state.selected_detector
       const last_detector = this.state.last_selected_detector
 
       if (last_detector !== selected_detector) {
           this.setState({      
-            status_msg: null,
             last_selected_detector: selected_detector
           })  
           this.updateStatusListeners()
 
       }
+      this.setState({needs_update: false})
     }
      
   }
@@ -223,10 +214,14 @@ class AiDetectorMgr extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status3DX message
   componentWillUnmount() {
-    if (this.state.statusListener) {
       this.state.statusListener.unsubscribe()
-      this.setState({statusListener : null})
-    }
+      this.setState({
+        status_msg: null,
+        connected: false,
+        statusListener: null,
+        selected_display_topic: "None",
+        selected_display_text: "None"
+    })
   }
 
 
@@ -277,6 +272,7 @@ class AiDetectorMgr extends Component {
     const selected_detector = this.state.selected_detector
 
     const status_msg = this.state.status_msg
+    //const detector_name = (status_msg == null) ? "None" : status_msg.ai_detector_name
     const detector_namespace = (status_msg == null) ? "None" : status_msg.namespace
     const connected = (detector_namespace === selected_detector)? this.state.connected : false
 
@@ -300,7 +296,7 @@ class AiDetectorMgr extends Component {
               </Label>
     
 
-              <div hidden={((status_msg !== null) || (selected_detector === 'None'))}>
+              <div hidden={((status_msg != null) || selected_detector === 'None')}>
 
                   <pre style={{ height: "50px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
                   {"Loading..."}
@@ -389,7 +385,7 @@ class AiDetectorMgr extends Component {
     const selected_detector = this.state.selected_detector
     const status_msg = this.state.status_msg
     if (status_msg != null){
-      const detector_namespace = status_msg.ai_detector_namespace 
+      const detector_namespace = status_msg.namespace 
       if (selected_detector === detector_namespace){
         const availableClassesList = status_msg.available_classes
 
@@ -419,7 +415,7 @@ class AiDetectorMgr extends Component {
       const selected_detector = this.state.selected_detector
       const status_msg = this.state.status_msg
       if (status_msg != null){
-        const detector_namespace = status_msg.ai_detector_namespace 
+        const detector_namespace = status_msg.namespace 
         if (selected_detector === detector_namespace){
           const classSelection = event.target.value
           const availableClassesList = status_msg.available_classes
@@ -482,8 +478,8 @@ renderDetectorSettings() {
       const classes_selected = (selectedClassesList.length > 0)
 
       const detector_enabled = status_msg.enabled
-      const detection_state = status_msg.detection_state
-      const detector_state = status_msg.state_str_msg
+      const detecting = status_msg.detecting
+      const detector_state = status_msg.msg_str
       const det_running = (detector_state === "Detecting")
 
 
@@ -681,7 +677,7 @@ renderDetectorSettings() {
                       <div style={{ width: '40%' }}>
                        
                       <Label title={"Detected"}>
-                        <BooleanIndicator value={detection_state} />
+                        <BooleanIndicator value={detecting} />
                       </Label>
 
                       </div>
@@ -946,7 +942,7 @@ renderDetectorSettings() {
     const img_options = this.getDisplayImgOptions()
     const sel_img_topic = this.state.selected_display_topic
     const img_publishning = imageTopics.indexOf(sel_img_topic) !== -1
-    const sel_img = img_publishning? sel_img_topic : "None"
+    const sel_img = (img_publishning === true && this.state.connected === true) ? sel_img_topic : "None"
     const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
     const save_data_topic = this.state.selected_detector + '/save_data'
@@ -963,6 +959,9 @@ renderDetectorSettings() {
 
           <Columns>
           <Column>
+
+
+              
 
                   <Label title="Select Image">
                       <Select id="ImgSelect" onChange={this.onDisplayImgSelected} 

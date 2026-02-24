@@ -273,8 +273,8 @@ class ROSConnectionStore {
 
 
       // AI Model Manager
-      this.connectedToAiModelMgr = false
-      this.aiModelMgrStatus = null
+      this.connectedToAiModelsMgr = false
+      this.aiModelsMgrStatus = null
 
 
       this.ai_frameworks_list = []
@@ -605,7 +605,7 @@ class ROSConnectionStore {
     this.startPollingTimeMgrStatusService()
     this.setupDriversMgrStatusListener()
     this.setupAppsMgrStatusListener()
-    this.setupAiModelMgrStatusListener()
+    this.setupAiModelsMgrStatusListener()
     
     // scripts manager services
     this.startPollingGetScriptsService()  // populate listbox with files
@@ -1192,8 +1192,8 @@ class ROSConnectionStore {
 
   @observable aiModelsMgrName = 'ai_models_mgr'
 
-  @observable connectedToAiModelMgr = false
-  @observable aiModelMgrStatus = null
+  @observable connectedToAiModelsMgr = false
+  @observable aiModelsMgrStatus = null
   
 
   @observable ai_frameworks_list = []
@@ -1216,14 +1216,14 @@ class ROSConnectionStore {
   @observable ai_models_running_namespace_list = []
 
 
-  setupAiModelMgrStatusListener() {
+  setupAiModelsMgrStatusListener() {
     this.addListener({
       name: this.aiModelsMgrName + '/status',
       messageType: "nepi_interfaces/MgrAiModelsStatus",
       manageListener: true,
       callback: message => {
 
-      this.aiModelMgrStatus = message
+      this.aiModelsMgrStatus = message
 
       this.ai_frameworks_list = message.ai_frameworks_list
       this.ai_frameworks_folder_list = message.ai_frameworks_folder_list
@@ -1244,7 +1244,7 @@ class ROSConnectionStore {
       this.ai_models_running_type_list = message.ai_models_running_type_list
       this.ai_models_running_namespace_list = message.ai_models_running_namespace_list
 
-      this.connectedToAiModelMgr = true
+      this.connectedToAiModelsMgr = true
 
 
       }

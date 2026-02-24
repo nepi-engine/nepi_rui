@@ -44,11 +44,11 @@ class AiModelsMgr extends Component {
       connectedToNepi: false,
       connectedToAiModelsMgr: false,
 
-      viewable_frameworks: false,
+      viewable_frameworks: true,
 
       selected_framework: 'None',
     
-      viewable_models: false, 
+      viewable_models: true, 
       selected_model: 'None',
 
       connected: false,
@@ -489,47 +489,48 @@ class AiModelsMgr extends Component {
             </Column>
             <Column>
 
-
-                  <Columns equalWidth={true}>
-                  <Column>
-
-
-                      <Label title="Enable/Disable Model"> 
-                        <Toggle
-                          checked={enabled===true}
-                          onClick={() => this.props.ros.sendUpdateBoolMsg(mgrNamespace + "/update_model_state", selected_model, !enabled)}
-                          disabled={disable_enable}>
-                        </Toggle>
-                    </Label>
+                <div hidden={selected_model === 'None'}>
+                        <Columns equalWidth={true}>
+                        <Column>
 
 
-                    </Column>
-                    <Column>
+                            <Label title="Enable/Disable Model"> 
+                              <Toggle
+                                checked={enabled===true}
+                                onClick={() => this.props.ros.sendUpdateBoolMsg(mgrNamespace + "/update_model_state", selected_model, !enabled)}
+                                disabled={disable_enable}>
+                              </Toggle>
+                          </Label>
 
 
-                    <Label title={"Model Running"}>
-                        <BooleanIndicator value={running} />
-                      </Label>
+                          </Column>
+                          <Column>
 
 
-                  </Column>
-                  </Columns> 
+                          <Label title={"Model Running"}>
+                              <BooleanIndicator value={running} />
+                            </Label>
 
 
-                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                        <label style={{fontWeight: 'bold'}}>
-                            {"Model Info"}
-                          </label>
+                        </Column>
+                        </Columns> 
 
 
-                    <pre style={{ height: "150px", overflowY: "auto" }}>
-                    {"\nDescription: " + description + 
-                    "\nStatus: " + msg_str +
-                    "\nType: " + type  + "     "  + "Node: " + node_name  + "     "  + "Framework: " + framework
-                    }
-                    </pre>
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+                              <label style={{fontWeight: 'bold'}}>
+                                  {"Model Info"}
+                                </label>
+
+
+                          <pre style={{ height: "150px", overflowY: "auto" }}>
+                          {"\nDescription: " + description + 
+                          "\nStatus: " + msg_str +
+                          "\nType: " + type  + "     "  + "Node: " + node_name  + "     "  + "Framework: " + framework
+                          }
+                          </pre>
+
+                  </div>
 
 
             </Column>
