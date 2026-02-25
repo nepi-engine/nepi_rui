@@ -99,12 +99,6 @@ class NepiIFConfig extends Component {
     else {
     const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : this.supports_all_config(namespace)
     const all_config_restricted = (this.props.ros.userRestricted.indexOf('Sav-All') !== -1)
-    const namespace_parts = namespace.split('/')
-    var all_name = ''
-    if (namespace_parts.lenght > 3) {
-      all_name = namespace_parts[3].split('_')[0]
-    }
-    const all_config_label = 'Save for All ' + all_name + ' Devices'
 
 
         return (
@@ -120,6 +114,17 @@ class NepiIFConfig extends Component {
                           <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config")}>{"Save"}</Button>
                     </ButtonMenu>
 
+                    { (show_save_all === true && all_config_restricted === false) ?
+
+
+                        <ButtonMenu>
+                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config_all")}>{'Save ALL'}</Button>
+                      </ButtonMenu>
+                   
+
+                    : null }
+
+
 
                       </Column>
                     <Column>
@@ -133,22 +138,13 @@ class NepiIFConfig extends Component {
                     <Column>
 
                     <ButtonMenu>
-                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/system_reset_config")}>{"Restore"}</Button>
+                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/factory_reset_config")}>{"Factory"}</Button>
                     </ButtonMenu>
 
 
                     </Column>
                   </Columns>
 
-                    { (show_save_all === true && all_config_restricted === false) ?
-
-
-                        <ButtonMenu>
-                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config_all")}>{all_config_label}</Button>
-                      </ButtonMenu>
-                   
-
-                    : null }
 
 
           </React.Fragment>

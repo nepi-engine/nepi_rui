@@ -391,7 +391,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
   
   getDisabledStr(){
-    const installed = this.props.ros.drivers_list
+    const installed = this.props.ros.drivers_name_list
     const active_names =  this.props.ros.drivers_active_name_list
     var config_str_list = []
     for (var i = 0; i < installed.length; i++) {
