@@ -47,7 +47,7 @@ class Nepi_IF_Settings extends Component {
       status_msg: null,
       capabilities: null,
 
-      show_controls: false,
+      show_controls: true,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
@@ -360,7 +360,7 @@ class Nepi_IF_Settings extends Component {
 
 
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls !== undefined) ? this.props.show_controls : this.state.show_controls
+    const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
 
 
     if (show_controls === false){
