@@ -30,9 +30,10 @@ import Styles from "./Styles"
 
 import {  onChangeSwitchStateValue } from "./Utilities"
 
+import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
-import NepiIFAdminNodeName from "./Nepi_IF_AdminNodeName"
-import NepiIFAdminRuiRestrict from "/Nepi_IF_AdminRuiRestrict"
+//import NepiIFAdminNodeName from "./Nepi_IF_AdminNodeName"
+//import NepiIFAdminRuiRestrict from "./Nepi_IF_AdminRuiRestrict"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -59,7 +60,7 @@ const styles = Styles.Create({
 
 @inject("ros")
 @observer
-class NepiIFAdminDevelop extends Component {
+class NepiIFAdmin extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -75,8 +76,7 @@ class NepiIFAdminDevelop extends Component {
 
     this.onUpdateAdminPasswordText = this.onUpdateAdminPasswordText.bind(this)
     this.onKeyAdminPasswordText = this.onKeyAdminPasswordText.bind(this)
-    this.renderAdminSelect = this.renderAdminSelect.bind(this)
-    this.renderAdminDevelop = this.renderAdminDevelop.bind(this)
+    this.renderAdmin = this.renderAdmin.bind(this)
 
 
 
@@ -102,7 +102,7 @@ class NepiIFAdminDevelop extends Component {
               <Columns>
               <Column>
 
-                  <Label title="Show Advanced Options">
+                  <Label title="Show Options">
                     <Toggle
                       checked={this.state.advancedConfigEnabled===true}
                       onClick={() => onChangeSwitchStateValue.bind(this)("advancedConfigEnabled",this.state.advancedConfigEnabled)}>
@@ -125,7 +125,7 @@ class NepiIFAdminDevelop extends Component {
 
 
                 { (this.state.advancedConfigEnabled===true) ? 
-                  this.renderAdminDevelop()
+                  this.renderAdmin()
                 : null }
 
           </React.Fragment>
@@ -157,55 +157,10 @@ class NepiIFAdminDevelop extends Component {
   }
 
 
-  renderAdminSelect() {
-    const admin_mode = this.props.ros.systemAdminEnabled
-    const admin_password_valid = this.props.ros.systemAdminPasswordValid
-    const admin_mode_set = this.props.ros.systemAdminModeSet
-    const develop_mode = this.props.ros.systemDevelopEnabled
-    const debug_mode = this.props.ros.systemDebugEnabled
-    const base_namespace = this.getBaseNamespace()
-    return (
 
-      <React.Fragment>
-
-
-
-              <Columns>
-              <Column>
-
-                  <Label title="Enable Admin Mode">
-                        <Toggle
-                        checked={admin_mode}
-                        onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/admin_mode_enable", !admin_mode)}>
-                      </Toggle>
-                  </Label>
-
- 
-
-                  </Column>
-                  <Column>
- 
-                  { (admin_password_valid === false && admin_mode === true) ?
-                      <Label title={"Enter Admin Password"}>
-                        <Input
-                          id="admin_password"
-                          value={this.state.adminPassword}
-                          onChange={this.onUpdateAdminPasswordText}
-                          onKeyDown={this.onKeyAdminPasswordText}
-                        />
-                      </Label>
-                  : null }
-
-                </Column>
-                  </Columns>
-
-      </React.Fragment>
-    )
-  }
-
-
-  renderAdminDevelop(){
-
+  renderAdmin(){
+    const show_advanced_option = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : false
+    const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : false
     const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : false
     const show_admin_node_name = (this.props.show_admin_node_name !== undefined)? this.props.show_admin_node_name : false
     const show_admin_rui_restrict = (this.props.show_admin_rui_restrict !== undefined)? this.props.show_admin_rui_restrict : true
@@ -215,25 +170,35 @@ class NepiIFAdminDevelop extends Component {
 
         <React.Fragment>
       
-              { (show_admin_config === true) ?
+
+
+             { (show_admin_config === true) ?
                 <NepiIFAdminConfig
                 make_section={false}
                 />
               : null }
 
-              { (show_admin_node_name === true) ?
+
+              {/* { (show_admin_node_name === true) ?
                 <NepiIFAdminNodeName
                 namespace={namespace}
                 make_section={false}
                 />
-              : null }
+              : null } */}
 
-              { (show_admin_rui_restrict === true) ?
+              {/* { (show_admin_rui_restrict === true) ?
                 <NepiIFAdminRuiRestrict
                 make_section={false}
                 />
-              : null }
+              : null } */}
 
+
+
+             { (show_admin_enable === true) ?
+                <NepiIFAdminEnable
+                make_section={false}
+                />
+              : null }
 
 
 
@@ -251,9 +216,14 @@ class NepiIFAdminDevelop extends Component {
     const base_namespace = this.getBaseNamespace()
     const show_advanced_option = (this.props.show_advanced_option !== undefined) ? this.props.show_advanced_option : true
     const admin_mode_set = this.props.ros.systemAdminModeSet
+    const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : false
+    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : false
+    const show_admin = admin_mode_set || show_admin_enable || show_admin_config
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    
-    if (base_namespace == null || admin_mode_set === false || namespace === 'None'){
+    const title = (this.props.title !== undefined)? this.props.title : "Admin Settings"
+
+
+    if (base_namespace == null || show_admin === false){
       return (
   
         <Columns>
@@ -264,6 +234,8 @@ class NepiIFAdminDevelop extends Component {
         </Columns>
       )
     }
+
+
     else if (make_section === false){
 
       return (
@@ -274,7 +246,7 @@ class NepiIFAdminDevelop extends Component {
                 { ( show_advanced_option === true) ?
                   this.renderAdvancedOptions()
                 :
-                  this.renderAdminDevelop()
+                  this.renderAdmin()
                 }
 
 
@@ -284,12 +256,12 @@ class NepiIFAdminDevelop extends Component {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "Advanced Controls"}>
+          <Section title={(this.props.title !== undefined) ? this.props.title : title}>
 
                 { ( show_advanced_option === true) ?
                   this.renderAdvancedOptions()
                 :
-                  this.renderAdminDevelop()
+                  this.renderAdmin()
                 }
 
 
@@ -300,4 +272,4 @@ class NepiIFAdminDevelop extends Component {
   }
 
 }
-export default NepiIFAdminDevelop
+export default NepiIFAdmin

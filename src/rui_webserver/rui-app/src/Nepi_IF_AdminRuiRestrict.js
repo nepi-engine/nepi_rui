@@ -38,8 +38,6 @@ class NepiIFAdminRuiRestrict extends Component {
     super(props)
     this.state = {
 
-      advancedConfigEnabled: false,
-      adminPassword: ''
 
     }
 
@@ -61,48 +59,6 @@ class NepiIFAdminRuiRestrict extends Component {
     return baseNamespace
   }
 
-
-
-  renderAdvancedOptions() {
-    
-        return (
-
-          <React.Fragment>
-
-              <Columns>
-              <Column>
-
-                  <Label title="Show Advanced Options">
-                    <Toggle
-                      checked={this.state.advancedConfigEnabled===true}
-                      onClick={() => onChangeSwitchStateValue.bind(this)("advancedConfigEnabled",this.state.advancedConfigEnabled)}>
-                    </Toggle>
-                </Label>
-
-
-
-                  </Column>
-                  <Column>
- 
-
-                </Column>
-                  </Columns>
-
-
-                { (this.state.advancedConfigEnabled===true) ? 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                : null }
-
-
-                { (this.state.advancedConfigEnabled===true) ? 
-                  this.renderAdmin()
-                : null }
-
-          </React.Fragment>
-
-
-        )
-  }
     
 
   renderAdminRuiRestrict() {
@@ -145,10 +101,10 @@ class NepiIFAdminRuiRestrict extends Component {
   render() {
     const base_namespace = this.getBaseNamespace()
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const admin_mode_set = this.props.ros.systemAdminModeSet
 
 
-
-    if (base_namespace == null){
+    if (base_namespace == null || admin_mode_set === false){
       return (
   
         <Columns>
@@ -165,7 +121,7 @@ class NepiIFAdminRuiRestrict extends Component {
 
           <React.Fragment>
 
-         
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 {this.renderAdminRuiRestrict()}
 
 

@@ -113,8 +113,6 @@ class NepiIFAdminEnable extends Component {
     const admin_mode = this.props.ros.systemAdminEnabled
     const admin_password_valid = this.props.ros.systemAdminPasswordValid
     const admin_mode_set = this.props.ros.systemAdminModeSet
-    const develop_mode = this.props.ros.systemDevelopEnabled
-    const debug_mode = this.props.ros.systemDebugEnabled
     const base_namespace = this.getBaseNamespace()
     return (
 
@@ -165,7 +163,6 @@ class NepiIFAdminEnable extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
 
-
     if (base_namespace == null){
       return (
   
@@ -183,7 +180,7 @@ class NepiIFAdminEnable extends Component {
 
           <React.Fragment>
 
-         
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 {this.renderAdminEnable()}
 
 

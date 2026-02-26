@@ -30,7 +30,7 @@ import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import NepiIFAdminDevelop from "./Nepi_IF_Admin"
+import NepiIFAdmin from "./Nepi_IF_Admin"
 
 function round(value, decimals = 0) {
   return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
@@ -353,6 +353,14 @@ updateMgrTimeStatusListener() {
 
                 </Column>
                   </Columns>
+
+
+          {<NepiIFAdmin
+              title={"Advanced Settings"}
+              show_advanced_option={false}
+              show_admin_config={true}
+              make_section={false}
+        />}   
             
       </Section>
     )
@@ -441,28 +449,16 @@ updateMgrTimeStatusListener() {
   }
 
   renderLicenseInfo() {
-    const {license_info, commercial_licensed, license_request_mode, onGenerateLicenseRequest} = this.props.ros
+    const {license_info, license_key, license_type, license_valid, license_status} = this.props.ros
 
-    const license_key_valid = license_info && ("licensed_components" in license_info) && ("hardware_key" in license_info["licensed_components"])
-    const license_hw_key = license_key_valid?  license_info["licensed_components"]['hardware_key'] : 'Unknown'
+    const license_hw_key = license_key
 
-    const license_info_valid = license_info && ("licensed_components" in license_info) && ("nepi_base" in license_info["licensed_components"]) &&
-                               "commercial_license_type" in license_info["licensed_components"]["nepi_base"] &&
-                               "status" in license_info["licensed_components"]["nepi_base"]
-    
-    var license_type = license_info_valid? license_info["licensed_components"]["nepi_base"]["commercial_license_type"] : "Unlicensed"
-
-
-    var license_status = license_info_valid? license_info["licensed_components"]["nepi_base"]["status"] : ""
+    const license_info_valid = license_valid
+  
 
     const { userRestricted} = this.props.ros
     const license_restricted = userRestricted.indexOf('License') !== -1
 
-
-    if (license_request_mode === true) {
-      //license_type = "Request"
-      license_status = "Pending"
-    }
 
     if (license_restricted === true ){
 
@@ -492,7 +488,6 @@ updateMgrTimeStatusListener() {
             </Label>
             : null
           }
-
 
           {license_info_valid && (license_type !== "Unlicensed")?
             this.renderLicense() :
@@ -1268,9 +1263,10 @@ updateMgrTimeStatusListener() {
         <Column>
           {this.renderDeviceConfiguration()}
           {this.renderLicenseInfo()}
-          {<NepiIFAdminDevelop
+          {<NepiIFAdmin
               title={"Advanced Settings"}
               show_advanced_option={false}
+              show_admin_rui_restrict={true}
               make_section={true}
         />}
         </Column>

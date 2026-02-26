@@ -29,7 +29,7 @@ import Select, { Option } from "./Select"
 
 import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFAdminDevelop from "./Nepi_IF_Admin"
+import NepiIFAdmin from "./Nepi_IF_Admin"
 
 
 
@@ -221,15 +221,15 @@ class NepiDeviceNPX extends Component {
                         : null}
 
 
-                      {(device_selected == true) ?
-                        <NepiIFAdminDevelop
-                            title={"Admin Settings"}
-                            show_advanced_option={false}
-                            show_admin_node_names={true}
-                            namespace={namespace}
-                            make_section={true}
-                      />
-                      : null}
+                        {(device_selected == true) ?
+                          <NepiIFAdmin
+                              title={"Advanced Settings"}
+                              show_advanced_option={true}
+                              show_admin_node={true}
+                              namespace={namespace}
+                              make_section={true}
+                        />
+                        : null}
 
 
               </div>

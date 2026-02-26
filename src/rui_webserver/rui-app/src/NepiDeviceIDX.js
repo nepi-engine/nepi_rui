@@ -29,7 +29,7 @@ import Select, { Option } from "./Select"
 import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 import NepiIFSettings from "./Nepi_IF_Settings"
 
-import NepiIFAdminDevelop from "./Nepi_IF_Admin"
+import NepiIFAdmin from "./Nepi_IF_Admin"
 
 import NepiDeviceIDXControls from "./NepiDeviceIDX-Controls"
 
@@ -335,10 +335,10 @@ class NepiDeviceIDX extends Component {
                         : null}
 
                         {(device_selected == true) ?
-                          <NepiIFAdminDevelop
+                          <NepiIFAdmin
                               title={"Advanced Settings"}
-                              show_advanced_option={false}
-                              show_admin_node_names={true}
+                              show_advanced_option={true}
+                              show_admin_node={true}
                               namespace={namespace}
                               make_section={true}
                         />

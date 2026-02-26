@@ -60,8 +60,10 @@ class NepiIFAdminConfig extends Component {
     super(props)
     this.state = {
 
-      advancedConfigEnabled: false,
-      adminPassword: ''
+
+      show_save: false,
+      show_reset: false,
+      show_clear: false
 
     }
 
@@ -86,17 +88,95 @@ class NepiIFAdminConfig extends Component {
 
   renderAdminConfig() {
     const base_namespace = this.getBaseNamespace()
+    const admin_mode_set = this.props.ros.systemAdminModeSet
+
+    const show_save = this.state.show_save
+    const show_reset = this.state.show_reset
+    const show_clear = this.state.show_clear
 
 
     return (
 
       <React.Fragment>
 
-                <ButtonMenu>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/save_system_cfgs")}>{"System Save"}</Button>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_system_cfgs")}>{"System Reset"}</Button>
-                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/restore_factory_cfgs")}>{"Factory Reset"}</Button>
-                </ButtonMenu>
+                <Label title={"Factory Config"} />
+
+                <div style={{ display: 'flex' }}>
+                        <div style={{ width: '25%' }} hidden={admin_mode_set === false}>
+                              <Label title="Enable Save">
+                                <Toggle
+                                  checked={show_save===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_save",show_save)}>
+                                </Toggle>
+                            </Label>
+
+
+                            <div   hidden={show_save === false}>
+                                <ButtonMenu>
+                                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/factory_save")}>{"Factory Save"}</Button>
+                                </ButtonMenu>
+                            </div>
+
+
+
+                        </div>
+                        <div style={{ width: '5%' }}>
+                        </div>
+
+            
+                        <div style={{ width: '25%' }}>
+                            <Label title="Enable Reset">
+                                <Toggle
+                                  checked={show_reset===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_reset",show_reset)}>
+                                </Toggle>
+                              </Label>
+
+                            <div hidden={show_reset === false}>
+                                <ButtonMenu>
+                                  <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/factory_reset")}>{"Factory Reset"}</Button>
+                                </ButtonMenu>
+                            </div>
+
+
+                        </div>
+                        <div style={{ width: '5%' }}>
+                        </div>
+
+                        <div style={{ width: '25%' }} hidden={admin_mode_set === false}>
+                            <Label title="Enable Clear">
+                                <Toggle
+                                  checked={show_clear===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_clear",show_clear)}>
+                                </Toggle>
+                              </Label>
+
+
+                              <div hidden={show_clear === false}>
+                                  <ButtonMenu>
+                                    <Button onClick={() => this.props.ros.sendTriggerMsg( base_namespace + "/factory_clear")}>{"Factory Clear"}</Button>
+                                  </ButtonMenu>
+                              </div>
+
+                        </div>
+
+                  </div>
+
+
+
+
+    
+
+            
+
+
+
+
+
+                   
+
+
+
 
       </React.Fragment>
     )
@@ -106,10 +186,11 @@ class NepiIFAdminConfig extends Component {
 
   render() {
     const base_namespace = this.getBaseNamespace()
-    const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    
-    if (base_namespace == null || admin_mode_set === false){
+
+
+
+    if (base_namespace == null){
       return (
   
         <Columns>
@@ -126,7 +207,7 @@ class NepiIFAdminConfig extends Component {
 
           <React.Fragment>
 
-
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                   {this.renderAdminConfig()}
 
           </React.Fragment>
@@ -135,7 +216,7 @@ class NepiIFAdminConfig extends Component {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "System Config Controls"}>
+          <Section>
 
               {this.renderAdminConfig()}
 
