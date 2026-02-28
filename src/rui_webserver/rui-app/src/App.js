@@ -49,7 +49,7 @@ class App extends Component {
 
   render() {
     const systemMgrStatus = this.props.ros.systemMgrStatus
-    const systemDevelopEnabled = this.props.ros.systemDevelopEnabled
+    const ruiMode = this.props.ros.ruiMode
 
     if (systemMgrStatus == null) {
 
@@ -69,7 +69,7 @@ class App extends Component {
       </Page>
       )
     }
-    else if (systemDevelopEnabled === false){
+    else if (ruiMode !== 'develop'){
       return (
       <React.Fragment>
         <MainMenuDeploy/>

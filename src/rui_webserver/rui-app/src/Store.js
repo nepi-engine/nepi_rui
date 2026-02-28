@@ -194,7 +194,6 @@ class ROSConnectionStore {
       this.systemAdminPasswordValid = false
       this.systemAdminModeSet = false
 
-      this.systemDevelopEnabled = false
       this.systemDebugEnabled = false
 
       this.systemManagersOptions = []
@@ -216,8 +215,8 @@ class ROSConnectionStore {
       this.ruiRestrictions = []
       this.ruiRestricted = []
 
-      this.systemRunModeOptions = []
-      this.systemRunMode = null
+      this.ruiModeOptions = []
+      this.ruiMode = null
 
 
       // App Manager
@@ -822,14 +821,12 @@ class ROSConnectionStore {
   @observable systemAdminPasswordValid = false
   @observable systemAdminModeSet = false
 
-  @observable systemDevelopEnabled = false
   @observable systemDebugEnabled = false
 
   @observable systemManagersOptions = []
   @observable systemManagersEnabled = []
 
-  @observable systemRunModeOptions = []
-  @observable systemRunMode = null
+
 
   @observable systemNodeNameKeys = []
   @observable systemNodeNameAliases = []
@@ -846,6 +843,9 @@ class ROSConnectionStore {
   @observable userRestrictionsDescriptions = []
   @observable userRestrictions = []
   @observable userRestricted = []
+
+  @observable ruiModeOptions = []
+  @observable ruiMode = null
 
   @observable ruiLoginEnabled = false
   @observable uiLoginPasswordValid = false
@@ -910,15 +910,13 @@ class ROSConnectionStore {
         this.systemAdminPasswordValid=message.sys_admin_password_valid
         this.systemAdminModeSet = message.sys_admin_mode_set
 
-        this.systemDevelopEnabled = message.sys_develop_enabled
         this.systemDebugEnabled = message.sys_debug_enabled
 
 
         this.systemManagersOptions = message.sys_managers_options
         this.systemManagersEnabled = message.sys_managers_enabled
 
-        this.systemRunModeOptions = message.sys_run_mode_options
-        this.systemRunMode = message.sys_run_mode
+
 
         this.systemNodeNameKeys = message.sys_node_name_keys
         this.systemNodeNameAliases = message.sys_node_name_aliases
@@ -936,6 +934,9 @@ class ROSConnectionStore {
         this.userRestrictions = message.user_restrictions
         this.userRestricted = message.user_restricted
 
+
+        this.ruiModeOptions = message.sys_rui_mode_options
+        this.ruiMode = message.sys_rui_mode
 
         this.ruiLoginEnabled=message.rui_login_enabled
         this.ruiLoginPasswordValid=message.rui_login_password_valid

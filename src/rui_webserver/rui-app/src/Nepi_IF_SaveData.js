@@ -55,11 +55,8 @@ class NepiIFSaveData extends Component {
 
       lastSaveNamespace: 'None',
       saveRatesMsg: "",
-      hasNavpose: false,
       saveAllEnabled: false,
       saveAllRate: 0.0,
-      logNavEnabled: false,
-      logNavRate: 0.0,
       saveDataPrefix: "",
       saveDataSubfolder: "",
       saveUtcTz: false,
@@ -108,19 +105,15 @@ class NepiIFSaveData extends Component {
     this.getSaveDataValue = this.getSaveDataValue.bind(this)
     this.onChangeBoolSaveDataValue = this.onChangeBoolSaveDataValue.bind(this)
     this.onChangeBoolSaveAllValue = this.onChangeBoolSaveAllValue.bind(this)
-    this.onChangeBoolLogNavValue = this.onChangeBoolLogNavValue.bind(this)
     this.onChangeBoolUtcTzValue = this.onChangeBoolUtcTzValue.bind(this)
     this.onUpdateSaveDataRateValue = this.onUpdateSaveDataRateValue.bind(this)
     this.onKeySaveDataRateValue = this.onKeySaveDataRateValue.bind(this)
-    this.onUpdateLogNavRateValue = this.onUpdateLogNavRateValue.bind(this)
-    this.onKeyLogNavRateValue = this.onKeyLogNavRateValue.bind(this)
     this.onUpdateInputSaveDataPrefixValue = this.onUpdateInputSaveDataPrefixValue.bind(this)
     this.onKeySaveInputSaveDataPrefixValue = this.onKeySaveInputSaveDataPrefixValue.bind(this)
     this.onUpdateInputSaveDataSubfolderValue = this.onUpdateInputSaveDataSubfolderValue.bind(this)
     this.onKeySaveInputSaveDataSubfolderValue = this.onKeySaveInputSaveDataSubfolderValue.bind(this)
     this.onToggleDataProductSelection = this.onToggleDataProductSelection.bind(this)
     this.sendSaveRateUpdate = this.sendSaveRateUpdate.bind(this)
-    this.sendLogRateUpdate = this.sendLogRateUpdate.bind(this)
     
     this.updateSelectedDataProducts = this.updateSelectedDataProducts.bind(this)
     this.getSelectedDataProducts = this.getSelectedDataProducts.bind(this)
@@ -155,8 +148,6 @@ class NepiIFSaveData extends Component {
         saveRatesMsg: message.save_data_rates,
         saveAllEnabled: message.save_all_enabled,
         saveAllRate: message.save_all_rate,
-        logNavEnabled: message.log_navposes_enabled,
-        logNavRate: message.log_navposes_rate,
         saveUtcTz: message.save_data_utc,
         exp_filename: message.example_filename,
         saveDataEnabled: message.save_data_enabled
@@ -416,13 +407,6 @@ class NepiIFSaveData extends Component {
     }
   }
 
-sendLogRateUpdate(rate) {
-    const {sendFloatMsg}  = this.props.ros
-    if (isNaN(rate) === false){
-      sendFloatMsg(this.state.saveNamespace + '/log_navposes_rate',rate)
-    }
-  }
-
   updateSelectedDataProducts() {
     const NamesList = this.state.saveNamesList
     const RatesList = this.state.saveRatesList
@@ -510,16 +494,6 @@ sendLogRateUpdate(rate) {
     this.setState({saveAll: enabled})
   }
 
-  onChangeBoolLogNavValue(){
-    const {sendBoolMsg}  = this.props.ros
-    const enabled = (this.state.logNavEnabled === false)
-    const logNavRate = this.state.logNavRate
-    const rate = parseFloat(logNavRate)
-    this.sendLogRateUpdate(rate)
-    sendBoolMsg(this.state.saveNamespace + '/log_navposes_enable',enabled)
-
-  }
-
 
   onChangeBoolUtcTzValue(e){
     const {sendBoolMsg}  = this.props.ros
@@ -547,26 +521,6 @@ sendLogRateUpdate(rate) {
     }
   }
 
-
-
-  onUpdateLogNavRateValue(event) {
-    this.setState({ saveDataRate: event.target.value })
-    document.getElementById("log_rate").style.color = Styles.vars.colors.red
-    this.render()
-  }
-
-  onKeyLogNavRateValue(event) {
-    const saveDataRate = this.state.saveDataRate
-    //Unused const rate = parseFloat(saveDataRate)
-    if(event.key === 'Enter'){
-      const rate = parseFloat(event.target.value)
-      if (!isNaN(rate)){
-        this.setState({saveDataRate: event.target.value })
-        this.sendSaveRateUpdate('Active',rate)
-      }
-      document.getElementById("log_rate").style.color = Styles.vars.colors.black
-    }
-  }
 
 
 
@@ -860,7 +814,6 @@ sendLogRateUpdate(rate) {
     const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
     const saveDataEnabled = this.getSaveDataValue()
-    const isNavposeMgr = (saveNamespace.indexOf('navpose_mgr') !== -1)
     const isAllNamespace = (saveNamespace === allNamespace)
     const dataProdcutSources = this.getSaveNamesList()
     const selectedDataProducts = this.getSelectedDataProducts()
@@ -932,24 +885,6 @@ sendLogRateUpdate(rate) {
                             </div>
                             )}
                         </Label>
-
-                        {/* <div hidden={((isNavposeMgr === true) )}>
-
-                                <Label title={"Log NavPose"}>
-                                  <Toggle
-                                    checked={ (this.state.logNavEnabled === true) }
-                                    onClick={() => {this.onChangeBoolLogNavValue()}}
-                                  />
-                                </Label>
-
-                                <Label title={"Log Nav Rate (Hz)"}>
-                                  <Input id="log_rate" 
-                                      value={this.state.logNavRate} 
-                                      onChange={this.onUpdateLogNavRateValue} 
-                                      onKeyDown= {this.onKeyLogNavRateValue} />
-                              </Label>
-
-                        </div> */}
 
                   </div>
 

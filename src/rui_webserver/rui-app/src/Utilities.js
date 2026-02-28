@@ -144,20 +144,17 @@ export function onChangeSwitchStateNestedValue(parentKey, nestedKey, currentVal)
 // MENU FUNCTIONS
 
 
-export function createMenuBaseName(optionsStr) {
+export function createMenuBaseName(optionStr) {
     var menu_name = ''
     var parts = []
     var sliced_parts = []
-    parts = optionsStr.split('/')
-    if (optionsStr === 'None') {
-      menu_name = 'None'
-    }
-    else if (parts.length > 3){
+    parts = optionStr.split('/')
+    if (parts.length > 3){optionStr
       sliced_parts = parts.slice(3); 
       menu_name = sliced_parts[0]
     }
     else {
-      menu_name = 'All'
+      menu_name = optionStr
     }
     
     return menu_name
@@ -177,15 +174,12 @@ export function createMenuBaseNames(optionsStrList) {
     
 }
 
-export function createMenuFirstLastName(optionsStr) {
+export function createMenuFirstLastName(optionStr) {
     var menu_name = 'None'
     var parts = []
     var sliced_parts = []
-    parts = optionsStr.split('/')
-    if (optionsStr === 'None') {
-      menu_name = 'None'
-    }
-    else if (parts.length > 3){
+    parts = optionStr.split('/')
+    if (parts.length > 3){
       sliced_parts = parts.slice(3); 
       menu_name = sliced_parts[0]
       if (sliced_parts.length > 1){
@@ -193,7 +187,7 @@ export function createMenuFirstLastName(optionsStr) {
       }
     }
     else {
-      menu_name = 'All'
+      menu_name = optionStr
     }
     
     return menu_name
@@ -214,15 +208,12 @@ export function createMenuFirstLastNames(optionsStrList) {
 }
 
 
-export function createMenuShortName(optionsStr, filterOutList = [], removeLast = false) {
+export function createMenuShortName(optionStr, filterOutList = [], removeLast = false) {
     var menu_name = 'None'
     var parts = []
     var sliced_parts = []
-    parts = optionsStr.split('/')
-    if (optionsStr === 'None') {
-      menu_name = 'None'
-    }
-    else if (parts.length > 3){
+    parts = optionStr.split('/')
+    if (parts.length > 3){
       sliced_parts = parts.slice(3); 
       var include_part = true
       var i = 0
@@ -247,7 +238,7 @@ export function createMenuShortName(optionsStr, filterOutList = [], removeLast =
       }
     }
     else {
-      menu_name = 'All'
+      menu_name = optionStr
     }
       
     

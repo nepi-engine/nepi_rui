@@ -121,12 +121,13 @@ class NepiIFImageViewersSelector extends Component {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
     }
-
+    const {imageTopics} = this.props.ros
+    const images_available = imageTopics.length > 0
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
-    const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
+    const show_image_controls_option = ((this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1) && images_available === true)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
-    const show_selectors_option = true
+    const show_selectors_option =  images_available === true
     const show_selectors = this.state.show_selectors
     return (
       <React.Fragment>
@@ -226,7 +227,14 @@ class NepiIFImageViewersSelector extends Component {
     if (this.state.num_windows === 1){
       show_selector_buttons = true
     }
-    const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : ['None','None','None','None']
+
+    const {imageTopics} = this.props.ros
+    const images_available = imageTopics.length > 0
+
+    var image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : ['None','None','None','None']
+    if (images_available === false) {
+      image_topics =  ['None Available','None Available','None Available','None Available']
+    }
     const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
     const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
     const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
@@ -247,7 +255,7 @@ class NepiIFImageViewersSelector extends Component {
     }
 
 
-
+    const auto_select_image = (this.props.auto_select_image !== undefined) ? this.props.auto_select_image : true
     const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
     const show_reset_button = (num_windows === 1)
@@ -259,6 +267,7 @@ class NepiIFImageViewersSelector extends Component {
     const colFlexSize_gap = (has_col_2 === false)? "0%" : "2%"
     const colFlexSize_2 = (has_col_2 === false)? "0%" : "49%"
     const make_section = (num_windows !== 1)
+
     
   
       return (
@@ -285,6 +294,7 @@ class NepiIFImageViewersSelector extends Component {
                             allow_pan_zoom={allow_pan_zoom}
                             mouse_event_topic={mouse_event_topics[0]}
                             select_updated_topic={select_updated_topics[0]}
+                            auto_select_image={auto_select_image}
                             make_section={make_section}
                             show_save_controls={false}
                           />
@@ -317,6 +327,7 @@ class NepiIFImageViewersSelector extends Component {
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
                               select_updated_topic={select_updated_topics[1]}
+                              auto_select_image={auto_select_image}
                              make_section={make_section}
                              show_save_controls={false}
                             />
@@ -352,6 +363,7 @@ class NepiIFImageViewersSelector extends Component {
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
                               select_updated_topic={select_updated_topics[2]}
+                              auto_select_image={auto_select_image}
                               make_section={make_section}
                               show_save_controls={false}
                             />
@@ -384,6 +396,7 @@ class NepiIFImageViewersSelector extends Component {
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
                               select_updated_topic={select_updated_topics[3]}
+                              auto_select_image={auto_select_image}
                              make_section={make_section}
                              show_save_controls={false}
                             />

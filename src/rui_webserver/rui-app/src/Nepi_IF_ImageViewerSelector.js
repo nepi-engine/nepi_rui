@@ -69,7 +69,7 @@ class NepiIFImageViewerSelector extends Component {
     this.renderNepiIFImageViewerSelector = this.renderNepiIFImageViewerSelector.bind(this)
     this.renderButtonControls = this.renderButtonControls.bind(this)
   
-    this.getListMenu = this.getListMenu.bind(this)
+    this.getImageMenu = this.getImageMenu.bind(this)
     this.toggleViewableList = this.toggleViewableList.bind(this)
     this.onToggleListSelection = this.onToggleListSelection.bind(this)
 
@@ -93,11 +93,12 @@ class NepiIFImageViewerSelector extends Component {
 
 
   // Function for creating list menu options.
-  getListMenu() {
+  getImageMenu() {
     // Update Class List
     const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : this.props.ros.imageTopics
     const image_exclude_filters = (this.props.image_exclude_filters !== undefined) ? this.props.image_exclude_filters : []
     const image_include_filters = (this.props.image_include_filters !== undefined) ? this.props.image_include_filters : []
+    const auto_select_image = (this.props.auto_select_image !== undefined) ? this.props.auto_select_image : true
     var images = image_topics  
     var items = []
     var push_item = true
@@ -140,7 +141,9 @@ class NepiIFImageViewerSelector extends Component {
     // Update Class Variables
 
     var selected_image = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
-
+    if (selected_image === 'None Available'){
+      selected_image = 'None'
+    }
 
       var selected_ind = this.state.selected_image_index
       var selected_text = this.state.selected_image_text
@@ -163,7 +166,7 @@ class NepiIFImageViewerSelector extends Component {
       }
 
       if (selected_image === 'None' ) {
-        if (sorted_items.length > 0) {
+        if (sorted_items.length > 0 && auto_select_image === true) {
           selected_image = sorted_items[0]
           this.setState({
                         selected_image: selected_image,
@@ -171,7 +174,7 @@ class NepiIFImageViewerSelector extends Component {
                         selected_image_text: names[0]})
           updated_image = true
         }
-        else if (selected_image !== 'None') {
+        else if (selected_image !== 'None' && auto_select_image === true) {
           selected_image = 'None'
           this.setState({
            
@@ -195,15 +198,12 @@ class NepiIFImageViewerSelector extends Component {
           }
           
       }
-
-      // if (selected_image !== image_topic && image_topic === 'None') {
-      //   updated_image = true
-      // }
-      // const {sendStringMsg} = this.props.ros
-      // const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
-      // if ((select_updated_topic != null) && (updated_image === true)){
-      //   sendStringMsg(select_updated_topic,selected_image)
-      // }
+  
+      const {sendStringMsg} = this.props.ros
+      const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
+      if ((select_updated_topic != null) && (updated_image === true)){
+        sendStringMsg(select_updated_topic,selected_image)
+      }
 
 
 
@@ -218,9 +218,9 @@ class NepiIFImageViewerSelector extends Component {
         }
       }
     }
-    if (menu_items.length == 0){
-      menu_items.push(<Option value={'None'}>{'None'}</Option>)
-    }
+    // if (menu_items.length == 0){
+    //   menu_items.push(<Option value={'None'}>{'None'}</Option>)
+    // }
 
 
 
@@ -252,7 +252,7 @@ class NepiIFImageViewerSelector extends Component {
 
   renderNepiIFImageViewerSelector() {
     const hide_list = ((this.state.hide_list === true) || (this.state.connected === false))
-    const menu_options = this.getListMenu()
+    const menu_options = this.getImageMenu()
     const selected_item = this.state.selected_image
     const selected_name = this.state.selected_name
     const active_list = []
@@ -263,7 +263,7 @@ class NepiIFImageViewerSelector extends Component {
     const show_selector = (image_topics.length > 0) && (this.props.show_selector !== undefined ? this.props.show_selector : true)
 
 
-    const show_controls = (menu_options.length > 0) && (show_selector === true )
+    const show_controls = ((menu_options.length > 0 && selected_item === 'None') || (menu_options.length > 1 )) && (show_selector === true )
     return (
       <React.Fragment>
 
@@ -331,7 +331,7 @@ class NepiIFImageViewerSelector extends Component {
     const image_topics = this.state.image_topics
 
     const show_selector_buttons = this.props.show_selector_buttons !== undefined ? this.props.show_selector_buttons : true
-    const show_controls = (image_topics.length > 0) && (show_selector_buttons === true )
+    const show_controls = (image_topics.length > 1) && (show_selector_buttons === true )
     return (
       <React.Fragment>
 
