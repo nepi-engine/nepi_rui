@@ -580,7 +580,7 @@ render() {
   const connected = this.state.connected
     return (
 
-    <Section title={"AI Framework and Model Settings"}>
+      <React.Fragment>
        
 
       <Columns>
@@ -597,7 +597,7 @@ render() {
        </Column>
      </Columns>
          
-    </Section>
+      </React.Fragment>
           
 
     )

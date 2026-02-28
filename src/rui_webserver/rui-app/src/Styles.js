@@ -28,10 +28,10 @@ export const Create = function(rules) {
 }
 
 export const colors = {
-  default_dark: "#00070d",
+  default_dark: "#000000",
   default_light: "#ffffff",
   default_highlight: "#b1d0ee",
-  black: "#1c1d20",
+  black: "#000000",
   white: "#ffffff",
   orange: "#ffd000",
   grey0: "#e1e6e9",

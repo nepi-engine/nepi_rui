@@ -53,15 +53,9 @@ class App extends Component {
 
     if (systemMgrStatus == null) {
 
-      const { license_valid, license_server, license_type } = this.props.ros
-      const unlicensed = (license_server !== null) && 
-        (license_server.readyState === 1) && 
-        (license_valid === false) 
       return (
       <Page>
         <Nav
-          unlicensed={unlicensed}
-          license_type={license_type}
           connected={false}
           pages={[
             { path: "/", label: "Connecting" },
