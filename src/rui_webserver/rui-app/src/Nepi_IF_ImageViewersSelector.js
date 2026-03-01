@@ -51,6 +51,7 @@ class NepiIFImageViewersSelector extends Component {
     this.renderImageWindows = this.renderImageWindows.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
     this.setNumWindows = this.setNumWindows.bind(this)
+    this.resetWindows = this.resetWindows.bind(this)
 
     this.renderImageViewersSelection = this.renderImageViewersSelection.bind(this)
     
@@ -87,7 +88,7 @@ class NepiIFImageViewersSelector extends Component {
 
 
   setNumWindows(num_windows){
-      var cur_num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
+      var cur_num_windows = this.state.num_windows
 
       if (num_windows === 0 || num_windows > 4){
           num_windows = 1
@@ -103,17 +104,22 @@ class NepiIFImageViewersSelector extends Component {
             sendIntMsg( num_windows_updated_topic,num_windows)
         }
         
-        var image_topic = ''
-        if (num_windows > 1){
-          for (var i = 0; i < image_topics.length; i++) {
-            image_topic = image_topics[i]
-            if (image_topic != null && image_topic !== 'None' && image_topic !== ''){
-              sendTriggerMsg( image_topic + "/reset_renders")
-            }
-          }
-        }
       }
 
+  }
+
+  resetWindows(){
+      const {sendTriggerMsg} = this.props.ros     
+      const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
+      
+      var image_topic = ''
+
+      for (var i = 0; i < image_topics.length; i++) {
+        image_topic = image_topics[i]
+        if (image_topic != null && image_topic !== 'None' && image_topic !== ''){
+          sendTriggerMsg( image_topic + "/reset_renders")
+        }
+      }
   }
 
 
@@ -127,6 +133,7 @@ class NepiIFImageViewersSelector extends Component {
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
     const show_image_controls_option = ((this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1) && images_available === true)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
+
     const show_selectors_option =  images_available === true
     const show_selectors = this.state.show_selectors
     return (
@@ -219,9 +226,15 @@ class NepiIFImageViewersSelector extends Component {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
     }
-
+    
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
-    this.setNumWindows(num_windows)
+    const reset_windows = (this.props.reset_windows !== undefined) ? this.props.reset_windows : true
+    if (num_windows !== this.state.num_windows){
+      if (num_windows > 1 && reset_windows === true){
+        this.resetWindows()
+      }
+      this.setState({num_windows: num_windows})
+    }
 
     var show_selector_buttons = false
     if (this.state.num_windows === 1){
@@ -245,8 +258,8 @@ class NepiIFImageViewersSelector extends Component {
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
     const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
   
-    const show_selectors = ((image_topics.length > 0 && image_topics[0] === 'None') || 
-                                      (num_windows === 2 && image_topics.length > 0 && image_topics[1] === 'None') || 
+    const show_selectors = ((images_available.length > 0 && image_topics[0] === 'None') || 
+                                      (num_windows === 2 && images_available.length > 0 && image_topics[1] === 'None') || 
                                       (num_windows === 4 && image_topics.indexOf('None') !== -1)) ? true :
                                             this.props.show_selectors !== undefined ? this.props.show_selectors : this.state.show_selectors
 

@@ -124,6 +124,10 @@ class NepiIFImageViewerSelector extends Component {
       }
     }
 
+    // if ((JSON.stringify(this.state.image_topics) !== JSON.stringify(items))){
+    //   this.setState({image_topics: items})
+    // }
+
     const item_names = createMenuFirstLastNames(items)
     var sorted_names = item_names.slice()
     sorted_names.sort()
@@ -185,19 +189,19 @@ class NepiIFImageViewerSelector extends Component {
         }
         
       }
-      else {
-        index = sorted_items.indexOf(selected_image)
-        index_changed = (selected_ind !== index) 
-        index_name = names[index]
-        index_name_changed = (selected_text !== index_name)
-        if ( index_changed || index_name_changed ) {
-          this.setState({
-            selected_image_index: index,
-            selected_image_text: index_name})
-          updated_image = true
-          }
+      // else {
+      //   index = sorted_items.indexOf(selected_image)
+      //   index_changed = (selected_ind !== index) 
+      //   index_name = names[index]
+      //   index_name_changed = (selected_text !== index_name)
+      //   if ( index_changed || index_name_changed ) {
+      //     this.setState({
+      //       selected_image_index: index,
+      //       selected_image_text: index_name})
+      //     updated_image = true
+      //     }
           
-      }
+      // }
   
       const {sendStringMsg} = this.props.ros
       const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
@@ -233,20 +237,22 @@ class NepiIFImageViewerSelector extends Component {
 
   onToggleListSelection(event){
 
-    const image = event.target.value
+    const selected_image = event.target.value
     const text = event.target.text
     const image_topics = this.state.image_topics
-    const index = image_topics.indexOf(image)
-    const {sendStringMsg} = this.props.ros
-    const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
-    if (select_updated_topic != null){
-      sendStringMsg(select_updated_topic,image)
-    }
+    const index = image_topics.indexOf(selected_image)
+
     this.setState({
-                    selected_image: image,
+                    selected_image: selected_image,
                     selected_image_index: index,
                   selected_image_text: text})
     this.setState({hide_list: true})
+
+    const {sendStringMsg} = this.props.ros
+    const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
+    if ((select_updated_topic != null)){
+      sendStringMsg(select_updated_topic,selected_image)
+    }
 
   }
 
@@ -319,9 +325,20 @@ class NepiIFImageViewerSelector extends Component {
       index = 0
     }
 
-    this.setState({selected_image_index: index,
-                 selected_image: image_topics[index],
-                 selected_image_text: createMenuFirstLastName(image_topics[index])})
+
+
+
+    const selected_image = image_topics[index]
+    const {sendStringMsg} = this.props.ros
+    const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
+    if ((select_updated_topic != null)){
+      sendStringMsg(select_updated_topic,selected_image)
+    }
+    else {
+      this.setState({selected_image_index: index,
+                  selected_image: selected_image,
+                  selected_image_text: createMenuFirstLastName(image_topics[index])})
+    }
     this.setState({hide_list: true})
 
   }
