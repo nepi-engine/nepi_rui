@@ -83,8 +83,10 @@ class NepiIFConfig extends Component {
 
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
+    const { ruiRestricted} = this.props.ros
+    const config_controls_restricted = ruiRestricted.indexOf('SYSTEM-CONFIG-CONTROLS') !== -1
 
-    if (namespace === 'None'){
+    if (namespace === 'None' || config_controls_restricted === true){
       return (
   
         <Columns>

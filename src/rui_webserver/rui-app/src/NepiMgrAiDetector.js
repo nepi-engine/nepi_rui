@@ -279,6 +279,10 @@ class AiDetectorMgr extends Component {
     const Spacer = ({ size }) => <div style={{ height: size, width: size }}></div>;
 
 
+    const { ruiRestricted} = this.props.ros
+    const detector_controls_restricted = ruiRestricted.indexOf('MANAGER-AI-DETECTORS-CONTROLS') !== -1
+
+
       return (
 
 
@@ -308,7 +312,7 @@ class AiDetectorMgr extends Component {
           </Columns>
 
    
-              { (status_msg != null && connected === true) ? this.renderDetectorSettings() : null}
+              { (status_msg != null && connected === true && detector_controls_restricted === false) ? this.renderDetectorSettings() : null}
 
 
 

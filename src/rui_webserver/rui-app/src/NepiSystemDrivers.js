@@ -268,8 +268,8 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
 
           <Section title={display_name}>
 
-      <Columns equalWidth={true}>
-      <Column>
+            <Columns equalWidth={true}>
+            <Column>
 
                 <Label title="Enable/Disable Driver">
                   <Toggle
@@ -292,8 +292,12 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
               
          
 
-        </Column>
-        </Columns>
+              </Column>
+              </Columns>
+
+
+
+
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                 <label style={{fontWeight: 'bold'}}>
@@ -309,10 +313,10 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
             </pre>
 
 
-
-        <Columns equalWidth={true}>
-          <Column>
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+            <Columns equalWidth={true}>
+              <Column>
+                  
 
 
                 <label style={{fontWeight: 'bold'}}>
@@ -341,8 +345,6 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
                   <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "bottom")}>{"Move to Bottom"}</Button>
                 </ButtonMenu>
 
-              </Column>
-              <Column>
 
             </Column>
             </Columns>

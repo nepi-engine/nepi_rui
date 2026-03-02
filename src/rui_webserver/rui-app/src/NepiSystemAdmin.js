@@ -34,7 +34,7 @@ import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
 import NepiIFAdminModes from "./Nepi_IF_AdminModes"
 //import NepiIFAdminNodeNames from "./Nepi_IF_AdminNodeNames"
-//import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
+import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
 import NepiIFAdminRui from "./Nepi_IF_AdminRui"
 
 function round(value, decimals = 0) {
@@ -122,42 +122,53 @@ class NepiMgr extends Component {
       return (
 
 
-        <Columns>
-          <Column>
+      <Columns equalWidth={true}>
+      <Column>
 
-          <Section title={("NEPI Admin")}>
-        
-              {<NepiIFAdminEnable
-                make_section={false}
-                title={null}
-                show_link_button={false}
-                show_line={false}
-                />}
+                <Columns equalWidth={true}>
+                <Column>
 
-               {<NepiIFAdminModes
-                make_section={false}
-                />} 
+                      <Section title={("NEPI Admin")}>
+                    
+                          {<NepiIFAdminEnable
+                            make_section={false}
+                            title={null}
+                            show_link_button={false}
+                            show_line={false}
+                            />}
 
-            { <NepiIFAdminConfig
-                make_section={false}
-                />}
-              
-        </Section>
+                          {<NepiIFAdminModes
+                            make_section={false}
+                            />} 
 
-
-              {/* {<NepiIFAdminManagers
-                make_section={false}
-                />} */}
-
-          </Column>
-          <Column>  
+                        { <NepiIFAdminConfig
+                            make_section={false}
+                            />}
+                          
+                    </Section>
 
 
-              {/* {<NepiIFAdminNodeNames
-                namespace={namespace}
+
+
+                      </Column>
+                      <Column>  
+
+
+                          {/* {<NepiIFAdminNodeNames
+                            namespace={namespace}
+                            make_section={true}
+                            />} */}
+                          
+
+                      </Column>
+                    </Columns>
+
+
+
+              {<NepiIFAdminManagers
                 make_section={true}
-                />} */}
-              
+                />}
+
 
           </Column>
           <Column>  
@@ -180,23 +191,39 @@ class NepiMgr extends Component {
 
   render() {
     const base_namespace = this.getBaseNamespace()
+    const admin_mode_set = this.props.ros.systemAdminModeSet
+
+    const { ruiRestricted} = this.props.ros
+    const admin_view_restricted = ruiRestricted.indexOf('SYSTEM-ADMIN-VIEW') !== -1  
+
+    const show_admin = (admin_mode_set === true || admin_view_restricted === false)
+    
+    if (base_namespace == null || show_admin === false){
+      return (
   
+        <Columns>
+          <Column>
+  
+  
+          </Column>
+        </Columns>
+      )
+    }
+
+
+    else {
 
       return (
 
           <React.Fragment>
-                
-                
-                { (base_namespace == null) ?
-                  null
-                :
-                  this.renderSystemAdmin()
-                }
+                               
+                {this.renderSystemAdmin()}
 
           </React.Fragment>
 
      )
    }
+  }
 
 
 }

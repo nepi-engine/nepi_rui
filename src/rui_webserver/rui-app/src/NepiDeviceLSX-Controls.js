@@ -332,12 +332,14 @@ class NepiControlsLightsControls extends Component {
     }
 
 
-    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
-    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
+    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : true
+    const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false
+    const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
+    const { ruiRestricted} = this.props.ros
+    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-LSX-CONTROLS') !== -1
 
-    if (never_show_controls === true){
+    if (hide_controls === true || device_controls_restricted === true){
               <Columns>
                 <Column>
 
@@ -346,7 +348,7 @@ class NepiControlsLightsControls extends Component {
 
     }
 
-    else if (show_controls === false){
+    else if (show_controls_option === true){
       return(
               <Columns>
                 <Column>
@@ -373,7 +375,7 @@ class NepiControlsLightsControls extends Component {
               <Columns>
                 <Column>
 
-                    {(allways_show_controls === false) ?
+                    {(show_controls_option === true) ?
                     <Label title="Show Controls">
                         <Toggle
                           checked={show_controls===true}

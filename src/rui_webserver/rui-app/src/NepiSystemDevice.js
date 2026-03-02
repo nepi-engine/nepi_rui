@@ -569,6 +569,7 @@ updateMgrTimeStatusListener() {
     const {
       sendBoolMsg,
       systemManagesTime,
+      managers_running_list,
       ruiRestricted,
       ntp_sources,
       clockNTP,
@@ -587,7 +588,9 @@ updateMgrTimeStatusListener() {
     var date_str = ""
     var timezone = ""
 
-    var time_controls_restricted = true
+
+
+
     var clock_synced = false
     var auto_sync_clocks = false
     var auto_sync_timezones = false
@@ -597,7 +600,7 @@ updateMgrTimeStatusListener() {
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
     if (timeStatusTime && timeStatus){
-      time_controls_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROLS') !== -1
+      
       clock_synced = timeStatus.clock_synced
       auto_sync_clocks = timeStatus.auto_sync_clocks
       auto_sync_timezones = timeStatus.auto_sync_timezones
@@ -607,137 +610,156 @@ updateMgrTimeStatusListener() {
       date_str = timeStatusDateStr
       timezone = timeStatusTimezoneDesc
     }
-    
-    return (
-      <Section title={"Time"}>
-        <Label title={"Clock Synced"}>
-          <BooleanIndicator value={clock_synced} />
-        </Label>
-        <Label title={"NTP Connected"}>
-          <BooleanIndicator value={clockNTP} />
-        </Label>
-        <Label title={"Time"}>
-          <Input disabled value={time_str} />
-        </Label>
-        <Label title={"Date"}>
-          <Input disabled value={date_str} />
-        </Label>
-        <Label title={"Timezone"}>
-          <Input disabled value={timezone} />
-        </Label>
 
+    const manager_running = managers_running_list.indexOf('MANAGER-TIME') !== -1
+    const time_view_restricted = ruiRestricted.indexOf('MANAGER-TIME-VIEW') !== -1
+    const time_controls_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROLS') !== -1
 
-        {(IS_LOCAL === false && systemManagesTime === true && time_controls_restricted === false) &&
-
-          <Columns>
+    if (manager_running === false || time_view_restricted === true){
+      return (
+  
+        <Columns>
           <Column>
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+  
+  
+          </Column>
+        </Columns>
+      )
+    }
 
-                <Label title={"Clock Sync Config"}>
-                </Label>
+    else{
+    
+        return (
+          <Section title={"Time"}>
+            <Label title={"Clock Synced"}>
+              <BooleanIndicator value={clock_synced} />
+            </Label>
+            <Label title={"NTP Connected"}>
+              <BooleanIndicator value={clockNTP} />
+            </Label>
+            <Label title={"Time"}>
+              <Input disabled value={time_str} />
+            </Label>
+            <Label title={"Date"}>
+              <Input disabled value={date_str} />
+            </Label>
+            <Label title={"Timezone"}>
+              <Input disabled value={timezone} />
+            </Label>
 
-                  <Columns>
-                  <Column>
 
+            {(IS_LOCAL === false && systemManagesTime === true && time_controls_restricted === false) &&
 
-                  <Label title={"Auto Sync Clocks"}>
-                      <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_clocks",!auto_sync_clocks)} />
+              <Columns>
+              <Column>
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                    <Label title={"Clock Sync Config"}>
                     </Label>
 
-
-                  <div hidden={auto_sync_clocks === true}>
-
-                    <ButtonMenu>
-                      <Button onClick={syncTime2Device}>{"Sync Clocks"}</Button>
-                    </ButtonMenu>
-
-                  </div>
+                      <Columns>
+                      <Column>
 
 
-                  </Column >
-                  <Column>
+                      <Label title={"Auto Sync Clocks"}>
+                          <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_clocks",!auto_sync_clocks)} />
+                        </Label>
 
 
+                      <div hidden={auto_sync_clocks === true}>
+
+                        <ButtonMenu>
+                          <Button onClick={syncTime2Device}>{"Sync Clocks"}</Button>
+                        </ButtonMenu>
+
+                      </div>
 
 
-                    <Label title={"Auto Sync Timezone"}>
-                      <Toggle checked={auto_sync_timezones} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_timezones",!auto_sync_timezones)} />
-                    </Label>
-
-                    <div hidden={auto_sync_timezones === false}>
-
-                    <pre style={{ height: "31px", overflowY: "auto" }}>
-                      {""}
-                    </pre>
-
-                    </div>
-
-
-                      <div hidden={auto_sync_timezones === true}>
+                      </Column >
+                      <Column>
 
 
 
-                            <label align={"left"} textAlign={"left"}>
-                                {"Select Timezone"}
-                              </label>
-                        
 
+                        <Label title={"Auto Sync Timezone"}>
+                          <Toggle checked={auto_sync_timezones} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_timezones",!auto_sync_timezones)} />
+                        </Label>
 
-                                <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                                          <Select style={{width: "10px"}}/>
-                                        </div>
-                                        <div hidden={timezones_list_viewable === false}>
-                                        {timezoneOptions.map( (Timezone) =>
-                                        <div onClick={this.onToggleTimezoneSelection}
-                                          style={{
-                                            textAlign: "center",
-                                            padding: `${Styles.vars.spacing.xs}`,
-                                            color: Styles.vars.colors.black,
-                                            backgroundColor: (Timezone === timezone)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                                            cursor: "pointer",
-                                            }}>
-                                            <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>
-                                        </div>
-                                        )}
-                                  </div>
+                        <div hidden={auto_sync_timezones === false}>
 
-                              
+                        <pre style={{ height: "31px", overflowY: "auto" }}>
+                          {""}
+                        </pre>
+
                         </div>
+
+
+                          <div hidden={auto_sync_timezones === true}>
+
+
+
+                                <label align={"left"} textAlign={"left"}>
+                                    {"Select Timezone"}
+                                  </label>
+                            
+
+
+                                    <div onClick={this.toggleTimezonesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
+                                              <Select style={{width: "10px"}}/>
+                                            </div>
+                                            <div hidden={timezones_list_viewable === false}>
+                                            {timezoneOptions.map( (Timezone) =>
+                                            <div onClick={this.onToggleTimezoneSelection}
+                                              style={{
+                                                textAlign: "center",
+                                                padding: `${Styles.vars.spacing.xs}`,
+                                                color: Styles.vars.colors.black,
+                                                backgroundColor: (Timezone === timezone)? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                                                cursor: "pointer",
+                                                }}>
+                                                <body timezone_name ={Timezone} style={{color: Styles.vars.colors.black}}>{Timezone}</body>
+                                            </div>
+                                            )}
+                                      </div>
+
+                                  
+                            </div>
+
+                      </Column>
+                      </Columns>
 
                   </Column>
                   </Columns>
 
-              </Column>
-              </Columns>
+            }
 
+              {(systemManagesTime === true && time_controls_restricted === false) &&
+
+                <Columns>
+                <Column>
+
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                    <Label title={"NTP Config"}>
+                    </Label>
+
+
+                    <Label title={"NTP Addresses:"}>
+                              <pre style={{ height: "25px", overflowY: "auto" }}>
+                                {'  ' + ntp_sources }
+                              </pre>
+                    </Label>
+
+                </Column>
+                  </Columns>
+
+              }
+
+
+
+            </Section>
+          )
         }
-
-          {(systemManagesTime === true && time_controls_restricted === false) &&
-
-            <Columns>
-            <Column>
-
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                <Label title={"NTP Config"}>
-                </Label>
-
-
-                <Label title={"NTP Addresses:"}>
-                          <pre style={{ height: "25px", overflowY: "auto" }}>
-                            {'  ' + ntp_sources }
-                          </pre>
-                </Label>
-
-            </Column>
-              </Columns>
-
-          }
-
-
-
-        </Section>
-      )
   }
 
 
@@ -817,12 +839,14 @@ updateMgrTimeStatusListener() {
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-    const { systemManagesNetwork, ruiRestricted} = this.props.ros
+    const { systemManagesNetwork, managers_running_list, ruiRestricted} = this.props.ros
+    const manager_running = managers_running_list.indexOf('MANAGER-NETWORK') !== -1
     const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
     const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROLS') !== -1
 
 
-    if (systemManagesNetwork === false || network_view_restricted === true){
+
+    if (systemManagesNetwork === false || manager_running === false || network_view_restricted === true){
 
       return (
         <Columns>
@@ -1070,7 +1094,10 @@ updateMgrTimeStatusListener() {
     const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
     const connect_value = (wifi_client_connected === true) ? true : connecting
     
-    const { systemManagesNetwork, ruiRestricted} = this.props.ros
+    const { systemManagesNetwork, managers_running_list, ruiRestricted} = this.props.ros
+
+    const manager_running = managers_running_list.indexOf('MANAGER-NETWORK') !== -1
+
     const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
     const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROLS') !== -1
 
@@ -1111,7 +1138,7 @@ updateMgrTimeStatusListener() {
     }
 
     
-    if (systemManagesNetwork === false || has_wifi === false ||  network_view_restricted === true  ){
+    if (systemManagesNetwork === false || has_wifi === false ||  manager_running === false || network_view_restricted === true  ){
 
       return (
         <Columns>

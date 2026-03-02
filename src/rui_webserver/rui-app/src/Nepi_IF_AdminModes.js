@@ -91,9 +91,11 @@ class NepiIFAdminModes extends Component {
   renderAdminModes() {
     const base_namespace = this.getBaseNamespace()
     const run_mode = this.props.ros.systemRunMode
+
     const develop_mode = run_mode == 'develop'
-    const debug_mode = run_mode == 'debug'
     const deploy_mode = run_mode == 'deploy'
+
+    const debug_mode = this.props.ros.systemDebugEnabled
     return (
 
 
@@ -103,47 +105,45 @@ class NepiIFAdminModes extends Component {
                 <div style={{ display: 'flex' }}>
                         <div style={{ width: '25%' }} >
  
-
-                   <Label title="Develop Mode">
-                        <Toggle
-                        checked={develop_mode == true}
-                        disbled={develop_mode == true}
-                        onClick={() => this.sendModeSelection('develop')}>
-                      </Toggle>
-                  </Label>
-
-
+                                <Label title="Develop Mode">
+                                      <Toggle
+                                      checked={develop_mode == true}
+                                      disbled={develop_mode == true}
+                                      onClick={() => this.sendModeSelection('develop')}>
+                                    </Toggle>
+                                </Label>
 
                         </div>
+
+
                         <div style={{ width: '5%' }}>
                         </div>
 
             
                         <div style={{ width: '25%' }}>
 
-                  <Label title="Debug Mode">
-                        <Toggle
-                        checked={debug_mode == true}
-                        disbled={debug_mode == true}
-                        onClick={() => this.sendModeSelection('debug')}>
-                      </Toggle>
-                  </Label>
-
+                              <Label title="Deploy Mode">
+                                    <Toggle
+                                    checked={deploy_mode == true}
+                                    disbled={deploy_mode == true}
+                                    onClick={() => this.sendModeSelection('deploy')}>
+                                  </Toggle>
+                              </Label>
 
                         </div>
+
+
                         <div style={{ width: '5%' }}>
                         </div>
 
                         <div style={{ width: '25%' }} >
 
-
-                  <Label title="Deploy Mode">
-                        <Toggle
-                        checked={deploy_mode == true}
-                        disbled={deploy_mode == true}
-                        onClick={() => this.sendModeSelection('deploy')}>
-                      </Toggle>
-                  </Label>
+                              <Label title="Debug Mode">
+                                    <Toggle
+                                    checked={debug_mode == true}
+                                    onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/enable_debug_mode", !debug_mode)}>
+                                  </Toggle>
+                              </Label>
 
                         </div>
 

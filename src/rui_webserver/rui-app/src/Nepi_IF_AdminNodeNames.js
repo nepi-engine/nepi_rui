@@ -28,48 +28,27 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
 
-import {  getCleanName } from "./Utilities"
+import {  onChangeSwitchStateValue } from "./Utilities"
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
-
-function styleTextEdited(text_box_element) {
-  text_box_element.style.color = Styles.vars.colors.red
-  text_box_element.style.fontWeight = "bold"
-}
-
-function styleTextUnedited(text_box_element) {
-  text_box_element.style.color = Styles.vars.colors.black
-  text_box_element.style.fontWeight = "normal"
-}
-
-const styles = Styles.Create({
-  link_style: {
-    color: Styles.vars.colors.blue,
-    fontSize: Styles.vars.fontSize.medium,
-    //lineHeight: Styles.vars.lineHeights.xl 
-  }
-})
 
 @inject("ros")
 @observer
-class NepiIFAdminNodeNames extends Component {
+class NepiIFAdminNodeName extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      updatedNodeName: null
+
 
     }
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
-    this.onNodeNameChange = this.onNodeNameChange.bind(this)
-    this.onNodeNameKey = this.onNodeNameKey.bind(this)
-    this.onNodeNameReset = this.onNodeNameReset.bind(this)
-    this.renderAdminNodeNames = this.renderAdminNodeNames.bind(this)
+   
+    this.sendNodeNameUpdate = this.sendNodeNameUpdate.bind(this)
+    this.sendNodeNameClear = this.sendNodeNameClear.bind(this)
+    this.renderAdminNodeName = this.renderAdminNodeName.bind(this)
 
-
+    this.onUpdateInputDeviceNameValue = this.onUpdateInputDeviceNameValue.bind(this)
+    this.onKeySaveInputDeviceNameValue = this.onKeySaveInputDeviceNameValue.bind(this)
   }
 
   getBaseNamespace(){
@@ -82,105 +61,141 @@ class NepiIFAdminNodeNames extends Component {
   }
 
 
-
-  onNodeNameChange(e) {
-    const clean_node_name = getCleanName(e.target.value)
-    this.setState({ updatedNodeName: clean_node_name })
-    var node_name_textbox = document.getElementById(e.target.id)
-    styleTextEdited(node_name_textbox)
+  sendNodeNameUpdate(name,value,type){
+    const base_namespace = this.getBaseNamespace()
+    this.props.ros.sendUpdateStringMsg(base_namespace + "/update_node_name", name,value)
   }
 
-  onNodeNameKey(e) {
-    if(e.key === 'Enter'){
-      const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-      const namespace_parts = namespace.split('/')
-      const cur_node_name = (this.state.updatedNodeName != null) ? this.state.updatedNodeName :   namespace_parts.pop()
-      const updatedNodeName = this.state.updatedNodeName
-      if (namespace != null && namespace !== 'None' && updatedNodeName != null && updatedNodeName !== '') {
-        this.props.ros.sendUpdateStringMsg(namespace + '/update_node_name',cur_node_name, updatedNodeName)
+  sendNodeNameClear(name){
+    const base_namespace = this.getBaseNamespace()
+    this.props.ros.sendStringMsg(base_namespace + "/clear_node_name", name)
+
+  }
+
+
+
+
+  onUpdateInputDeviceNameValue(event) {
+    this.setState({ device_name: event.target.value })
+    document.getElementById("input_device_name").style.color = Styles.vars.colors.red
+    this.render()
+  }
+
+  onKeySaveInputDeviceNameValue(event) {
+    const {sendStringMsg}  = this.props.ros
+    const device_name_update_topic = this.props.deviceNamespace + this.props.name_update_topic
+    const BAD_NAME_CHAR_LIST = [" ","/","'","-","$","#"]
+    if(event.key === 'Enter'){
+      const value = event.target.value
+      var good_name = true
+      for(let ind = 0; ind < BAD_NAME_CHAR_LIST.length; ind++) {
+        if (value.indexOf(BAD_NAME_CHAR_LIST[ind]) !== -1){
+          good_name = false
+        }
       }
-      else {
-        this.setState({ updatedNodeName: null })
+      if (good_name === true){
+        sendStringMsg(device_name_update_topic,value)
       }
-      var node_name_textbox = document.getElementById(e.target.id)
-      styleTextUnedited(node_name_textbox)
+      document.getElementById("input_device_name").style.color = Styles.vars.colors.black
     }
   }
 
 
-  onNodeNameReset() {
-      const node_names = this.props.ros.systemNodeNameKeys
-      const node_aliases = this.props.ros.systemNodeNameAliases
-      const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-      const namespace_parts = namespace.split('/')
-      const cur_node_name = namespace_parts.pop()
-
-      const index = node_aliases.indexOf(cur_node_name)
-      var updatedNodeName = null
-      if (index !== -1){
-          updatedNodeName = node_names[index]
-      }
-
-      this.props.ros.sendStringMsg(namespace + '/reset_node_name',cur_node_name)
-      this.setState({ updatedNodeName: updatedNodeName })
-  }
-
-
     
-
-
-  renderAdminNodeNames() {
+    renderAdminDeviceNames(name) {
     const base_namespace = this.getBaseNamespace()
-    const { ruiRestricted} = this.props.ros
-    const node_names = this.props.ros.systemNodeNameKeys
-    const node_aliases = this.props.ros.systemNodeNameAliases
-
-
-    const show_node_name_title = (this.props.show_node_name_title !== undefined) ? this.props.show_node_name_title : 'Node Name'
-
-    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-    const namespace_parts = namespace.split('/')
-    const node_name = (this.state.updatedNodeName != null) ? this.state.updatedNodeName :   namespace_parts.pop()
-    const node_name_restricted = ruiRestricted.indexOf('node_name') !== -1
-    const needs_reset = (node_aliases.indexOf(node_name) !== -1)
+    const {systemNodeNameKeys} = this.props.ros
+    const {systemNodeNameAliases} = this.props.ros
 
     return (
 
       <React.Fragment>
 
-
-              <Columns>
-              <Column>
-
-                        <Label title={show_node_name_title}>
-                        <Input
-                          id={"node_name_update_text"}
-                          value={node_name }
-                          disabled={node_name_restricted===true}
-                          onChange={this.onNodeNameChange}
-                          onKeyDown={this.onNodeNameKey}
-                        />
-                      </Label>
-
-
-
-
-                  </Column>
-                  <Column>
+                <div style={{ display: 'flex' }}>
+                        <div style={{ width: '80%' }} >
  
 
-                      { (needs_reset === true ) ?
-                          <ButtonMenu>
-                            <Button onClick={() => this.onNodeNameReset() }>{"Reset"}</Button>
-                          </ButtonMenu>
+                        <Label title={name}>
 
-                      : null }
-
-                </Column>
-                  </Columns>
+                          <Input id="input_device_name" 
+                              value={this.state.device_name} 
+                              onChange={this.onUpdateInputDeviceNameValue} 
+                              onKeyDown= {this.onKeySaveInputDeviceNameValue} />
 
 
 
+                        <ButtonMenu>
+                            <Button onClick={this.sendNodeNameClear(name)}>{"Clear"}</Button>
+                        </ButtonMenu>
+
+                        </Label>
+
+                        </div>
+
+
+                        <div style={{ width: '20%' }}>
+                        </div>
+
+          
+
+                  </div>
+
+
+      </React.Fragment>
+    )
+  }
+
+  renderAdminNodeName() {
+    const base_namespace = this.getBaseNamespace()
+    const restriction_options = this.props.ros.ruiDeviceNamesOptions
+    const rui_login_enabled = this.props.ros.ruiLoginEnabled
+    return (
+
+
+
+
+
+      <React.Fragment>
+
+
+
+
+
+
+               <div style={{ display: 'flex' }}>
+                        <div style={{ width: '60%' }} >
+ 
+
+                        <Label title={'Enable Login Screen'}>
+
+                            <Toggle
+                            checked={rui_login_enabled}
+                            onClick={() => this.props.ros.sendBoolMsg(base_namespace + '/rui_login_mode_enable',!rui_login_enabled)}>
+                          </Toggle>
+
+                        </Label>
+
+                        </div>
+
+
+                        <div style={{ width: '40%' }}>
+                        </div>
+
+
+                  </div>
+
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                <Label title={'RUI DeviceNamess ( VIEW / CONTROL )'}> </Label>
+
+
+                  <div>
+                    {/* Map over the restriction options array */}
+                    {restriction_options.map((name) => (
+                      this.renderAdminDeviceNames(name)
+                    ))}
+                  </div>
 
 
       </React.Fragment>
@@ -189,14 +204,16 @@ class NepiIFAdminNodeNames extends Component {
 
 
 
+
+
+
   render() {
     const base_namespace = this.getBaseNamespace()
-    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM DEVICE ALIASES"
-    
-    if (base_namespace == null || admin_mode_set === false || namespace === 'None'){
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM RUI CONFIG"
+
+    if (base_namespace == null || admin_mode_set === false){
       return (
   
         <Columns>
@@ -213,9 +230,10 @@ class NepiIFAdminNodeNames extends Component {
 
           <React.Fragment>
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                  <Label title={title} />
-                  {this.renderAdminNodeNames()}
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <Label title={title} />
+                {this.renderAdminNodeName()}
+
 
           </React.Fragment>
       )
@@ -225,7 +243,8 @@ class NepiIFAdminNodeNames extends Component {
 
           <Section title={title}>
 
-              {this.renderAdminNodeNames()}
+                  {this.renderAdminNodeName()}
+
 
         </Section>
      )
@@ -234,4 +253,4 @@ class NepiIFAdminNodeNames extends Component {
   }
 
 }
-export default NepiIFAdminNodeNames
+export default NepiIFAdminNodeName

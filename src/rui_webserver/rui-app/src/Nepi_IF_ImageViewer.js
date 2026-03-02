@@ -1522,7 +1522,7 @@ class Nepi_IF_ImageViewer extends Component {
         namespace = 'None'
       }
     const { sendTriggerMsg } = this.props.ros
-    const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
+    var show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
     const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
@@ -1542,6 +1542,10 @@ class Nepi_IF_ImageViewer extends Component {
     const double_slider_topic = (this.props.double_slider_topic !== undefined) ? this.props.double_slider_topic : null
     const double_slider_values = (this.props.double_slider_values !== undefined) ? (this.props.double_slider_values.length === 2) ? this.props.double_slider_values : [0,0,1.0] : [0,0,1.0]
     
+    const { ruiRestricted} = this.props.ros
+    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-IMAGE-CONTROLS') !== -1
+    show_image_controls = (show_image_controls === true && admin_controls_restricted === false)
+
     return (
       
       <Columns>

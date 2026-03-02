@@ -603,7 +603,7 @@ class NepiIFSaveData extends Component {
     const save_enabled = saveDataEnabled
 
     const { ruiRestricted} = this.props.ros
-    const save_data_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-DATA-CONTROLS') !== -1
+    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROLS') !== -1
 
     return (
 
@@ -616,7 +616,7 @@ class NepiIFSaveData extends Component {
                         
                         <div style={{ width: '15%' }}>
 
-                            <div hidden={(allways_show_controls === true || save_data_controls_restricted === true)}>
+                            <div hidden={(allways_show_controls === true || save_controls_restricted === true)}>
                                 <Label title="Show Save Controls">
                                   <Toggle
                                     checked={showControls===true}
@@ -982,9 +982,9 @@ class NepiIFSaveData extends Component {
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
 
     const { ruiRestricted} = this.props.ros
-    const save_data_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-DATA-CONTROLS') !== -1
+    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROLS') !== -1
 
-    if (saveNamespace === 'None' || showControls === false || save_data_controls_restricted === true){
+    if (saveNamespace === 'None' || showControls === false || save_controls_restricted === true){
       return (
         <Columns>
         <Column>
@@ -1024,10 +1024,10 @@ class NepiIFSaveData extends Component {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const saveNamespace = this.state.saveNamespace
     const { ruiRestricted} = this.props.ros
-    const save_data_view_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-DATA-VIEW') !== -1
+    const save_view_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-VIEW') !== -1
 
 
-    if (saveNamespace === 'None' || save_data_view_restricted === true){
+    if (saveNamespace === 'None' || save_view_restricted === true){
       return (
         <Columns>
         <Column>

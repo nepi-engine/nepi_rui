@@ -566,8 +566,10 @@ class NepiIFAppSelector extends Component {
     const groupList = this.props.ros.apps_group_list
     const runningList = this.props.ros.apps_running_list
 
-    const managers_enabled = this.props.ros.systemManagersEnabled
+    const managers_running = this.props.ros.managers_running_list
     const restricted = this.props.ros.ruiRestricted
+
+    const activeModelTypes = this.props.ros.ai_models_running_type_list
 
     var items = []
     if (connected !== true){
@@ -621,8 +623,8 @@ class NepiIFAppSelector extends Component {
           }
         }
 
-        if (true) { //((userRestrictionsActive.indexOf('ai_management')) {
-            const activeModelTypes = this.props.ros.ai_models_running_type_list
+        if (true) { 
+            
 
             if (activeModelTypes.indexOf('detection') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
               items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
@@ -664,31 +666,43 @@ class NepiIFAppSelector extends Component {
           items.push(<Option value={"Data Manager"}>{"Data Manager"}</Option>)
         }
 
-        if (restricted.indexOf('MANAGER-SOFTWARE-VIEW') === -1 && managers_enabled.indexOf('MANAGER-SOFTWARE') !== -1 ) {
+        if (restricted.indexOf('MANAGER-SOFTWARE-VIEW') === -1 && managers_running.indexOf('MANAGER-SOFTWARE') !== -1 ) {
             items.push(<Option value={'Software Manager'}>{'Software Manager'}</Option>)
         }        
         
 
-        if (restricted.indexOf('MANAGER-NAVPOSE-VIEW') === -1 && managers_enabled.indexOf('MANAGER-NAVPOSE') !== -1 ) {
+        if (restricted.indexOf('MANAGER-NAVPOSE-VIEW') === -1 && managers_running.indexOf('MANAGER-NAVPOSE') !== -1 ) {
             items.push(<Option value={"NavPose Manage"}>{"NavPose Manage"}</Option>)
         }
 
 
-        if (restricted.indexOf('MANAGER-DRIVERS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-DRIVERS') !== -1 ) {
+        if (restricted.indexOf('MANAGER-DRIVERS-VIEW') === -1 && managers_running.indexOf('MANAGER-DRIVERS') !== -1 ) {
             items.push(<Option value={'Drivers Manager'}>{'Drivers Manager'}</Option>)
         }   
         
 
-        if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-AI_MODELS') !== -1 ) {
+        if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_running.indexOf('MANAGER-AI_MODELS') !== -1 ) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
         }   
-        
 
-        if (restricted.indexOf('MANAGER-APPS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-APPS') !== -1 ) {
+        if (activeModelTypes.indexOf('detection') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
+          items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
+        }
+        if (activeModelTypes.indexOf('segmentation') !== -1 && restricted.indexOf('MANAGER-AI-SEGMENTATION-VIEW') === -1){
+          items.push(<Option value={'AI Segmetation'}>{'AI Segmetation'}</Option>)
+        }
+        if (activeModelTypes.indexOf('pose') !== -1 && restricted.indexOf('MANAGER-AI-POSE-VIEW') === -1){
+          items.push(<Option value={'AI Pose'}>{'AI Pose'}</Option>)
+        }
+        if (activeModelTypes.indexOf('orientation') !== -1 && restricted.indexOf('MANAGER-AI-ORIENTATION-VIEW') === -1){
+          items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
+        }        
+
+        if (restricted.indexOf('MANAGER-APPS-VIEW') === -1 && managers_running.indexOf('MANAGER-APPS') !== -1 ) {
            items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
         }   
 
-        if (restricted.indexOf('MANAGER-SCRIPTS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-SCRIPTS') !== -1 ) {
+        if (restricted.indexOf('MANAGER-SCRIPTS-VIEW') === -1 && managers_running.indexOf('MANAGER-SCRIPTS') !== -1 ) {
            items.push(<Option value={'Scripts Mgr'}>{'Scripts Manager'}</Option>)
         }   
         

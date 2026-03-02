@@ -503,13 +503,15 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
 
-    const never_show_controls = (this.props.never_show_controls != undefined) ? this.props.never_show_controls : false
-    const allways_show_controls = (this.props.allways_show_controls != undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
-    const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : true
+    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : true
+    const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false
+    const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
-    if (never_show_controls === true){
+    const { ruiRestricted} = this.props.ros
+    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-PTX-CONTROLS') !== -1
+
+    if (hide_controls === true || device_controls_restricted === true){
               <Columns>
                 <Column>
 
@@ -518,12 +520,12 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
     }
 
-    else if (show_controls === false){
+    else if (show_controls_option === true){
       return(
               <Columns>
                 <Column>
 
-                    <Label title="Show Options">
+                    <Label title="Show Controls">
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -538,7 +540,6 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       )
     }
     else {
-
       return (
         <React.Fragment>
 
@@ -546,7 +547,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               <Columns>
                 <Column>
 
-                    {(allways_show_controls === false) ?
+                    {(show_controls_option === true) ?
                     <Label title="Show Controls">
                         <Toggle
                           checked={show_controls===true}
@@ -560,6 +561,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
                   </Column>
                 </Columns>
+
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 

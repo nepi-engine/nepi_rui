@@ -196,8 +196,9 @@ class ROSConnectionStore {
 
       this.systemDebugEnabled = false
 
-      this.systemManagerOptions = []
-      this.systemManagersEnabled = []
+      this.managers_list = []
+      this.managers_active_list = []
+      this.managers_running_list = []
 
 
       this.systemNodeNameKeys = []
@@ -815,8 +816,9 @@ class ROSConnectionStore {
 
   @observable systemDebugEnabled = false
 
-  @observable systemManagerOptions = []
-  @observable systemManagersEnabled = []
+  @observable managers_list = []
+  @observable managers_active_list = []
+  @observable managers_running_list = []
 
 
 
@@ -904,8 +906,9 @@ class ROSConnectionStore {
         this.systemDebugEnabled = message.sys_debug_enabled
 
 
-        this.systemManagerOptions = message.sys_manager_options
-        this.systemManagersEnabled = message.sys_managers_enabled
+        this.managers_list = message.sys_managers_ordered_list
+        this.managers_active_list = message.sys_managers_active_list
+        this.managers_running_list = message.sys_managers_running_list
 
 
 

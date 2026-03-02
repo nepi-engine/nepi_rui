@@ -235,12 +235,17 @@ class NepiIFAdmin extends Component {
     const show_all = (this.props.show_all !== undefined)? this.props.show_all : false
     const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : show_all
     const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : show_all
+
     const show_admin = admin_mode_set || show_admin_enable || show_admin_config
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const title = (this.props.title !== undefined)? this.props.title : "Admin Settings"
+    
+    const { ruiRestricted} = this.props.ros
+    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-ADMIN-CONTROLS') !== -1
 
 
-    if (base_namespace == null || show_admin === false){
+    
+    if (base_namespace == null || show_admin === false || admin_controls_restricted === true){
       return (
   
         <Columns>

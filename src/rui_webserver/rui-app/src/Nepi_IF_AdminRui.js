@@ -180,10 +180,11 @@ class NepiIFAdminRui extends Component {
 
   render() {
     const base_namespace = this.getBaseNamespace()
+    const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM RUI CONFIG"
 
-    if (base_namespace == null){
+    if (base_namespace == null || admin_mode_set === false){
       return (
   
         <Columns>
