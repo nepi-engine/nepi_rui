@@ -29,10 +29,10 @@ import HorizontalDivider from "./HorizontalDivider"
 
 
 import Dashboard from "./NepiDashboard"
-import NepiAdmin from "./NepiAdmin"
+
 import NepiIFAppSelector from "./Nepi_IF_AppSelector"
 
-
+import NepiMgr from "./NepiSystemAdmin"
 
 
 
@@ -79,7 +79,7 @@ class MainMenuDevelop extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
-          <Route exact path="/admin" component={NepiAdmin} />
+          <Route exact path="/admin" component={NepiMgr} />
           
           <Route 
             path="/devices_selector" 

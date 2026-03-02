@@ -32,8 +32,10 @@ import {  onChangeSwitchStateValue } from "./Utilities"
 
 import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
-//import NepiIFAdminNodeName from "./Nepi_IF_AdminNodeName"
-//import NepiIFAdminRuiRestrict from "./Nepi_IF_AdminRuiRestrict"
+import NepiIFAdminModes from "./Nepi_IF_AdminModes"
+//import NepiIFAdminNodeNames from "./Nepi_IF_AdminNodeNames"
+//import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
+import NepiIFAdminRui from "./Nepi_IF_AdminRui"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -102,7 +104,7 @@ class NepiIFAdmin extends Component {
               <Columns>
               <Column>
 
-                  <Label title="Show Options">
+                  <Label title="Show Advanced Options">
                     <Toggle
                       checked={this.state.advancedConfigEnabled===true}
                       onClick={() => onChangeSwitchStateValue.bind(this)("advancedConfigEnabled",this.state.advancedConfigEnabled)}>
@@ -118,10 +120,6 @@ class NepiIFAdmin extends Component {
                 </Column>
                   </Columns>
 
-
-                { (this.state.advancedConfigEnabled===true) ? 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                : null }
 
 
                 { (this.state.advancedConfigEnabled===true) ? 
@@ -159,12 +157,14 @@ class NepiIFAdmin extends Component {
 
 
   renderAdmin(){
-    const show_advanced_option = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : false
-    const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : false
-    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : false
-    const show_admin_node_name = (this.props.show_admin_node_name !== undefined)? this.props.show_admin_node_name : false
-    const show_admin_rui_restrict = (this.props.show_admin_rui_restrict !== undefined)? this.props.show_admin_rui_restrict : true
-    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
+    const show_all = (this.props.show_all !== undefined)? this.props.show_all : false
+    const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : show_all
+    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : show_all
+    const show_admin_modes = (this.props.show_admin_modes !== undefined)? this.props.show_admin_modes : show_all
+    const show_admin_node_names = (this.props.show_admin_node_names !== undefined)? this.props.show_admin_node_names : show_all
+    const show_admin_managers = (this.props.show_admin_managers !== undefined)? this.props.show_admin_managers : show_all
+    const show_admin_rui = (this.props.show_admin_rui !== undefined)? this.props.show_admin_rui : show_all
+    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'ALL'
 
     return (
 
@@ -179,18 +179,34 @@ class NepiIFAdmin extends Component {
               : null }
 
 
-              {/* { (show_admin_node_name === true) ?
-                <NepiIFAdminNodeName
+              { (show_admin_modes === true) ?
+                <NepiIFAdminModes
+                make_section={false}
+                />
+              : null } 
+
+
+              {/* { (show_admin_node_names === true) ?
+                <NepiIFAdminNodeNames
                 namespace={namespace}
                 make_section={false}
                 />
               : null } */}
 
-              {/* { (show_admin_rui_restrict === true) ?
-                <NepiIFAdminRuiRestrict
+
+              {/* { (show_admin_managers === true) ?
+                <NepiIFAdminManagers
                 make_section={false}
                 />
               : null } */}
+
+
+
+              { (show_admin_rui === true) ?
+                <NepiIFAdminRui
+                make_section={false}
+                />
+              : null }
 
 
 
@@ -216,8 +232,9 @@ class NepiIFAdmin extends Component {
     const base_namespace = this.getBaseNamespace()
     const show_advanced_option = (this.props.show_advanced_option !== undefined) ? this.props.show_advanced_option : true
     const admin_mode_set = this.props.ros.systemAdminModeSet
-    const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : false
-    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : false
+    const show_all = (this.props.show_all !== undefined)? this.props.show_all : false
+    const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : show_all
+    const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : show_all
     const show_admin = admin_mode_set || show_admin_enable || show_admin_config
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const title = (this.props.title !== undefined)? this.props.title : "Admin Settings"

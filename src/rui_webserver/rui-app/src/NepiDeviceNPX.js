@@ -62,6 +62,7 @@ class NepiDeviceNPX extends Component {
 
     this.state = {
       namespace: 'None',
+
     }
 
     this.renderNavPoseViewer = this.renderNavPoseViewer.bind(this)
@@ -225,7 +226,7 @@ class NepiDeviceNPX extends Component {
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}
-                              show_admin_node={true}
+                              show_admin_node_names={true}
                               namespace={namespace}
                               make_section={true}
                         />

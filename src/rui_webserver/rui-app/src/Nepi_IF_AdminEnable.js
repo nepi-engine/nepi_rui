@@ -23,16 +23,11 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import Toggle from "react-toggle"
 import Input from "./Input"
-//import Button, { ButtonMenu } from "./Button"
+import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
 
-import {  onChangeSwitchStateValue } from "./Utilities"
-
-import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
-import NepiIFAdminNodeName from "./Nepi_IF_AdminNodeName"
-import NepiIFAdminModes from "./Nepi_IF_AdminModes"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -109,11 +104,17 @@ class NepiIFAdminEnable extends Component {
   }
 
 
+
+
   renderAdminEnable() {
     const admin_mode = this.props.ros.systemAdminEnabled
     const admin_password_valid = this.props.ros.systemAdminPasswordValid
     const admin_mode_set = this.props.ros.systemAdminModeSet
+    const show_link_button = (this.props.show_link_button !== undefined)? this.props.show_link_button : true
+
     const base_namespace = this.getBaseNamespace()
+
+
     return (
 
       <React.Fragment>
@@ -139,11 +140,24 @@ class NepiIFAdminEnable extends Component {
                       <Label title={"Enter Admin Password"}>
                         <Input
                           id="admin_password"
+                          type={"password"}
                           value={this.state.adminPassword}
                           onChange={this.onUpdateAdminPasswordText}
                           onKeyDown={this.onKeyAdminPasswordText}
                         />
                       </Label>
+                  : null }
+
+
+
+                   
+                  </Column>
+                  <Column>
+
+                      { (admin_mode_set === true && admin_mode === true && show_link_button === true) ?
+                      <ButtonMenu>
+                        <Button onClick={() => window.open("/admin", "_blank")}>{"Open Admin Controls"}</Button>
+                      </ButtonMenu>
                   : null }
 
                 </Column>
@@ -161,7 +175,8 @@ class NepiIFAdminEnable extends Component {
   render() {
     const base_namespace = this.getBaseNamespace()
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-
+    const show_line = (this.props.show_line !== undefined)? this.props.show_line : true
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM ADMIN ENABLE"
 
     if (base_namespace == null){
       return (
@@ -180,7 +195,12 @@ class NepiIFAdminEnable extends Component {
 
           <React.Fragment>
 
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+                { (show_line === true) ?
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                : null }
+                <Label title={title} />
                 {this.renderAdminEnable()}
 
 
@@ -190,7 +210,7 @@ class NepiIFAdminEnable extends Component {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "Advanced Controls"}>
+          <Section title={title}>
 
                   {this.renderAdminEnable()}
 

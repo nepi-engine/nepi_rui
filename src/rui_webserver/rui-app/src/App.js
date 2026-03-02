@@ -30,10 +30,10 @@ import HorizontalDivider from "./HorizontalDivider"
 
 
 import Background from "./Background"
-import Dashboard from "./NepiDashboard"
 
 import MainMenuDevelop from "./MainMenuDevelop"
 import MainMenuDeploy from "./MainMenuDeploy"
+
 
 
 //const IS_LOCAL = window.location.hostname === "localhost"
@@ -49,7 +49,7 @@ class App extends Component {
 
   render() {
     const systemMgrStatus = this.props.ros.systemMgrStatus
-    const ruiMode = this.props.ros.ruiMode
+    const systemRunMode = this.props.ros.systemRunMode
 
     if (systemMgrStatus == null) {
 
@@ -69,7 +69,7 @@ class App extends Component {
       </Page>
       )
     }
-    else if (ruiMode !== 'develop'){
+    else if (systemRunMode === 'deploy'){
       return (
       <React.Fragment>
         <MainMenuDeploy/>

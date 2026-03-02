@@ -196,27 +196,19 @@ class ROSConnectionStore {
 
       this.systemDebugEnabled = false
 
-      this.systemManagersOptions = []
+      this.systemManagerOptions = []
       this.systemManagersEnabled = []
-
-      this.deployNodesOrdered = []
-      this.deployNodesCommands = []
-      this.deployNodesEnabled = []
 
 
       this.systemNodeNameKeys = []
       this.systemNodeNameAliases = []
 
-      this.userRestrictionsOptons = []
-      this.userRestrictionsDescriptions = []
-      this.userRestrictions = []
-      this.userRestricted = []
-
+      this.ruiRestrictionOptions = []
       this.ruiRestrictions = []
       this.ruiRestricted = []
 
-      this.ruiModeOptions = []
-      this.ruiMode = null
+      this.systemRunModeOptions = []
+      this.systemRunMode = null
 
 
       // App Manager
@@ -823,7 +815,7 @@ class ROSConnectionStore {
 
   @observable systemDebugEnabled = false
 
-  @observable systemManagersOptions = []
+  @observable systemManagerOptions = []
   @observable systemManagersEnabled = []
 
 
@@ -831,28 +823,24 @@ class ROSConnectionStore {
   @observable systemNodeNameKeys = []
   @observable systemNodeNameAliases = []
 
-  @observable deployNodesOrdered = []
-  @observable deployNodesCommands = []
-  @observable deployNodesEnabled = []
-
 
   @observable systemNodeNameKeys = []
   @observable systemNodeNameAliases = []
 
-  @observable userRestrictionsOptons = []
-  @observable userRestrictionsDescriptions = []
-  @observable userRestrictions = []
-  @observable userRestricted = []
+  @observable systemRunModeOptions = []
+  @observable systemRunMode = null
 
-  @observable ruiModeOptions = []
-  @observable ruiMode = null
+  @observable ruiRestrictionOptions = []
+  @observable ruiRestrictions = []
+  @observable ruiRestricted = []
+
+
 
   @observable ruiLoginEnabled = false
   @observable uiLoginPasswordValid = false
   @observable uiLoginModeSet = false
 
-  @observable ruiRestrictions = []
-  @observable ruiRestricted = []
+
 
 
 
@@ -910,40 +898,28 @@ class ROSConnectionStore {
         this.systemAdminPasswordValid=message.sys_admin_password_valid
         this.systemAdminModeSet = message.sys_admin_mode_set
 
+
+        this.systemRunModeOptions = message.sys_run_mode_options
+        this.systemRunMode = message.sys_run_mode
         this.systemDebugEnabled = message.sys_debug_enabled
 
 
-        this.systemManagersOptions = message.sys_managers_options
+        this.systemManagerOptions = message.sys_manager_options
         this.systemManagersEnabled = message.sys_managers_enabled
 
 
-
-        this.systemNodeNameKeys = message.sys_node_name_keys
-        this.systemNodeNameAliases = message.sys_node_name_aliases
-
-        this.deployNodesOrdered = message.deploy_nodes_ordered
-        this.deployNodesCommands = message.deploy_nodes_commands
-        this.deployNodesEnabled = message.deploy_nodes_enabled
-
-
-        this.systemNodeNameKeys = message.sys_node_name_keys
-        this.systemNodeNameAliases = message.sys_node_name_aliases
-
-        this.userRestrictionsOptons = message.user_restrictions_options
-        this.userRestrictionsDescriptions = message.user_restrictions_descriptions
-        this.userRestrictions = message.user_restrictions
-        this.userRestricted = message.user_restricted
-
-
-        this.ruiModeOptions = message.sys_rui_mode_options
-        this.ruiMode = message.sys_rui_mode
 
         this.ruiLoginEnabled=message.rui_login_enabled
         this.ruiLoginPasswordValid=message.rui_login_password_valid
         this.ruiLoginModeSet = message.rui_login_mode_set
 
+        this.ruiRestrictionOptions = message.rui_restriction_options
         this.ruiRestrictions = message.rui_restrictions
         this.ruiRestricted = message.rui_restricted
+
+
+        this.systemNodeNameKeys = message.sys_node_name_keys
+        this.systemNodeNameAliases = message.sys_node_name_aliases
 
 
         ///////////////////

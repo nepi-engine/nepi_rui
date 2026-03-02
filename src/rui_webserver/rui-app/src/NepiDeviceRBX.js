@@ -44,7 +44,8 @@ class NepiDeviceRBX extends Component {
       namespace: 'None',
       data_topic: 'None',
       data_product: 'None',
-      data_image_topic: 'None'
+      data_image_topic: 'None',
+
     }
 
 
@@ -214,7 +215,7 @@ class NepiDeviceRBX extends Component {
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}
-                              show_admin_node={true}
+                              show_admin_node_names={true}
                               namespace={namespace}
                               make_section={true}
                         />

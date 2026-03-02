@@ -55,7 +55,7 @@ const styles = Styles.Create({
 
 @inject("ros")
 @observer
-class NepiIFAdminNodeName extends Component {
+class NepiIFAdminNodeNames extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -131,7 +131,7 @@ class NepiIFAdminNodeName extends Component {
 
   renderAdminNodeNames() {
     const base_namespace = this.getBaseNamespace()
-    const { userRestricted} = this.props.ros
+    const { ruiRestricted} = this.props.ros
     const node_names = this.props.ros.systemNodeNameKeys
     const node_aliases = this.props.ros.systemNodeNameAliases
 
@@ -141,7 +141,7 @@ class NepiIFAdminNodeName extends Component {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const namespace_parts = namespace.split('/')
     const node_name = (this.state.updatedNodeName != null) ? this.state.updatedNodeName :   namespace_parts.pop()
-    const node_name_restricted = userRestricted.indexOf('node_name') !== -1
+    const node_name_restricted = ruiRestricted.indexOf('node_name') !== -1
     const needs_reset = (node_aliases.indexOf(node_name) !== -1)
 
     return (
@@ -194,6 +194,7 @@ class NepiIFAdminNodeName extends Component {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM DEVICE ALIASES"
     
     if (base_namespace == null || admin_mode_set === false || namespace === 'None'){
       return (
@@ -212,7 +213,8 @@ class NepiIFAdminNodeName extends Component {
 
           <React.Fragment>
 
-
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                  <Label title={title} />
                   {this.renderAdminNodeNames()}
 
           </React.Fragment>
@@ -221,7 +223,7 @@ class NepiIFAdminNodeName extends Component {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "Node Name Controls"}>
+          <Section title={title}>
 
               {this.renderAdminNodeNames()}
 
@@ -232,4 +234,4 @@ class NepiIFAdminNodeName extends Component {
   }
 
 }
-export default NepiIFAdminNodeName
+export default NepiIFAdminNodeNames

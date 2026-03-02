@@ -298,72 +298,91 @@ updateMgrTimeStatusListener() {
   renderDeviceConfiguration() {
     const { systemMgrStatus} = this.props.ros
     const {deviceId} = this.props.ros
+    const { ruiRestricted} = this.props.ros
+    const device_view_restricted = ruiRestricted.indexOf('MANAGER-DEVICE-VIEW') !== -1
+    const device_controls_restricted = ruiRestricted.indexOf('MANAGER-DEVICE-VIEW') !== -1
 
 
-    return (
+    if (device_view_restricted === true ){
 
-      <Section title={"System Settings"}>
+      return (
+        <Columns>
+          <Column>
+  
+          </Column>
+        </Columns>
+      )
+    }
+    else {
 
+        return (
 
-              <Columns>
-              <Column>
-
-                    <Label title={"Device ID"}>
-                    <Input
-                      id={"device_id_update_text"}
-                      value={deviceId }
-                      disabled={true}
-                    />
-                  </Label>
-
-                  <Label title={"Device Type"}>
-                    <Input
-                      id={"device_type"}
-                      value={systemMgrStatus.hw_type}
-                      disabled={true}
-                    />
-                  </Label>
-
-                  <Label title={"Device Model"}>
-                    <Input
-                      id={"device_model"}
-                      value={systemMgrStatus.hw_model}
-                      disabled={true}
-                    />
-                  </Label>
+          <Section title={"System Settings"}>
 
 
-
-
-                  </Column>
+                  <Columns>
                   <Column>
- 
-                  <Label title={"Manages Network"}>
-                    <BooleanIndicator value={systemMgrStatus.manages_network} />
-                  </Label>
 
-                  <Label title={"Manages Time"}>
-                    <BooleanIndicator value={systemMgrStatus.manages_time} />
-                  </Label>
+                        <Label title={"Device ID"}>
+                        <Input
+                          id={"device_id_update_text"}
+                          value={deviceId }
+                          disabled={true}
+                        />
+                      </Label>
 
-                  <Label title={"Has Cuda"}>
-                    <BooleanIndicator value={systemMgrStatus.has_cuda} />
-                  </Label>
+                      <Label title={"Device Type"}>
+                        <Input
+                          id={"device_type"}
+                          value={systemMgrStatus.hw_type}
+                          disabled={true}
+                        />
+                      </Label>
+
+                      <Label title={"Device Model"}>
+                        <Input
+                          id={"device_model"}
+                          value={systemMgrStatus.hw_model}
+                          disabled={true}
+                        />
+                      </Label>
 
 
-                </Column>
-                  </Columns>
 
 
-          {<NepiIFAdmin
-              title={"Advanced Settings"}
-              show_advanced_option={false}
-              show_admin_config={true}
-              make_section={false}
-        />}   
-            
-      </Section>
-    )
+                      </Column>
+                      <Column>
+    
+                      <Label title={"Manages Network"}>
+                        <BooleanIndicator value={systemMgrStatus.manages_network} />
+                      </Label>
+
+                      <Label title={"Manages Time"}>
+                        <BooleanIndicator value={systemMgrStatus.manages_time} />
+                      </Label>
+
+                      <Label title={"Has Cuda"}>
+                        <BooleanIndicator value={systemMgrStatus.has_cuda} />
+                      </Label>
+
+
+                    </Column>
+                      </Columns>
+
+
+              { (device_controls_restricted === false) ?
+                <NepiIFAdmin
+                  title={"Advanced Settings"}
+                  show_advanced_option={false}
+                  show_admin_enable={true}
+                  show_admin_config={true}
+                  make_section={false}
+            />
+            : null}   
+                
+          </Section>
+        )
+    }
   }
 
 
@@ -388,8 +407,7 @@ updateMgrTimeStatusListener() {
       license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
  
 
-    const { userRestricted} = this.props.ros
-    //Unused const license_restricted = userRestricted.indexOf('License') !== -1
+
 
 
       return (
@@ -456,11 +474,11 @@ updateMgrTimeStatusListener() {
     const license_info_valid = license_valid
   
 
-    const { userRestricted} = this.props.ros
-    const license_restricted = userRestricted.indexOf('License') !== -1
+    const { ruiRestricted} = this.props.ros
+    const license_view_restricted = ruiRestricted.indexOf('MANAGER-LICENSE-VIEW') !== -1
 
 
-    if (license_restricted === true ){
+    if (license_view_restricted === true ){
 
       return (
         <Columns>
@@ -551,7 +569,7 @@ updateMgrTimeStatusListener() {
     const {
       sendBoolMsg,
       systemManagesTime,
-      userRestricted,
+      ruiRestricted,
       ntp_sources,
       clockNTP,
       syncTime2Device,
@@ -569,8 +587,7 @@ updateMgrTimeStatusListener() {
     var date_str = ""
     var timezone = ""
 
-    var time_restricted = true
-    var time_ntp_restricted = true
+    var time_controls_restricted = true
     var clock_synced = false
     var auto_sync_clocks = false
     var auto_sync_timezones = false
@@ -580,13 +597,12 @@ updateMgrTimeStatusListener() {
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
     if (timeStatusTime && timeStatus){
-      time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
-      time_ntp_restricted = userRestricted.indexOf('Time_NTP') !== -1
+      time_controls_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROLS') !== -1
       clock_synced = timeStatus.clock_synced
       auto_sync_clocks = timeStatus.auto_sync_clocks
       auto_sync_timezones = timeStatus.auto_sync_timezones
 
-      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_restricted === false )
+      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_controls_restricted === false )
       time_str = timeStatusTimeStr
       date_str = timeStatusDateStr
       timezone = timeStatusTimezoneDesc
@@ -611,7 +627,7 @@ updateMgrTimeStatusListener() {
         </Label>
 
 
-        {(IS_LOCAL === false && systemManagesTime === true && time_restricted === false) &&
+        {(IS_LOCAL === false && systemManagesTime === true && time_controls_restricted === false) &&
 
           <Columns>
           <Column>
@@ -696,7 +712,7 @@ updateMgrTimeStatusListener() {
 
         }
 
-          {(systemManagesTime === true && time_ntp_restricted === false) &&
+          {(systemManagesTime === true && time_controls_restricted === false) &&
 
             <Columns>
             <Column>
@@ -801,15 +817,12 @@ updateMgrTimeStatusListener() {
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-    const { systemManagesNetwork, userRestricted} = this.props.ros
-    //Unused const license_restricted = userRestricted.indexOf('License') !== -1
-    //Unused const time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
-    const network_restricted = userRestricted.indexOf('Network') !== -1
-    //Unused const wifi_restricted = userRestricted.indexOf('WiFi') !== -1
-    //Unused const ap_restricted = userRestricted.indexOf('Access Point') !== -1
+    const { systemManagesNetwork, ruiRestricted} = this.props.ros
+    const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
+    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROLS') !== -1
 
 
-    if (systemManagesNetwork === false){
+    if (systemManagesNetwork === false || network_view_restricted === true){
 
       return (
         <Columns>
@@ -829,6 +842,12 @@ updateMgrTimeStatusListener() {
                         {'  ' + primary_addr }
                       </pre>
         </Label>
+
+        <Label title={"IP Aliases"}>
+          <pre style={{ height: "75px", overflowY: "auto" }}>
+            {'\n' + managed_addrs.join('\n')}
+          </pre>
+        </Label>        
 
         <Label title={"Internet Connected"}>
           <BooleanIndicator value={internet_connected} />
@@ -851,7 +870,7 @@ updateMgrTimeStatusListener() {
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-          <div hidden={ network_restricted === true }> 
+          <div hidden={ network_controls_restricted === true }> 
 
               <Columns>
                 <Column>
@@ -868,11 +887,7 @@ updateMgrTimeStatusListener() {
                       </ButtonMenu>
 
 
-                      <Label title={"IP Aliases"}>
-                        <pre style={{ height: "75px", overflowY: "auto" }}>
-                          {'\n' + managed_addrs.join('\n')}
-                        </pre>
-                      </Label>
+
 
 
                         <div hidden={dhcp_enabled === true}> 
@@ -945,9 +960,9 @@ updateMgrTimeStatusListener() {
               </Column>
               </Columns>
 
-            {this.renderWifiInfo()}
-
             </div>
+
+            {this.renderWifiInfo()}
 
       </Section>
       )
@@ -1055,12 +1070,9 @@ updateMgrTimeStatusListener() {
     const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
     const connect_value = (wifi_client_connected === true) ? true : connecting
     
-    const { systemManagesNetwork, userRestricted} = this.props.ros
-    //Unused const license_restricted = userRestricted.indexOf('License') !== -1
-    //Unused const time_restricted = userRestricted.indexOf('Time_Sync_Clocks') !== -1
-    //Unused const network_restricted = userRestricted.indexOf('Network') !== -1
-    const wifi_restricted = userRestricted.indexOf('WiFi') !== -1
-    const ap_restricted = userRestricted.indexOf('Access Point') !== -1
+    const { systemManagesNetwork, ruiRestricted} = this.props.ros
+    const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
+    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROLS') !== -1
 
 
     // Update on User Change
@@ -1099,7 +1111,7 @@ updateMgrTimeStatusListener() {
     }
 
     
-    if (systemManagesNetwork === false || has_wifi === false || ( wifi_restricted === true && ap_restricted === true ) ){
+    if (systemManagesNetwork === false || has_wifi === false ||  network_view_restricted === true  ){
 
       return (
         <Columns>
@@ -1120,7 +1132,7 @@ updateMgrTimeStatusListener() {
           <Columns>
           <Column>
 
-            <div hidden={ wifi_restricted === true }> 
+            <div hidden={ network_controls_restricted === true }> 
 
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -1207,7 +1219,7 @@ updateMgrTimeStatusListener() {
             </div>
 
 
-           <div hidden={ ap_restricted === true }> 
+           <div hidden={ network_controls_restricted === true }> 
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Columns>

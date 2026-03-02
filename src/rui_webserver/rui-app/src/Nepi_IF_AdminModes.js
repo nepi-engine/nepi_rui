@@ -60,12 +60,12 @@ class NepiIFAdminModes extends Component {
     super(props)
     this.state = {
 
-      advancedConfigEnabled: false,
-      adminPassword: ''
+      mode_selection: null
 
     }
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
+    this.sendModeSelection = this.sendModeSelection.bind(this)
     this.renderAdminModes = this.renderAdminModes.bind(this)
 
   }
@@ -80,48 +80,80 @@ class NepiIFAdminModes extends Component {
   }
 
 
+  sendModeSelection(mode){
+    const base_namespace = this.getBaseNamespace()
+    this.props.ros.sendStringMsg(base_namespace + "/set_run_mode", mode)
+    this.setState({mode_selection: mode})
+  }
+
+
 
   renderAdminModes() {
     const base_namespace = this.getBaseNamespace()
-    const develop_mode = this.props.ros.systemDevelopEnabled
-    const debug_mode = this.props.ros.systemDebugEnabled
-    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const run_mode = this.props.ros.systemRunMode
+    const develop_mode = run_mode == 'develop'
+    const debug_mode = run_mode == 'debug'
+    const deploy_mode = run_mode == 'deploy'
     return (
+
 
       <React.Fragment>
 
 
-              <Columns>
-              <Column>
-
-
-
-                    <Label title="Enable Develop Mode">
-                        <Toggle
-                        checked={develop_mode}
-                        onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/develop_mode_enable", !develop_mode)}>
-                      </Toggle>
-                  </Label>
-
+                <div style={{ display: 'flex' }}>
+                        <div style={{ width: '25%' }} >
  
 
-                  </Column>
-                  <Column>
- 
-
-                    <Label title="Enable Debug Mode">
+                   <Label title="Develop Mode">
                         <Toggle
-                        checked={debug_mode}
-                        onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/debug_mode_enable", !debug_mode)}>
+                        checked={develop_mode == true}
+                        disbled={develop_mode == true}
+                        onClick={() => this.sendModeSelection('develop')}>
                       </Toggle>
                   </Label>
 
 
-                </Column>
-                  </Columns>
+
+                        </div>
+                        <div style={{ width: '5%' }}>
+                        </div>
+
+            
+                        <div style={{ width: '25%' }}>
+
+                  <Label title="Debug Mode">
+                        <Toggle
+                        checked={debug_mode == true}
+                        disbled={debug_mode == true}
+                        onClick={() => this.sendModeSelection('debug')}>
+                      </Toggle>
+                  </Label>
+
+
+                        </div>
+                        <div style={{ width: '5%' }}>
+                        </div>
+
+                        <div style={{ width: '25%' }} >
+
+
+                  <Label title="Deploy Mode">
+                        <Toggle
+                        checked={deploy_mode == true}
+                        disbled={deploy_mode == true}
+                        onClick={() => this.sendModeSelection('deploy')}>
+                      </Toggle>
+                  </Label>
+
+                        </div>
+
+                  </div>
 
 
       </React.Fragment>
+
+
+
     )
   }
 
@@ -131,7 +163,8 @@ class NepiIFAdminModes extends Component {
     const base_namespace = this.getBaseNamespace()
     const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM RUN MODES"
+
     if (base_namespace == null || admin_mode_set === false){
       return (
   
@@ -149,7 +182,8 @@ class NepiIFAdminModes extends Component {
 
           <React.Fragment>
 
-
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <Label title={title} />
                   {this.renderAdminModes()}
 
           </React.Fragment>
@@ -158,7 +192,7 @@ class NepiIFAdminModes extends Component {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "System Mode Controls"}>
+          <Section title={title}>
 
               {this.renderAdminModes()}
 

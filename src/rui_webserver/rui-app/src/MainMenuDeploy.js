@@ -31,6 +31,7 @@ import Dashboard from "./NepiDashboard"
 
 import NepiIFAppSelector from "./Nepi_IF_AppSelector"
 
+import NepiMgr from "./NepiSystemAdmin"
 
 //const IS_LOCAL = window.location.hostname === "localhost"
 
@@ -42,6 +43,7 @@ class MainMenuDeploy extends Component {
   componentDidMount() {
     this.props.ros.watchdogNepiCounter = 0
     this.props.ros.checkROSConnection()
+    
   }
 
   render() {
@@ -75,6 +77,7 @@ class MainMenuDeploy extends Component {
         <HorizontalDivider />
         <Switch>
           <Route exact path="/" component={Dashboard} />
+          <Route exact path="/admin" component={NepiMgr} />
 
           <Route 
             path="/devices_selector" 

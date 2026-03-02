@@ -50,7 +50,8 @@ class NepiDevicePTX extends Component {
     super(props)
 
     this.state = {
-      namespace: 'None'
+      namespace: 'None',
+
     }
 
     this.renderImageViewer = this.renderImageViewer.bind(this)
@@ -209,7 +210,7 @@ class NepiDevicePTX extends Component {
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}
-                              show_admin_node={true}
+                              show_admin_node_names={true}
                               namespace={namespace}
                               make_section={true}
                         />

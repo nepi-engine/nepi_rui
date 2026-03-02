@@ -362,6 +362,9 @@ class Nepi_IF_Settings extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
 
+    const { ruiRestricted} = this.props.ros
+    const settings_controls_restricted = ruiRestricted.indexOf('SYSTEM-SETTINGS-CONTROLS') !== -1
+
 
     if (show_controls === false){
       return(
@@ -405,15 +408,19 @@ class Nepi_IF_Settings extends Component {
                   </Column>
                 </Columns>
 
-                  <Label title={"Select Setting"}>
-                    <Select
-                      id="selectedSettingName"
-                      onChange={this.updateSelectedSettingInfo}
-                      value={this.state.selectedSettingName}
-                    >
-                      {createMenuListFromStrList(capSettingNamesOrdered, false, [], ['NONE'], [])}
-                    </Select>
-                  </Label>
+
+                  <div hidden={settings_controls_restricted === true} >
+                      <Label title={"Select Setting"}>
+                        <Select
+                          id="selectedSettingName"
+                          onChange={this.updateSelectedSettingInfo}
+                          value={this.state.selectedSettingName}
+                        >
+                          {createMenuListFromStrList(capSettingNamesOrdered, false, [], ['NONE'], [])}
+                        </Select>
+                      </Label>
+
+                  </div>
           
               <Columns>
                 <Column>
@@ -553,8 +560,10 @@ class Nepi_IF_Settings extends Component {
       }
     }
 
+    const { ruiRestricted} = this.props.ros
+    const settings_view_restricted = ruiRestricted.indexOf('SYSTEM-SETTINGS-VIEW') !== -1
 
-    if (has_settings == false){
+    if (has_settings == false || settings_view_restricted === true){
       return (
         <Columns>
         <Column>

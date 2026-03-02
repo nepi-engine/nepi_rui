@@ -276,27 +276,44 @@ class NepiIFMessages extends Component {
     const msg_str_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
     //Unused const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
     //Unused const paused = this.state.paused
+    const { ruiRestricted} = this.props.ros
+    const message_view_restricted = ruiRestricted.indexOf('SYSTEM-MESSAGES-VIEW') !== -1
 
-    return (
-
-
-      <Section title={"System Messages"}>
-
-            <Columns>
-            <Column>
-
-            {this.renderShowControl()}
-            {this.renderMessages()}
-
-            </Column>
-            </Columns>
+    if (message_view_restricted === true){
+      return (
 
 
+              <Columns>
+              <Column>
 
-      </Section>
+
+              </Column>
+              </Columns>
 
 
-    )
+      )
+
+
+
+    }
+    else {
+      return (
+
+
+        <Section title={"System Messages"}>
+
+              <Columns>
+              <Column>
+
+              {this.renderShowControl()}
+              {this.renderMessages()}
+
+              </Column>
+              </Columns>
+
+        </Section>
+      )
+    }
   }
 
 

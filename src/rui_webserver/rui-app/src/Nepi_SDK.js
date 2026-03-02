@@ -55,8 +55,8 @@ const save_all_config_ids = ['idx','ptx','lsx','npx','rbx']
   }
 
 
- export function  renderConfig(namespace = 'None',userRestricted = []) {
-    const restricted = (userRestricted.indexOf('Cfg-Controls') !== -1)
+ export function  renderConfig(namespace = 'None',ruiRestricted = []) {
+    const restricted = (ruiRestricted.indexOf('Cfg-Controls') !== -1)
     if (namespace === 'None' || restricted === true ){
       return (
   

@@ -99,11 +99,11 @@ class NepiIFAdminConfig extends Component {
 
       <React.Fragment>
 
-                <Label title={"Factory Config"} />
+
 
                 <div style={{ display: 'flex' }}>
                         <div style={{ width: '25%' }} hidden={admin_mode_set === false}>
-                              <Label title="Enable Save">
+                              <Label title="Show Save">
                                 <Toggle
                                   checked={show_save===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_save",show_save)}>
@@ -125,7 +125,7 @@ class NepiIFAdminConfig extends Component {
 
             
                         <div style={{ width: '25%' }}>
-                            <Label title="Enable Reset">
+                            <Label title="Show Reset">
                                 <Toggle
                                   checked={show_reset===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_reset",show_reset)}>
@@ -144,7 +144,7 @@ class NepiIFAdminConfig extends Component {
                         </div>
 
                         <div style={{ width: '25%' }} hidden={admin_mode_set === false}>
-                            <Label title="Enable Clear">
+                            <Label title="Show Clear">
                                 <Toggle
                                   checked={show_clear===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_clear",show_clear)}>
@@ -163,21 +163,6 @@ class NepiIFAdminConfig extends Component {
                   </div>
 
 
-
-
-    
-
-            
-
-
-
-
-
-                   
-
-
-
-
       </React.Fragment>
     )
   }
@@ -187,7 +172,7 @@ class NepiIFAdminConfig extends Component {
   render() {
     const base_namespace = this.getBaseNamespace()
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM CONFIG OPTIONS"
 
 
     if (base_namespace == null){
@@ -208,6 +193,7 @@ class NepiIFAdminConfig extends Component {
           <React.Fragment>
 
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                  <Label title={title} />
                   {this.renderAdminConfig()}
 
           </React.Fragment>
@@ -216,11 +202,11 @@ class NepiIFAdminConfig extends Component {
     else {
       return (
 
-          <Section>
+          <Section title={title} >
 
               {this.renderAdminConfig()}
 
-        </Section>
+        </Section >
      )
    }
 

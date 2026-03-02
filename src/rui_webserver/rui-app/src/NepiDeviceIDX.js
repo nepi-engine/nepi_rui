@@ -45,6 +45,8 @@ class NepiDeviceIDX extends Component {
       namespace: 'None',
       data_topic: 'None',
       data_product: 'None',
+
+
     }
 
 
@@ -338,7 +340,7 @@ class NepiDeviceIDX extends Component {
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}
-                              show_admin_node={true}
+                              show_admin_node_names={true}
                               namespace={namespace}
                               make_section={true}
                         />

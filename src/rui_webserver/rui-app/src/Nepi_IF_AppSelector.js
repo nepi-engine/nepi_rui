@@ -41,7 +41,7 @@ import NPX from "./NepiDeviceNPX"
 
 // DATE Classes
 import NavPoseMgr from "./NepiMgrNavPose"
-import NepiDashboardData from "./NepiDashboardData"
+
 
 // PROCESS Classes
 import ScriptsMgr from "./NepiMgrScripts"
@@ -57,7 +57,8 @@ import AiDetectorMgr from "./NepiMgrAiDetector"
 
 // Other SYSTEM Classes
 import DeviceMgr from "./NepiSystemDevice"
-import NEPIMgr from "./NepiSystemNEPI"
+import NepiMgr from "./NepiSystemAdmin"
+import DataMgr from "./NepiSystemData"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AppsMgr from "./NepiSystemApps"
 
@@ -287,7 +288,7 @@ class NepiIFAppSelector extends Component {
             <Columns>
             <Column>
 
-              <NepiDashboardData
+              <DataMgr
               title={"Data Manager"}
               />
 
@@ -438,7 +439,7 @@ class NepiIFAppSelector extends Component {
             <Columns>
             <Column>
 
-              <NEPIMgr
+              <NepiMgr
               title={"NEPI Manager"}
               />
 
@@ -565,28 +566,29 @@ class NepiIFAppSelector extends Component {
     const groupList = this.props.ros.apps_group_list
     const runningList = this.props.ros.apps_running_list
 
+    const managers_enabled = this.props.ros.systemManagersEnabled
+    const restricted = this.props.ros.ruiRestricted
 
     var items = []
     if (connected !== true){
       items.push(<Option value={'Connecting'}>{'Connecting'}</Option>)
     }
     else {
-      const userRestrictionsActive = this.props.userRestrictionsActive
       if (app_id === 'DEVICE') {
 
-        if (Object.keys(idxDevices).length > 0){
+        if (Object.keys(idxDevices).length > 0 && restricted.indexOf('DEVICE-IDX-VIEW') === -1){
           items.push(<Option value={"Imaging"}>{"Imaging"}</Option>)
         }
-        if (Object.keys(ptxDevices).length > 0){
+        if (Object.keys(ptxDevices).length > 0 && restricted.indexOf('DEVICE-PTX-VIEW') === -1){
           items.push(<Option value={"PanTilts"}>{"PanTilts"}</Option>)
         }
-        if (Object.keys(lsxDevices).length > 0){
+        if (Object.keys(lsxDevices).length > 0 && restricted.indexOf('DEVICE-LSX-VIEW') === -1){
           items.push(<Option value={"Lights"}>{"Lights"}</Option>)
         }
-        if (Object.keys(rbxDevices).length > 0){
+        if (Object.keys(rbxDevices).length > 0 && restricted.indexOf('DEVICE-RBX-VIEW') === -1){
           items.push(<Option value={"Robots"}>{"Robots"}</Option>)
         }
-        if (Object.keys(npxDevices).length > 0){
+        if (Object.keys(npxDevices).length > 0 && restricted.indexOf('DEVICE-NPX-VIEW') === -1){
           items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
         }
   
@@ -622,16 +624,16 @@ class NepiIFAppSelector extends Component {
         if (true) { //((userRestrictionsActive.indexOf('ai_management')) {
             const activeModelTypes = this.props.ros.ai_models_running_type_list
 
-            if (activeModelTypes.indexOf('detection') !== -1){
+            if (activeModelTypes.indexOf('detection') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
               items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
             }
-            if (activeModelTypes.indexOf('segmentation') !== -1){
+            if (activeModelTypes.indexOf('segmentation') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
               items.push(<Option value={'AI Segmetation'}>{'AI Segmetation'}</Option>)
             }
-            if (activeModelTypes.indexOf('pose') !== -1){
+            if (activeModelTypes.indexOf('pose') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
               items.push(<Option value={'AI Pose'}>{'AI Pose'}</Option>)
             }
-            if (activeModelTypes.indexOf('orientation') !== -1){
+            if (activeModelTypes.indexOf('orientation') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
               items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
             }
         }
@@ -650,44 +652,44 @@ class NepiIFAppSelector extends Component {
 
       else if (app_id === 'SYSTEM') {
 
-        if (true) { //((userRestrictionsActive.indexOf('device_manager')) {
+        if (restricted.indexOf('MANAGER-DEVICE-VIEW') === -1) { 
             items.push(<Option value={'Device Manager'}>{'Device Manager'}</Option>)
         }   
         
-        if (true) { //((userRestrictionsActive.indexOf('device_manager')) {
+        if (restricted.indexOf('MANAGER-ADMIN-VIEW') === -1) { 
             items.push(<Option value={'NEPI Manager'}>{'NEPI Manager'}</Option>)
         }   
 
-        if (true) { //((userRestrictionsActive.indexOf('data_manager')) {
+        if (restricted.indexOf('MANAGER-DATA-VIEW') === -1) { 
           items.push(<Option value={"Data Manager"}>{"Data Manager"}</Option>)
         }
 
-        if (true) { //((appsList.indexOf('software_mgr') !== -1 ) && (this.props.ros.connectedToSoftwareMgr === true) && (userRestrictionsActive.indexOf('software_manager')) {
+        if (restricted.indexOf('MANAGER-SOFTWARE-VIEW') === -1 && managers_enabled.indexOf('MANAGER-SOFTWARE') !== -1 ) {
             items.push(<Option value={'Software Manager'}>{'Software Manager'}</Option>)
         }        
         
 
-        if (true) { //((appsList.indexOf('navpose_mgr') !== -1 ) && (this.props.ros.connectedToNavPosesMgr === true) && (userRestrictionsActive.indexOf('navpose_manager')) {
+        if (restricted.indexOf('MANAGER-NAVPOSE-VIEW') === -1 && managers_enabled.indexOf('MANAGER-NAVPOSE') !== -1 ) {
             items.push(<Option value={"NavPose Manage"}>{"NavPose Manage"}</Option>)
         }
 
 
-        if (true) { //((appsList.indexOf('drivers_mgr') !== -1 ) && (this.props.ros.connectedToDriversMgr === true) && (userRestrictionsActive.indexOf('drivers_manager')) {
+        if (restricted.indexOf('MANAGER-DRIVERS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-DRIVERS') !== -1 ) {
             items.push(<Option value={'Drivers Manager'}>{'Drivers Manager'}</Option>)
         }   
         
 
-        if (true) { //((appsList.indexOf('ai_models_mgr') !== -1 ) && (this.props.ros.connectedToAiModelsMgr === true) && (userRestrictionsActive.indexOf('ai_model_manager')) {
+        if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-AI_MODELS') !== -1 ) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
         }   
         
 
-        if (true) { //((appsList.indexOf('apps_mgr') !== -1 ) && (this.props.ros.connectedToAppsMgr === true) && (userRestrictionsActive.indexOf('apps_manager')) {
+        if (restricted.indexOf('MANAGER-APPS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-APPS') !== -1 ) {
            items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
         }   
 
-        if (true) { //((appsList.indexOf('automation_mgr') !== -1 ) && (this.props.ros.connectedToScriptsMgr === true) && (userRestrictionsActive.indexOf('automation_manager')) {
-           items.push(<Option value={'Scripts Mgr'}>{'Scripts Mgr'}</Option>)
+        if (restricted.indexOf('MANAGER-SCRIPTS-VIEW') === -1 && managers_enabled.indexOf('MANAGER-SCRIPTS') !== -1 ) {
+           items.push(<Option value={'Scripts Mgr'}>{'Scripts Manager'}</Option>)
         }   
         
  

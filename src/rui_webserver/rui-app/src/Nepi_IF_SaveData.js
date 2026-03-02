@@ -62,7 +62,7 @@ class NepiIFSaveData extends Component {
       saveUtcTz: false,
       exp_filename: "",
       saveDataEnabled: false,
-      saveDataRate: "1.0",
+      saveDataRate: "",
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
@@ -514,7 +514,7 @@ class NepiIFSaveData extends Component {
     if(event.key === 'Enter'){
       const rate = parseFloat(event.target.value)
       if (!isNaN(rate)){
-        this.setState({saveDataRate: event.target.value })
+        this.setState({saveDataRate: '' })
         this.sendSaveRateUpdate('Active',rate)
       }
       document.getElementById("save_rate").style.color = Styles.vars.colors.black
@@ -601,6 +601,10 @@ class NepiIFSaveData extends Component {
 
     const saveAll = this.state.saveAll
     const save_enabled = saveDataEnabled
+
+    const { ruiRestricted} = this.props.ros
+    const save_data_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-DATA-CONTROLS') !== -1
+
     return (
 
       <React.Fragment> 
@@ -612,7 +616,7 @@ class NepiIFSaveData extends Component {
                         
                         <div style={{ width: '15%' }}>
 
-                            <div hidden={(allways_show_controls === true)}>
+                            <div hidden={(allways_show_controls === true || save_data_controls_restricted === true)}>
                                 <Label title="Show Save Controls">
                                   <Toggle
                                     checked={showControls===true}
@@ -821,7 +825,7 @@ class NepiIFSaveData extends Component {
     const saveUtcTz = this.state.saveUtcTz
 
     const show_active_settings = this.state.show_active_settings
-
+    const all_str = (isAllNamespace === true) ? 'ALL '  : ''
 
       return (
 
@@ -836,14 +840,14 @@ class NepiIFSaveData extends Component {
                   <Column>
 
 
-                          <Label title={"Set Save Rate (Hz)"}>
+                          <Label title={"Set Save Rate " + all_str + "(Hz)"}>
                             <Input id="save_rate" 
                                 value={this.state.saveDataRate} 
                                 onChange={this.onUpdateSaveDataRateValue} 
                                 onKeyDown= {this.onKeySaveDataRateValue} />
                         </Label>
 
-                        <Label title={"Set Save Prefix"}>
+                        <Label title={"Set Save Prefix " + all_str}>
                           <Input id="input_prefix" 
                               value={this.state.saveDataPrefix} 
                               onChange={this.onUpdateInputSaveDataPrefixValue} 
@@ -851,7 +855,7 @@ class NepiIFSaveData extends Component {
                         </Label>
 
 
-                        <Label title={"Set Save Subfolder"}>
+                        <Label title={"Set Save Subfolder " + all_str}>
                           <Input id="input_subfolder" 
                               value={this.state.saveDataSubfolder} 
                               onChange={this.onUpdateInputSaveDataSubfolderValue} 
@@ -859,7 +863,7 @@ class NepiIFSaveData extends Component {
                         </Label>
 
 
-                        <Label title={"Use UTC Time"}>
+                        <Label title={"Use UTC Time " + all_str}>
                             <Toggle
                               checked={ (saveUtcTz) }
                               onClick={this.onChangeBoolUtcTzValue}
@@ -977,7 +981,10 @@ class NepiIFSaveData extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
 
-    if (saveNamespace === 'None' || showControls === false){
+    const { ruiRestricted} = this.props.ros
+    const save_data_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-DATA-CONTROLS') !== -1
+
+    if (saveNamespace === 'None' || showControls === false || save_data_controls_restricted === true){
       return (
         <Columns>
         <Column>
@@ -1016,7 +1023,11 @@ class NepiIFSaveData extends Component {
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const saveNamespace = this.state.saveNamespace
-    if (saveNamespace === 'None'){
+    const { ruiRestricted} = this.props.ros
+    const save_data_view_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-DATA-VIEW') !== -1
+
+
+    if (saveNamespace === 'None' || save_data_view_restricted === true){
       return (
         <Columns>
         <Column>
