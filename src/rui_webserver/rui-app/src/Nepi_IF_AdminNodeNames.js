@@ -38,6 +38,10 @@ class NepiIFAdminNodeName extends Component {
     super(props)
     this.state = {
 
+    device_names: [],
+    device_aliases: [],
+
+    needs_update: true
 
     }
 
@@ -49,6 +53,8 @@ class NepiIFAdminNodeName extends Component {
 
     this.onUpdateInputDeviceNameValue = this.onUpdateInputDeviceNameValue.bind(this)
     this.onKeySaveInputDeviceNameValue = this.onKeySaveInputDeviceNameValue.bind(this)
+
+    this.getUpdatedAliases = this.getUpdatedAliases.bind(this)
   }
 
   getBaseNamespace(){
@@ -61,9 +67,9 @@ class NepiIFAdminNodeName extends Component {
   }
 
 
-  sendNodeNameUpdate(name,value,type){
+  sendNodeNameUpdate(name,alias){
     const base_namespace = this.getBaseNamespace()
-    this.props.ros.sendUpdateStringMsg(base_namespace + "/update_node_name", name,value)
+    this.props.ros.sendUpdateStringMsg(base_namespace + "/update_node_name", name,alias)
   }
 
   sendNodeNameClear(name){
@@ -75,37 +81,57 @@ class NepiIFAdminNodeName extends Component {
 
 
 
-  onUpdateInputDeviceNameValue(event) {
-    this.setState({ device_name: event.target.value })
-    document.getElementById("input_device_name").style.color = Styles.vars.colors.red
-    this.render()
+  onUpdateInputDeviceNameValue(event, name, index) {
+    this.setState({ needs_update: false })
+    const value = event.target.value
+    var aliases = this.state.device_aliases
+    aliases[index] = value
+    this.setState({ device_aliases: aliases })
+    document.getElementById(name).style.color = Styles.vars.colors.red
+    //this.render()
   }
 
-  onKeySaveInputDeviceNameValue(event) {
+  onKeySaveInputDeviceNameValue(event, name, index) {
     const {sendStringMsg}  = this.props.ros
     const device_name_update_topic = this.props.deviceNamespace + this.props.name_update_topic
     const BAD_NAME_CHAR_LIST = [" ","/","'","-","$","#"]
+    const {systemNodeNameAliases} = this.props.ros
+    var aliases = this.state.device_aliases
+
     if(event.key === 'Enter'){
       const value = event.target.value
       var good_name = true
       for(let ind = 0; ind < BAD_NAME_CHAR_LIST.length; ind++) {
         if (value.indexOf(BAD_NAME_CHAR_LIST[ind]) !== -1){
           good_name = false
+          aliases[index] = 'Bad Chars In Name'
+          this.setState({ device_aliases: aliases })
         }
       }
-      if (good_name === true){
-        sendStringMsg(device_name_update_topic,value)
+      
+      if (systemNodeNameAliases.indexOf(value) !== -1){
+        good_name = false
+        aliases[index] = 'Name Already Used'
+        this.setState({ device_aliases: aliases })
       }
-      document.getElementById("input_device_name").style.color = Styles.vars.colors.black
+   
+      if (good_name === true){
+        aliases[index] = value
+        this.setState({ device_aliases: aliases })
+        this.sendNodeNameClear(name,value)
+        this.setState({ needs_update: true })
+
+
+      }
+      
+      document.getElementById(name).style.color = Styles.vars.colors.black
     }
   }
 
 
     
-    renderAdminDeviceNames(name) {
+    renderAdminDeviceNames(name, alias, index) {
     const base_namespace = this.getBaseNamespace()
-    const {systemNodeNameKeys} = this.props.ros
-    const {systemNodeNameAliases} = this.props.ros
 
     return (
 
@@ -117,11 +143,10 @@ class NepiIFAdminNodeName extends Component {
 
                         <Label title={name}>
 
-                          <Input id="input_device_name" 
-                              value={this.state.device_name} 
-                              onChange={this.onUpdateInputDeviceNameValue} 
-                              onKeyDown= {this.onKeySaveInputDeviceNameValue} />
-
+                          <Input id={name} 
+                              value={alias} 
+                              onChange={(event) => this.onUpdateInputDeviceNameValue(event,name,index)} 
+                              onKeyDown= {(event) => this.onKeySaveInputDeviceNameValue(event,name,index)} />
 
 
                         <ButtonMenu>
@@ -145,10 +170,29 @@ class NepiIFAdminNodeName extends Component {
     )
   }
 
+
+
+  getUpdatedAliases(){
+    const {systemNodeNameKeys} = this.props.ros
+    const {systemNodeNameAliases} = this.props.ros
+    
+    
+    system_devices_updated = JSON.stringify(systemNodeNameAliases) === JSON.stringify(this.state.last_system_devices)
+    system_aliases_updated = JSON.stringify(systemNodeNameAliases) === JSON.stringify(this.state.last_system_aliases)
+    needs_update = (system_aliases_updated || system_devices_updated)  && (this.state.needs_update === true)
+    if (needs_update === true) {
+      this.setState({needs_update: false,
+                    device_names: systemNodeNameKeys,
+                    device_aliases: systemNodeNameAliases
+      })
+    }
+
+
+  } 
+
   renderAdminNodeName() {
-    const base_namespace = this.getBaseNamespace()
-    const restriction_options = this.props.ros.ruiDeviceNamesOptions
-    const rui_login_enabled = this.props.ros.ruiLoginEnabled
+
+
     return (
 
 
@@ -158,42 +202,15 @@ class NepiIFAdminNodeName extends Component {
       <React.Fragment>
 
 
-
-
-
-
-               <div style={{ display: 'flex' }}>
-                        <div style={{ width: '60%' }} >
- 
-
-                        <Label title={'Enable Login Screen'}>
-
-                            <Toggle
-                            checked={rui_login_enabled}
-                            onClick={() => this.props.ros.sendBoolMsg(base_namespace + '/rui_login_mode_enable',!rui_login_enabled)}>
-                          </Toggle>
-
-                        </Label>
-
-                        </div>
-
-
-                        <div style={{ width: '40%' }}>
-                        </div>
-
-
-                  </div>
-
-
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-                <Label title={'RUI DeviceNamess ( VIEW / CONTROL )'}> </Label>
+                <Label title={'Device Name Aliases'}> </Label>
 
 
                   <div>
                     {/* Map over the restriction options array */}
-                    {restriction_options.map((name) => (
-                      this.renderAdminDeviceNames(name)
+                    {this.state.device_names.map((name, index) => (
+                      this.renderAdminDeviceNames(name, this.state.device_aliases[index], index)
                     ))}
                   </div>
 

@@ -681,7 +681,7 @@ class NepiIFAppSelector extends Component {
         }   
         
 
-        if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_running.indexOf('MANAGER-AI_MODELS') !== -1 ) {
+        if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_running.indexOf('MANAGER-AI-MODELS') !== -1 ) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
         }   
 

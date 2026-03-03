@@ -33,7 +33,7 @@ import {  onChangeSwitchStateValue } from "./Utilities"
 import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
 import NepiIFAdminModes from "./Nepi_IF_AdminModes"
-//import NepiIFAdminNodeNames from "./Nepi_IF_AdminNodeNames"
+import NepiIFAdminNodeNames from "./Nepi_IF_AdminNodeNames"
 import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
 import NepiIFAdminRui from "./Nepi_IF_AdminRui"
 
@@ -154,10 +154,9 @@ class NepiMgr extends Component {
                       <Column>  
 
 
-                          {/* {<NepiIFAdminNodeNames
-                            namespace={namespace}
+                          {<NepiIFAdminNodeNames
                             make_section={true}
-                            />} */}
+                            />}
                           
 
                       </Column>
