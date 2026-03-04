@@ -43,6 +43,7 @@ class NepiDeviceIDX extends Component {
 
     this.state = {
       namespace: 'None',
+      node_name: 'None',
       data_topic: 'None',
       data_product: 'None',
 
@@ -158,7 +159,7 @@ class NepiDeviceIDX extends Component {
   // Handler for Image topic selection
   onDataProductSelected(event) {
     const namespace = this.state.namespace ? this.state.namespace : "None"
-    const capabilities = this.props.ros.idxDevices[namespace]
+    const capabilities = this.props.ros.npxDevices[namespace]
     const data_products = capabilities ? capabilities.data_products : []
 
     const index = event.nativeEvent.target.selectedIndex
@@ -285,7 +286,8 @@ class NepiDeviceIDX extends Component {
     const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const data_product = this.state.data_product
-
+    const capabilities = this.props.ros.idxDevices[namespace]
+    const node_name = capabilities ? capabilities.device_node_name : 'None'
     
         return (
 
@@ -341,7 +343,7 @@ class NepiDeviceIDX extends Component {
                               title={"Advanced Settings"}
                               show_advanced_option={true}
                               show_admin_node_names={true}
-                              namespace={namespace}
+                              node_name={node_name}
                               make_section={true}
                         />
                         : null}

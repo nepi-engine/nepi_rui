@@ -42,6 +42,7 @@ class NepiControlsLights extends Component {
 
     this.state = {
       namespace: 'None',
+      node_name: 'None',
     }
 
     this.renderImageViewer = this.renderImageViewer.bind(this)
@@ -149,8 +150,8 @@ class NepiControlsLights extends Component {
  render() {
     const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    const data_product = this.state.data_product
-
+    const capabilities = this.props.ros.lsxDevices[namespace]
+    const node_name = capabilities ? capabilities.device_node_name : 'None'
     
         return (
 
@@ -185,7 +186,6 @@ class NepiControlsLights extends Component {
                           {(device_selected == true) ?
                           <NepiDeviceLSXControls
                               namespace={namespace}
-                              dataProduct={data_product}
                               title={ "Pan Tilt Controls"}
                         />
                         : null}
@@ -204,7 +204,7 @@ class NepiControlsLights extends Component {
                               title={"Advanced Settings"}
                               show_advanced_option={true}
                               show_admin_node_names={true}
-                              namespace={namespace}
+                              node_name={node_name}
                               make_section={true}
                         />
                         : null}

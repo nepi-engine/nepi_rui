@@ -27,16 +27,20 @@ import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
+import BooleanIndicator from "./BooleanIndicator"
 
 import {  onChangeSwitchStateValue } from "./Utilities"
 
 
 @inject("ros")
 @observer
-class NepiIFAdminNodeName extends Component {
+class NepiIFAdminDeviceName extends Component {
   constructor(props) {
     super(props)
     this.state = {
+
+    devices_name_list: [],
+    devices_alias_list: [],
 
     device_names: [],
     device_aliases: [],
@@ -47,14 +51,16 @@ class NepiIFAdminNodeName extends Component {
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
    
-    this.sendNodeNameUpdate = this.sendNodeNameUpdate.bind(this)
-    this.sendNodeNameClear = this.sendNodeNameClear.bind(this)
-    this.renderAdminNodeName = this.renderAdminNodeName.bind(this)
+    this.updateDeviceNames = this.updateDeviceNames.bind(this)
+
+    this.sendDeviceAliasUpdate = this.sendDeviceAliasUpdate.bind(this)
+    this.sendDeviceAliasClear = this.sendDeviceAliasClear.bind(this)
+    this.renderAdminDeviceName = this.renderAdminDeviceName.bind(this)
 
     this.onUpdateInputDeviceNameValue = this.onUpdateInputDeviceNameValue.bind(this)
     this.onKeySaveInputDeviceNameValue = this.onKeySaveInputDeviceNameValue.bind(this)
 
-    this.getUpdatedAliases = this.getUpdatedAliases.bind(this)
+
   }
 
   getBaseNamespace(){
@@ -67,14 +73,14 @@ class NepiIFAdminNodeName extends Component {
   }
 
 
-  sendNodeNameUpdate(name,alias){
+  sendDeviceAliasUpdate(name,alias){
     const base_namespace = this.getBaseNamespace()
-    this.props.ros.sendUpdateStringMsg(base_namespace + "/update_node_name", name,alias)
+    this.props.ros.sendUpdateStringMsg(base_namespace + "/update_device_alias", name,alias)
   }
 
-  sendNodeNameClear(name){
+  sendDeviceAliasClear(name){
     const base_namespace = this.getBaseNamespace()
-    this.props.ros.sendStringMsg(base_namespace + "/clear_node_name", name)
+    this.props.ros.sendStringMsg(base_namespace + "/clear_device_alias", name)
 
   }
 
@@ -82,7 +88,6 @@ class NepiIFAdminNodeName extends Component {
 
 
   onUpdateInputDeviceNameValue(event, name, index) {
-    this.setState({ needs_update: false })
     const value = event.target.value
     var aliases = this.state.device_aliases
     aliases[index] = value
@@ -92,10 +97,8 @@ class NepiIFAdminNodeName extends Component {
   }
 
   onKeySaveInputDeviceNameValue(event, name, index) {
-    const {sendStringMsg}  = this.props.ros
-    const device_name_update_topic = this.props.deviceNamespace + this.props.name_update_topic
     const BAD_NAME_CHAR_LIST = [" ","/","'","-","$","#"]
-    const {systemNodeNameAliases} = this.props.ros
+    const {devices_alias_list} = this.props.ros
     var aliases = this.state.device_aliases
 
     if(event.key === 'Enter'){
@@ -109,7 +112,7 @@ class NepiIFAdminNodeName extends Component {
         }
       }
       
-      if (systemNodeNameAliases.indexOf(value) !== -1){
+      if (devices_alias_list.indexOf(value) !== -1 && devices_alias_list.indexOf(value) !== index){
         good_name = false
         aliases[index] = 'Name Already Used'
         this.setState({ device_aliases: aliases })
@@ -118,8 +121,7 @@ class NepiIFAdminNodeName extends Component {
       if (good_name === true){
         aliases[index] = value
         this.setState({ device_aliases: aliases })
-        this.sendNodeNameClear(name,value)
-        this.setState({ needs_update: true })
+        this.sendDeviceAliasUpdate(name,value)
 
 
       }
@@ -132,33 +134,54 @@ class NepiIFAdminNodeName extends Component {
     
     renderAdminDeviceNames(name, alias, index) {
     const base_namespace = this.getBaseNamespace()
-
+    const {devices_running_name_list} = this.props.ros
+    const running = (devices_running_name_list.indexOf(name) !== -1 || devices_running_name_list.indexOf(alias) !== -1 )
     return (
 
       <React.Fragment>
 
                 <div style={{ display: 'flex' }}>
-                        <div style={{ width: '80%' }} >
+                        <div style={{ width: '5%' }} >
+
+                        <BooleanIndicator value={running} />
+
+                        </div>
+
+                        <div style={{ width: '5%' }} >
+                        </div>                        
+
+                        <div style={{ width: '35%' }} >
  
 
-                        <Label title={name}>
+                          <label >
+                              {name}
+                            </label>
 
+                         </div>
+
+  
+
+                        <div style={{ width: '35%' }} >
+ 
                           <Input id={name} 
                               value={alias} 
                               onChange={(event) => this.onUpdateInputDeviceNameValue(event,name,index)} 
                               onKeyDown= {(event) => this.onKeySaveInputDeviceNameValue(event,name,index)} />
 
 
-                        <ButtonMenu>
-                            <Button onClick={this.sendNodeNameClear(name)}>{"Clear"}</Button>
-                        </ButtonMenu>
-
-                        </Label>
-
                         </div>
 
 
-                        <div style={{ width: '20%' }}>
+                        <div style={{ width: '5%' }} >
+                        </div>              
+
+                        <div style={{ width: '15%' }} >
+ 
+
+                            <ButtonMenu>
+                                <Button buttonUpAction={() => this.sendDeviceAliasClear(name)}>{'Clear'}</Button>
+                            </ButtonMenu>
+
                         </div>
 
           
@@ -172,45 +195,59 @@ class NepiIFAdminNodeName extends Component {
 
 
 
-  getUpdatedAliases(){
-    const {systemNodeNameKeys} = this.props.ros
-    const {systemNodeNameAliases} = this.props.ros
+  updateDeviceNames(){
+    const {devices_name_list} = this.props.ros
+    const {devices_alias_list} = this.props.ros
     
     
-    system_devices_updated = JSON.stringify(systemNodeNameAliases) === JSON.stringify(this.state.last_system_devices)
-    system_aliases_updated = JSON.stringify(systemNodeNameAliases) === JSON.stringify(this.state.last_system_aliases)
-    needs_update = (system_aliases_updated || system_devices_updated)  && (this.state.needs_update === true)
+    const system_devices_updated = JSON.stringify(devices_name_list) !== JSON.stringify(this.state.devices_name_list)
+    const system_aliases_updated = JSON.stringify(devices_alias_list) !== JSON.stringify(this.state.devices_alias_list)
+    const needs_update = ( system_devices_updated || system_aliases_updated)
     if (needs_update === true) {
-      this.setState({needs_update: false,
-                    device_names: systemNodeNameKeys,
-                    device_aliases: systemNodeNameAliases
+      this.setState({
+                    devices_name_list: JSON.parse(JSON.stringify(devices_name_list)),
+                    devices_alias_list: JSON.parse(JSON.stringify(devices_alias_list)),
+                    device_names: JSON.parse(JSON.stringify(devices_name_list)),
+                    device_aliases: JSON.parse(JSON.stringify(devices_alias_list))
       })
+
     }
 
 
   } 
 
-  renderAdminNodeName() {
-
+  renderAdminDeviceName() {
+    const device_name = (this.props.device_name !== undefined) ? this.props.device_name : null
+    this.updateDeviceNames()
+    var device_names = this.state.device_names
+    var device_aliases = this.state.device_aliases
+    if (device_name != null){
+      const name_index = device_names.indexOf(device_name)
+      const alias_index = device_aliases.indexOf(device_name)
+      if ( name_index !== -1 ){
+        device_names = device_names[name_index]
+        device_aliases = device_aliases[name_index]
+      }
+      else if ( alias_index !== -1 ){
+        device_names = device_names[alias_index]
+        device_aliases = device_aliases[alias_index]
+      }
+    }
 
     return (
-
-
-
-
 
       <React.Fragment>
 
 
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                <Label title={'Device Name Aliases'}> </Label>
+                <label >
+                    {"Changes Take Affect on Next Device Startup"}
+                  </label>
 
 
                   <div>
                     {/* Map over the restriction options array */}
-                    {this.state.device_names.map((name, index) => (
-                      this.renderAdminDeviceNames(name, this.state.device_aliases[index], index)
+                    {device_names.map((name, index) => (
+                      this.renderAdminDeviceNames(name, device_aliases[index], index)
                     ))}
                   </div>
 
@@ -228,9 +265,9 @@ class NepiIFAdminNodeName extends Component {
     const base_namespace = this.getBaseNamespace()
     const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM RUI CONFIG"
-
-    if (base_namespace == null || admin_mode_set === false){
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM DEVICE NAMES"
+    const driver_mgr_connected = this.props.ros.connectedToDriversMgr
+    if (base_namespace == null || admin_mode_set === false || driver_mgr_connected === false){
       return (
   
         <Columns>
@@ -249,7 +286,7 @@ class NepiIFAdminNodeName extends Component {
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Label title={title} />
-                {this.renderAdminNodeName()}
+                {this.renderAdminDeviceName()}
 
 
           </React.Fragment>
@@ -260,7 +297,7 @@ class NepiIFAdminNodeName extends Component {
 
           <Section title={title}>
 
-                  {this.renderAdminNodeName()}
+                  {this.renderAdminDeviceName()}
 
 
         </Section>
@@ -270,4 +307,4 @@ class NepiIFAdminNodeName extends Component {
   }
 
 }
-export default NepiIFAdminNodeName
+export default NepiIFAdminDeviceName

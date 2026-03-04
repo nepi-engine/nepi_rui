@@ -158,7 +158,7 @@ class NepiDashboard extends Component {
     var show_sync_button = false
 
     if (timeMgrStatus != null){
-      time_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROLS') !== -1
+      time_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
       clock_synced = timeMgrStatus.clock_synced
       auto_sync_clocks = timeMgrStatus.auto_sync_clocks
       show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_restricted === false )

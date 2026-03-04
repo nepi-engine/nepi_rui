@@ -201,9 +201,6 @@ class ROSConnectionStore {
       this.managers_running_list = []
 
 
-      this.systemNodeNameKeys = []
-      this.systemNodeNameAliases = []
-
       this.ruiRestrictionOptions = []
       this.ruiRestrictions = []
       this.ruiRestricted = []
@@ -263,6 +260,12 @@ class ROSConnectionStore {
 
       this.drivers_retry_enabled = []
 
+
+      this.devices_name_list = []
+      this.devices_alias_list = []
+
+      this.devices_running_name_list = []
+      this.devices_running_type_list = []
 
       // AI Model Manager
       this.connectedToAiModelsMgr = false
@@ -821,14 +824,6 @@ class ROSConnectionStore {
   @observable managers_running_list = []
 
 
-
-  @observable systemNodeNameKeys = []
-  @observable systemNodeNameAliases = []
-
-
-  @observable systemNodeNameKeys = []
-  @observable systemNodeNameAliases = []
-
   @observable systemRunModeOptions = []
   @observable systemRunMode = null
 
@@ -921,8 +916,6 @@ class ROSConnectionStore {
         this.ruiRestricted = message.rui_restricted
 
 
-        this.systemNodeNameKeys = message.sys_node_name_keys
-        this.systemNodeNameAliases = message.sys_node_name_aliases
 
 
         ///////////////////
@@ -1082,6 +1075,14 @@ class ROSConnectionStore {
   @observable drivers_running_list = []
 
   @observable drivers_retry_enabled = []
+
+
+  @observable devices_name_list = []
+  @observable devices_alias_list = []
+
+  @observable devices_running_name_list = []
+  @observable devices_running_type_list = []
+
   
 
 
@@ -1108,6 +1109,13 @@ class ROSConnectionStore {
       this.drivers_running_list = message.drivers_running_list
 
       this.drivers_retry_enabled = message.retry_enabled
+
+      this.devices_name_list = message.devices_name_list
+      this.devices_alias_list = message.devices_alias_list
+
+      this.devices_running_name_list = message.devices_running_name_list
+      this.devices_running_type_list = message.devices_running_type_list
+
 
       this.connectedToDriversMgr = true
 

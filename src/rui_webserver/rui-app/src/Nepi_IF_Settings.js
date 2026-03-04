@@ -363,7 +363,7 @@ class Nepi_IF_Settings extends Component {
     const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
 
     const { ruiRestricted} = this.props.ros
-    const settings_controls_restricted = ruiRestricted.indexOf('SYSTEM-SETTINGS-CONTROLS') !== -1
+    const settings_controls_restricted = ruiRestricted.indexOf('SYSTEM-SETTINGS-CONTROL') !== -1
 
 
     if (show_controls === false){

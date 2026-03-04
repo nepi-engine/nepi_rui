@@ -613,7 +613,7 @@ updateMgrTimeStatusListener() {
 
     const manager_running = managers_running_list.indexOf('MANAGER-TIME') !== -1
     const time_view_restricted = ruiRestricted.indexOf('MANAGER-TIME-VIEW') !== -1
-    const time_controls_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROLS') !== -1
+    const time_controls_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
 
     if (manager_running === false || time_view_restricted === true){
       return (
@@ -842,7 +842,7 @@ updateMgrTimeStatusListener() {
     const { systemManagesNetwork, managers_running_list, ruiRestricted} = this.props.ros
     const manager_running = managers_running_list.indexOf('MANAGER-NETWORK') !== -1
     const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
-    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROLS') !== -1
+    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROL') !== -1
 
 
 
@@ -1099,7 +1099,7 @@ updateMgrTimeStatusListener() {
     const manager_running = managers_running_list.indexOf('MANAGER-NETWORK') !== -1
 
     const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
-    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROLS') !== -1
+    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROL') !== -1
 
 
     // Update on User Change

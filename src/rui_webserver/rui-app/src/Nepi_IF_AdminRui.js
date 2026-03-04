@@ -158,10 +158,12 @@ class NepiIFAdminRui extends Component {
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-                <Label title={'RUI Restrictions ( VIEW / CONTROL )'}> </Label>
+                
 
 
                   <div>
+                    <Label title={'RUI Restrictions ( VIEW / CONTROL )'}> </Label>
+
                     {/* Map over the restriction options array */}
                     {restriction_options.map((name) => (
                       this.renderAdminRestriction(name)

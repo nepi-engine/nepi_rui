@@ -404,7 +404,7 @@ class NepiDeviceIDXControls extends Component {
     const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
     const { ruiRestricted} = this.props.ros
-    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-IDX-CONTROLS') !== -1
+    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-IDX-CONTROL') !== -1
 
     if (hide_controls === true || device_controls_restricted === true){
               <Columns>

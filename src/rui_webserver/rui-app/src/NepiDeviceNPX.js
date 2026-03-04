@@ -62,6 +62,7 @@ class NepiDeviceNPX extends Component {
 
     this.state = {
       namespace: 'None',
+      node_name: 'None',
 
     }
 
@@ -171,7 +172,8 @@ class NepiDeviceNPX extends Component {
  render() {
     const device_selected = (this.state.namespace != null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    const data_product = this.state.data_product
+    const capabilities = this.props.ros.npxDevices[namespace]
+    const node_name = capabilities ? capabilities.device_node_name : 'None'
 
     
         return (
@@ -227,7 +229,7 @@ class NepiDeviceNPX extends Component {
                               title={"Advanced Settings"}
                               show_advanced_option={true}
                               show_admin_node_names={true}
-                              namespace={namespace}
+                              node_name={node_name}
                               make_section={true}
                         />
                         : null}

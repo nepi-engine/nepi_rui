@@ -33,8 +33,8 @@ import {  onChangeSwitchStateValue } from "./Utilities"
 import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
 import NepiIFAdminModes from "./Nepi_IF_AdminModes"
-//import NepiIFAdminNodeNames from "./Nepi_IF_AdminNodeNames"
-//import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
+import NepiIFAdminDeviceNames from "./Nepi_IF_AdminDeviceNames"
+import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
 import NepiIFAdminRui from "./Nepi_IF_AdminRui"
 
 function round(value, decimals = 0) {
@@ -161,10 +161,10 @@ class NepiIFAdmin extends Component {
     const show_admin_enable = (this.props.show_admin_enable !== undefined)? this.props.show_admin_enable : show_all
     const show_admin_config = (this.props.show_admin_config !== undefined)? this.props.show_admin_config : show_all
     const show_admin_modes = (this.props.show_admin_modes !== undefined)? this.props.show_admin_modes : show_all
-    const show_admin_node_names = (this.props.show_admin_node_names !== undefined)? this.props.show_admin_node_names : show_all
+    const show_admin_device_names = (this.props.show_admin_device_names !== undefined)? this.props.show_admin_device_names : show_all
     const show_admin_managers = (this.props.show_admin_managers !== undefined)? this.props.show_admin_managers : show_all
     const show_admin_rui = (this.props.show_admin_rui !== undefined)? this.props.show_admin_rui : show_all
-    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'ALL'
+    const node_name = (this.props.node_name !== undefined) ? this.props.node_name : null
 
     return (
 
@@ -186,19 +186,19 @@ class NepiIFAdmin extends Component {
               : null } 
 
 
-              {/* { (show_admin_node_names === true) ?
-                <NepiIFAdminNodeNames
-                namespace={namespace}
+              { (show_admin_device_names === true) ?
+                <NepiIFAdminDeviceNames
+                node_name={node_name}
                 make_section={false}
                 />
-              : null } */}
+              : null }
 
 
-              {/* { (show_admin_managers === true) ?
+              { (show_admin_managers === true) ?
                 <NepiIFAdminManagers
                 make_section={false}
                 />
-              : null } */}
+              : null }
 
 
 
@@ -241,7 +241,7 @@ class NepiIFAdmin extends Component {
     const title = (this.props.title !== undefined)? this.props.title : "Admin Settings"
     
     const { ruiRestricted} = this.props.ros
-    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-ADMIN-CONTROLS') !== -1
+    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-ADMIN-CONTROL') !== -1
 
 
     

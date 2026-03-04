@@ -90,9 +90,9 @@ class Nepi_IF_ImageViewer extends Component {
 
 
       has_status: false,
-      show_controls: false,
-      show_status: false,
-      show_renders: false,
+      show_config: false,
+      show_info: false,
+      show_render: false,
       has_overlay: false,
       show_overlays: false,
       has_navpose: false,
@@ -117,7 +117,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.renderImageViewer = this.renderImageViewer.bind(this)
     this.renderFilterControls = this.renderFilterControls.bind(this)
     this.renderRenderControls = this.renderRenderControls.bind(this)
-    this.renderResOrientControls = this.renderResOrientControls.bind(this)
+    this.renderConfigControls = this.renderConfigControls.bind(this)
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
 
     this.renderStats = this.renderStats.bind(this)
@@ -891,13 +891,13 @@ class Nepi_IF_ImageViewer extends Component {
   renderRenderControls() {
 
     const namespace = this.state.image_topic
-    const show_renders = this.props.show_renders ? this.props.show_renders : true
+    const show_render = this.props.show_render ? this.props.show_render : true
 
     const { imageCaps, sendTriggerMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
    
-    if (show_renders === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+    if (show_render === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
@@ -1135,7 +1135,7 @@ class Nepi_IF_ImageViewer extends Component {
 
   }
 
-  renderResOrientControls() {
+  renderConfigControls() {
 
     const namespace = this.state.image_topic
     const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
@@ -1450,8 +1450,6 @@ class Nepi_IF_ImageViewer extends Component {
       this.setState({currentStreamingImageQuality: streamingImageQuality})
     }
 
-    
-
     return(
           <Columns>
           <Column>
@@ -1529,10 +1527,7 @@ class Nepi_IF_ImageViewer extends Component {
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const save_data_topic = (this.props.save_data_topic !== undefined) ? this.props.save_data_topic :  this.state.save_data_topic
-    const show_status = this.state.show_status
-    const show_controls = this.state.show_controls
-    const show_renders = this.state.show_renders
-    const show_navpose = this.state.show_navpose 
+
 
     const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
     
@@ -1543,8 +1538,21 @@ class Nepi_IF_ImageViewer extends Component {
     const double_slider_values = (this.props.double_slider_values !== undefined) ? (this.props.double_slider_values.length === 2) ? this.props.double_slider_values : [0,0,1.0] : [0,0,1.0]
     
     const { ruiRestricted} = this.props.ros
-    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-IMAGE-CONTROLS') !== -1
+    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-IMAGE-CONTROL') !== -1
     show_image_controls = (show_image_controls === true && admin_controls_restricted === false)
+
+    const show_info = this.state.show_info && (ruiRestricted.indexOf('SYSTEM-IMAGE-INFO-VIEW') === -1)
+    const show_config = this.state.show_config && (ruiRestricted.indexOf('SYSTEM-IMAGE-CONFIG-VIEW') === -1)
+    const show_render = this.state.show_render && (ruiRestricted.indexOf('SYSTEM-IMAGE-RENDER-VIEW') === -1)
+    const show_navpose = this.state.show_navpose  && (ruiRestricted.indexOf('SYSTEM-IMAGE-NAVPOSE-VIEW') === -1)
+
+
+    const hide_info = (ruiRestricted.indexOf('SYSTEM-IMAGE-INFO-VIEW') !== -1)
+    const hide_config = (ruiRestricted.indexOf('SYSTEM-IMAGE-CONFIG-VIEW') !== -1)
+    const hide_render = (ruiRestricted.indexOf('SYSTEM-IMAGE-RENDER-VIEW') !== -1)
+    const hide_navpose = (ruiRestricted.indexOf('SYSTEM-IMAGE-NAVPOSE-VIEW') !== -1)
+
+show_info
 
     return (
       
@@ -1651,11 +1659,11 @@ class Nepi_IF_ImageViewer extends Component {
        
 
                 <div style={{ display: 'flex' }}>
-                        <div style={{ width: '15%' }}>
+                        <div style={{ width: '15%' }} hidden={hide_config}>
                               <Label title="Show Image Controls">
                                 <Toggle
-                                  checked={this.state.show_controls===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",this.state.show_controls)}>
+                                  checked={this.state.show_config===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_config",this.state.show_config)}>
                                 </Toggle>
                             </Label>
                         </div>
@@ -1663,18 +1671,18 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
             
-                        <div style={{ width: '15%' }}>
+                        <div style={{ width: '15%' }} hidden={hide_info}>
                             <Label title="Show Image Info">
                                 <Toggle
-                                  checked={this.state.show_status===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_status",this.state.show_status)}>
+                                  checked={this.state.show_info===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_info",this.state.show_info)}>
                                 </Toggle>
                               </Label>
                         </div>
                         <div style={{ width: '10%' }}>
                         </div>
 
-                        <div style={{ width: '15%' }}>
+                        <div style={{ width: '15%' }} hidden={hide_navpose}>
                             <Label title="Show NavPose Data">
                                 <Toggle
                                   checked={this.state.show_navpose===true}
@@ -1686,11 +1694,11 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
 
-                       <div style={{ width: '15%' }}>
+                       <div style={{ width: '15%' }} hidden={hide_render}>
                               <Label title="Show Render Controls">
                                 <Toggle
-                                  checked={this.state.show_renders===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_renders",this.state.show_renders)}>
+                                  checked={this.state.show_render===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_render",this.state.show_render)}>
                                 </Toggle>
                             </Label>
                         </div>
@@ -1703,7 +1711,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 
-                  <div align={"left"} textAlign={"left"} hidden={(show_status !== true || namespace === 'None')}>
+                  <div align={"left"} textAlign={"left"} hidden={(show_info !== true || namespace === 'None')}>
 
 
                         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -1741,7 +1749,7 @@ class Nepi_IF_ImageViewer extends Component {
        
 
 
-                  <div align={"left"} textAlign={"left"} hidden={(show_renders !== true || namespace === 'None')}>
+                  <div align={"left"} textAlign={"left"} hidden={(show_render !== true || namespace === 'None')}>
 
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -1778,7 +1786,7 @@ class Nepi_IF_ImageViewer extends Component {
                     </div>
 
 
-                  <div align={"left"} textAlign={"left"} hidden={(show_controls !== true || namespace === 'None')}>
+                  <div align={"left"} textAlign={"left"} hidden={(show_config !== true || namespace === 'None')}>
 
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -1796,8 +1804,8 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '40%' }}>
-                                <Label title={"SIZE ORIENTATION"} />
-                                  {this.renderResOrientControls()}
+                                <Label title={"CONFIG"} />
+                                  {this.renderConfigControls()}
                                 </div>
                 
                           </div>

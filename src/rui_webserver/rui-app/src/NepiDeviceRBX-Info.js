@@ -46,6 +46,8 @@ class NepiRBXMessages extends Component {
 
     // these states track the values through  Status messages
     this.state = {
+
+
       show_messages: false,
 
       current_lat: null,

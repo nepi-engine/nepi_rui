@@ -84,7 +84,8 @@ class NepiIFConfig extends Component {
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const { ruiRestricted} = this.props.ros
-    const config_controls_restricted = ruiRestricted.indexOf('SYSTEM-CONFIG-CONTROLS') !== -1
+    const config_controls_restricted = ruiRestricted.indexOf('SYSTEM-CONFIG-VIEW') !== -1 ||
+          ruiRestricted.indexOf('SYSTEM-CONFIG-CONTROL') !== -1
 
     if (namespace === 'None' || config_controls_restricted === true){
       return (
@@ -122,6 +123,15 @@ class NepiIFConfig extends Component {
                     </ButtonMenu>
 
 
+                    { (show_save_all === true && all_config_restricted === false) ?
+
+
+                        <ButtonMenu>
+                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config_all")}>{'Save All'}</Button>
+                      </ButtonMenu>
+                   
+
+                    : null }
 
 
                       </Column>
@@ -131,6 +141,18 @@ class NepiIFConfig extends Component {
                     <ButtonMenu>
                         <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/reset_config")}>{"Reset"}</Button>
                       </ButtonMenu>
+
+
+                    { (show_save_all === true && all_config_restricted === false) ?
+
+
+                        <ButtonMenu>
+                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/delete_configs")}>{'Delete All'}</Button>
+                      </ButtonMenu>
+                   
+
+                    : null }
+
 
                     </Column>
                     <Column>
@@ -146,15 +168,6 @@ class NepiIFConfig extends Component {
 
 
 
-                    { (show_save_all === true && all_config_restricted === false) ?
-
-
-                        <ButtonMenu>
-                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config_all")}>{all_config_label}</Button>
-                      </ButtonMenu>
-                   
-
-                    : null }
 
 
           </React.Fragment>

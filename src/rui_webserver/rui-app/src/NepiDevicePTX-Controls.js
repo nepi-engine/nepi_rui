@@ -509,7 +509,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
     const { ruiRestricted} = this.props.ros
-    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-PTX-CONTROLS') !== -1
+    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-PTX-CONTROL') !== -1
 
     if (hide_controls === true || device_controls_restricted === true){
               <Columns>

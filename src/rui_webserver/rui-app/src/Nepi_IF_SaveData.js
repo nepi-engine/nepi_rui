@@ -603,7 +603,7 @@ class NepiIFSaveData extends Component {
     const save_enabled = saveDataEnabled
 
     const { ruiRestricted} = this.props.ros
-    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROLS') !== -1
+    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 
     return (
 
@@ -982,7 +982,7 @@ class NepiIFSaveData extends Component {
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
 
     const { ruiRestricted} = this.props.ros
-    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROLS') !== -1
+    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 
     if (saveNamespace === 'None' || showControls === false || save_controls_restricted === true){
       return (

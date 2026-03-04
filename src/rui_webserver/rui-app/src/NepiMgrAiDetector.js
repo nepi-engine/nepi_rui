@@ -280,7 +280,7 @@ class AiDetectorMgr extends Component {
 
 
     const { ruiRestricted} = this.props.ros
-    const detector_controls_restricted = ruiRestricted.indexOf('MANAGER-AI-DETECTORS-CONTROLS') !== -1
+    const detector_controls_restricted = ruiRestricted.indexOf('MANAGER-AI-DETECTORS-CONTROL') !== -1
 
 
       return (

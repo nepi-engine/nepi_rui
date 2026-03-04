@@ -33,7 +33,7 @@ import {  onChangeSwitchStateValue } from "./Utilities"
 import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
 import NepiIFAdminModes from "./Nepi_IF_AdminModes"
-import NepiIFAdminNodeNames from "./Nepi_IF_AdminNodeNames"
+import NepiIFAdminDeviceNames from "./Nepi_IF_AdminDeviceNames"
 import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
 import NepiIFAdminRui from "./Nepi_IF_AdminRui"
 
@@ -66,8 +66,7 @@ class NepiMgr extends Component {
   constructor(props) {
     super(props)
     this.state = {
-
-
+      
       connected: false,
       needs_update: false
 
@@ -122,62 +121,89 @@ class NepiMgr extends Component {
       return (
 
 
-      <Columns equalWidth={true}>
-      <Column>
+      <React.Fragment>
 
-                <Columns equalWidth={true}>
-                <Column>
 
-                      <Section title={("NEPI Admin")}>
-                    
-                          {<NepiIFAdminEnable
-                            make_section={false}
-                            title={null}
-                            show_link_button={false}
-                            show_line={false}
-                            />}
-
-                          {<NepiIFAdminModes
-                            make_section={false}
-                            />} 
-
-                        { <NepiIFAdminConfig
-                            make_section={false}
-                            />}
-                          
-                    </Section>
+                <div style={{ display: 'flex' }}>
+                        <div style={{ width: '60%' }} >
 
 
 
+                                      <div style={{ display: 'flex' }}>
+                                              <div style={{ width: '40%' }} >
 
-                      </Column>
-                      <Column>  
+
+                                                    <Section title={("NEPI Admin")}>
+                                                    
+                                                          {<NepiIFAdminEnable
+                                                            make_section={false}
+                                                            title={null}
+                                                            show_link_button={false}
+                                                            show_line={false}
+                                                            />}
+
+                                                          {<NepiIFAdminModes
+                                                            make_section={false}
+                                                            />} 
+
+                                                        { <NepiIFAdminConfig
+                                                            make_section={false}
+                                                            />}
+                                                          
+                                                    </Section>
 
 
-                          {<NepiIFAdminNodeNames
+                                            </div>
+
+
+                                            <div style={{ width: '5%' }}>
+                                            </div>
+
+                                            <div style={{ width: '65%' }} >
+
+                                              {<NepiIFAdminDeviceNames
+                                                make_section={true}
+                                                />}
+
+                                            </div>
+
+                                        </div>
+
+                  
+                          {<NepiIFAdminManagers
                             make_section={true}
                             />}
-                          
 
-                      </Column>
-                    </Columns>
+              </div>
 
 
 
-              {<NepiIFAdminManagers
-                make_section={true}
-                />}
+              <div style={{ width: '5%' }}>
+              </div>
 
 
-          </Column>
-          <Column>  
 
-              {<NepiIFAdminRui
-                make_section={true}
-                />}
 
-          </Column>
-        </Columns>
+
+                <div style={{ width: '30%' }} >
+
+                {<NepiIFAdminRui
+                  make_section={true}
+                  />}
+
+                </div>
+
+
+                  </div>
+
+        </React.Fragment>
+
+    
+
+
+
+
+
       )
 
   }
