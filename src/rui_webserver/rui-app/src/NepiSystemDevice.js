@@ -376,6 +376,7 @@ updateMgrTimeStatusListener() {
                   show_advanced_option={false}
                   show_admin_enable={true}
                   show_admin_config={true}
+                  show_admin_modes={true}
                   make_section={false}
             />
             : null}   

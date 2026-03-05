@@ -127,14 +127,16 @@ class NepiIFImageViewersSelector extends Component {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
     }
-    const {imageTopics} = this.props.ros
+    const {imageTopics, sendStringMsg} = this.props.ros
     const images_available = imageTopics.length > 0
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
     const show_image_controls_option = ((this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1) && images_available === true)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
-
+    
     const show_selectors_option =  images_available === true
+    const custom_selection_buttons = (this.props.custom_selection_buttons !== undefined) ? this.props.custom_selection_buttons : []
+    const custom_selection_callback = (this.props.custom_selection_callback !== undefined) ? this.props.custom_selection_callback : null
     const show_selectors = this.state.show_selectors
     return (
       <React.Fragment>
@@ -149,32 +151,36 @@ class NepiIFImageViewersSelector extends Component {
 
  
 
-                      <div style={{ width: '15%' }} centered={"true"} >
+                      <div style={{ width: '30%' }} centered={"true"} >
                         <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(1)}>{"1 Image"}</Button>
-                        </ButtonMenu>
-                      </div>
-
-
-
-                      <div style={{ width: '15%' }} centered={"true"} >
-                        <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(2)}>{"2 Images"}</Button>
-                        </ButtonMenu>
-                      </div>
-
-
-
-                      <div style={{ width: '15%' }} centered={"true"} >
-                        <ButtonMenu>
                           <Button onClick={() => this.setNumWindows(4)}>{"4 Images"}</Button>
                         </ButtonMenu>
                       </div>
 
 
-                      <div style={{ width: '30%' }}>
-                        {}
+                      <div style={{ width: '5%' }} centered={"true"} >
+                        {null}
                       </div>
+
+
+                      <div style={{ width: '30%' }} hidden={custom_selection_callback != null}>
+                        <ButtonMenu>
+                              {/* Map over the restriction options array */}
+                              {custom_selection_buttons.map((name) => (
+                                <Button onClick={() => sendStringMsg(custom_selection_callback, name)}>{name.toUpperCase()}</Button>
+                              ))}
+                        </ButtonMenu>
+                      </div>
+
+
+
+                      <div style={{ width: '5%' }} centered={"true"} >
+                        {null}
+                      </div>
+
+
 
                       <div style={{ width: '10%' }} centered={"true"} hidden={show_image_controls_option === false}>
 
