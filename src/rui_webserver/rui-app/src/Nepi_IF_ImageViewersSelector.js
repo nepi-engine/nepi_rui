@@ -165,13 +165,15 @@ class NepiIFImageViewersSelector extends Component {
                       </div>
 
 
-                      <div style={{ width: '30%' }} hidden={custom_selection_callback != null}>
+                      <div style={{ width: '30%' }}>
+                        { (custom_selection_callback != null) ?
                         <ButtonMenu>
                               {/* Map over the restriction options array */}
                               {custom_selection_options.map((name) => (
                                 <Button onClick={() => sendStringMsg(custom_selection_callback, name)}>{name.toUpperCase()}</Button>
                               ))}
                         </ButtonMenu>
+                        : null }
                       </div>
 
 

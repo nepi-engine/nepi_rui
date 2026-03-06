@@ -260,20 +260,20 @@ class NepiIFImageViewerSelector extends Component {
     const hide_list = ((this.state.hide_list === true) || (this.state.connected === false))
     const menu_options = this.getImageMenu()
     const selected_item = this.state.selected_image
-    const selected_name = this.state.selected_name
+    //const selected_name = this.state.selected_name
     const active_list = []
 
 
     const image_topics = this.state.image_topics
-    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
-    const show_selector = (image_topics.length > 0) && (this.props.show_selector !== undefined ? this.props.show_selector : true)
+    //const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
+    const show_selector = (image_topics.length > 0) && (this.props.show_selector !== undefined ? this.props.show_selector : menu_options.length > 0)
 
 
-    const show_controls = ((menu_options.length > 0 && selected_item === 'None') || (menu_options.length > 1 )) && (show_selector === true )
+    // const show_controls = ((menu_options.length > 0 && selected_item === 'None') || (menu_options.length > 1 )) && (show_selector === true )
     return (
       <React.Fragment>
 
-          {show_controls === true ?
+          {show_selector === true ?
 
                 <Columns>
                   <Column>
