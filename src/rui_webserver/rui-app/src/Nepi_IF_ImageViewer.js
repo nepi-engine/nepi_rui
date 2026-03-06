@@ -1538,21 +1538,20 @@ class Nepi_IF_ImageViewer extends Component {
     const double_slider_values = (this.props.double_slider_values !== undefined) ? (this.props.double_slider_values.length === 2) ? this.props.double_slider_values : [0,0,1.0] : [0,0,1.0]
     
     const { ruiRestricted} = this.props.ros
-    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-IMAGE-CONTROL') !== -1
+    const admin_controls_restricted = ruiRestricted.indexOf('DATA-IMAGE-CONTROL') !== -1
     show_image_controls = (show_image_controls === true && admin_controls_restricted === false)
 
-    const show_info = this.state.show_info && (ruiRestricted.indexOf('SYSTEM-IMAGE-INFO-VIEW') === -1)
-    const show_config = this.state.show_config && (ruiRestricted.indexOf('SYSTEM-IMAGE-CONFIG-VIEW') === -1)
-    const show_render = this.state.show_render && (ruiRestricted.indexOf('SYSTEM-IMAGE-RENDER-VIEW') === -1)
-    const show_navpose = this.state.show_navpose  && (ruiRestricted.indexOf('SYSTEM-IMAGE-NAVPOSE-VIEW') === -1)
+    const show_info = this.state.show_info && (ruiRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
+    const show_config = this.state.show_config && (ruiRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
+    const show_render = this.state.show_render && (ruiRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
+    const show_navpose = this.state.show_navpose  && (ruiRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
 
 
-    const hide_info = (ruiRestricted.indexOf('SYSTEM-IMAGE-INFO-VIEW') !== -1)
-    const hide_config = (ruiRestricted.indexOf('SYSTEM-IMAGE-CONFIG-VIEW') !== -1)
-    const hide_render = (ruiRestricted.indexOf('SYSTEM-IMAGE-RENDER-VIEW') !== -1)
-    const hide_navpose = (ruiRestricted.indexOf('SYSTEM-IMAGE-NAVPOSE-VIEW') !== -1)
+    const hide_info = (ruiRestricted.indexOf('DATA-IMAGE-INFO-VIEW') !== -1)
+    const hide_config = (ruiRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') !== -1)
+    const hide_render = (ruiRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') !== -1)
+    const hide_navpose = (ruiRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') !== -1)
 
-show_info
 
     return (
       
@@ -1660,7 +1659,7 @@ show_info
 
                 <div style={{ display: 'flex' }}>
                         <div style={{ width: '15%' }} hidden={hide_config}>
-                              <Label title="Show Image Controls">
+                              <Label title="Show Image Config">
                                 <Toggle
                                   checked={this.state.show_config===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_config",this.state.show_config)}>
@@ -1695,7 +1694,7 @@ show_info
 
 
                        <div style={{ width: '15%' }} hidden={hide_render}>
-                              <Label title="Show Render Controls">
+                              <Label title="Show Image Render">
                                 <Toggle
                                   checked={this.state.show_render===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_render",this.state.show_render)}>

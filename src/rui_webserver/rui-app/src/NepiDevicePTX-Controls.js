@@ -288,6 +288,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
           panElement = document.getElementById("PTXPanGoto")
           tiltElement = document.getElementById("PTXTiltGoto")
           clearElementStyleModified(panElement)
+          this.setState({panGoto: null})
                         
           if (has_sep_pan_tilt === true){
             onSetPTXGotoPanPos(namespace, Number(panElement.value))
@@ -303,6 +304,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
             panElement = document.getElementById("PTXPanGoto")
             tiltElement = document.getElementById("PTXTiltGoto")
             clearElementStyleModified(tiltElement)
+            this.setState({tiltGoto: null})
             if (has_sep_pan_tilt === true){
               onSetPTXGotoTiltPos(namespace, Number(tiltElement.value))
             }
