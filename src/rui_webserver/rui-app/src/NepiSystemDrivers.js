@@ -484,7 +484,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
                       <Button onClick={() => this.props.ros.sendTriggerMsg(mgrNamespace + "/factory_reset")}>{"Factory Reset"}</Button>
                     </ButtonMenu>
 
-                    <Label title="Allow Discovery Retry">
+                    <Label title="Allow Retry">
                         <Toggle
                           checked={this.props.ros.drivers_retry_enabled}
                           onClick={() => this.props.ros.sendBoolMsg(mgrNamespace + "/enable_retry", !this.props.ros.drivers_retry_enabled)}>
