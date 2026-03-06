@@ -416,25 +416,6 @@ class NepiDeviceIDXControls extends Component {
 
     }
 
-    else if (show_controls_option === true){
-      return(
-              <Columns>
-                <Column>
-
-                    <Label title="Show Controls">
-                        <Toggle
-                          checked={show_controls===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
-                        </Toggle>
-                    </Label>
-
-                </Column>
-                <Column>
-
-                </Column>
-              </Columns>
-      )
-    }
     else {
       return (
         <React.Fragment>
