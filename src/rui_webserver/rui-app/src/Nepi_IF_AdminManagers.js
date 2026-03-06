@@ -134,8 +134,8 @@ class NepiIFAdminManagers extends Component {
     const managers_running_list = this.props.ros.managers_running_list
 
     const order = (managers_list.indexOf(selected_manager))
-    const enabled = (managers_active_list.indexOf(selected_manager))
-    const running = (managers_running_list.indexOf(selected_manager))
+    const enabled = (managers_active_list.indexOf(selected_manager) !== -1)
+    const running = (managers_running_list.indexOf(selected_manager) !== -1)
 
 
 

@@ -135,7 +135,7 @@ class NepiIFImageViewersSelector extends Component {
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
     
     const show_selectors_option =  images_available === true
-    const custom_selection_buttons = (this.props.custom_selection_buttons !== undefined) ? this.props.custom_selection_buttons : []
+    const custom_selection_options = (this.props.custom_selection_options !== undefined) ? this.props.custom_selection_options : []
     const custom_selection_callback = (this.props.custom_selection_callback !== undefined) ? this.props.custom_selection_callback : null
     const show_selectors = this.state.show_selectors
     return (
@@ -168,7 +168,7 @@ class NepiIFImageViewersSelector extends Component {
                       <div style={{ width: '30%' }} hidden={custom_selection_callback != null}>
                         <ButtonMenu>
                               {/* Map over the restriction options array */}
-                              {custom_selection_buttons.map((name) => (
+                              {custom_selection_options.map((name) => (
                                 <Button onClick={() => sendStringMsg(custom_selection_callback, name)}>{name.toUpperCase()}</Button>
                               ))}
                         </ButtonMenu>
