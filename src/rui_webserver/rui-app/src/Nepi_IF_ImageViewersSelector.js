@@ -242,13 +242,15 @@ class NepiIFImageViewersSelector extends Component {
       this.setState({num_windows: num_windows})
     }
 
+    const {imageTopics} = this.props.ros
+    const images_available = imageTopics.length > 0
+
     var show_selector_buttons = false
     if (this.state.num_windows === 1){
       show_selector_buttons = true
     }
 
-    const {imageTopics} = this.props.ros
-    const images_available = imageTopics.length > 0
+
 
     var image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : ['None','None','None','None']
     if (images_available === false) {
@@ -264,9 +266,9 @@ class NepiIFImageViewersSelector extends Component {
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
     const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
   
-    const show_selectors = ((images_available.length > 0 && image_topics[0] === 'None') || 
-                                      (num_windows === 2 && images_available.length > 0 && image_topics[1] === 'None') || 
-                                      (num_windows === 4 && image_topics.indexOf('None') !== -1)) ? true :
+    const show_selectors = ((images_available && image_topics[0] === 'None') || 
+                                      (images_available && num_windows === 2 && image_topics[1] === 'None') || 
+                                      (images_available && num_windows === 4 && image_topics.indexOf('None') !== -1)) ? true :
                                             this.props.show_selectors !== undefined ? this.props.show_selectors : this.state.show_selectors
 
     if (show_selectors !== this.state.show_selectors){

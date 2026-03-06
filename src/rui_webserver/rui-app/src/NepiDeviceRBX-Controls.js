@@ -326,14 +326,14 @@ class NepiDeviceControls extends Component {
 
     // }
 
+    const { ruiRestricted} = this.props.ros
+    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-RBX-CONTROL') !== -1
 
-
-    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : true
+    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
     const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false
     const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
 
-    const { ruiRestricted} = this.props.ros
-    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-RBX-CONTROL') !== -1
+
 
     if (hide_controls === true || device_controls_restricted === true){
               <Columns>

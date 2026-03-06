@@ -362,6 +362,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
                         settingsNamespace={settings_namespace}
                         make_section={false}
                         allways_show_settings={true}
+                        ignore_restrictions={true}
                         title={"Driver Discovery Options"}
                       />
 

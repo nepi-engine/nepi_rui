@@ -331,15 +331,15 @@ class NepiControlsLightsControls extends Component {
       reports_power = capabilities.reports_power
     }
 
-
-    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : true
-    const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false
-    const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
-
     const { ruiRestricted} = this.props.ros
     const device_controls_restricted = ruiRestricted.indexOf('DEVICE-LSX-CONTROL') !== -1
 
-    if (hide_controls === true || device_controls_restricted === true){
+    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
+    const show_controls = this.state.show_controls && (device_controls_restricted === false)
+
+
+
+    if (device_controls_restricted === true){
               <Columns>
                 <Column>
 
@@ -390,6 +390,8 @@ class NepiControlsLightsControls extends Component {
                   </Column>
                 </Columns>
 
+
+            <div hidden={show_controls === false}>
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
             <div hidden={!has_on_off_control}>    
@@ -489,7 +491,7 @@ class NepiControlsLightsControls extends Component {
                 title={"Nepi_IF_Conig"}
                 show_save_all={true}
           />
-
+</div>
         </React.Fragment>
       )
     }
