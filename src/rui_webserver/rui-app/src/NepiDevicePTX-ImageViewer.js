@@ -239,7 +239,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                     noTextBox={true}
                     noLabel={true}
                   />
-        
+              </div>
+
+              <div hidden={has_timed_pos === false}>
 
               <ButtonMenu>
 
