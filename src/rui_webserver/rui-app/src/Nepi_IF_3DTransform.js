@@ -107,7 +107,7 @@ class NepiIF3DTransform extends Component {
     }
     if (transformNamespace !== 'None' && transformNamespace != null){
       this.setState({ transfromNamespace: transfromNamespace  })
-      var listener = this.props.ros.setupFrame3DTransformListener(
+      var listener = this.props.ros.setupTransformListener(
         transformNamespace,
         this.statusListener
       )
@@ -182,7 +182,7 @@ class NepiIF3DTransform extends Component {
 
 
   sendTransformUpdateMessage(){
-    const {sendFrame3DTransformMsg} = this.props.ros
+    const {sendTransformMsg} = this.props.ros
     const transfromNamespace = this.state.transfromNamespace + "/set_3d_transform"
     const TX = parseFloat(this.state.transformTX)
     const TY = parseFloat(this.state.transformTY)
@@ -192,7 +192,7 @@ class NepiIF3DTransform extends Component {
     const RZ = parseFloat(this.state.transformRZ)
     const HO = parseFloat(this.state.transformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
-    sendFrame3DTransformMsg(transfromNamespace,transformList)
+    sendTransformMsg(transfromNamespace,transformList)
   }
 
 

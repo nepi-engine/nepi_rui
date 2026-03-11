@@ -602,8 +602,8 @@ class NepiIFSaveData extends Component {
     const saveAll = this.state.saveAll
     const save_enabled = saveDataEnabled
 
-    const { ruiRestricted} = this.props.ros
-    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const save_controls_restricted = userRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 
     return (
 
@@ -981,8 +981,8 @@ class NepiIFSaveData extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
 
-    const { ruiRestricted} = this.props.ros
-    const save_controls_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const save_controls_restricted = userRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 
     if (saveNamespace === 'None' || showControls === false || save_controls_restricted === true){
       return (
@@ -1023,8 +1023,8 @@ class NepiIFSaveData extends Component {
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const saveNamespace = this.state.saveNamespace
-    const { ruiRestricted} = this.props.ros
-    const save_view_restricted = ruiRestricted.indexOf('SYSTEM-SAVE-VIEW') !== -1
+    const { userRestricted} = this.props.ros
+    const save_view_restricted = userRestricted.indexOf('SYSTEM-SAVE-VIEW') !== -1
 
 
     if (saveNamespace === 'None' || save_view_restricted === true){

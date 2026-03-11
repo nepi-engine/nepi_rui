@@ -504,7 +504,7 @@ class MgrNavPose extends Component {
   }
 
   sendTransformUpdateMessage(name){
-    const {sendFrame3DTransformUpdateMsg} = this.props.ros
+    const {sendTransformUpdateMsg} = this.props.ros
     const namespace = this.state.namespace + "/set_transform"
     const TX = parseFloat(this.state.transformsDict[name]['transformTX'])
     const TY = parseFloat(this.state.transformsDict[name]['transformTY'])
@@ -514,7 +514,7 @@ class MgrNavPose extends Component {
     const RZ = parseFloat(this.state.transformsDict[name]['transformRZ'])
     const HO = parseFloat(this.state.transformsDict[name]['transformHO'])
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
-    sendFrame3DTransformUpdateMsg(namespace, name, transformList)
+    sendTransformUpdateMsg(namespace, name, transformList)
   }
 
   sendTransformClearMessage(name){

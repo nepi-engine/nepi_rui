@@ -33,7 +33,7 @@ import {  onChangeSwitchStateValue } from "./Utilities"
 
 @inject("ros")
 @observer
-class NepiIFAdminRui extends Component {
+class NepiIFAdminUser extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -43,8 +43,8 @@ class NepiIFAdminRui extends Component {
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
    
-    this.sendRuiRestriction = this.sendRuiRestriction.bind(this)
-    this.renderAdminRui = this.renderAdminRui.bind(this)
+    this.sendUserRestriction = this.sendUserRestriction.bind(this)
+    this.renderAdminUser = this.renderAdminUser.bind(this)
 
 
 
@@ -60,13 +60,13 @@ class NepiIFAdminRui extends Component {
   }
 
 
-  sendRuiRestriction(name,value,type){
+  sendUserRestriction(name,value,type){
     const base_namespace = this.getBaseNamespace()
     if (value === true){
-      this.props.ros.sendStringMsg(base_namespace + "/add_rui_restriction", name + '-' + type)
+      this.props.ros.sendStringMsg(base_namespace + "/add_user_restriction", name + '-' + type)
     }
     else {
-      this.props.ros.sendStringMsg(base_namespace + "/remove_rui_restriction", name + '-' + type)
+      this.props.ros.sendStringMsg(base_namespace + "/remove_user_restriction", name + '-' + type)
     }
   }
 
@@ -74,9 +74,9 @@ class NepiIFAdminRui extends Component {
     
     renderAdminRestriction(name) {
     const base_namespace = this.getBaseNamespace()
-    const {ruiRestrictions} = this.props.ros
-    const view_restricted = ruiRestrictions.indexOf(name + '-VIEW') !== -1
-    const control_restricted = ruiRestrictions.indexOf(name + '-CONTROL') !== -1
+    const {userRestrictions} = this.props.ros
+    const view_restricted = userRestrictions.indexOf(name + '-VIEW') !== -1
+    const control_restricted = userRestrictions.indexOf(name + '-CONTROL') !== -1
 
     return (
 
@@ -90,13 +90,13 @@ class NepiIFAdminRui extends Component {
 
                             <Toggle
                             checked={view_restricted}
-                            onClick={() => this.sendRuiRestriction(name,!view_restricted,'VIEW')}>
+                            onClick={() => this.sendUserRestriction(name,!view_restricted,'VIEW')}>
                           </Toggle>
 
 
                             <Toggle
                             checked={control_restricted}
-                            onClick={() => this.sendRuiRestriction(name,!control_restricted,'CONTROL')}>
+                            onClick={() => this.sendUserRestriction(name,!control_restricted,'CONTROL')}>
                           </Toggle>
 
                         </Label>
@@ -116,10 +116,10 @@ class NepiIFAdminRui extends Component {
     )
   }
 
-  renderAdminRui() {
+  renderAdminUser() {
     const base_namespace = this.getBaseNamespace()
-    const restriction_options = this.props.ros.ruiRestrictionOptions
-    const rui_login_enabled = this.props.ros.ruiLoginEnabled
+    const restriction_options = this.props.ros.userRestrictionOptions
+    const user_login_enabled = this.props.ros.userLoginEnabled
     return (
 
 
@@ -140,8 +140,8 @@ class NepiIFAdminRui extends Component {
                         <Label title={'Enable Login Screen'}>
 
                             <Toggle
-                            checked={rui_login_enabled}
-                            onClick={() => this.props.ros.sendBoolMsg(base_namespace + '/rui_login_mode_enable',!rui_login_enabled)}>
+                            checked={user_login_enabled}
+                            onClick={() => this.props.ros.sendBoolMsg(base_namespace + '/user_login_mode_enable',!user_login_enabled)}>
                           </Toggle>
 
                         </Label>
@@ -162,7 +162,7 @@ class NepiIFAdminRui extends Component {
 
 
                   <div>
-                    <Label title={'RUI Restrictions ( VIEW / CONTROL )'}> </Label>
+                    <Label title={'User Restrictions ( VIEW / CONTROL )'}> </Label>
 
                     {/* Map over the restriction options array */}
                     {restriction_options.map((name) => (
@@ -184,7 +184,7 @@ class NepiIFAdminRui extends Component {
     const base_namespace = this.getBaseNamespace()
     const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM RUI CONFIG"
+    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM User CONFIG"
 
     if (base_namespace == null || admin_mode_set === false){
       return (
@@ -205,7 +205,7 @@ class NepiIFAdminRui extends Component {
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Label title={title} />
-                {this.renderAdminRui()}
+                {this.renderAdminUser()}
 
 
           </React.Fragment>
@@ -216,7 +216,7 @@ class NepiIFAdminRui extends Component {
 
           <Section title={title}>
 
-                  {this.renderAdminRui()}
+                  {this.renderAdminUser()}
 
 
         </Section>
@@ -226,4 +226,4 @@ class NepiIFAdminRui extends Component {
   }
 
 }
-export default NepiIFAdminRui
+export default NepiIFAdminUser

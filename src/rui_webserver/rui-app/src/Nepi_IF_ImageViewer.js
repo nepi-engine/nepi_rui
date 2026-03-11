@@ -1537,20 +1537,20 @@ class Nepi_IF_ImageViewer extends Component {
     const double_slider_topic = (this.props.double_slider_topic !== undefined) ? this.props.double_slider_topic : null
     const double_slider_values = (this.props.double_slider_values !== undefined) ? (this.props.double_slider_values.length === 2) ? this.props.double_slider_values : [0,0,1.0] : [0,0,1.0]
     
-    const { ruiRestricted} = this.props.ros
-    const admin_controls_restricted = ruiRestricted.indexOf('DATA-IMAGE-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const admin_controls_restricted = userRestricted.indexOf('DATA-IMAGE-CONTROL') !== -1
     show_image_controls = (show_image_controls === true && admin_controls_restricted === false)
 
-    const show_info = this.state.show_info && (ruiRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
-    const show_config = this.state.show_config && (ruiRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
-    const show_render = this.state.show_render && (ruiRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
-    const show_navpose = this.state.show_navpose  && (ruiRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
+    const show_info = this.state.show_info && (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
+    const show_config = this.state.show_config && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
+    const show_render = this.state.show_render && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
+    const show_navpose = this.state.show_navpose  && (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
 
 
-    const hide_info = (ruiRestricted.indexOf('DATA-IMAGE-INFO-VIEW') !== -1)
-    const hide_config = (ruiRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') !== -1)
-    const hide_render = (ruiRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') !== -1)
-    const hide_navpose = (ruiRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') !== -1)
+    const hide_info = (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') !== -1)
+    const hide_config = (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') !== -1)
+    const hide_render = (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') !== -1)
+    const hide_navpose = (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') !== -1)
 
 
     return (

@@ -201,9 +201,13 @@ class ROSConnectionStore {
       this.managers_running_list = []
 
 
-      this.ruiRestrictionOptions = []
-      this.ruiRestrictions = []
-      this.ruiRestricted = []
+      this.userRestrictionOptions = []
+      this.userRestrictions = []
+      this.userRestricted = []
+
+      this.userLoginEnabled = false
+      this.userLoginPasswordValid = false
+      this.userLoginModeSet = false
 
       this.systemRunModeOptions = []
       this.systemRunMode = null
@@ -296,7 +300,26 @@ class ROSConnectionStore {
       this.connectedToSoftwareMgr = false
       this.softwareMgrStatus = null
 
+      // Navpose Manager
+      this.connectedToNavposeMgr = false
+      this.navposeModelsMgrStatus = null
 
+      this.navposes_topic = ''
+      this.save_data_topic = ''
+
+      this.navposes_max_pub_rate = null
+
+      this.frame_nav_options = []
+      this.frame_nav = null
+      this.frame_alt_options = []
+      this.frame_alt = null
+      this.frame_depth_options = []
+      this.frame_depth = null
+
+
+      this.navpose_frames = []
+      this.navpose_frames_topics = []
+      this.navpose_frames_solutions = []      
 
 
   }
@@ -601,6 +624,7 @@ class ROSConnectionStore {
     this.setupDriversMgrStatusListener()
     this.setupAppsMgrStatusListener()
     this.setupAiModelsMgrStatusListener()
+    this.setupNavposeStatusListener()
     
     // scripts manager services
     this.startPollingGetScriptsService()  // populate listbox with files
@@ -827,15 +851,15 @@ class ROSConnectionStore {
   @observable systemRunModeOptions = []
   @observable systemRunMode = null
 
-  @observable ruiRestrictionOptions = []
-  @observable ruiRestrictions = []
-  @observable ruiRestricted = []
+  @observable userRestrictionOptions = []
+  @observable userRestrictions = []
+  @observable userRestricted = []
 
 
 
-  @observable ruiLoginEnabled = false
-  @observable uiLoginPasswordValid = false
-  @observable uiLoginModeSet = false
+  @observable userLoginEnabled = false
+  @observable userLoginPasswordValid = false
+  @observable userLoginModeSet = false
 
 
 
@@ -907,13 +931,13 @@ class ROSConnectionStore {
 
 
 
-        this.ruiLoginEnabled=message.rui_login_enabled
-        this.ruiLoginPasswordValid=message.rui_login_password_valid
-        this.ruiLoginModeSet = message.rui_login_mode_set
+        this.userLoginEnabled=message.user_login_enabled
+        this.userLoginPasswordValid=message.user_login_password_valid
+        this.userLoginModeSet = message.user_login_mode_set
 
-        this.ruiRestrictionOptions = message.rui_restriction_options
-        this.ruiRestrictions = message.rui_restrictions
-        this.ruiRestricted = message.rui_restricted
+        this.userRestrictionOptions = message.user_restriction_options
+        this.userRestrictions = message.user_restrictions
+        this.userRestricted = message.user_restricted
 
 
 
@@ -1247,7 +1271,7 @@ class ROSConnectionStore {
 
 
   //////////////////////////////
-  // NavPose Manager
+  // Network Manager
   //////////////////////////////
 
 
@@ -1347,6 +1371,62 @@ class ROSConnectionStore {
       pan_deg: 0.0,
       tilt_deg: 0.0
   }
+
+
+  @observable navposeMgrName = 'navpose_mgr'
+  @observable connectedToNavposeMgr = false
+  @observable navposeModelsMgrStatus = null
+
+  @observable navposes_topic = ''
+  @observable save_data_topic = ''
+
+  @observable navposes_max_pub_rate = null
+
+  @observable frame_nav_options = []
+  @observable frame_nav = null
+  @observable frame_alt_options = []
+  @observable frame_alt = null
+  @observable frame_depth_options = []
+  @observable frame_depth = null
+
+
+  @observable navpose_frames = []
+  @observable navpose_frames_topics = []
+  @observable navpose_frames_solutions = [] 
+
+
+  setupNavposeStatusListener() {
+    this.addListener({
+      name: this.navposeMgrName + '/status',
+      messageType: "nepi_interfaces/MgrNavPoseStatus",
+      manageListener: true,
+      callback: message => {
+
+      this.navposeModelsMgrStatus = message
+
+      this.navposes_topic = message.navposes_topic
+      this.save_data_topic = message.save_data_topic
+
+      this.navposes_max_pub_rate = message.navposes_max_pub_rate
+
+      this.frame_nav_options = message.frame_nav_options
+      this.frame_nav = message.frame_nav
+      this.frame_alt_options = message.frame_alt_options
+      this.frame_alt = message.frame_alt
+      this.ai_models_status_list = message.ai_models_ordered_status_list
+      this.ai_models_status_list = message.ai_models_ordered_status_list
+
+      this.navpose_frames = message.navpose_frames
+      this.navpose_frames_topics = message.navpose_frames_topics
+      this.navpose_frames_solutions = message.navpose_frames_solutions
+
+      this.connectedToNavposeMgr = true
+
+
+      }
+    })
+  }
+
 
 
 
@@ -2108,11 +2188,11 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  setupFrame3DTransformListener(namespace, callback) {
+  setupTransformListener(namespace, callback) {
     if (namespace) {
       return this.addListener({
         name: namespace,
-        messageType: "nepi_interfaces/Frame3DTransform",
+        messageType: "nepi_interfaces/Transform",
         noPrefix: true,
         callback: callback,
 
@@ -2853,11 +2933,11 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
 
     @action.bound
-    sendFrame3DTransformMsg(namespace, transformFloatList) {
+    sendTransformMsg(namespace, transformFloatList) {
       if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
-          messageType: "nepi_interfaces/Frame3DTransform",
+          messageType: "nepi_interfaces/Transform",
           data: { 
               translate_vector: {
                 x: transformFloatList[0],
@@ -2879,11 +2959,11 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
   
     
     @action.bound
-    sendUpdateFrame3DTransformMsg(namespace, name, transformFloatList, name2 = '', name3 = '') {
+    sendUpdateTransformMsg(namespace, name, transformFloatList, name2 = '', name3 = '') {
       if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
-          messageType: "nepi_interfaces/UpdateFrame3DTransform",
+          messageType: "nepi_interfaces/UpdateTransform",
           data: { 
             name: name,
             name2: name2,

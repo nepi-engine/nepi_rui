@@ -331,8 +331,8 @@ class NepiControlsLightsControls extends Component {
       reports_power = capabilities.reports_power
     }
 
-    const { ruiRestricted} = this.props.ros
-    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-LSX-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const device_controls_restricted = userRestricted.indexOf('DEVICE-LSX-CONTROL') !== -1
 
     const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
    const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)

@@ -42,12 +42,13 @@ class NepiIFAdminManagers extends Component {
 
         selected_manager: 'None',
         
-        viewableManagers: false,
+        viewableManagers: true,
 
     }
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
-   
+    this.getSysManagerNamespace = this.getSysManagerNamespace.bind(this)
+
     this.sendManagerUpdateOrder = this.sendManagerUpdateOrder.bind(this)
     this.toggleViewableManagers = this.toggleViewableManagers.bind(this)
     this.getManagerOptions = this.getManagerOptions.bind(this)
@@ -74,12 +75,19 @@ class NepiIFAdminManagers extends Component {
   }
 
 
-
+  getSysManagerNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var baseNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      baseNamespace = "/" + namespacePrefix + "/" + deviceId + "/system_mgr"
+    }
+    return baseNamespace
+  }
 
     
   toggleViewableManagers() {
     const set = !this.state.viewableManagers
-    this.setState({viewableManagers: set})
+    this.setState({viewableManagers: true})
   }
 
 
@@ -114,7 +122,7 @@ class NepiIFAdminManagers extends Component {
 
   sendManagerUpdateOrder(){
     const {sendUpdateOrderMsg} = this.props.ros
-    var namespace = this.getBaseNamespace()
+    var namespace = this.getSysManagerNamespace()
     var selected_manager = this.state.selected_manager
     var move_cmd = this.state.move_cmd
     sendUpdateOrderMsg(namespace + '/update_manager_order',selected_manager,move_cmd)
@@ -125,7 +133,7 @@ class NepiIFAdminManagers extends Component {
 
   renderManagerConfigure() {
     const { sendUpdateOrderMsg, sendUpdateBoolMsg, } = this.props.ros
-    const namespace = this.getBaseNamespace()
+    const namespace = this.getSysManagerNamespace()
 
     const selected_manager = this.state.selected_manager
 
@@ -139,7 +147,7 @@ class NepiIFAdminManagers extends Component {
 
 
 
-    const disable_enable = false //(enabled === false && running === true)
+    const disable_enable = (enabled === false && running === true)
 
     if (selected_manager === 'None') {
       return (
@@ -264,10 +272,6 @@ class NepiIFAdminManagers extends Component {
 
 
   renderAdminManagers() {
-    // if (this.state.needs_update === true){
-    //   this.setState({needs_update: false})
-    // }
-    const namespace = this.getBaseNamespace()
     const selected_manager = this.state.selected_manager
     const manager_options = this.getManagerOptions()
     const active_manager_list = this.props.ros.managers_active_list
@@ -276,9 +280,9 @@ class NepiIFAdminManagers extends Component {
 
         <React.Fragment>
 
-                <label >
+                {/* <label >
                     {"Changes Take Affect on Next Startup"}
-                  </label>
+                  </label> */}
 
                <div style={{ display: 'flex' }}>
                         <div style={{ width: '25%' }} >                     
@@ -359,12 +363,12 @@ class NepiIFAdminManagers extends Component {
 
 
   render() {
-    const base_namespace = this.getBaseNamespace()
+    const namespace = this.getSysManagerNamespace()
     const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM MANAGERS CONFIG"
 
-    if (base_namespace == null || admin_mode_set === false){
+    if (namespace == null || admin_mode_set === false){
       return (
   
         <Columns>

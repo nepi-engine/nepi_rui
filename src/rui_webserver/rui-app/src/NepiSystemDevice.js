@@ -298,9 +298,9 @@ updateMgrTimeStatusListener() {
   renderDeviceConfiguration() {
     const { systemMgrStatus} = this.props.ros
     const {deviceId} = this.props.ros
-    const { ruiRestricted} = this.props.ros
-    const device_view_restricted = ruiRestricted.indexOf('MANAGER-DEVICE-VIEW') !== -1
-    const device_controls_restricted = ruiRestricted.indexOf('MANAGER-DEVICE-VIEW') !== -1
+    const { userRestricted} = this.props.ros
+    const device_view_restricted = userRestricted.indexOf('MANAGER-DEVICE-VIEW') !== -1
+    const device_controls_restricted = userRestricted.indexOf('MANAGER-DEVICE-VIEW') !== -1
 
 
     if (device_view_restricted === true ){
@@ -475,8 +475,8 @@ updateMgrTimeStatusListener() {
     const license_info_valid = license_valid
   
 
-    const { ruiRestricted} = this.props.ros
-    const license_view_restricted = ruiRestricted.indexOf('MANAGER-LICENSE-VIEW') !== -1
+    const { userRestricted} = this.props.ros
+    const license_view_restricted = userRestricted.indexOf('MANAGER-LICENSE-VIEW') !== -1
 
 
     if (license_view_restricted === true ){
@@ -571,7 +571,7 @@ updateMgrTimeStatusListener() {
       sendBoolMsg,
       systemManagesTime,
       managers_running_list,
-      ruiRestricted,
+      userRestricted,
       ntp_sources,
       clockNTP,
       syncTime2Device,
@@ -613,8 +613,8 @@ updateMgrTimeStatusListener() {
     }
 
     const manager_running = managers_running_list.indexOf('MANAGER-TIME') !== -1
-    const time_view_restricted = ruiRestricted.indexOf('MANAGER-TIME-VIEW') !== -1
-    const time_controls_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
+    const time_view_restricted = userRestricted.indexOf('MANAGER-TIME-VIEW') !== -1
+    const time_controls_restricted = userRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
 
     if (manager_running === false || time_view_restricted === true){
       return (
@@ -840,10 +840,10 @@ updateMgrTimeStatusListener() {
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
     
-    const { systemManagesNetwork, managers_running_list, ruiRestricted} = this.props.ros
+    const { systemManagesNetwork, managers_running_list, userRestricted} = this.props.ros
     const manager_running = managers_running_list.indexOf('MANAGER-NETWORK') !== -1
-    const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
-    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROL') !== -1
+    const network_view_restricted = userRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
+    const network_controls_restricted = userRestricted.indexOf('MANAGER-NETWORK-CONTROL') !== -1
 
 
 
@@ -1095,12 +1095,12 @@ updateMgrTimeStatusListener() {
     const connect_text = (wifi_client_connected === true) ? "WiFi Connected" : (connecting === true ? "WiFi Connecting" : "WiFi Connected")
     const connect_value = (wifi_client_connected === true) ? true : connecting
     
-    const { systemManagesNetwork, managers_running_list, ruiRestricted} = this.props.ros
+    const { systemManagesNetwork, managers_running_list, userRestricted} = this.props.ros
 
     const manager_running = managers_running_list.indexOf('MANAGER-NETWORK') !== -1
 
-    const network_view_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
-    const network_controls_restricted = ruiRestricted.indexOf('MANAGER-NETWORK-CONTROL') !== -1
+    const network_view_restricted = userRestricted.indexOf('MANAGER-NETWORK-VIEW') !== -1
+    const network_controls_restricted = userRestricted.indexOf('MANAGER-NETWORK-CONTROL') !== -1
 
 
     // Update on User Change
@@ -1306,7 +1306,7 @@ updateMgrTimeStatusListener() {
           {<NepiIFAdmin
               title={"Advanced Settings"}
               show_advanced_option={false}
-              show_admin_rui_restrict={true}
+              show_admin_user_restrict={true}
               make_section={true}
         />}
         </Column>

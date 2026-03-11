@@ -362,9 +362,9 @@ class Nepi_IF_Settings extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
 
-    const { ruiRestricted} = this.props.ros
+    const { userRestricted} = this.props.ros
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
-    const settings_controls_restricted = ruiRestricted.indexOf('SYSTEM-SETTINGS-CONTROL') !== -1 && (ignore_restrictions === false)
+    const settings_controls_restricted = userRestricted.indexOf('SYSTEM-SETTINGS-CONTROL') !== -1 && (ignore_restrictions === false)
 
 
     if (show_controls === false){
@@ -561,9 +561,9 @@ class Nepi_IF_Settings extends Component {
       }
     }
 
-    const { ruiRestricted} = this.props.ros
+    const { userRestricted} = this.props.ros
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
-    const settings_view_restricted = ruiRestricted.indexOf('SYSTEM-SETTINGS-VIEW') !== -1 && (ignore_restrictions === false)
+    const settings_view_restricted = userRestricted.indexOf('SYSTEM-SETTINGS-VIEW') !== -1 && (ignore_restrictions === false)
 
     if (has_settings == false || settings_view_restricted === true){
       return (

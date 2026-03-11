@@ -35,7 +35,7 @@ import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
 import NepiIFAdminModes from "./Nepi_IF_AdminModes"
 import NepiIFAdminDeviceNames from "./Nepi_IF_AdminDeviceNames"
 import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
-import NepiIFAdminRui from "./Nepi_IF_AdminRui"
+import NepiIFAdminUser from "./Nepi_IF_AdminUser"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -163,7 +163,7 @@ class NepiIFAdmin extends Component {
     const show_admin_modes = (this.props.show_admin_modes !== undefined)? this.props.show_admin_modes : show_all
     const show_admin_device_names = (this.props.show_admin_device_names !== undefined)? this.props.show_admin_device_names : show_all
     const show_admin_managers = (this.props.show_admin_managers !== undefined)? this.props.show_admin_managers : show_all
-    const show_admin_rui = (this.props.show_admin_rui !== undefined)? this.props.show_admin_rui : show_all
+    const show_admin_user = (this.props.show_admin_user !== undefined)? this.props.show_admin_user : show_all
     const node_name = (this.props.node_name !== undefined) ? this.props.node_name : null
 
     return (
@@ -202,8 +202,8 @@ class NepiIFAdmin extends Component {
 
 
 
-              { (show_admin_rui === true) ?
-                <NepiIFAdminRui
+              { (show_admin_user === true) ?
+                <NepiIFAdminUser
                 make_section={false}
                 />
               : null }
@@ -240,8 +240,8 @@ class NepiIFAdmin extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const title = (this.props.title !== undefined)? this.props.title : "Admin Settings"
     
-    const { ruiRestricted} = this.props.ros
-    const admin_controls_restricted = ruiRestricted.indexOf('SYSTEM-ADMIN-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const admin_controls_restricted = userRestricted.indexOf('SYSTEM-ADMIN-CONTROL') !== -1
 
 
     

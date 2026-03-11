@@ -276,8 +276,8 @@ class NepiIFMessages extends Component {
     const msg_str_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
     //Unused const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
     //Unused const paused = this.state.paused
-    const { ruiRestricted} = this.props.ros
-    const message_view_restricted = ruiRestricted.indexOf('SYSTEM-MESSAGES-VIEW') !== -1
+    const { userRestricted} = this.props.ros
+    const message_view_restricted = userRestricted.indexOf('SYSTEM-MESSAGES-VIEW') !== -1
 
     if (message_view_restricted === true){
       return (

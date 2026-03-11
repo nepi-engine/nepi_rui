@@ -138,7 +138,7 @@ class NepiDashboard extends Component {
       systemManagesTime,
       clockNTP,
       syncTime2Device,
-      ruiRestricted,
+      userRestricted,
       timeStatusTime,
       timeStatusTimeStr,
       timeStatusDateStr,
@@ -158,7 +158,7 @@ class NepiDashboard extends Component {
     var show_sync_button = false
 
     if (timeMgrStatus != null){
-      time_restricted = ruiRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
+      time_restricted = userRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
       clock_synced = timeMgrStatus.clock_synced
       auto_sync_clocks = timeMgrStatus.auto_sync_clocks
       show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_restricted === false )
@@ -266,8 +266,8 @@ class NepiDashboard extends Component {
 
   render() {
 
-    const { ruiRestricted} = this.props.ros
-    const message_view_restricted = ruiRestricted.indexOf('SYSTEM-MESSAGES-VIEW') !== -1
+    const { userRestricted} = this.props.ros
+    const message_view_restricted = userRestricted.indexOf('SYSTEM-MESSAGES-VIEW') !== -1
 
 
     return (

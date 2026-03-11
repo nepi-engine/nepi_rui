@@ -153,8 +153,8 @@ class NepiDeviceNPXControls extends Component {
 
     // }
 
-    const { ruiRestricted} = this.props.ros
-    const device_controls_restricted = ruiRestricted.indexOf('DEVICE-NPX-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const device_controls_restricted = userRestricted.indexOf('DEVICE-NPX-CONTROL') !== -1
 
     const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
     const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false

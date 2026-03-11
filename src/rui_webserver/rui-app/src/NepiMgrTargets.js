@@ -299,7 +299,7 @@ class NepiMgrTargets extends Component {
   }
 
   sendTransformUpdateMessage(){
-    const {sendFrame3DTransformMsg} = this.props.ros
+    const {sendTransformMsg} = this.props.ros
     const appNamespace = this.getAppNamespace()
     const namespace = appNamespace + "/set_navpose_frame_transform"
     const TX = parseFloat(this.state.transformTX)
@@ -310,18 +310,18 @@ class NepiMgrTargets extends Component {
     const RZ = parseFloat(this.state.transformRZ)
     const HO = parseFloat(this.state.transformHO)
     const transformList = [TX,TY,TZ,RX,RY,RZ,HO]
-    sendFrame3DTransformMsg(namespace,transformList)
+    sendTransformMsg(namespace,transformList)
     this.setState({
       update_transform: true
     })
   }
 
   sendClearTransformUpdateMessage(){
-    const {sendClearFrame3DTransformMsg} = this.props.ros
+    const {sendClearTransformMsg} = this.props.ros
     const appNamespace = this.getAppNamespace()
     const namespace = appNamespace + "/set_navpose_frame_transform"
     const transformList = [0,0,0,0,0,0,0]
-    sendClearFrame3DTransformMsg(namespace,transformList)
+    sendClearTransformMsg(namespace,transformList)
     this.setState({
       update_transform: true
     })

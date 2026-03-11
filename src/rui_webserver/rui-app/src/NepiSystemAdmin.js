@@ -35,7 +35,7 @@ import NepiIFAdminConfig from "./Nepi_IF_AdminConfig"
 import NepiIFAdminModes from "./Nepi_IF_AdminModes"
 import NepiIFAdminDeviceNames from "./Nepi_IF_AdminDeviceNames"
 import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
-import NepiIFAdminRui from "./Nepi_IF_AdminRui"
+import NepiIFAdminUser from "./Nepi_IF_AdminUser"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -187,7 +187,7 @@ class NepiMgr extends Component {
 
                 <div style={{ width: '30%' }} >
 
-                {<NepiIFAdminRui
+                {<NepiIFAdminUser
                   make_section={true}
                   />}
 
@@ -218,8 +218,8 @@ class NepiMgr extends Component {
     const base_namespace = this.getBaseNamespace()
     const admin_mode_set = this.props.ros.systemAdminModeSet
 
-    const { ruiRestricted} = this.props.ros
-    const admin_view_restricted = ruiRestricted.indexOf('SYSTEM-ADMIN-VIEW') !== -1  
+    const { userRestricted} = this.props.ros
+    const admin_view_restricted = userRestricted.indexOf('SYSTEM-ADMIN-VIEW') !== -1  
 
     const show_admin = (admin_mode_set === true || admin_view_restricted === false)
     

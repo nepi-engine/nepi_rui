@@ -279,8 +279,8 @@ class AiDetectorMgr extends Component {
     const Spacer = ({ size }) => <div style={{ height: size, width: size }}></div>;
 
 
-    const { ruiRestricted} = this.props.ros
-    const detector_controls_restricted = ruiRestricted.indexOf('MANAGER-AI-DETECTORS-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const detector_controls_restricted = userRestricted.indexOf('MANAGER-AI-DETECTORS-CONTROL') !== -1
 
 
       return (

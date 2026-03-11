@@ -567,7 +567,7 @@ class NepiIFAppSelector extends Component {
     const runningList = this.props.ros.apps_running_list
 
     const managers_running = this.props.ros.managers_running_list
-    const restricted = this.props.ros.ruiRestricted
+    const restricted = this.props.ros.userRestricted
 
     const activeModelTypes = this.props.ros.ai_models_running_type_list
 

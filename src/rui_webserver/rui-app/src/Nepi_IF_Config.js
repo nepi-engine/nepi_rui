@@ -83,9 +83,9 @@ class NepiIFConfig extends Component {
 
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-    const { ruiRestricted} = this.props.ros
-    const config_controls_restricted = ruiRestricted.indexOf('SYSTEM-CONFIG-VIEW') !== -1 ||
-          ruiRestricted.indexOf('SYSTEM-CONFIG-CONTROL') !== -1
+    const { userRestricted} = this.props.ros
+    const config_controls_restricted = userRestricted.indexOf('SYSTEM-CONFIG-VIEW') !== -1 ||
+          userRestricted.indexOf('SYSTEM-CONFIG-CONTROL') !== -1
 
     if (namespace === 'None' || config_controls_restricted === true){
       return (
@@ -101,7 +101,7 @@ class NepiIFConfig extends Component {
 
     else {
     const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : this.supports_all_config(namespace)
-    const all_config_restricted = (this.props.ros.ruiRestricted.indexOf('Sav-All') !== -1)
+    const all_config_restricted = (this.props.ros.userRestricted.indexOf('Sav-All') !== -1)
     const namespace_parts = namespace.split('/')
     var all_name = ''
     if (namespace_parts.lenght > 3) {
