@@ -188,7 +188,7 @@ class NepiIFAdmin extends Component {
 
               { (show_admin_device_names === true) ?
                 <NepiIFAdminDeviceNames
-                node_name={node_name}
+                device_name={node_name}
                 make_section={false}
                 />
               : null }

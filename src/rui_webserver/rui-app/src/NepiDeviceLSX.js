@@ -203,7 +203,7 @@ class NepiControlsLights extends Component {
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}
-                              show_admin_node_names={true}
+                              show_admin_device_names={true}
                               node_name={node_name}
                               make_section={true}
                         />
