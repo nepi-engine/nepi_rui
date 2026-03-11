@@ -32,26 +32,6 @@ import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFAdmin from "./Nepi_IF_Admin"
 
 
-
-                    // <div hidden={(!deviceSelected)}>
-                    //   <NepiIFDeviceInfo
-                    //         namespace={namespace}
-                    //         status_topic={"npx/status"}
-                    //         status_msg_type={"nepi_interfaces/DeviceNPXStatus"}
-                    //         name_update_topic={"/update_device_name"}
-                    //         name_reset_topic={"/reset_device_name"}
-                    //         title={"NepiDeviceNPXInfo"}
-                    //     />
-
-                    // </div>
-
-                    // <NepiIFNavPoseViewer
-                    //   namespace={namespace + "/navpose"}
-                    //   title={"NavPose Data"}
-                    // />
-
-//Unused import {createShortUniqueValues} from "./Utilities"
-
 @inject("ros")
 @observer
 
@@ -189,7 +169,7 @@ class NepiDeviceNPX extends Component {
 
 
               {(device_selected === true) ?
-              this.renderNavposeViewer()
+              this.renderNavPoseViewer()
               : null}
 
               </div>
