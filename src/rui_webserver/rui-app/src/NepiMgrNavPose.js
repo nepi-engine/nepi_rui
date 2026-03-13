@@ -45,7 +45,7 @@ import {
 //Unused import NepiIFDeviceInfo from "./Nepi_IF_DeviceInfo"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
+import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFConfig from "./Nepi_IF_Config"
 
 import moment from "moment"
@@ -1221,7 +1221,7 @@ class MgrNavPose extends Component {
     return (
       <div style={{ display: 'flex' }}>
         <div style={{ width: "65%" }}>
-          <NepiIFNavPoseViewer
+          <NepiIFNavPose
             namespace={base_namespace  + "/navpose"}
             title={"NavPose Data"}
           />

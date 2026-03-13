@@ -36,7 +36,7 @@ import Styles from "./Styles"
 import Input from "./Input"
 
 import NepiIFConfig from "./Nepi_IF_Config"
-import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
+import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
@@ -1823,7 +1823,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
 
-                      <NepiIFNavPoseViewer
+                      <NepiIFNavPose
                         navposeNamespace={this.state.navpose_topic}
                         title={"NavPose Data"}
                         make_section={false}

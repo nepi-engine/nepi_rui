@@ -1322,54 +1322,68 @@ class ROSConnectionStore {
   // NavPose Manager
   //////////////////////////////
 
-  @observable blankNavPose = {
+  @observable blankNavpose = {
       navpose_frame: 'nepi_frame',
       frame_nav: 'ENU',
       frame_altitude: 'WGS84',
       frame_depth: 'MSL',
   
-      geoid_height_meters: 0.0,
+      geoid_height_meters: -999,
   
       has_location: false,
       time_location: moment.utc().unix(),
       // Location Lat,Long
-      latitude: 0.0,
-      longitude: 0.0,
+      latitude: -999,
+      longitude: -999,
   
       has_heading: false,
       time_heading: moment.utc().unix(),
       // Heading should be provided in Degrees True North
-      heading_deg: 0.0,
+      heading_deg: -999,
   
       has_position: false,
       time_position: moment.utc().unix(),
       // Position should be provided in Meters in specified 3d frame (x,y,z) with x forward, y right/left, and z up/down
-      x_m: 0.0,
-      y_m: 0.0,
-      z_m: 0.0,
+      x_m: -999,
+      y_m: -999,
+      z_m: -999,
   
       has_orientation: false,
       time_orientation: moment.utc().unix(),
       // Orientation should be provided in Degrees in specified 3d frame
-      roll_deg: 0.0,
-      pitch_deg: 0.0,
-      yaw_deg: 0.0,
+      roll_deg: -999,
+      pitch_deg: -999,
+      yaw_deg: -999,
   
       has_altitude: false,
       time_altitude: moment.utc().unix(),
       // Altitude should be provided in postivie meters in specified alt frame
-      altitude_m: 0.0,
+      altitude_m: -999,
+      geoid_height_meters: -999,
   
       has_depth: false,
       time_depth: moment.utc().unix(),
       // Depth should be provided in positive meters
-      depth_m: 0.0,
+      depth_m: -999,
 
       has_pan_tilt: false,
       time_pan_tilt: moment.utc().unix(),
       // Pan and Titl should be provided in ENU frame
-      pan_deg: 0.0,
-      tilt_deg: 0.0
+      pan_deg: -999,
+      tilt_deg: -999
+  }
+
+  @observable blankTransform = {
+      source_ref_description: '',
+      end_ref_description: '',
+      transformTX: 0,
+      transformTY: 0,
+      transformTZ: 0,
+      transformRX: 0,
+      transformRY: 0,
+      transformRZ: 0,
+      transformHO: 0
+
   }
 
 
@@ -2829,7 +2843,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendNavPoseLocationMsg(namespace,lat,long,init_np){
-      var np_msg = this.blankNavPose
+      var np_msg = this.blankNavpose
       np_msg.has_location = true
       np_msg.time_location = moment.utc().unix()
       np_msg.latitude = parseFloat(lat)
@@ -2845,7 +2859,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendNavPoseHeadingMsg(namespace,heading,init_np){
-      var np_msg = this.blankNavPose
+      var np_msg = this.blankNavpose
       np_msg.has_heading = true
       np_msg.time_heading = moment.utc().unix()
       np_msg.heading_deg = parseFloat(heading)
@@ -2861,7 +2875,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendNavPoseOrienationMsg(namespace,roll,pitch,yaw,init_np){
-      var np_msg = this.blankNavPose
+      var np_msg = this.blankNavpose
       np_msg.has_orientation = true
       np_msg.time_orientation = moment.utc().unix()
       np_msg.roll_deg = parseFloat(roll)
@@ -2880,7 +2894,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendNavPosePositionMsg(namespace,x,y,z,init_np){
-      var np_msg = this.blankNavPose
+      var np_msg = this.blankNavpose
       np_msg.has_position = true
       np_msg.time_position = moment.utc().unix()
       np_msg.x_m = parseFloat(x)
@@ -2901,7 +2915,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendNavPoseAltitudeMsg(namespace,alt,init_np){
-      var np_msg = this.blankNavPose
+      var np_msg = this.blankNavpose
       np_msg.has_altitude = true
       np_msg.time_altitude = moment.utc().unix()
       np_msg.altitude_m = parseFloat(alt)
@@ -2917,7 +2931,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendNavPoseDepthMsg(namespace,depth,init_np){
-      var np_msg = this.blankNavPose
+      var np_msg = this.blankNavpose
       np_msg.has_depth = true
       np_msg.time_depth = moment.utc().unix()
       np_msg.depth_m = parseFloat(depth)
@@ -2933,24 +2947,13 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
 
     @action.bound
-    sendTransformMsg(namespace, transformFloatList) {
+    sendTransformMsg(namespace, transform_msg) {
       if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
           messageType: "nepi_interfaces/Transform",
           data: { 
-              translate_vector: {
-                x: transformFloatList[0],
-                y: transformFloatList[1],
-                z: transformFloatList[2]
-              },
-              rotate_vector: {
-                x: transformFloatList[3],
-                y: transformFloatList[4],
-                z: transformFloatList[5]
-              },
-              heading_offset: transformFloatList[6]
-  
+              transform_msg
           },
           noPrefix: true
         })
@@ -2959,7 +2962,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
   
     
     @action.bound
-    sendUpdateTransformMsg(namespace, name, transformFloatList, name2 = '', name3 = '') {
+    sendUpdateTransformMsg(namespace, transform_msg, name = '', name2 = '', name3 = '') {
       if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
@@ -2968,19 +2971,8 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
             name: name,
             name2: name2,
             name3: name3,
-            transform: {
-              translate_vector: {
-                x: transformFloatList[0],
-                y: transformFloatList[1],
-                z: transformFloatList[2]
-              },
-              rotate_vector: {
-                x: transformFloatList[3],
-                y: transformFloatList[4],
-                z: transformFloatList[5]
-              },
-              heading_offset: transformFloatList[6]
-            }
+            value: transform_msg
+
           },
           noPrefix: true
         })

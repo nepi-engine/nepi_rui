@@ -27,7 +27,7 @@ import Select, { Option } from "./Select"
 
 //import NepiDeviceNPXControls from "./NepiDeviceNPX-Controls"
 
-import NepiIFNavPoseViewer from "./Nepi_IF_NavPoseViewer"
+import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFAdmin from "./Nepi_IF_Admin"
 
@@ -46,7 +46,7 @@ class NepiDeviceNPX extends Component {
 
     }
 
-    this.renderNavPoseViewer = this.renderNavPoseViewer.bind(this)
+    this.renderNavPose = this.renderNavPose.bind(this)
 
     this.setDeviceSelection = this.setDeviceSelection.bind(this)
     this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
@@ -132,13 +132,13 @@ class NepiDeviceNPX extends Component {
 
 
 
-  renderNavPoseViewer() {
+  renderNavPose() {
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     return (
       <React.Fragment>
 
              
-                  <NepiIFNavPoseViewer
+                  <NepiIFNavPose
                     navposeNamespace={namespace + '/navpose'}
                   />
                
@@ -169,7 +169,7 @@ class NepiDeviceNPX extends Component {
 
 
               {(device_selected === true) ?
-              this.renderNavPoseViewer()
+              this.renderNavPose()
               : null}
 
               </div>
