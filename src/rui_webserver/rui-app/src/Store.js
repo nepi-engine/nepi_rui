@@ -2948,7 +2948,6 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
     @action.bound
     sendTransformMsg(namespace, transform_msg) {
-      if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
           messageType: "nepi_interfaces/Transform",
@@ -2957,13 +2956,11 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
           },
           noPrefix: true
         })
-      }
     }
   
     
     @action.bound
     sendUpdateTransformMsg(namespace, transform_msg, name = '', name2 = '', name3 = '') {
-      if (transformFloatList.length === 7){
         this.publishMessage({
           name: namespace,
           messageType: "nepi_interfaces/UpdateTransform",
@@ -2976,7 +2973,7 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
           },
           noPrefix: true
         })
-      }
+
     }
 
 

@@ -27,10 +27,9 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
-//Unused import Select, { Option } from "./Select"
-//Unused import {setElementStyleModified, clearElementStyleModified} from "./Utilities"
+import Select, { Option } from "./Select"
 
-
+import NepiIFConfig from "./Nepi_IF_Config"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -499,7 +498,7 @@ class NepiIFNavPose extends Component {
                   <Label title={"Altitude (m) " + frame_alt + " (m)"}>
                     <Input
                       disabled={disabled === true || has_altitude === false}
-                      value={round(alt, 2)}
+                      value={round(altitude_m, 2)}
                       style={{ altitude_m: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"altitude_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"altitude_m")}
@@ -509,8 +508,8 @@ class NepiIFNavPose extends Component {
                   <Label title={"Depth (m) " + frame_alt + " (m)"}>
                     <Input
                       disabled={disabled === true || has_altitude === false}
-                      value={round(alt, 2)}
-                      style={{ depth_m: "80%" }}
+                      value={round(depth_m, 2)}
+                      style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"depth_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"depth_m")}
                     />
