@@ -53,6 +53,7 @@ class NepiIFNavPose extends Component {
       data_msg: null,
 
       navpose_data: null,
+      navpose_times: null,
 
       connected: false,
 
@@ -70,7 +71,7 @@ class NepiIFNavPose extends Component {
     this.renderSelection = this.renderSelection.bind(this)
     this.renderData = this.renderData.bind(this)
 
-    this.toggleViewableNavpos = this.toggleViewableNavpos.bind(this)
+    this.toggleViewableNavpose = this.toggleViewableNavpose.bind(this)
     this.onToggleNavposeSelection = this.onToggleNavposeSelection.bind(this)
     this.getNavposeOptions = this.getNavposeOptions.bind(this)
 
@@ -110,40 +111,44 @@ class NepiIFNavPose extends Component {
         frame_depth: message.frame_depth,
 
         has_location: message.has_location,
-        time_location: message.time_location,
         latitude: message.latitude,
         longitude: message.longitude,
 
 
         has_heading: message.has_heading,
-        time_heading: message.time_heading,
         heading_deg: message.heading_deg,
 
         has_orientation: message.has_orientation,
-        time_orientation: message.time_orientation,
         roll_deg: message.roll_deg,
         pitch_deg: message.pitch_deg,
         yaw_deg: message.yaw_deg,
 
         has_position: message.has_position,
-        time_position: message.time_position,
         x_m: message.x_m,
         y_m: message.y_m,
         z_m: message.z_m,
 
         has_altitude: message.has_altitude,
-        time_altitude: message.time_altitude,
         altitude_m: message.altitude_m,
         geoid_height_meters: message.geoid_height_meters,
 
         has_depth: message.has_depth,
-        time_depth: message.time_depth,
         depth_m: message.depth_m,
 
         has_pan_tilt: message.has_pan_tilt,
-        time_pan_tilt: message.time_pan_tilt,
         pan_deg: message.pan_deg,
         tilt_deg: message.tilt_deg
+      }
+
+     const navpose_times = {
+        navpose_frame: message.navpose_frame,
+        time_location: message.time_location,
+        time_heading: message.time_heading,
+        time_orientation: message.time_orientation,
+        time_position: message.time_position,
+        time_altitude: message.time_altitude,
+        time_depth: message.time_depth,
+        time_pan_tilt: message.time_pan_tilt,
       }
 
 
@@ -167,6 +172,7 @@ class NepiIFNavPose extends Component {
                     status_msg: null, 
                     data_msg: null, 
                     navpose_data: null,
+                    navpose_times: null,
                     connected: false})
     }
     if (this.state.statusListener != 'None') {
@@ -211,8 +217,8 @@ class NepiIFNavPose extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var navposeNamespace = (this.props.navposeNamespace != undefined) ? (this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
-                             this.props.navposeNamespace : 'None' : 'None'
+    var navposeNamespace = (this.props.navposeNamespace != undefined && this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
+                             this.props.navposeNamespace : this.state.navposeNamespace
     if (this.state.navposeNamespace !== navposeNamespace ){
         this.setState({
           navposeNamespace: navposeNamespace,
@@ -261,7 +267,7 @@ class NepiIFNavPose extends Component {
 
   // Function for creating image topic options.
   getNavposeOptions() {
-    const navpose_frames_topics = this.props.ros.state.navpose_frames_topics
+    const navpose_frames_topics = this.props.ros.navpose_frames_topics
     const navpose_frames = this.props.ros.navpose_frames
     const navposeNamespace = this.state.navposeNamespace
     var items = []

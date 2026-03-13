@@ -29,10 +29,7 @@ import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import Toggle from "react-toggle"
 
-import { round, convertStrToStrList, createShortValuesFromNamespaces, createMenuListFromStrList,
-  onDropdownSelectedSendStr, onDropdownSelectedSetState, 
-  onUpdateSetStateValue, onEnterSendFloatValue, onEnterSetStateFloatValue,
-  doNothing} from "./Utilities"
+import { onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 //import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
@@ -67,6 +64,8 @@ class NepiIFTransform extends Component {
     this.onUpdateInputTransformValue = this.onUpdateInputTransformValue.bind(this)
     this.onKeySaveInputTransformValue = this.onKeySaveInputTransformValue.bind(this)
 
+    this.onUpdateInputTransformToggle = this.onUpdateInputTransformToggle.bind(this)
+
 
     this.renderTransform = this.renderTransform.bind(this)
 
@@ -86,13 +85,25 @@ class NepiIFTransform extends Component {
     const transform_data = {
       source_ref_description: message.source_ref_description,
       end_ref_description: message.end_ref_description,
-      transformTX: message.translate_vector.x,
-      transformTY: message.translate_vector.y,
-      transformTZ: message.translate_vector.z,
-      transformRX: message.rotate_vector.x,
-      transformRY: message.rotate_vector.y,
-      transformRZ: message.rotate_vector.z,
-      transformHO: message.heading_offset,
+      x_m: message.x_m,
+      y_m: message.y_m,
+      z_m: message.z_m,
+
+      x_invert: message.x_invert,
+      y_invert: message.y_invert,
+      z_invert: message.z_invert,
+
+      roll_deg: message.roll_deg,
+      pitch_deg: message.pitch_deg,
+      yaw_deg: message.yaw_deg,
+
+      roll_invert: message.roll_invert,
+      pitch_invert: message.pitch_invert,
+      yaw_invert: message.yaw_invert,
+
+      heading_deg: message.heading_deg,
+
+      heading_invert: message.heading_invert
     }
 
 
@@ -209,6 +220,14 @@ class NepiIFTransform extends Component {
   }
 
 
+  onUpdateInputTransformToggle(value, name) {
+    var transform_data = this.state.transform_data
+    transform_data[name] = value
+    this.setState({ transform_data: transform_data })
+    this.sendTransformUpdateMessage(transform_data)
+    //this.render()
+  }
+
 
   renderTransform() {
     const transformNamespace = this.state.transformNamespace ? this.state.transformNamespace : "None"
@@ -253,36 +272,60 @@ class NepiIFTransform extends Component {
 
             <Label title={"X (m)"}>
               <Input
-                value={transform_data.transformTX}
-                id="transformTX"
+                value={transform_data.x_m}
+                id="x_m"
                 disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"transformTX")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"transformTX")}
+                onChange= {(event) => this.onUpdateInputTransformValue(event,"x_m")}
+                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"x_m")}
                 style={{ width: "80%" }}
               />
+                <Toggle
+                disabled={disabled === true}
+                  checked={transform_data.x_invert}
+                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.x_invert, 'x_invert')}>
+                </Toggle>  
+
+
             </Label>
 
             <Label title={"Y (m)"}>
               <Input
-                value={transform_data.transformTY}
-                id="transformTY"
+                value={transform_data.y_m}
+                id="y_m"
                 disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"transformTY")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"transformTY")}
+                onChange= {(event) => this.onUpdateInputTransformValue(event,"y_m")}
+                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"y_m")}
                 style={{ width: "80%" }}
               />
+
+                <Toggle
+                disabled={disabled === true}
+                  checked={transform_data.y_invert}
+                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.y_invert, 'y_invert')}>
+                </Toggle>  
+
             </Label>
+
+          
 
             <Label title={"Z (m)"}>
               <Input
-                value={transform_data.transformTZ}
-                id="transformTZ"
+                value={transform_data.z_m}
+                id="z_m"
                 disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"transformTZ")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"transformTZ")}
+                onChange= {(event) => this.onUpdateInputTransformValue(event,"z_m")}
+                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"z_m")}
                 style={{ width: "80%" }}
               />
+
+                <Toggle
+                disabled={disabled === true}
+                  checked={transform_data.z_invert}
+                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.z_invert, 'z_invert')}>
+                </Toggle>
             </Label>
+
+
 
             {/* <div hidden={updates === false}>
             <ButtonMenu>
@@ -298,36 +341,58 @@ class NepiIFTransform extends Component {
 
             <Label title={"Roll (deg)"}>
               <Input
-                value={transform_data.transformRX}
-                id="transformRX"
+                value={transform_data.roll_deg}
+                id="roll_deg"
                 disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"transformRX")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"transformRX")}
+                onChange= {(event) => this.onUpdateInputTransformValue(event,"roll_deg")}
+                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"roll_deg")}
                 style={{ width: "80%" }}
               />
+
+                <Toggle
+                disabled={disabled === true}
+                  checked={transform_data.roll_invert}
+                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.roll_invert, 'roll_invert')}>
+                </Toggle>
+
             </Label>
 
             <Label title={"Pitch (deg)"}>
               <Input
-                value={transform_data.transformRY}
-                id="transformRY"
+                value={transform_data.pitch_deg}
+                id="pitch_deg"
                 disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"transformRY")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"transformRY")}
+                onChange= {(event) => this.onUpdateInputTransformValue(event,"pitch_deg")}
+                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"pitch_deg")}
                 style={{ width: "80%" }}
               />
+
+                <Toggle
+                disabled={disabled === true}
+                  checked={transform_data.pitch_invert}
+                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.pitch_invert, 'pitch_invert')}>
+                </Toggle>
+
             </Label>
 
                 <Label title={"Yaw (deg)"}>
                   <Input
-                    value={transform_data.transformRZ}
-                    id="transformRZ"
+                    value={transform_data.yaw_deg}
+                    id="yaw_deg"
                     disabled={disabled === true}
-                    onChange= {(event) => this.onUpdateInputTransformValue(event,"transformRZ")}
-                    onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"transformRZ")}
+                    onChange= {(event) => this.onUpdateInputTransformValue(event,"yaw_deg")}
+                    onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"yaw_deg")}
                     style={{ width: "80%" }}
                   />
+
+                <Toggle
+                disabled={disabled === true}
+                  checked={transform_data.yaw_invert}
+                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.yaw_invert, 'yaw_invert')}>
+                </Toggle>
                 </Label>
+
+
 
                 <div hidden={disabled === true}>
                     <ButtonMenu>

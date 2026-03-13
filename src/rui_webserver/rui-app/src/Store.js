@@ -1331,18 +1331,15 @@ class ROSConnectionStore {
       geoid_height_meters: -999,
   
       has_location: false,
-      time_location: moment.utc().unix(),
       // Location Lat,Long
       latitude: -999,
       longitude: -999,
   
       has_heading: false,
-      time_heading: moment.utc().unix(),
       // Heading should be provided in Degrees True North
       heading_deg: -999,
   
       has_position: false,
-      time_position: moment.utc().unix(),
       // Position should be provided in Meters in specified 3d frame (x,y,z) with x forward, y right/left, and z up/down
       x_m: -999,
       y_m: -999,
@@ -1356,18 +1353,15 @@ class ROSConnectionStore {
       yaw_deg: -999,
   
       has_altitude: false,
-      time_altitude: moment.utc().unix(),
       // Altitude should be provided in postivie meters in specified alt frame
       altitude_m: -999,
       geoid_height_meters: -999,
   
       has_depth: false,
-      time_depth: moment.utc().unix(),
       // Depth should be provided in positive meters
       depth_m: -999,
 
       has_pan_tilt: false,
-      time_pan_tilt: moment.utc().unix(),
       // Pan and Titl should be provided in ENU frame
       pan_deg: -999,
       tilt_deg: -999
@@ -1376,13 +1370,26 @@ class ROSConnectionStore {
   @observable blankTransform = {
       source_ref_description: '',
       end_ref_description: '',
-      transformTX: 0,
-      transformTY: 0,
-      transformTZ: 0,
-      transformRX: 0,
-      transformRY: 0,
-      transformRZ: 0,
-      transformHO: 0
+
+      x_m: 0.0,
+      y_m: 0.0,
+      z_m: 0.0,
+
+      x_invert: false,
+      y_invert: false,
+      z_invert: false,
+
+      roll_deg: 0.0,
+      pitch_deg: 0.0,
+      yaw_deg: 0.0,
+
+      roll_invert: false,
+      pitch_invert: false,
+      yaw_invert: false,
+
+      heading_deg: 0.0,
+
+      heading_invert: false,
 
   }
 
