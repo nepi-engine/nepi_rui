@@ -3530,6 +3530,28 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
   }
 
   @action.bound
+  onPTXPanStop(ptxNamespace) {
+    this.publishMessage({
+      name: ptxNamespace + "/stop_pan",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    }) 
+  }
+
+  @action.bound
+  onPTXTiltStop(ptxNamespace) {
+    this.publishMessage({
+      name: ptxNamespace + "/stop_tilt",
+      messageType: "std_msgs/Empty",
+      data: {},
+      noPrefix: true
+    }) 
+  }
+
+
+
+  @action.bound
   onSetPTXHomePos(ptxNamespace, panHomePos, tiltHomePos) {
     this.publishMessage({
       name: ptxNamespace + "/set_home_position",

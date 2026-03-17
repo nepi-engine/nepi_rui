@@ -133,7 +133,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
   render() {
-    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop } = this.props.ros
+    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop, onPTXPanStop, onPTXTiltStop } = this.props.ros
     const namespace = (this.props.namespace !== null) ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
 
@@ -241,38 +241,44 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                   />
               </div>
 
-              <div hidden={has_timed_pos === false}>
+              {(has_timed_pos === true) ?
 
-              <ButtonMenu>
+                      <ButtonMenu>
 
-                  <Button 
-                    buttonDownAction={() => onPTXJogPan(namespace,  1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25C0'}
-                    </Button>
-                  <Button 
-                    buttonDownAction={() => onPTXJogPan(namespace, - 1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25B6'}
-                  </Button>
-                  <Button 
-                    buttonDownAction={() => onPTXJogTilt(namespace, 1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25B2'}
-                  </Button>
-                  <Button 
-                    buttonDownAction={() => onPTXJogTilt(namespace, -1)}
-                    buttonUpAction={() => onPTXStop(namespace)}>
-                    {'\u25BC'}
-                  </Button>
+                          <Button 
+                            buttonDownAction={() => onPTXJogPan(namespace,  1)}
+                            buttonUpAction={() => onPTXPanStop(namespace)}>
+                            {'\u25C0'}
+                            </Button>
+                          <Button 
+                            buttonDownAction={() => onPTXJogPan(namespace, - 1)}
+                            buttonUpAction={() => onPTXPanStop(namespace)}>
+                            {'\u25B6'}
+                          </Button>
+                          <Button 
+                            buttonDownAction={() => onPTXJogTilt(namespace, 1)}
+                            buttonUpAction={() => onPTXTiltStop(namespace)}>
+                            {'\u25B2'}
+                          </Button>
+                          <Button 
+                            buttonDownAction={() => onPTXJogTilt(namespace, -1)}
+                            buttonUpAction={() => onPTXTiltStop(namespace)}>
+                            {'\u25BC'}
+                          </Button>
 
-               <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+                          <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
 
-                </ButtonMenu>
+                        </ButtonMenu>
 
+                    : 
 
+                      <ButtonMenu>
 
-             </div>
+                          <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+
+                        </ButtonMenu>
+
+                    }
 
   </React.Fragment>
 
