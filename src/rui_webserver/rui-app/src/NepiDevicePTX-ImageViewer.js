@@ -256,12 +256,12 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                             {'\u25B6'}
                           </Button>
                           <Button 
-                            buttonDownAction={() => onPTXJogTilt(namespace, 1)}
+                            buttonDownAction={() => onPTXJogTilt(namespace, -1)}
                             buttonUpAction={() => onPTXTiltStop(namespace)}>
                             {'\u25B2'}
                           </Button>
                           <Button 
-                            buttonDownAction={() => onPTXJogTilt(namespace, -1)}
+                            buttonDownAction={() => onPTXJogTilt(namespace, 1)}
                             buttonUpAction={() => onPTXTiltStop(namespace)}>
                             {'\u25BC'}
                           </Button>
