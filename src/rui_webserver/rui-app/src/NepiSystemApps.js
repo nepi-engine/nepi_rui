@@ -86,11 +86,14 @@ class AppsMgr extends Component {
     this.getMgrNamespace = this.getMgrNamespace.bind(this)
 
     this.sendAppUpdateOrder = this.sendAppUpdateOrder.bind(this)
-    this.toggleViewableApps = this.toggleViewableApps.bind(this)
+
     this.toggleViewableGroups = this.toggleViewableGroups.bind(this)
     this.getAppOptions = this.getAppOptions.bind(this)
     this.getGroupOptions = this.getGroupOptions.bind(this)
     this.onChangeGroupSelection = this.onChangeGroupSelection.bind(this)
+
+    this.getAppOptions = this.getAppOptions.bind(this)
+    this.toggleViewableApps = this.toggleViewableApps.bind(this)
     this.onToggleAppSelection = this.onToggleAppSelection.bind(this)
 
 
@@ -131,9 +134,6 @@ class AppsMgr extends Component {
   }
 
 
-
-
-
   componentDidMount(){
     this.checkConnection()
   }
@@ -153,10 +153,10 @@ class AppsMgr extends Component {
     this.setState({connected: false})
   }
 
-  toggleViewableApps() {
-    const set = !this.state.viewableApps
-    this.setState({viewableApps: set})
-  }
+
+
+  ////////////////////////////////////////////////
+
 
   toggleViewableGroups() {
     const set = !this.state.viewableGroups
@@ -168,6 +168,27 @@ class AppsMgr extends Component {
     short_name = short_name.replaceAll("_"," ")
     return short_name
   }
+
+  // Function for creating group topic options.
+  getGroupOptions() { 
+    const groups = this.props.ros.apps_group_list
+    const groupIds = this.state.group_list
+    const groupNames = this.state.group_names
+    var items = []
+    items.push(<Option value={'None'}>{'None'}</Option>)
+    items.push(<Option value={'All'}>{'All'}</Option>)
+    if (groups.length > 0){
+      for (var i = 0; i < groupIds.length; i++) {
+        if (groups.indexOf(groupIds[i]) !== -1){
+          items.push(<Option value={groupIds[i]}>{groupNames[i]}</Option>)
+        }
+      }
+    }
+    return items
+  }
+  
+
+
 
   // Function for creating image topic options.
   getAppOptions() {
@@ -197,24 +218,11 @@ class AppsMgr extends Component {
     return items
   }
 
-  // Function for creating group topic options.
-  getGroupOptions() { 
-    const groups = this.props.ros.apps_group_list
-    const groupIds = this.state.group_list
-    const groupNames = this.state.group_names
-    var items = []
-    items.push(<Option value={'None'}>{'None'}</Option>)
-    items.push(<Option value={'All'}>{'All'}</Option>)
-    if (groups.length > 0){
-      for (var i = 0; i < groupIds.length; i++) {
-        if (groups.indexOf(groupIds[i]) !== -1){
-          items.push(<Option value={groupIds[i]}>{groupNames[i]}</Option>)
-        }
-      }
-    }
-    return items
+
+  toggleViewableApps() {
+    const set = !this.state.viewableApps
+    this.setState({viewableApps: set})
   }
-  
 
 
   onToggleAppSelection(event){

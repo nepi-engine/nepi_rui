@@ -37,23 +37,16 @@ import LSX from "./NepiDeviceLSX"
 import RBX from "./NepiDeviceRBX"
 import NPX from "./NepiDeviceNPX"
 
-//import TargetsMgr from "./NepiMgrTargets"
 
-// DATE Classes
-import NavPoseMgr from "./NepiMgrNavPose"
+// DATA Classes
+
 
 
 // PROCESS Classes
 import ScriptsMgr from "./NepiMgrScripts"
 
 // AUTO CLASSES
-import AiModelsMgr from "./NepiSystemAiModels"
 
-import AiDetectorMgr from "./NepiMgrAiDetector"
-//import AiSegmentorMgr from "./NepiMgrAiSegmentor"
-//import AiPoserMgr from "./NepiMgrAiPoser"
-//import AiOrientatorMgr from "./NepiMgrAiOrientator"
-//import TargetsMgr from "./NepiMgrTargets"
 
 // Other SYSTEM Classes
 import DeviceMgr from "./NepiSystemDevice"
@@ -61,6 +54,14 @@ import NepiMgr from "./NepiSystemAdmin"
 import DataMgr from "./NepiSystemData"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AppsMgr from "./NepiSystemApps"
+import NavPoseMgr from "./NepiSystemNavPose"
+import AiModelsMgr from "./NepiSystemAiModels"
+
+import AiDetectorMgr from "./NepiMgrAiDetector"
+//import AiSegmentorMgr from "./NepiMgrAiSegmentor"
+//import AiPoserMgr from "./NepiMgrAiPoser"
+//import AiOrientatorMgr from "./NepiMgrAiOrientator"
+//import TargetsMgr from "./NepiMgrTargets"
 
 
 
@@ -672,7 +673,7 @@ class NepiIFAppSelector extends Component {
         
 
         if (restricted.indexOf('MANAGER-NAVPOSE-VIEW') === -1 && managers_running.indexOf('MANAGER-NAVPOSE') !== -1 ) {
-            items.push(<Option value={"NavPose Manage"}>{"NavPose Manage"}</Option>)
+            items.push(<Option value={"NavPose Manager"}>{"NavPose Manager"}</Option>)
         }
 
 
@@ -680,6 +681,12 @@ class NepiIFAppSelector extends Component {
             items.push(<Option value={'Drivers Manager'}>{'Drivers Manager'}</Option>)
         }   
         
+        if (restricted.indexOf('MANAGER-APPS-VIEW') === -1 && managers_running.indexOf('MANAGER-APPS') !== -1 ) {
+           items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
+        }   
+
+        if (restricted.indexOf('MANAGER-SCRIPTS-VIEW') === -1 && managers_running.indexOf('MANAGER-SCRIPTS') !== -1 ) {
+           items.push(<Option value={'Scripts Mgr'}>{'Scripts Manager'}</Option>)
 
         if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_running.indexOf('MANAGER-AI-MODELS') !== -1 ) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
@@ -698,12 +705,7 @@ class NepiIFAppSelector extends Component {
           items.push(<Option value={'AI Orienation'}>{'AI Orienation'}</Option>)
         }        
 
-        if (restricted.indexOf('MANAGER-APPS-VIEW') === -1 && managers_running.indexOf('MANAGER-APPS') !== -1 ) {
-           items.push(<Option value={'Apps Manager'}>{'Apps Manager'}</Option>)
-        }   
 
-        if (restricted.indexOf('MANAGER-SCRIPTS-VIEW') === -1 && managers_running.indexOf('MANAGER-SCRIPTS') !== -1 ) {
-           items.push(<Option value={'Scripts Mgr'}>{'Scripts Manager'}</Option>)
         }   
         
  
