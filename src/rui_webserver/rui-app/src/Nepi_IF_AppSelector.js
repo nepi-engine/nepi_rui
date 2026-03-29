@@ -687,10 +687,11 @@ class NepiIFAppSelector extends Component {
 
         if (restricted.indexOf('MANAGER-SCRIPTS-VIEW') === -1 && managers_running.indexOf('MANAGER-SCRIPTS') !== -1 ) {
            items.push(<Option value={'Scripts Mgr'}>{'Scripts Manager'}</Option>)
-
+        }
+        
         if (restricted.indexOf('MANAGER-AI_MODELS-VIEW') === -1 && managers_running.indexOf('MANAGER-AI-MODELS') !== -1 ) {
            items.push(<Option value={'AI Model Manager'}>{'AI Model Manager'}</Option>)
-        }   
+        
 
         if (activeModelTypes.indexOf('detection') !== -1 && restricted.indexOf('MANAGER-AI-DETECTORS-VIEW') === -1){
           items.push(<Option value={'AI Detector'}>{'AI Detector'}</Option>)
