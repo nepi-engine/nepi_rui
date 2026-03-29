@@ -71,7 +71,7 @@ class AiModelsMgr extends Component {
     this.onToggleModelSelection = this.onToggleModelSelection.bind(this)
     this.getDisabledModelsStr = this.getDisabledModelsStr.bind(this)
     this.getActiveModelsStr = this.getActiveModelsStr.bind(this)
-
+    this.getModelStatusMsg = this.getModelStatusMsg.bind(this)
 
   
   }
@@ -373,6 +373,24 @@ class AiModelsMgr extends Component {
   }
  
 
+  getModelStatusMsg(model_name){
+    const ai_models_list = this.props.ros.ai_models_list
+    const model_status_msgs = this.props.ros.ai_models_status_list
+    const model_index = ai_models_list.indexOf(model_name)
+
+    const status_length = model_status_msgs.length
+    const has_status = (status_length > model_index)
+    var model_status_msg = model_status_msgs[model_index]
+    if  (model_index !== -1 && model_name !== 'None' && has_status === true ){
+        model_status_msg = model_status_msgs[model_index]
+    }
+    else {
+      model_status_msg = null
+    }
+    
+    return model_status_msg
+  } 
+
 
   renderModelConfig() {
 
@@ -384,14 +402,11 @@ class AiModelsMgr extends Component {
     const has_models = (model_options.length > 1)
 
     const viewable_models = this.state.viewable_models
-
-
-    const ai_models_list = this.props.ros.ai_models_list
-    const model_index = (ai_models_list.indexOf(selected_model))
     var model_status_msg = null
-    if  (model_index !== -1 && selected_model !== 'None'){
-        model_status_msg = this.props.ros.ai_models_status_list[model_index]
+    if  (selected_model !== 'None'){
+        model_status_msg = this.getModelStatusMsg(selected_model)
     }
+
 
     const display_name = (model_status_msg != null) ? model_status_msg.display_name : ''
     const description = (model_status_msg != null) ? model_status_msg.description : ''

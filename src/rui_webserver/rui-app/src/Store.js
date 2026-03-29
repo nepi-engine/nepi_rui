@@ -1434,8 +1434,7 @@ class ROSConnectionStore {
       this.frame_nav = message.frame_nav
       this.frame_alt_options = message.frame_alt_options
       this.frame_alt = message.frame_alt
-      this.ai_models_status_list = message.ai_models_ordered_status_list
-      this.ai_models_status_list = message.ai_models_ordered_status_list
+
 
       this.navpose_frames = message.navpose_frames
       this.navpose_frames_topics = message.navpose_frames_topics
