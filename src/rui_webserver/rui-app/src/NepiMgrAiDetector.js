@@ -263,6 +263,7 @@ class AiDetectorMgr extends Component {
   onDetectorSelected(event){
     const detector = event.target.value
     this.setState({selected_detector: detector})
+    this.setState({needs_update: true})
   }
 
   renderAiDetector() {
