@@ -586,8 +586,6 @@ class AiModelsMgr extends Component {
 
 
 render() {
-  const selected_framework = this.state.selected_framework
-  const active_frameworks = this.props.ros.ai_frameworks_active_list
   const connected = this.state.connected
     return (
 

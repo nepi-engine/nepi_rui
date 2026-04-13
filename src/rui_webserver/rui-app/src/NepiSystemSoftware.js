@@ -83,7 +83,6 @@ class NepiSystemSoftware extends Component {
   onImageTopicSelected(event) {
     const { sendStringMsg } = this.props.ros
 
-    var ind = event.nativeEvent.target.selectedIndex
     var value = event.target.value
 
     const { namespacePrefix, deviceId } = this.props.ros

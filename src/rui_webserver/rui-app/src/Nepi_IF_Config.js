@@ -74,7 +74,6 @@ class NepiIFConfig extends Component {
     else {
     const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : this.supports_all_config(namespace)
     const all_config_restricted = (this.props.ros.userRestricted.indexOf('Sav-All') !== -1)
-    const namespace_parts = namespace.split('/')
         return (
 
           <React.Fragment>

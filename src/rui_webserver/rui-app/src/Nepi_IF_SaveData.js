@@ -263,6 +263,7 @@ class NepiIFSaveData extends Component {
 
   getSaveConfigString() {
     const {saveDataNamespaces , saveDataCaps} = this.props.ros
+    const { namespacePrefix, deviceId} = this.props.ros
     const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
     const isAllNamespace = (saveNamespace === allNamespace)
@@ -279,7 +280,6 @@ class NepiIFSaveData extends Component {
     if (isAllNamespace === true){
       for (i = 0; i < saveDataNamespaces.length; i++) {
         topic = saveDataNamespaces[i]
-        topic_name = topic.replace
         namesList = []
         ratesList = []
         if (topic !== "None" && topic !== allNamespace ){
@@ -324,6 +324,7 @@ class NepiIFSaveData extends Component {
 
   getActiveConfigString() {
     const {saveDataNamespaces , saveDataCaps} = this.props.ros
+    const { namespacePrefix, deviceId} = this.props.ros
     const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
     const isAllNamespace = (saveNamespace === allNamespace)
@@ -340,7 +341,6 @@ class NepiIFSaveData extends Component {
     if (isAllNamespace === true){
       for (i = 0; i < saveDataNamespaces.length; i++) {
         topic = saveDataNamespaces[i]
-        topic_name = topic.replace
         namesList = []
         ratesList = []
         if (topic !== "None" && topic !== allNamespace ){
@@ -502,6 +502,7 @@ class NepiIFSaveData extends Component {
   }
 
   onKeySaveDataRateValue(event) {
+    //Unused const rate = parseFloat(this.state.saveDataRate)
     if(event.key === 'Enter'){
       const rate = parseFloat(event.target.value)
       if (!isNaN(rate)){

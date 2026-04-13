@@ -62,7 +62,7 @@ class NepiDevicePTXImageViewer extends Component {
     const { namespacePrefix, deviceId} = this.props.ros
     var namespace = 'None'
     if (namespacePrefix !== null && deviceId !== null){
-      if (this.props.namespace != undefined){
+      if (this.props.namespace !== undefined){
         namespace = this.props.namespace
       }
       else{

@@ -449,7 +449,6 @@ renderDetectorSettings() {
   const sel_img = 'Unselected' //this.state.selected_display_topic
 
   const classOptions = this.getClassOptions()
-  const selectedClasses = this.state.selectedClassesList
 
   const selected_detector = this.state.selected_detector
   const status_msg = this.state.status_msg
@@ -458,7 +457,6 @@ renderDetectorSettings() {
     if (selected_detector === detector_namespace){
       
 
-      const display_name = status_msg.display_name
 
 
 

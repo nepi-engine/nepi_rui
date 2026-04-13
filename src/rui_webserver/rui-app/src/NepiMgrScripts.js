@@ -157,9 +157,7 @@ class ScriptsMgr extends Component {
     const { scripts, running_scripts, systemStats} = this.props.ros;
     //const { scripts, running_scripts, systemStats} = this.props.ros;
     //console.log('Scripts scripts:', scripts);
-    let filesForListBox = toJS(scripts)
 
-    //  console.log('Scripts scripts (filesForListBox):', filesForListBox);
     //console.log('systemStats:', systemStats);
     //_systemStats = toJS(systemStats)
     //console.log('_systemStats:', _systemStats);
@@ -168,8 +166,6 @@ class ScriptsMgr extends Component {
     //console.log('_systemStats:', _systemStats && _systemStats.memory_usage);
     //console.log('_systemStats:', _systemStats && _systemStats.swap_info);
     //console.log('_systemStats:', _systemStats && _systemStats.file_size);
-    
-    let runningFilesForListBox = toJS(running_scripts);
     //console.log('Running scripts (runningFilesForListBox):', runningFilesForListBox);
 
     const selectedScript = (this.state.selectedScript !== '')?
