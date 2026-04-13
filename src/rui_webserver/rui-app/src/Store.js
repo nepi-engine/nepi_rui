@@ -20,7 +20,6 @@
 import { observable, action } from "mobx"
 import moment from "moment"
 import ROS from "roslib"
-import cannon from "cannon"
 import yaml from "js-yaml"
 
 const ROS_WS_URL = `ws://${window.location.hostname}:9090`
@@ -32,7 +31,6 @@ const TRIGGER_MASKS = {
   DEFAULT: 0x7fffffff
 }
 
-const EULER_ORDER_FOR_CANNON = "YZX" // Only supported angle ordering for Cannon library quaternion.toEuler() function
 
 // TODO: Would be better to query the display_name property of all nodes to generate
 // this dictionary... requires a new SDKNode service to do so
@@ -377,7 +375,7 @@ class ROSConnectionStore {
         
         } catch (e) {
           //console.error(e)
-          const errored = true 
+          // errored
         }
       }
 
@@ -459,9 +457,9 @@ class ROSConnectionStore {
         const serviceNames = (this.serviceNamesLast != null) ? this.serviceNamesLast : []
 
         if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
-          if (this.topicNames.length != topicNames.length || 
-              this.topicTypes.length != topicTypes.length || 
-              this.serviceNames.length != serviceNames.length) {
+          if (this.topicNames.length !== topicNames.length ||
+              this.topicTypes.length !== topicTypes.length ||
+              this.serviceNames.length !== serviceNames.length) {
 
                 update_time = 2000
                 var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
@@ -983,8 +981,6 @@ class ROSConnectionStore {
         
         this.softwareMgrStatus = message
 
-        this.softwareInstallOptions.sys_img_update_options
-     
         this.connectedToSoftwareMgr = true
       }
     })
@@ -1327,9 +1323,7 @@ class ROSConnectionStore {
       frame_nav: 'ENU',
       frame_altitude: 'WGS84',
       frame_depth: 'MSL',
-  
-      geoid_height_meters: -999,
-  
+
       has_location: false,
       // Location Lat,Long
       latitude: -999,

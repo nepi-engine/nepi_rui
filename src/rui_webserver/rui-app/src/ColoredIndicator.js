@@ -20,7 +20,6 @@
 import React from "react"
 
 import Styles from "./Styles"
-import Input from "./Input"
 import Button from "./Button"
 
 const styles = Styles.Create({
@@ -29,29 +28,6 @@ const styles = Styles.Create({
       width: Styles.vars.lineHeights.small,
       height: Styles.vars.lineHeights.small
     }
-})
-
-const indicator_colors = Styles.Create({
-  red: {
-    backgroundColor: Styles.vars.colors.red,
-    color: Styles.vars.colors.black
-  },
-  green: {
-    backgroundColor: Styles.vars.colors.green,
-    color: Styles.vars.colors.black
-  },
-  grey: {
-    backgroundColor: Styles.vars.colors.grey1,
-    color: Styles.vars.colors.black
-  },
-  orange: {
-    backgroundColor: Styles.vars.colors.orange,
-    color: Styles.vars.colors.black
-  },
-  white_on_black: {
-    backgroundColor: Styles.vars.colors.black,
-    color: Styles.vars.colors.white
-  }
 })
 
 const ColoredIndicator = props => {

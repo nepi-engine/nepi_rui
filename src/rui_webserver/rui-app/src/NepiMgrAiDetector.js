@@ -38,7 +38,7 @@ import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 //import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import {filterStrList, createMenuFirstLastNames,createMenuBaseNames} from "./Utilities"
+import {filterStrList, createMenuFirstLastNames} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -277,7 +277,6 @@ class AiDetectorMgr extends Component {
     const detector_namespace = (status_msg == null) ? "None" : status_msg.namespace
     const connected = (detector_namespace === selected_detector)? this.state.connected : false
 
-    const Spacer = ({ size }) => <div style={{ height: size, width: size }}></div>;
 
 
     const { userRestricted} = this.props.ros
@@ -332,12 +331,10 @@ class AiDetectorMgr extends Component {
     const filter_str_list = this.state.img_filter_str_list
     const { imageTopics } = this.props.ros
     const img_options = filterStrList(imageTopics,filter_str_list)
-    const baseNamespace = this.getBaseNamespace()
     var imageTopicShortnames = createMenuFirstLastNames(img_options)
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     items.push(<Option value={'All'}>{'All'}</Option>)
-    var img_text = ""
     const sel_det = this.state.selected_detector
     for (var i = 0; i < img_options.length; i++) {
       if (img_options[i].indexOf(sel_det) === -1){
@@ -392,13 +389,11 @@ class AiDetectorMgr extends Component {
     if (status_msg != null){
       const detector_namespace = status_msg.namespace 
       if (selected_detector === detector_namespace){
-        const availableClassesList = status_msg.available_classes
-
         items.push(<Option>{"All"}</Option>)
-        if (availableClassesList.length > 0 ){
-          for (var i = 0; i < availableClassesList.length; i++) {
-              if (availableClassesList[i] !== 'None'){
-                items.push(<Option value={availableClassesList[i]}>{availableClassesList[i]}</Option>)
+        if (status_msg.available_classes.length > 0 ){
+          for (var i = 0; i < status_msg.available_classes.length; i++) {
+              if (status_msg.available_classes[i] !== 'None'){
+                items.push(<Option value={status_msg.available_classes[i]}>{status_msg.available_classes[i]}</Option>)
               }
           }
         }
@@ -423,7 +418,6 @@ class AiDetectorMgr extends Component {
         const detector_namespace = status_msg.namespace 
         if (selected_detector === detector_namespace){
           const classSelection = event.target.value
-          const availableClassesList = status_msg.available_classes
           const selectedClassesList = status_msg.selected_classes
           const addAllNamespace = detector_namespace + "/add_all_classes"
           const removeAllNamespace = detector_namespace + "/remove_all_classes"
@@ -449,36 +443,27 @@ class AiDetectorMgr extends Component {
 
 
 renderDetectorSettings() {
-  const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+  const { sendBoolMsg } = this.props.ros
 
 
   const sel_img = 'Unselected' //this.state.selected_display_topic
 
   const classOptions = this.getClassOptions()
   const selectedClasses = this.state.selectedClassesList
-  const classes_sel = selectedClasses[0] !== "" && selectedClasses[0] !== "None"
 
   const selected_detector = this.state.selected_detector
   const status_msg = this.state.status_msg
   if (status_msg != null){
-    const detector_name = status_msg.ai_detector_name
-
     const detector_namespace = status_msg.namespace
     if (selected_detector === detector_namespace){
       
 
       const display_name = status_msg.display_name
-      const has_sleep = status_msg.has_sleep
-      const sleep_enabled = status_msg.sleep_enabled
-      const sleep_suspend_sec = status_msg.sleep_suspend_sec
-      const sleep_run_sec = status_msg.sleep_run_sec
-      const sleep_state = status_msg.msg
 
 
 
 
 
-      const availableClassesList = status_msg.available_classes
       const selectedClassesList = status_msg.selected_classes
       const classes_selected = (selectedClassesList.length > 0)
 
@@ -520,10 +505,6 @@ renderDetectorSettings() {
 
 
       const img_options = this.createImageTopicsOptions()
-
-      const img_list_viewable = this.state.img_list_viewable
-
-      const detector_display_name = display_name.toUpperCase()
 
       return (
       <Columns>
@@ -875,8 +856,6 @@ renderDetectorSettings() {
     
 
       var img_topic = "None"
-      var parts = []
-      var sliced_parts = []
       var shortname = ''
       if (status_msg != null){
               const image_pub_topics = status_msg.image_pub_topics
@@ -942,7 +921,6 @@ renderDetectorSettings() {
 
 
   render() {
-    const {topicNames} = this.props.ros
     const { imageTopics } = this.props.ros
     const img_options = this.getDisplayImgOptions()
     const sel_img_topic = this.state.selected_display_topic
@@ -951,7 +929,6 @@ renderDetectorSettings() {
     const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
     const save_data_topic = this.state.selected_detector + '/save_data'
-    const connected = this.state.connected
 
 
     return (

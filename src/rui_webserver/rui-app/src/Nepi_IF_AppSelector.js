@@ -337,7 +337,7 @@ class NepiIFAppSelector extends Component {
       )
     }
 
-    {/*
+    /*
     if (sel_app === "AI Segmentor"){
       return (
         <React.Fragment>
@@ -392,7 +392,7 @@ class NepiIFAppSelector extends Component {
         </React.Fragment>
       )
     }
-  */}
+  */
     if (sel_app === "AI Model Manager"){
       return (
         <React.Fragment>

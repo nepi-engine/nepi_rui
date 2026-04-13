@@ -164,7 +164,6 @@ class Nepi_IF_ImageViewer extends Component {
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
-    const statusNamespace = status_topic + '/status'
     if (this.state.status_listenter != null) {
       this.state.status_listenter.unsubscribe()
       this.setState({status_msg: null,
@@ -188,7 +187,7 @@ class Nepi_IF_ImageViewer extends Component {
                     select_updated_topic: select_updated_topic
     })
 
-    if ((prev_image_topic !== image_topic && prev_image_topic != 'None' && status_topic !== 'None Available') && select_updated_topic != null){
+    if ((prev_image_topic !== image_topic && prev_image_topic !== 'None' && status_topic !== 'None Available') && select_updated_topic !== null){
       this.props.ros.sendImageSelectionMsg(select_updated_topic, image_index, image_topic , prev_image_topic)
 
     }
@@ -679,26 +678,28 @@ class Nepi_IF_ImageViewer extends Component {
     if (filter_options.length > 0){
       var filter_name = ""
       var filter_enabled = false
-      var filter_ratio = 0.0
       var filter_display_name = 'None'
+
+      var makeFilterClickHandler = (ns, name, enabled) => {
+        return () => this.props.ros.sendUpdateBoolMsg(ns + "/set_filter_enable", name, !enabled)
+      }
 
       for (var i = 0; i < filter_options.length; i++) {
         filter_name = filter_options[i]
         filter_enabled = filter_states[i]
-        filter_ratio = filter_ratios[i]
         filter_display_name = filter_name.replace('_',' ')
         return (
-           
+
           <Columns>
           <Column>
-   
+
                         <Label title={filter_display_name}>
-         
+
                             <Toggle
                               checked={filter_enabled === true}
-                              onClick={() => this.props.ros.sendUpdateBoolMsg(namespace + "/set_filter_enable",filter_name,!filter_enabled)}>
+                              onClick={makeFilterClickHandler(namespace, filter_name, filter_enabled)}>
                             </Toggle>
-                      
+
                       </Label>
 
                 </Column>
@@ -735,7 +736,6 @@ class Nepi_IF_ImageViewer extends Component {
       const has_contrast = (capabilities && capabilities.has_contrast && !this.state.disabled)
       const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
       const has_threshold = (capabilities && capabilities.has_threshold && !this.state.disabled)
-      const has_framerate = (capabilities && capabilities.has_framerate && !this.state.disabled)
 
 
       const message = this.state.status_msg

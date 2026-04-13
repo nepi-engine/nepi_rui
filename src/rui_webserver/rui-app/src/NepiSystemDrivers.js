@@ -32,7 +32,6 @@ import BooleanIndicator from "./BooleanIndicator"
 
 import NepiIFSettings from "./Nepi_IF_Settings"
 
-import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilities"
 
   @inject("ros")
   @observer
@@ -308,7 +307,7 @@ import { onChangeSwitchStateValue, onDropdownSelectedSetState } from "./Utilitie
             <pre style={{ height: "150px", overflowY: "auto" }}>
             {"\nDescription: " + description + 
             "\nStatus: " + msg_str +
-            "\nType: " + type  + "     "  + "Group: " + group_id + "     "  + "Package: " + driver_pkg
+            "\nType: " + type  + "     Group: " + group_id + "     Package: " + driver_pkg
             }
             </pre>
 

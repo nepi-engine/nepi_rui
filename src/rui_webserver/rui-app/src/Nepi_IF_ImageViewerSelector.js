@@ -27,22 +27,12 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
-import Toggle from "react-toggle"
-import Label from "./Label"
-import RangeAdjustment from "./RangeAdjustment"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Select, { Option } from "./Select"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
-import {  onChangeSwitchStateValue } from "./Utilities"
-
 import {createMenuFirstLastName, createMenuFirstLastNames} from "./Utilities"
-
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
 
 
 @inject("ros")
@@ -112,7 +102,7 @@ class NepiIFImageViewerSelector extends Component {
             push_item = false
           }
         }
-        for (var i2 = 0; i2 < image_exclude_filters.length; i2++) {
+        for (i2 = 0; i2 < image_exclude_filters.length; i2++) {
           if (image.indexOf(image_include_filters[i2]) === -1 ){
             push_item = false
           }
@@ -134,8 +124,8 @@ class NepiIFImageViewerSelector extends Component {
     var sorted_items = []
     var sorted_index = 0
     if (sorted_names.length > 0){
-      for (var i = 0; i < sorted_names.length; i++) {
-      
+      for (i = 0; i < sorted_names.length; i++) {
+
         sorted_index = item_names.indexOf(sorted_names[i])
         sorted_items.push(items[sorted_index])
         
@@ -153,9 +143,6 @@ class NepiIFImageViewerSelector extends Component {
       var selected_text = this.state.selected_image_text
       const names = createMenuFirstLastNames(sorted_items)
       var index = 0
-      var index_changed = false
-      var index_name = ''
-      var index_name_changed = false
       var updated_image = false
       if (JSON.stringify(this.state.image_topics) !== JSON.stringify(sorted_items)) {
         index = sorted_items.indexOf(selected_image)
@@ -216,7 +203,7 @@ class NepiIFImageViewerSelector extends Component {
     // Create Menu List
     var menu_items = []
     if (sorted_items.length > 0){
-      for (var i = 0; i < sorted_items.length; i++) {
+      for (i = 0; i < sorted_items.length; i++) {
         if (image_exclude_filters.indexOf(sorted_items[i]) === -1 ){
           menu_items.push(<Option value={sorted_items[i]}>{sorted_names[i]}</Option>)
         }
@@ -344,7 +331,6 @@ class NepiIFImageViewerSelector extends Component {
   }
 
   renderButtonControls() {
-    const { sendTriggerMsg } = this.props.ros
     const image_topics = this.state.image_topics
 
     const show_selector_buttons = this.props.show_selector_buttons !== undefined ? this.props.show_selector_buttons : true

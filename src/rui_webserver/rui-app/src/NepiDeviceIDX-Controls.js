@@ -49,7 +49,7 @@ class NepiDeviceIDXControls extends Component {
 
       namespace: 'None',
       status_msg: null,
-      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : false,
+      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : false,
 
       rtsp_url: "",
       rtsp_username: "",
@@ -234,31 +234,14 @@ class NepiDeviceIDXControls extends Component {
     }
 
     const devices = this.props.ros.idxDevices
-    var has_resolution =   false
-    var has_framerate =   false
-    var has_auto_adjust =   false
-    var has_contrast =   false
-    var has_brightness =   false
-    var has_threshold =   false
     var has_range =   false
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
-      has_resolution = (capabilities.has_resolution)
-      has_framerate = (capabilities.has_framerate)
-      has_auto_adjust = (capabilities.has_auto_adjustment)
-      has_contrast = (capabilities.has_contrast)
-      has_brightness = (capabilities.has_brightness)
-      has_threshold = (capabilities.has_threshold)
       has_range = (capabilities.has_range)
     }
-    
+
     const auto_controls = this.state.auto_adjust_enabled ? this.state.auto_adjust_controls : []
-    const hide_framerate = (!has_framerate || auto_controls.indexOf('framerate') !== -1)
-    const hide_resolution = (!has_resolution || auto_controls.indexOf('resolution') !== -1)
-    const hide_brightness = (!has_brightness || auto_controls.indexOf('brightness') !== -1)
-    const hide_contrast = (!has_contrast || auto_controls.indexOf('contrast') !== -1)
-    const hide_threshold = (!has_threshold || auto_controls.indexOf('threshold') !== -1)
     const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
 
     const min_range_m_adj = round(this.state.rangeLimitMinMAdj,1)
@@ -402,18 +385,19 @@ class NepiDeviceIDXControls extends Component {
     const { userRestricted} = this.props.ros
     const device_controls_restricted = userRestricted.indexOf('DEVICE-IDX-CONTROL') !== -1
 
-    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
+    const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : device_controls_restricted === false
     const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
 
 
 
     if ( device_controls_restricted === true){
+      return (
               <Columns>
                 <Column>
 
                 </Column>
               </Columns>
-
+      )
     }
 
     else {
@@ -662,7 +646,7 @@ class NepiDeviceIDXControls extends Component {
     else {
       return (
 
-          <Section title={(this.props.title != undefined) ? this.props.title : null}>
+          <Section title={(this.props.title !== undefined) ? this.props.title : null}>
 
               { this.renderControlData()}
               { this.renderControlPanel()}

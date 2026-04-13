@@ -23,13 +23,11 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import Toggle from "react-toggle"
 
-import { onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 //import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
@@ -139,11 +137,6 @@ class NepiIFTransform extends Component {
 
 
 
-  componentDidMount(){
-    this.setState({needs_update: true})
-  }
-
-
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -206,7 +199,7 @@ class NepiIFTransform extends Component {
     const transform_data_copy = this.state.transform_data_copy
     if(event.key === 'Enter'){
       const value = parseFloat(event.target.value)
-      if (value === NaN) {
+      if (isNaN(value)) {
         transform_data[name] = transform_data_copy[name]
       }
       else{
@@ -230,8 +223,6 @@ class NepiIFTransform extends Component {
 
 
   renderTransform() {
-    const transformNamespace = this.state.transformNamespace ? this.state.transformNamespace : "None"
-
     const transform_data = this.props.transform_data !== undefined ? this.props.transform_data : ((this.state.transform_data != null) ? this.state.transform_data : null)
 
 
@@ -410,7 +401,6 @@ class NepiIFTransform extends Component {
   }
 
   renderConfigs(){
-    const { sendTriggerMsg } = this.props.ros
     const configNamespace = this.state.configNamespace ? this.state.configNamespace : this.state.transformNamespace
     return(
       <Columns>

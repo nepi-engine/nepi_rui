@@ -98,7 +98,7 @@ class NepiDeviceIDX extends Component {
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+    if ((namespace !== null) && (namespace !== 'None') && (topics.includes(namespace) === false)) {
       this.clearDeviceSelection()
     }
     if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
@@ -125,7 +125,6 @@ class NepiDeviceIDX extends Component {
     var items = []
     var data_product
     var data_topic
-    var image_topic
 
     for (var i = 0; i < data_products.length; i++) {
       data_product = data_products[i]
@@ -158,15 +157,9 @@ class NepiDeviceIDX extends Component {
 
   // Handler for Image topic selection
   onDataProductSelected(event) {
-    const namespace = this.state.namespace ? this.state.namespace : "None"
-    const capabilities = this.props.ros.npxDevices[namespace]
-    const data_products = capabilities ? capabilities.data_products : []
-
     const index = event.nativeEvent.target.selectedIndex
     const text = event.nativeEvent.target[index].text
     const value = event.target.value
-
-    const data_index = data_products.indexOf(value)
 
     this.setState({
       data_topic: value,
@@ -203,7 +196,7 @@ class NepiDeviceIDX extends Component {
 
 
   renderDeviceSelector() {
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
+    const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None' )
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
 
@@ -222,7 +215,7 @@ class NepiDeviceIDX extends Component {
                       </Select>
                     </Label>
 
-                    {(device_selected == true) ?
+                    {(device_selected === true) ?
                     this.renderDataProductSelector()
                     : null }
 
@@ -247,7 +240,7 @@ class NepiDeviceIDX extends Component {
     var image_name = ''
     for (var i = 0; i < imageTopics.length; i++) {
       image_name = imageTopics[i].split('/').pop()
-      if ((imageTopics[i].indexOf(dp_namespace) !== -1) && (image_name != 'depth_map')) {
+      if ((imageTopics[i].indexOf(dp_namespace) !== -1) && (image_name !== 'depth_map')) {
         image_topic = imageTopics[i]
         break
       }
@@ -257,7 +250,6 @@ class NepiDeviceIDX extends Component {
 
   renderImageViewer() {
     const image_topic = this.findImageTopic(this.state.data_product)
-    const namespace = this.state.namespace ? this.state.namespace : "None"
     const image_text = image_topic.split('/idx')[0].split('/').pop() + '-' + this.state.data_product
 
     //const double_slider_topic = (this.state.data_product === 'depth_map') ? namespace + "/set_range_window" : null
@@ -283,7 +275,7 @@ class NepiDeviceIDX extends Component {
 
 
   render() {
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
+    const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const data_product = this.state.data_product
     const capabilities = this.props.ros.idxDevices[namespace]
@@ -301,7 +293,7 @@ class NepiDeviceIDX extends Component {
               <div style={{ width: "75%" }}>
 
 
-              {(device_selected == true) ?
+              {(device_selected === true) ?
               this.renderImageViewer()
               : null}
 
@@ -321,7 +313,7 @@ class NepiDeviceIDX extends Component {
     
 
 
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiDeviceIDXControls
                               namespace={namespace}
                               dataProduct={data_product}
@@ -331,14 +323,14 @@ class NepiDeviceIDX extends Component {
                         : null}
 
                         
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
                             title={"Device Settings"}
                         />
                         : null}
 
-                        {(device_selected == true) ?
+                        {(device_selected === true) ?
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}

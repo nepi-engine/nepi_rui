@@ -56,7 +56,7 @@ class NepiControlsLightsControls extends Component {
 
       namespace: 'None',
       status_msg: null,
-      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : false,
+      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : false,
 
       lxsIdentifier: null,
       lsxSerialNum: null,
@@ -96,7 +96,6 @@ class NepiControlsLightsControls extends Component {
 
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
-    const last_msg = this.state.status_msg
     this.setState({
       status_msg: message,
       lsxSerialNum: message.serial_num,
@@ -175,10 +174,7 @@ class NepiControlsLightsControls extends Component {
     var has_on_off_control = false
     var has_intensity_control = false
     var has_color_control = false
-    var color_options_list = ["None"]
     var has_kelvin_control = false
-    var kelvin_min = 1000
-    var kelvin_max = 100
     var has_blink_control = false
     var has_hw_strobe = false
     var reports_temperature = false
@@ -190,10 +186,7 @@ class NepiControlsLightsControls extends Component {
       has_on_off_control = capabilities.has_on_off_control
       has_intensity_control = capabilities.has_intensity_control
       has_color_control = capabilities.has_color_control
-      color_options_list = capabilities.color_options_list
       has_kelvin_control = capabilities.has_kelvin_control
-      kelvin_min = capabilities.kelvin_min
-      kelvin_max = capabilities.kelvin_max
       has_blink_control = capabilities.has_blink_control
       has_hw_strobe = capabilities.has_hw_strobe
       reports_temperature = capabilities.reports_temperature
@@ -297,7 +290,6 @@ class NepiControlsLightsControls extends Component {
 
   
   renderControlPanel() {
-    const lsxTempC = this.state.lsxTempC
     const NoneOption = <Option>None</Option>
     const namespace = this.state.namespace
 
@@ -312,8 +304,6 @@ class NepiControlsLightsControls extends Component {
     var kelvin_max = 100
     var has_blink_control = false
     var has_hw_strobe = false
-    var reports_temperature = false
-    var reports_power = false
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
@@ -327,25 +317,24 @@ class NepiControlsLightsControls extends Component {
       kelvin_max = capabilities.kelvin_max
       has_blink_control = capabilities.has_blink_control
       has_hw_strobe = capabilities.has_hw_strobe
-      reports_temperature = capabilities.reports_temperature
-      reports_power = capabilities.reports_power
     }
 
     const { userRestricted} = this.props.ros
     const device_controls_restricted = userRestricted.indexOf('DEVICE-LSX-CONTROL') !== -1
 
-    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
+    const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : device_controls_restricted === false
    const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
 
 
 
     if (device_controls_restricted === true){
-              <Columns>
-                <Column>
+      return (
+        <Columns>
+          <Column>
 
-                </Column>
-              </Columns>
-
+          </Column>
+        </Columns>
+      )
     }
     else {
       return (
@@ -479,7 +468,7 @@ class NepiControlsLightsControls extends Component {
 
 
   render() {
-    const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
+    const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
 
     const status_msg = this.state.status_msg
     if (status_msg == null){
@@ -511,7 +500,7 @@ class NepiControlsLightsControls extends Component {
     else {
       return (
 
-          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
+          <Section title={(this.props.title !== undefined) ? this.props.title : ""}>
 
               { this.renderControlData()}
               { this.renderControlPanel()}

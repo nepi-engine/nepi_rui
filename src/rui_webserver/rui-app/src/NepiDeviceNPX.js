@@ -99,9 +99,6 @@ class NepiDeviceNPX extends Component {
 
 
   renderDeviceSelection() {
-    const NoneOption = <Option>None</Option>
-    const device_selected = (this.state.namespace != null && this.state.namespace !== 'None' )
-    const data_topic = this.state.data_topic
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
       return(
@@ -204,7 +201,7 @@ class NepiDeviceNPX extends Component {
                         : null}
 
 
-                        {(device_selected == true) ?
+                        {(device_selected === true) ?
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}

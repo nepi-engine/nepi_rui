@@ -29,11 +29,6 @@ import Label from "./Label"
 import Styles from "./Styles"
 
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
-
 function styleTextEdited(text_box_element) {
   text_box_element.style.color = Styles.vars.colors.red
   text_box_element.style.fontWeight = "bold"
@@ -43,14 +38,6 @@ function styleTextUnedited(text_box_element) {
   text_box_element.style.color = Styles.vars.colors.black
   text_box_element.style.fontWeight = "normal"
 }
-
-const styles = Styles.Create({
-  link_style: {
-    color: Styles.vars.colors.blue,
-    fontSize: Styles.vars.fontSize.medium,
-    //lineHeight: Styles.vars.lineHeights.xl 
-  }
-})
 
 @inject("ros")
 @observer

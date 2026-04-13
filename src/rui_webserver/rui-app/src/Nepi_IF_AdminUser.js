@@ -22,13 +22,11 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Toggle from "react-toggle"
-import Input from "./Input"
 //import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
 
-import {  onChangeSwitchStateValue } from "./Utilities"
 
 
 @inject("ros")
@@ -73,7 +71,6 @@ class NepiIFAdminUser extends Component {
 
     
     renderAdminRestriction(name) {
-    const base_namespace = this.getBaseNamespace()
     const {userRestrictions} = this.props.ros
     const view_restricted = userRestrictions.indexOf(name + '-VIEW') !== -1
     const control_restricted = userRestrictions.indexOf(name + '-CONTROL') !== -1

@@ -22,36 +22,9 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Toggle from "react-toggle"
-import Input from "./Input"
-import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
-
-import {  onChangeSwitchStateValue } from "./Utilities"
-
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
-
-function styleTextEdited(text_box_element) {
-  text_box_element.style.color = Styles.vars.colors.red
-  text_box_element.style.fontWeight = "bold"
-}
-
-function styleTextUnedited(text_box_element) {
-  text_box_element.style.color = Styles.vars.colors.black
-  text_box_element.style.fontWeight = "normal"
-}
-
-const styles = Styles.Create({
-  link_style: {
-    color: Styles.vars.colors.blue,
-    fontSize: Styles.vars.fontSize.medium,
-    //lineHeight: Styles.vars.lineHeights.xl 
-  }
-})
 
 @inject("ros")
 @observer
@@ -92,8 +65,8 @@ class NepiIFAdminModes extends Component {
     const base_namespace = this.getBaseNamespace()
     const run_mode = this.props.ros.systemRunMode
 
-    const develop_mode = run_mode == 'develop'
-    const deploy_mode = run_mode == 'deploy'
+    const develop_mode = run_mode === 'develop'
+    const deploy_mode = run_mode === 'deploy'
 
     const debug_mode = this.props.ros.systemDebugEnabled
     return (
@@ -107,8 +80,8 @@ class NepiIFAdminModes extends Component {
  
                                 <Label title="Develop Mode">
                                       <Toggle
-                                      checked={develop_mode == true}
-                                      disbled={develop_mode == true}
+                                      checked={develop_mode === true}
+                                      disbled={develop_mode === true}
                                       onClick={() => this.sendModeSelection('develop')}>
                                     </Toggle>
                                 </Label>
@@ -124,8 +97,8 @@ class NepiIFAdminModes extends Component {
 
                               <Label title="Deploy Mode">
                                     <Toggle
-                                    checked={deploy_mode == true}
-                                    disbled={deploy_mode == true}
+                                    checked={deploy_mode === true}
+                                    disbled={deploy_mode === true}
                                     onClick={() => this.sendModeSelection('deploy')}>
                                   </Toggle>
                               </Label>
@@ -140,7 +113,7 @@ class NepiIFAdminModes extends Component {
 
                               <Label title="Debug Mode">
                                     <Toggle
-                                    checked={debug_mode == true}
+                                    checked={debug_mode === true}
                                     onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/enable_debug_mode", !debug_mode)}>
                                   </Toggle>
                               </Label>

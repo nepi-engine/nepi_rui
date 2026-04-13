@@ -22,7 +22,6 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Toggle from "react-toggle"
-import Input from "./Input"
 //import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
@@ -37,11 +36,6 @@ import NepiIFAdminDeviceNames from "./Nepi_IF_AdminDeviceNames"
 import NepiIFAdminManagers from "./Nepi_IF_AdminManagers"
 import NepiIFAdminUser from "./Nepi_IF_AdminUser"
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
-
 function styleTextEdited(text_box_element) {
   text_box_element.style.color = Styles.vars.colors.red
   text_box_element.style.fontWeight = "bold"
@@ -51,14 +45,6 @@ function styleTextUnedited(text_box_element) {
   text_box_element.style.color = Styles.vars.colors.black
   text_box_element.style.fontWeight = "normal"
 }
-
-const styles = Styles.Create({
-  link_style: {
-    color: Styles.vars.colors.blue,
-    fontSize: Styles.vars.fontSize.medium,
-    //lineHeight: Styles.vars.lineHeights.xl 
-  }
-})
 
 @inject("ros")
 @observer

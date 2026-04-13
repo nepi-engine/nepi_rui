@@ -214,7 +214,6 @@ class RangeAdjustment extends Component {
   }
 
   render() {
-    const hide_display = this.props.hide_display ? this.props.hide_display : false
     return (
 
       <div style={{ display: "flex", ...styles.root }}>

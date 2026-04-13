@@ -397,15 +397,6 @@ updateMgrTimeStatusListener() {
 
     const license_issue_date = license_info_valid && "issued_date" in license_info["licensed_components"]["nepi_base"]?
     license_info["licensed_components"]["nepi_base"]["issued_date"] : ""
-
-    const license_issue_version = license_info_valid && "issued_version" in license_info["licensed_components"]["nepi_base"]?
-      license_info["licensed_components"]["nepi_base"]["issued_version"] : ""
-
-    const license_expiration_date = license_info_valid && "expiration_date" in license_info["licensed_components"]["nepi_base"]?
-      license_info["licensed_components"]["nepi_base"]["expiration_date"] : null
-
-    const license_expiration_version = license_info_valid && "expiration_version" in license_info["licensed_components"]["nepi_base"]?
-      license_info["licensed_components"]["nepi_base"]["expiration_version"] : null
  
 
 
@@ -468,7 +459,7 @@ updateMgrTimeStatusListener() {
   }
 
   renderLicenseInfo() {
-    const {license_info, license_key, license_type, license_valid, license_status} = this.props.ros
+    const {license_key, license_type, license_valid, license_status} = this.props.ros
 
     const license_hw_key = license_key
 
@@ -595,26 +586,24 @@ updateMgrTimeStatusListener() {
     var clock_synced = false
     var auto_sync_clocks = false
     var auto_sync_timezones = false
-    var show_sync_button = false
 
     const timeStatus = this.state.timeStatus
     const timezones_list_viewable  = this.state.timezones_list_viewable
 
+    const manager_running = managers_running_list.indexOf('MANAGER-TIME') !== -1
+    const time_view_restricted = userRestricted.indexOf('MANAGER-TIME-VIEW') !== -1
+    const time_controls_restricted = userRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
+
     if (timeStatusTime && timeStatus){
-      
+
       clock_synced = timeStatus.clock_synced
       auto_sync_clocks = timeStatus.auto_sync_clocks
       auto_sync_timezones = timeStatus.auto_sync_timezones
 
-      show_sync_button = (IS_LOCAL === false && systemManagesTime === true && clock_synced === false && auto_sync_clocks === false && time_controls_restricted === false )
       time_str = timeStatusTimeStr
       date_str = timeStatusDateStr
       timezone = timeStatusTimezoneDesc
     }
-
-    const manager_running = managers_running_list.indexOf('MANAGER-TIME') !== -1
-    const time_view_restricted = userRestricted.indexOf('MANAGER-TIME-VIEW') !== -1
-    const time_controls_restricted = userRestricted.indexOf('MANAGER-TIME-CONTROL') !== -1
 
     if (manager_running === false || time_view_restricted === true){
       return (

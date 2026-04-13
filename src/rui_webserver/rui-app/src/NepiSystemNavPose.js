@@ -33,12 +33,7 @@ import Styles from "./Styles"
 import {  onChangeSwitchStateValue } from "./Utilities"
 
 
-import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFNavPose from "./Nepi_IF_NavPose"
-import NepiIFTransform from "./Nepi_IF_Transform"
-import NepiIFConfig from "./Nepi_IF_Config"
-
-import moment from "moment"
 
 
 @inject("ros")
@@ -150,7 +145,6 @@ class NavPoseMgr extends Component {
 
     
   toggleViewableFrames() {
-    const set = !this.state.viewableFrames
     this.setState({viewableFrames: true})
   }
 

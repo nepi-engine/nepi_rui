@@ -21,14 +21,12 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Input from "./Input"
-import Select, { Option } from "./Select"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
 import Styles from "./Styles"
-import {createShortUniqueValues} from "./Utilities"
 
 import NepiIFMessagesSelector from "./Nepi_IF_MessagesSelector"
 
@@ -139,7 +137,6 @@ class NepiDashboard extends Component {
       clockNTP,
       syncTime2Device,
       userRestricted,
-      timeStatusTime,
       timeStatusTimeStr,
       timeStatusDateStr,
       timeStatusTimezoneDesc,
@@ -223,8 +220,6 @@ class NepiDashboard extends Component {
     const { wifi_query_response } = this.props.ros
     const internet_connected = (wifi_query_response !== null)? wifi_query_response.internet_connected : false
     
-    const sys_debug = this.props.ros.systemDebugEnabled
-    //Unused const debug_mode = sys_debug ? sys_debug : false
     return (
       <Section title={"System Status"}>
         <Label title={"Heartbeat"}>

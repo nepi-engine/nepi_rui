@@ -263,13 +263,10 @@ class NepiIFSaveData extends Component {
 
   getSaveConfigString() {
     const {saveDataNamespaces , saveDataCaps} = this.props.ros
-    const { namespacePrefix, deviceId} = this.props.ros
-    const base_namespace = '/' + namespacePrefix + '/' + deviceId + '/'
     const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
     const isAllNamespace = (saveNamespace === allNamespace)
     var topic = ''
-    var topic_name = ''
     var namesList = []
     var ratesList = []
     var configsStr = ""
@@ -327,13 +324,10 @@ class NepiIFSaveData extends Component {
 
   getActiveConfigString() {
     const {saveDataNamespaces , saveDataCaps} = this.props.ros
-    const { namespacePrefix, deviceId} = this.props.ros
-    const base_namespace = '/' + namespacePrefix + '/' + deviceId + '/'
     const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
     const isAllNamespace = (saveNamespace === allNamespace)
     var topic = ''
-    var topic_name = ''
     var namesList = []
     var ratesList = []
     var configsStr = ""
@@ -455,7 +449,6 @@ class NepiIFSaveData extends Component {
 
   onChangeBoolSaveDataValue(){
     const {sendBoolMsg}  = this.props.ros
-    const saveNamespace = this.state.saveNamespace
     const saveAll = this.state.saveAll
     const allNamespace = this.getAllNamespace()
     const enabled = (this.state.saveDataEnabled === false)
@@ -509,8 +502,6 @@ class NepiIFSaveData extends Component {
   }
 
   onKeySaveDataRateValue(event) {
-    const saveDataRate = this.state.saveDataRate
-    //Unused const rate = parseFloat(saveDataRate)
     if(event.key === 'Enter'){
       const rate = parseFloat(event.target.value)
       if (!isNaN(rate)){
@@ -754,12 +745,12 @@ class NepiIFSaveData extends Component {
       topic = saveData_topics[i]
       include = true
       if (topic !== allNamespace && topic.indexOf("None") === -1){
-        for (var i2 = 0; i2 < save_exclude_filters.length; i2++) {
+        for (i2 = 0; i2 < save_exclude_filters.length; i2++) {
           if (topic.indexOf(save_exclude_filters[i2]) !== -1 ){
             include = false
           }
         }
-        for (var i3 = 0; i3 < save_include_filters.length; i3++) {
+        for (i3 = 0; i3 < save_include_filters.length; i3++) {
           if (topic.indexOf(save_include_filters[i3]) === -1 ){
             include = false
           }

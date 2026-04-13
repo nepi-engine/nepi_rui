@@ -149,8 +149,8 @@ export function createMenuBaseName(optionStr) {
     var parts = []
     var sliced_parts = []
     parts = optionStr.split('/')
-    if (parts.length > 3){optionStr
-      sliced_parts = parts.slice(3); 
+    if (parts.length > 3){
+      sliced_parts = parts.slice(3);
       menu_name = sliced_parts[0]
     }
     else {

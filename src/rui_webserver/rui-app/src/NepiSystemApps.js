@@ -31,8 +31,6 @@ import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
 
-import { onChangeSwitchStateValue, onDropdownSelectedSetState
-  } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -117,7 +115,7 @@ class AppsMgr extends Component {
 
 
   async checkConnection() {
-    const { connectedToNepi , connectedToAppsMgr, connectedToDriversMgr, connectedToAiModelsMgr} = this.props.ros
+    const { connectedToNepi , connectedToAppsMgr} = this.props.ros
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
                     app_status_msg: null,
@@ -226,7 +224,6 @@ class AppsMgr extends Component {
 
 
   onToggleAppSelection(event){
-    const {sendStringMsg} = this.props.ros
     const app_name = event.target.value
     this.setState({selected_app: app_name})
     this.setState({needs_update: true})
@@ -263,8 +260,6 @@ class AppsMgr extends Component {
     const pkg_name = (app_status_msg != null) ? app_status_msg.pkg_name : ''
     const group = (app_status_msg != null) ? app_status_msg.group : ''
     const node_name = (app_status_msg != null) ? app_status_msg.node_name : ''
-    const license_type = (app_status_msg != null) ? app_status_msg.license_type : ''
-    const license_link = (app_status_msg != null) ? app_status_msg.license_link : ''
         
     const enabled = (app_status_msg != null) ? app_status_msg.enabled : false
     const running = (app_status_msg != null) ? app_status_msg.running : false
@@ -318,7 +313,7 @@ class AppsMgr extends Component {
             <pre style={{ height: "150px", overflowY: "auto" }}>
             {"\nDescription: " + description + 
             "\nStatus: " + msg_str +
-            "\nGroup: " + group  + "     "  + "Node: " + node_name  + "     "  + "Package: " + pkg_name
+            "\nGroup: " + group  + "     Node: " + node_name  + "     Package: " + pkg_name
             }
             </pre>
 
@@ -413,7 +408,6 @@ class AppsMgr extends Component {
     const active_app_list = this.props.ros.apps_active_list
     const hide_app_list = !this.state.viewableApps && !this.state.connected
     const app_group_options = this.getGroupOptions()
-    const app_status_msg = this.state.app_status_msg
 
     return (
 

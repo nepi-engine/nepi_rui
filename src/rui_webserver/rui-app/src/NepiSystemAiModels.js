@@ -410,14 +410,12 @@ class AiModelsMgr extends Component {
 
     const display_name = (model_status_msg != null) ? model_status_msg.display_name : ''
     const description = (model_status_msg != null) ? model_status_msg.description : ''
-    const pkg_name = (model_status_msg != null) ? model_status_msg.model_name : ''
     const framework = (model_status_msg != null) ? model_status_msg.framework : ''
     const type = (model_status_msg != null) ? model_status_msg.type : ''
     const node_name = (model_status_msg != null) ? model_status_msg.node_name : ''
         
     const enabled = (model_status_msg != null) ? model_status_msg.enabled : false
     const running = (model_status_msg != null) ? model_status_msg.running : false
-    const order = (model_status_msg != null) ? model_status_msg.order : null
     const msg_str = (model_status_msg != null) ? model_status_msg.msg_str : ''
 
     const disable_enable = (enabled === false && running === true)
@@ -448,7 +446,7 @@ class AiModelsMgr extends Component {
 
     else if (has_models === false){
 
-    <Section >
+    return (<Section >
 
       <pre style={{ height: "200px", overflowY: "auto" }} align={"center"} textAlign={"center"}>
       {"No models found for selected framework: " + sel_framework + '.' +
@@ -456,7 +454,7 @@ class AiModelsMgr extends Component {
       }
       </pre>
 
-    </Section>  
+    </Section>)
 
 
     }
@@ -541,7 +539,7 @@ class AiModelsMgr extends Component {
                           <pre style={{ height: "150px", overflowY: "auto" }}>
                           {"\nDescription: " + description + 
                           "\nStatus: " + msg_str +
-                          "\nType: " + type  + "     "  + "Node: " + node_name  + "     "  + "Framework: " + framework
+                          "\nType: " + type  + "     Node: " + node_name  + "     Framework: " + framework
                           }
                           </pre>
 
@@ -588,10 +586,8 @@ class AiModelsMgr extends Component {
 
 
 render() {
-  const mgrNamespace = this.getMgrNamespace()
   const selected_framework = this.state.selected_framework
   const active_frameworks = this.props.ros.ai_frameworks_active_list
-  const framework_state = (active_frameworks.indexOf(selected_framework) !== -1 && selected_framework !== "None")
   const connected = this.state.connected
     return (
 

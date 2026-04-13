@@ -95,9 +95,8 @@ class NepiIFImageViewersSelector extends Component {
       }
 
       if (num_windows !== cur_num_windows){
-        const {sendIntMsg, sendTriggerMsg} = this.props.ros     
+        const {sendIntMsg} = this.props.ros
         const num_windows_updated_topic = (this.props.num_windows_updated_topic !== undefined) ? this.props.num_windows_updated_topic : null
-        const image_topics = (this.props.image_topics !== undefined) ? this.props.image_topics : [null,null,null,null]
         this.setState({num_windows: num_windows})
 
         if (num_windows_updated_topic != null){
@@ -516,10 +515,6 @@ class NepiIFImageViewersSelector extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
-    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
-    const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
-    const show_constrols_bar_bottom = (this.props.show_constrols_bar_bottom !== undefined) ? this.props.show_constrols_bar_bottom : false
     
     if (make_section === false){
       return (

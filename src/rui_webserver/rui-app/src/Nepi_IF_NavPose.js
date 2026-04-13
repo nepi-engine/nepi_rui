@@ -140,18 +140,6 @@ class NepiIFNavPose extends Component {
         tilt_deg: message.tilt_deg
       }
 
-     const navpose_times = {
-        navpose_frame: message.navpose_frame,
-        time_location: message.time_location,
-        time_heading: message.time_heading,
-        time_orientation: message.time_orientation,
-        time_position: message.time_position,
-        time_altitude: message.time_altitude,
-        time_depth: message.time_depth,
-        time_pan_tilt: message.time_pan_tilt,
-      }
-
-
       if (JSON.stringify(navpose_data) !== JSON.stringify(last_navpose_data)){
           this.setState({
             navpose_data: navpose_data
@@ -175,7 +163,7 @@ class NepiIFNavPose extends Component {
                     navpose_times: null,
                     connected: false})
     }
-    if (this.state.statusListener != 'None') {
+    if (this.state.statusListener !== 'None') {
         const statusListener = this.props.ros.setupStatusListener(
           navposeNamespace + '/status',
           "nepi_interfaces/NavPoseStatus",
@@ -196,7 +184,7 @@ class NepiIFNavPose extends Component {
       this.setState({dataListener: null, data_msg: null, 
                     navpose_data: null, data_needs_update: false})
     }
-    if (this.state.dataListener != 'None') {
+    if (this.state.dataListener !== 'None') {
         const dataListener = this.props.ros.setupDataListener(
             navposeNamespace,
             "nepi_interfaces/NavPose",
@@ -217,7 +205,7 @@ class NepiIFNavPose extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var navposeNamespace = (this.props.navposeNamespace != undefined && this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
+    var navposeNamespace = (this.props.navposeNamespace !== undefined && this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
                              this.props.navposeNamespace : this.state.navposeNamespace
     if (this.state.navposeNamespace !== navposeNamespace ){
         this.setState({
@@ -279,7 +267,7 @@ class NepiIFNavPose extends Component {
         for (var i = 0; i < navpose_frames.length; i++) {
             items.push(<Option value={navpose_frames_topics[i]}>{navpose_frames[i]}</Option>)
           }
-        if (navposeNamespace == 'None'){
+        if (navposeNamespace === 'None'){
           this.setState({navposeNamespace: navpose_frames_topics[0]})
         }
     }
@@ -376,7 +364,7 @@ class NepiIFNavPose extends Component {
     const navpose_data_copy = this.state.navpose_data_copy
     if(event.key === 'Enter'){
       const value = parseFloat(event.target.value)
-      if (value === NaN) {
+      if (isNaN(value)) {
         navpose_data[name] = navpose_data_copy[name]
       }
       else{
@@ -651,7 +639,6 @@ class NepiIFNavPose extends Component {
         }
 
       render() {
-        const navpose_data = this.state.navpose_data
         const make_section = this.props.make_section !== undefined ? this.props.make_section : true;
         const show_line = (this.props.show_line !== undefined)? this.props.show_line : true
         const show_config = (this.props.show_config !== undefined)? this.props.show_config : false

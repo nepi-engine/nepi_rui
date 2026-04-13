@@ -565,7 +565,7 @@ class Nepi_IF_Settings extends Component {
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
     const settings_view_restricted = userRestricted.indexOf('SYSTEM-SETTINGS-VIEW') !== -1 && (ignore_restrictions === false)
 
-    if (has_settings == false || settings_view_restricted === true){
+    if (has_settings === false || settings_view_restricted === true){
       return (
         <Columns>
         <Column>

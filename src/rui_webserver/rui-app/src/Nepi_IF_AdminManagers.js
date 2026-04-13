@@ -30,7 +30,6 @@ import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import BooleanIndicator from "./BooleanIndicator"
 
-import {  onChangeSwitchStateValue } from "./Utilities"
 
 
 @inject("ros")
@@ -86,7 +85,6 @@ class NepiIFAdminManagers extends Component {
 
     
   toggleViewableManagers() {
-    const set = !this.state.viewableManagers
     this.setState({viewableManagers: true})
   }
 

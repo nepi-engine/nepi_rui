@@ -26,14 +26,12 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
-import { Option } from "./Select"
 import Styles from "./Styles"
 
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
 
-import {createShortUniqueValues} from "./Utilities"
 
 // TODO: This is redundant with the one defined in APP.js
 //const IS_LOCAL = window.location.hostname === "localhost"

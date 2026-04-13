@@ -102,13 +102,13 @@ class ScriptsMgr extends Component {
 
 
   renderSelection() {
-    const { scripts, running_scripts, systemStats} = this.props.ros;
+    const { scripts, running_scripts } = this.props.ros;
     //const { scripts, running_scripts, systemStats} = this.props.ros;
     let filesForListBox = []
     let runningFilesForListBox = [];
 
     //console.log('Scripts scripts:', scripts);
-    filesForListBox = toJS(scripts)  
+    filesForListBox = toJS(scripts)
     //  console.log('Scripts scripts (filesForListBox):', filesForListBox);
     //console.log('systemStats:', systemStats);
     //_systemStats = toJS(systemStats)
@@ -118,12 +118,9 @@ class ScriptsMgr extends Component {
     //console.log('_systemStats:', _systemStats && _systemStats.memory_usage);
     //console.log('_systemStats:', _systemStats && _systemStats.swap_info);
     //console.log('_systemStats:', _systemStats && _systemStats.file_size);
-    
+
     runningFilesForListBox = toJS(running_scripts);
     //console.log('Running scripts (runningFilesForListBox):', runningFilesForListBox);
-
-    const selectedScript = (this.state.selectedScript !== '')? 
-      this.state.selectedScript : this.state.runningSelectedScript
     
     return (
      
@@ -159,11 +156,9 @@ class ScriptsMgr extends Component {
   renderControls() {
     const { scripts, running_scripts, systemStats} = this.props.ros;
     //const { scripts, running_scripts, systemStats} = this.props.ros;
-    let filesForListBox = []
-    let runningFilesForListBox = [];
-
     //console.log('Scripts scripts:', scripts);
-    filesForListBox = toJS(scripts)  
+    let filesForListBox = toJS(scripts)
+
     //  console.log('Scripts scripts (filesForListBox):', filesForListBox);
     //console.log('systemStats:', systemStats);
     //_systemStats = toJS(systemStats)
@@ -174,14 +169,14 @@ class ScriptsMgr extends Component {
     //console.log('_systemStats:', _systemStats && _systemStats.swap_info);
     //console.log('_systemStats:', _systemStats && _systemStats.file_size);
     
-    runningFilesForListBox = toJS(running_scripts);
+    let runningFilesForListBox = toJS(running_scripts);
     //console.log('Running scripts (runningFilesForListBox):', runningFilesForListBox);
 
-    const selectedScript = (this.state.selectedScript !== '')? 
+    const selectedScript = (this.state.selectedScript !== '')?
       this.state.selectedScript : this.state.runningSelectedScript
-    
+
     return (
-     
+
       <Columns>
         <Column>
              <Section title={"Control and Status"}>

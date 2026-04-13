@@ -80,7 +80,7 @@ class NepiControlsLights extends Component {
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+    if ((namespace !== null) && (namespace !== 'None') && (topics.includes(namespace) === false)) {
       this.clearDeviceSelection()
     }
     if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
@@ -98,9 +98,6 @@ class NepiControlsLights extends Component {
 
 
   renderDeviceSelection() {
-    const NoneOption = <Option>None</Option>
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None' )
-    const data_topic = this.state.data_topic
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
       return(
@@ -148,7 +145,7 @@ class NepiControlsLights extends Component {
 
 
  render() {
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
+    const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const capabilities = this.props.ros.lsxDevices[namespace]
     const node_name = capabilities ? capabilities.device_node_name : 'None'
@@ -165,7 +162,7 @@ class NepiControlsLights extends Component {
               <div style={{ width: "75%" }}>
 
 
-              {(device_selected == true) ?
+              {(device_selected === true) ?
               this.renderImageViewer()
               : null}
 
@@ -183,7 +180,7 @@ class NepiControlsLights extends Component {
                     {this.renderDeviceSelection()}
 
 
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiDeviceLSXControls
                               namespace={namespace}
                               title={ "Pan Tilt Controls"}
@@ -191,7 +188,7 @@ class NepiControlsLights extends Component {
                         : null}
 
                         
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
                             allways_show_settings={true}
@@ -199,7 +196,7 @@ class NepiControlsLights extends Component {
                         />
                         : null}
 
-                        {(device_selected == true) ?
+                        {(device_selected === true) ?
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}

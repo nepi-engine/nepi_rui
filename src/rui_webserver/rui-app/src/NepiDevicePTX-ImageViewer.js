@@ -24,23 +24,15 @@ import { observer, inject } from "mobx-react"
 
 //import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
-import Section from "./Section"
 import Button, { ButtonMenu } from "./Button"
 
 import { Column, Columns } from "./Columns"
-import Styles from "./Styles"
 
 
 import { SliderAdjustment } from "./AdjustmentWidgets"
 
 import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFImageViewersSelector from "./Nepi_IF_ImageViewerSelector"
-
-
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
 
 
 @inject("ros")
@@ -90,7 +82,7 @@ class NepiDevicePTXImageViewer extends Component {
   // Function for configuring and subscribing to Status
   updateStatusListener() {
     const { namespace } = this.props
-    if (this.state.statusListener != null) {
+    if (this.state.statusListener !== null) {
       this.state.statusListener.unsubscribe()
        this.setState({ status_msg: null, statusListener: null})
     }
@@ -137,9 +129,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = (this.props.namespace !== null) ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
 
-    const use_images_selector = (this.props.use_images_selector != undefined) ? this.props.use_images_selector : false 
-    const show_save_controls = (this.props.show_save_controls != undefined) ? this.props.show_save_controls : false
-    const show_image_controls = (this.props.show_image_controls != undefined) ? this.props.show_image_controls : false
+    const use_images_selector = (this.props.use_images_selector !== undefined) ? this.props.use_images_selector : false
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : false
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : false
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
 

@@ -37,8 +37,8 @@ class NepiSystemSoftware extends Component {
     constructor(props) {
         super(props)
     
-        this.renderSysSoftwareUpdate = this.renderSysSoftwareUpdate.bind(this),
-        this.onImageTopicSelected = this.onImageTopicSelected.bind(this),
+        this.renderSysSoftwareUpdate = this.renderSysSoftwareUpdate.bind(this)
+        this.onImageTopicSelected = this.onImageTopicSelected.bind(this)
         this.state = {
           selected_source_control: null
         }
@@ -84,11 +84,10 @@ class NepiSystemSoftware extends Component {
     const { sendStringMsg } = this.props.ros
 
     var ind = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[ind].text
     var value = event.target.value
 
     const { namespacePrefix, deviceId } = this.props.ros
-    const namespace = '/' + namespacePrefix + '/' + deviceId + '/' + 'select_nepi_image'
+    const namespace = '/' + namespacePrefix + '/' + deviceId + '/select_nepi_image'
     sendStringMsg(namespace, value)
   }
 

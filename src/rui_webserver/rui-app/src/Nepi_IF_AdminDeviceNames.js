@@ -21,7 +21,6 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Toggle from "react-toggle"
 import Input from "./Input"
 import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
@@ -29,7 +28,6 @@ import Label from "./Label"
 import Styles from "./Styles"
 import BooleanIndicator from "./BooleanIndicator"
 
-import {  onChangeSwitchStateValue } from "./Utilities"
 
 
 @inject("ros")
@@ -133,7 +131,6 @@ class NepiIFAdminDeviceName extends Component {
 
     
     renderAdminDeviceNames(name, alias, index) {
-    const base_namespace = this.getBaseNamespace()
     const {devices_running_name_list} = this.props.ros
     const running = (devices_running_name_list.indexOf(name) !== -1 || devices_running_name_list.indexOf(alias) !== -1 )
     return (

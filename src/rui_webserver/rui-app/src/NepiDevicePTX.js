@@ -36,11 +36,6 @@ import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 
 
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
-
 @inject("ros")
 @observer
 
@@ -90,7 +85,7 @@ class NepiDevicePTX extends Component {
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    if ((namespace != null) && (namespace != 'None') && (topics.includes(namespace) === false)) {
+    if ((namespace !== null) && (namespace !== 'None') && (topics.includes(namespace) === false)) {
       this.clearDeviceSelection()
     }
     if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
@@ -157,7 +152,7 @@ class NepiDevicePTX extends Component {
 
 
  render() {
-    const device_selected = (this.state.namespace != null && this.state.namespace != 'None')
+    const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const capabilities = this.props.ros.ptxDevices[namespace]
     const node_name = capabilities ? capabilities.device_node_name : 'None'
@@ -174,7 +169,7 @@ class NepiDevicePTX extends Component {
               <div style={{ width: "73%" }}>
 
 
-              {(device_selected == true) ?
+              {(device_selected === true) ?
               this.renderImageViewer()
               : null}
 
@@ -192,7 +187,7 @@ class NepiDevicePTX extends Component {
                     {this.renderDeviceSelection()}
 
 
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiDevicePTXControls
                               namespace={namespace}
                               title={ "Pan Tilt Controls"}
@@ -200,7 +195,7 @@ class NepiDevicePTX extends Component {
                         : null}
 
                         
-                          {(device_selected == true) ?
+                          {(device_selected === true) ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
                             allways_show_settings={true}
@@ -208,7 +203,7 @@ class NepiDevicePTX extends Component {
                         />
                         : null}
 
-                        {(device_selected == true) ?
+                        {(device_selected === true) ?
                           <NepiIFAdmin
                               title={"Advanced Settings"}
                               show_advanced_option={true}

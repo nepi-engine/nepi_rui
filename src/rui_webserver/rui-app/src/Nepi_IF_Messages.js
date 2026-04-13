@@ -272,8 +272,6 @@ class NepiIFMessages extends Component {
 
   render() {
     //Unused const show_debug = this.props.ros.systemDebugEnabled
-    const connected = this.state.connected
-    const msg_str_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
     //Unused const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
     //Unused const paused = this.state.paused
     const { userRestricted} = this.props.ros

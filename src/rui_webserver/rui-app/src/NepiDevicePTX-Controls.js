@@ -23,7 +23,6 @@ import Toggle from "react-toggle"
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
-import Select, { Option } from "./Select"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
@@ -32,7 +31,6 @@ import Button, { ButtonMenu } from "./Button"
 //import BooleanIndicator from "./BooleanIndicator"
 
 import {setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue} from "./Utilities"
-import {createShortValuesFromNamespaces} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
@@ -53,7 +51,7 @@ class NepiDevicePTXControls extends Component {
       
       namespace : null,
       status_msg: null,
-      show_controls: (this.props.show_controls != undefined) ? this.props.show_controls : false,
+      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : false,
 
       panHomePos : null,
       tiltHomePos : null,
@@ -238,8 +236,8 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   }
 
   onKeyText(e) {
-    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, onSetPTXHardStopPos} = this.props.ros
-    const namespace = (this.props.namespace != undefined) ? this.props.namespace : 'None'
+    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos} = this.props.ros
+    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
 
     const devicesList = Object.keys(ptxDevices)
     var has_sep_pan_tilt = false
@@ -326,15 +324,11 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
     const devices = this.props.ros.ptxDevices
     var has_abs_pos = false
-    var has_timed_pos = false
-    var has_speed_control = false
     var has_homing = false
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
       has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
-      has_timed_pos = capabilities && (capabilities.has_timed_positioning === true)
-      has_speed_control = capabilities && (capabilities.has_adjustable_speed)
       has_homing = capabilities && (capabilities.has_homing)
     }
 
@@ -475,14 +469,12 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
     const devices = this.props.ros.ptxDevices
     var has_abs_pos = false
-    var has_timed_pos = false
     var has_speed_control = false
     var has_homing = false
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
       has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
-      has_timed_pos = capabilities && (capabilities.has_timed_positioning === true)
       has_speed_control = capabilities && (capabilities.has_adjustable_speed)
       has_homing = capabilities && (capabilities.has_homing)
     }
@@ -507,18 +499,13 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const { userRestricted} = this.props.ros
     const device_controls_restricted = userRestricted.indexOf('DEVICE-PTX-CONTROL') !== -1
 
-    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
+    const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : device_controls_restricted === false
        const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
 
 
 
     if (device_controls_restricted === true){
-              <Columns>
-                <Column>
-
-                </Column>
-              </Columns>
-
+      return null
     }
 
     else {
@@ -737,7 +724,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     else {
       return (
 
-          <Section title={(this.props.title != undefined) ? this.props.title : ""}>
+          <Section title={(this.props.title !== undefined) ? this.props.title : ""}>
 
 
               { this.renderControlData()}
