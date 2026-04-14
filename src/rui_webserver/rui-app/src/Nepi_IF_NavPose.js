@@ -405,26 +405,26 @@ class NepiIFNavPose extends Component {
           const latitude = has_location === true && navpose_data.latitude !== -999 ? navpose_data.latitude : null
           const longitude = has_location === true && navpose_data.longitude !== -999 ? navpose_data.longitude : null
 
-          const has_heading = navpose_data.has_location
+          const has_heading = navpose_data.has_heading
           const heading_deg = has_heading === true && navpose_data.heading_deg !== -999  ? navpose_data.heading_deg : null
 
-          const has_position = navpose_data.has_location
+          const has_position = navpose_data.has_position
           const x_m = has_position === true && navpose_data.x_m !== -999 ? navpose_data.x_m : null
           const y_m = has_position === true && navpose_data.y_m !== -999 ? navpose_data.y_m : null
           const z_m = has_position === true && navpose_data.z_m !== -999 ? navpose_data.z_m : null
 
-          const has_orientation = navpose_data.has_location
+          const has_orientation = navpose_data.has_orientation
           const roll_deg = has_orientation === true && navpose_data.roll_deg !== -999 ? navpose_data.roll_deg : null
           const pitch_deg = has_orientation === true && navpose_data.pitch_deg !== -999 ? navpose_data.pitch_deg : null
           const yaw_deg = has_orientation === true && navpose_data.yaw_deg !== -999 ? navpose_data.yaw_deg : null
 
-          const has_altitude = navpose_data.has_location
+          const has_altitude = navpose_data.has_altitude
           const altitude_m = has_altitude === true && navpose_data.altitude_m !== -999 ? navpose_data.altitude_m : null
 
-          const has_depth= navpose_data.has_location          
+          const has_depth= navpose_data.has_depth          
           const depth_m = has_depth === true && navpose_data.depth_m !== -999 ? navpose_data.depth_m : null
 
-          const has_pan_tilt = navpose_data.has_location
+          const has_pan_tilt = navpose_data.has_pan_tilt
           const pan_deg = has_pan_tilt === true && navpose_data.pan_deg !== -999 ? navpose_data.pan_deg : null
           const tilt_deg = has_pan_tilt === true && navpose_data.tilt_deg !== -999 ? navpose_data.tilt_deg : null
 
