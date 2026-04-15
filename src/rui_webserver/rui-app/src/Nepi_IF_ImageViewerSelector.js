@@ -148,34 +148,32 @@ class NepiIFImageViewerSelector extends Component {
         index = sorted_items.indexOf(selected_image)
         if (selected_ind !== index || selected_text !== names[index]) {
           this.setState({
-
+            selected_image: selected_image,
             selected_image_index: index,
             selected_image_text: names[index]})
-          }      
+          }    
+        updated_image = true  
         this.setState({image_topics: sorted_items, image_topics_names: names})
       
       }
-
-      if (selected_image === 'None' ) {
-        if (sorted_items.length > 0 && auto_select_image === true) {
+      if (selected_image === "None" && sorted_items.length > 0 && auto_select_image === true) {
           selected_image = sorted_items[0]
           this.setState({
                         selected_image: selected_image,
                         selected_image_index: 0,
                         selected_image_text: names[0]})
           updated_image = true
-        }
-        else if (selected_image !== 'None' && auto_select_image === true) {
-          selected_image = 'None'
-          this.setState({
-           
-            selected_image: selected_image,
-            selected_image_index: -1,
-            selected_image_text: 'None'})
-          updated_image = true
-        }
-        
       }
+      else if (selected_image !== "None" && sorted_items.length === 0 && auto_select_image === true) {
+        selected_image = 'None'
+        this.setState({
+          
+          selected_image: selected_image,
+          selected_image_index: -1,
+          selected_image_text: 'None'})
+        updated_image = true
+      }
+        
       // else {
       //   index = sorted_items.indexOf(selected_image)
       //   index_changed = (selected_ind !== index) 

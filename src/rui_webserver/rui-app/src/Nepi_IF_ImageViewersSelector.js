@@ -288,7 +288,7 @@ class NepiIFImageViewersSelector extends Component {
     const colFlexSize_1 = (has_col_2 === false)? "100%" : "49%"
     const colFlexSize_gap = (has_col_2 === false)? "0%" : "2%"
     const colFlexSize_2 = (has_col_2 === false)? "0%" : "49%"
-    const make_section = (num_windows !== 1)
+    const make_section = true //(num_windows !== 1)
 
     
   
@@ -300,27 +300,27 @@ class NepiIFImageViewersSelector extends Component {
                   <div style={{ width: colFlexSize_1 }}>
 
 
-                        <div id="Image1Viewer">
-                          <NepiIFImageViewerSelector
-                            id="0"
-                            image_index={0}
-                            image_topic={image_topics[0]}
-                            title={titles[0]}
-                            streamingImageQuality={streamingImageQuality}
-                            exclude_filters={exclude_filters}
-                            include_filters={include_filters}
-                            show_image_controls={show_image_controls}
-                            show_selector={show_selectors}
-                            show_selector_buttons={show_selector_buttons}
-                            show_reset_button={show_reset_button}
-                            allow_pan_zoom={allow_pan_zoom}
-                            mouse_event_topic={mouse_event_topics[0]}
-                            select_updated_topic={select_updated_topics[0]}
-                            auto_select_image={auto_select_image}
-                            make_section={make_section}
-                            show_save_controls={false}
-                          />
-                        </div>
+                      <div id="Image1Viewer">
+                        <NepiIFImageViewerSelector
+                          id="0"
+                          image_index={0}
+                          image_topic={image_topics[0]}
+                          title={titles[0]}
+                          streamingImageQuality={streamingImageQuality}
+                          exclude_filters={exclude_filters}
+                          include_filters={include_filters}
+                          show_image_controls={show_image_controls}
+                          show_selector={show_selectors}
+                          show_selector_buttons={show_selector_buttons}
+                          show_reset_button={show_reset_button}
+                          allow_pan_zoom={allow_pan_zoom}
+                          mouse_event_topic={mouse_event_topics[0]}
+                          select_updated_topic={select_updated_topics[0]}
+                          auto_select_image={auto_select_image}
+                          make_section={make_section}
+                          show_save_controls={false}
+                        />
+                      </div>
 
  
                   </div>
