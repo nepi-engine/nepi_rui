@@ -89,12 +89,12 @@ class NepiDevicePTXControls extends Component {
 
     const panHomePos = message.pan_home_pos_deg
     const tiltHomePos = message.tilt_home_pos_deg
-    const panHardStopMin = message.pan_max_hardstop_deg
-    const tiltHardStopMin = message.tilt_max_hardstop_deg
-    const panHardStopMax = message.pan_min_hardstop_deg
-    const tiltHardStopMax = message.tilt_min_hardstop_deg
+    const panHardStopMin = message.pan_min_hardstop_deg
+    const tiltHardStopMin = message.tilt_min_hardstop_deg
+    const panHardStopMax = message.pan_max_hardstop_deg
+    const tiltHardStopMax = message.tilt_max_hardstop_deg
     const panSoftStopMin = message.pan_min_softstop_deg
-    const tiltSoftStopMin = message.pan_min_softstop_deg
+    const tiltSoftStopMin = message.tilt_min_softstop_deg
     const panSoftStopMax = message.pan_max_softstop_deg
     const tiltSoftStopMax = message.tilt_max_softstop_deg
     
@@ -106,12 +106,12 @@ class NepiDevicePTXControls extends Component {
        needs_update = (
           panHomePos !== last_status_msg.pan_home_pos_deg  ||
           tiltHomePos !== last_status_msg.tilt_home_pos_deg  ||
-          panHardStopMin !== last_status_msg.pan_max_hardstop_deg  ||
-          tiltHardStopMin !== last_status_msg.tilt_max_hardstop_deg  ||
-          panHardStopMax !== last_status_msg.pan_min_hardstop_deg  ||
-          tiltHardStopMax !== last_status_msg.tilt_min_hardstop_deg  ||
+          panHardStopMin !== last_status_msg.pan_min_hardstop_deg  ||
+          tiltHardStopMin !== last_status_msg.tilt_min_hardstop_deg  ||
+          panHardStopMax !== last_status_msg.pan_max_hardstop_deg  ||
+          tiltHardStopMax !== last_status_msg.tilt_max_hardstop_deg  ||
           panSoftStopMin !== last_status_msg.pan_min_softstop_deg  ||
-          tiltSoftStopMin !== last_status_msg.pan_min_softstop_deg  ||
+          tiltSoftStopMin !== last_status_msg.tilt_min_softstop_deg  ||
           panSoftStopMax !== last_status_msg.pan_max_softstop_deg  ||
           tiltSoftStopMax !== last_status_msg.tilt_max_softstop_deg 
       )
@@ -120,12 +120,12 @@ class NepiDevicePTXControls extends Component {
       this.setState({  
           panHomePos : round(message.pan_home_pos_deg, 1),
           tiltHomePos : round(message.tilt_home_pos_deg, 1),
-          panHardStopMin : round(message.pan_max_hardstop_deg, 1),
-          tiltHardStopMin : round(message.tilt_max_hardstop_deg, 1),
-          panHardStopMax : round(message.pan_min_hardstop_deg, 1),
-          tiltHardStopMax : round(message.tilt_min_hardstop_deg, 1),
+          panHardStopMin : round(message.pan_min_hardstop_deg, 1),
+          tiltHardStopMin : round(message.tilt_min_hardstop_deg, 1),
+          panHardStopMax : round(message.pan_max_hardstop_deg, 1),
+          tiltHardStopMax : round(message.tilt_max_hardstop_deg, 1),
           panSoftStopMin : round(message.pan_min_softstop_deg, 1),
-          tiltSoftStopMin : round(message.pan_min_softstop_deg, 1),
+          tiltSoftStopMin : round(message.tilt_min_softstop_deg, 1),
           panSoftStopMax : round(message.pan_max_softstop_deg, 1),
           tiltSoftStopMax : round(message.tilt_max_softstop_deg, 1)
       })
