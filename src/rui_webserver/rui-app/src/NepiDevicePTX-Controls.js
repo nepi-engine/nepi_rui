@@ -241,7 +241,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       {
         panElement = document.getElementById("PTXPanGoto")
         setElementStyleModified(panElement)
-        this.setState({tiltHomePos: e.target.value})
+        this.setState({panGoto: e.target.value})
              
       }
         
@@ -249,7 +249,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
         {
           tiltElement = document.getElementById("PTXTiltGoto")
           setElementStyleModified(tiltElement)
-          this.setState({tiltHomePos: e.target.value})         
+          this.setState({tiltGoto: e.target.value})         
           
         }
 
@@ -302,35 +302,35 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                             Number(tiltMinElement.value), Number(tiltMaxElement.value))
       }
       else if (e.target.id === "PTXPanGoto") 
+      {
+        panElement = document.getElementById("PTXPanGoto")
+        tiltElement = document.getElementById("PTXTiltGoto")                    
+        if (has_sep_pan_tilt === true){
+          onSetPTXGotoPanPos(namespace, Number(panElement.value))
+        }
+        else {
+          onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
+        }            
+        clearElementStyleModified(panElement)   
+        this.setState({panGoto: null})    
+        
+      }
+      else if  (e.target.id === "PTXTiltGoto")
         {
+          
           panElement = document.getElementById("PTXPanGoto")
           tiltElement = document.getElementById("PTXTiltGoto")
-          clearElementStyleModified(panElement)
-          this.setState({panGoto: null})
-                        
+
           if (has_sep_pan_tilt === true){
-            onSetPTXGotoPanPos(namespace, Number(panElement.value))
+            onSetPTXGotoTiltPos(namespace, Number(tiltElement.value))
           }
           else {
             onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
-          }
+          }              
+          clearElementStyleModified(tiltElement)
+          this.setState({tiltGoto: null})      
           
         }
-        else if  (e.target.id === "PTXTiltGoto")
-          {
-            
-            panElement = document.getElementById("PTXPanGoto")
-            tiltElement = document.getElementById("PTXTiltGoto")
-            clearElementStyleModified(tiltElement)
-            this.setState({tiltGoto: null})
-            if (has_sep_pan_tilt === true){
-              onSetPTXGotoTiltPos(namespace, Number(tiltElement.value))
-            }
-            else {
-              onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
-            }                    
-            
-          }
 
     }
   }
