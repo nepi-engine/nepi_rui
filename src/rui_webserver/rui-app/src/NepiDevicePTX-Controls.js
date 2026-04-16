@@ -192,36 +192,49 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     var panMaxElement = null
     var tiltMinElement = null
     var tiltMaxElement = null
-    if ((e.target.id === "PTXPanHomePos") || (e.target.id === "PTXTiltHomePos"))
+    if ((e.target.id === "PTXPanHomePos") )
     {
       panElement = document.getElementById("PTXPanHomePos")
       setElementStyleModified(panElement)
-      
+      this.setState({panHomePos: e.target.value})
+    }
+    else if ((e.target.id === "PTXTiltHomePos"))
+    {      
       tiltElement = document.getElementById("PTXTiltHomePos")
       setElementStyleModified(tiltElement)
-      
+      this.setState({tiltHomePos: e.target.value})
 
     }
-    else if ((e.target.id === "PTXPanSoftStopMin") || (e.target.id === "PTXPanSoftStopMax") ||
-             (e.target.id === "PTXTiltSoftStopMin") || (e.target.id === "PTXTiltSoftStopMax"))
+    else if ((e.target.id === "PTXPanSoftStopMin"))
     {
       panMinElement = document.getElementById("PTXPanSoftStopMin")
       setElementStyleModified(panMinElement)
-
+      this.setState({panSoftStopMin: e.target.value})
+    }
+    else if ((e.target.id === "PTXPanSoftStopMax"))
+    {
       panMaxElement = document.getElementById("PTXPanSoftStopMax")
       setElementStyleModified(panMaxElement)
-
+      this.setState({tiltSoftStopMin: e.target.value})
+    }
+    else if ((e.target.id === "PTXTiltSoftStopMin"))
+    {
       tiltMinElement = document.getElementById("PTXTiltSoftStopMin")
       setElementStyleModified(tiltMinElement)
-
+      this.setState({panSoftStopMax: e.target.value})
+    }
+    else if ((e.target.id === "PTXTiltSoftStopMax"))
+    {
       tiltMaxElement = document.getElementById("PTXTiltSoftStopMax")
       setElementStyleModified(tiltMaxElement)
+      this.setState({tiltSoftStopMax: e.target.value})
 
     }
     else if (e.target.id === "PTXPanGoto") 
       {
         panElement = document.getElementById("PTXPanGoto")
         setElementStyleModified(panElement)
+        this.setState({tiltHomePos: e.target.value})
              
       }
         
@@ -229,7 +242,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
         {
           tiltElement = document.getElementById("PTXTiltGoto")
           setElementStyleModified(tiltElement)
-                           
+          this.setState({tiltHomePos: e.target.value})         
           
         }
 
