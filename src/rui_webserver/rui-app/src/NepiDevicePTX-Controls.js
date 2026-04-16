@@ -81,46 +81,53 @@ class NepiDevicePTXControls extends Component {
 
   // Callback for handling ROS Status3DX messages
   statusListener(message) {
+    const last_status_msg = this.state.status_msg
     this.setState({
       status_msg: message
     })
 
 
-    const panHomePos = round(message.pan_home_pos_deg, 1)
-    const tiltHomePos = round(message.tilt_home_pos_deg, 1)
-    const panHardStopMin = round(message.pan_max_hardstop_deg, 1)
-    const tiltHardStopMin = round(message.tilt_max_hardstop_deg, 1)
-    const panHardStopMax = round(message.pan_min_hardstop_deg, 1)
-    const tiltHardStopMax = round(message.tilt_min_hardstop_deg, 1)
-    const panSoftStopMin = round(message.pan_min_softstop_deg, 1)
-    const tiltSoftStopMin = round(message.pan_min_softstop_deg, 1)
-    const panSoftStopMax = round(message.pan_max_softstop_deg, 1)
-    const tiltSoftStopMax = round(message.tilt_max_softstop_deg, 1)
+    const panHomePos = message.pan_home_pos_deg
+    const tiltHomePos = message.tilt_home_pos_deg
+    const panHardStopMin = message.pan_max_hardstop_deg
+    const tiltHardStopMin = message.tilt_max_hardstop_deg
+    const panHardStopMax = message.pan_min_hardstop_deg
+    const tiltHardStopMax = message.tilt_min_hardstop_deg
+    const panSoftStopMin = message.pan_min_softstop_deg
+    const tiltSoftStopMin = message.pan_min_softstop_deg
+    const panSoftStopMax = message.pan_max_softstop_deg
+    const tiltSoftStopMax = message.tilt_max_softstop_deg
     
-    const needs_update = (
-          panHomePos !== this.state.panHomePos ||
-          tiltHomePos !== this.state.tiltHomePos ||
-          panHardStopMin !== this.state.panHardStopMin ||
-          tiltHardStopMin !== this.state.tiltHardStopMin ||
-          panHardStopMax !== this.state.panHardStopMax ||
-          tiltHardStopMax !== this.state.tiltHardStopMax ||
-          panSoftStopMin !== this.state.panSoftStopMin ||
-          tiltSoftStopMin !== this.state.tiltSoftStopMin ||
-          panSoftStopMax !== this.state.panSoftStopMax ||
-          tiltSoftStopMax !== this.state.tiltSoftStopMax
-    )
+    var needs_update = false
+    if (last_status_msg == null){
+      needs_update = true
+    }
+    else {
+       needs_update = (
+          panHomePos !== last_status_msg.pan_home_pos_deg  ||
+          tiltHomePos !== last_status_msg.tilt_home_pos_deg  ||
+          panHardStopMin !== last_status_msg.pan_max_hardstop_deg  ||
+          tiltHardStopMin !== last_status_msg.tilt_max_hardstop_deg  ||
+          panHardStopMax !== last_status_msg.pan_min_hardstop_deg  ||
+          tiltHardStopMax !== last_status_msg.tilt_min_hardstop_deg  ||
+          panSoftStopMin !== last_status_msg.pan_min_softstop_deg  ||
+          tiltSoftStopMin !== last_status_msg.pan_min_softstop_deg  ||
+          panSoftStopMax !== last_status_msg.pan_max_softstop_deg  ||
+          tiltSoftStopMax !== last_status_msg.tilt_max_softstop_deg 
+      )
+    }
     if (needs_update === true){
       this.setState({  
-          panHomePos : panHomePos,
-          tiltHomePos : tiltHomePos,
-          panHardStopMin : panHardStopMin,
-          tiltHardStopMin : tiltHardStopMin,
-          panHardStopMax : panHardStopMax,
-          tiltHardStopMax : tiltHardStopMax,
-          panSoftStopMin : panSoftStopMin,
-          tiltSoftStopMin : tiltSoftStopMin,
-          panSoftStopMax : panSoftStopMax,
-          tiltSoftStopMax : tiltSoftStopMax
+          panHomePos : round(message.pan_home_pos_deg, 1),
+          tiltHomePos : round(message.tilt_home_pos_deg, 1),
+          panHardStopMin : round(message.pan_max_hardstop_deg, 1),
+          tiltHardStopMin : round(message.tilt_max_hardstop_deg, 1),
+          panHardStopMax : round(message.pan_min_hardstop_deg, 1),
+          tiltHardStopMax : round(message.tilt_min_hardstop_deg, 1),
+          panSoftStopMin : round(message.pan_min_softstop_deg, 1),
+          tiltSoftStopMin : round(message.pan_min_softstop_deg, 1),
+          panSoftStopMax : round(message.pan_max_softstop_deg, 1),
+          tiltSoftStopMax : round(message.tilt_max_softstop_deg, 1)
       })
     }
 
@@ -215,13 +222,13 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     {
       panMaxElement = document.getElementById("PTXPanSoftStopMax")
       setElementStyleModified(panMaxElement)
-      this.setState({tiltSoftStopMin: e.target.value})
+      this.setState({panSoftStopMax: e.target.value})
     }
     else if ((e.target.id === "PTXTiltSoftStopMin"))
     {
       tiltMinElement = document.getElementById("PTXTiltSoftStopMin")
       setElementStyleModified(tiltMinElement)
-      this.setState({panSoftStopMax: e.target.value})
+      this.setState({tiltSoftStopMin: e.target.value})
     }
     else if ((e.target.id === "PTXTiltSoftStopMax"))
     {
