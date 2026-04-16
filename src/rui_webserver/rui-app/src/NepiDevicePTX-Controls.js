@@ -95,7 +95,7 @@ class NepiDevicePTXControls extends Component {
     const panSoftStopMin = round(message.pan_min_softstop_deg, 1)
     const tiltSoftStopMin = round(message.pan_min_softstop_deg, 1)
     const panSoftStopMax = round(message.pan_max_softstop_deg, 1)
-    const tiltSoftStopMax = round(message.tilt_min_softstop_deg, 1)
+    const tiltSoftStopMax = round(message.tilt_max_softstop_deg, 1)
     
     const needs_update = (
           panHomePos !== this.state.panHomePos ||
