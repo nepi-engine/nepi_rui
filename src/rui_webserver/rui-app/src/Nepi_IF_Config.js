@@ -56,8 +56,9 @@ class NepiIFConfig extends Component {
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const { userRestricted} = this.props.ros
-    const config_controls_restricted = userRestricted.indexOf('SYSTEM-CONFIG-VIEW') !== -1 ||
-          userRestricted.indexOf('SYSTEM-CONFIG-CONTROL') !== -1
+    const config_controls_restricted = (this.props.restricted !== undefined) ? this.props.restricted : 
+          (userRestricted.indexOf('SYSTEM-CONFIG-VIEW') !== -1 ||
+          userRestricted.indexOf('SYSTEM-CONFIG-CONTROL') !== -1)
 
     if (namespace === 'None' || config_controls_restricted === true){
       return (
