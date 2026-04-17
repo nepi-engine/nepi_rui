@@ -152,7 +152,9 @@ class NepiIFImageViewerSelector extends Component {
             selected_image_index: index,
             selected_image_text: names[index]})
           }    
-        updated_image = true  
+        if (selected_image !== "None") {
+           updated_image = true  
+        }
         this.setState({image_topics: sorted_items, image_topics_names: names})
       
       }
