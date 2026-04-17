@@ -263,7 +263,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     var has_sep_pan_tilt = false
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = ptxDevices[namespace]
-      has_sep_pan_tilt = capabilities && (capabilities.has_sep_pan_tilt === true)
+      has_sep_pan_tilt = capabilities && (capabilities.has_seperate_pan_tilt_control === true)
     }
     var panElement = null
     var tiltElement = null
