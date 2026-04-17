@@ -523,6 +523,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
        const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
 
 
+    const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : true
 
     if (device_controls_restricted === true){
       return null
@@ -703,6 +704,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
                             <NepiIFConfig
                                 namespace={namespace}
+                                show_save_all={show_save_all}
                                 title={"Nepi_IF_Conig"}
                           />
                   </div>
