@@ -99,7 +99,7 @@ class NepiSystemSoftware extends Component {
       const NoneOption = <Option>None</Option>
 
       
-      const systemSoftwareInstallMenu = createMenuListFromStrList(softwareMgrStatus.softwareInstallOptions,false,[],[],[])
+      const systemSoftwareInstallMenu = createMenuListFromStrList(softwareMgrStatus.sys_img_update_options,false,[],[],[])
       
 
       return (
