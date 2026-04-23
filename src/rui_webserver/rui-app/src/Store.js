@@ -32,6 +32,8 @@ const TRIGGER_MASKS = {
 }
 
 
+
+
 // TODO: Would be better to query the display_name property of all nodes to generate
 // this dictionary... requires a new SDKNode service to do so
 const NODE_DISPLAY_NAMES = {
@@ -2425,6 +2427,22 @@ class ROSConnectionStore {
   }
 
 
+  // RUI_KEY_PATH = '/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src/keys/rui_key'
+
+  @action.bound
+  stringEncript(str) {
+    var estr = str
+    // estr = Encrypt str using rui key encrypted within rui during build process from RUI_KEY_PATH key
+    return estr
+  }
+
+
+  @action.bound
+  stringDecript(str) {
+    var dstr = str
+    // dstr = Decript str using rui key encrypted within rui during build process from RUI_KEY_PATH key
+    return dstr
+  }
 
 
   @action.bound
@@ -2437,27 +2455,10 @@ class ROSConnectionStore {
     })
   }
 
-  @action.bound
-  submitAdminPassword(password) {
-    const namespace = `/${this.namespacePrefix}/${this.deviceId}/set_admin_password`
-    this.publishMessage({
-      name: namespace,
-      messageType: "std_msgs/String",
-      data: {'data': password},
-      noPrefix: true
-    })
-  }
 
-  @action.bound
-  changeAdminPassword(password) {
-    const namespace = `/${this.namespacePrefix}/${this.deviceId}/change_admin_password`
-    this.publishMessage({
-      name: namespace,
-      messageType: "std_msgs/String",
-      data: {'data': password},
-      noPrefix: true
-    })
-  }
+
+
+  
 
   @action.bound
   sendUpdateStringMsg(namespace, name, value) {
