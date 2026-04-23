@@ -2438,6 +2438,28 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  submitAdminPassword(password) {
+    const namespace = `/${this.namespacePrefix}/${this.deviceId}/set_admin_password`
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/String",
+      data: {'data': password},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  changeAdminPassword(password) {
+    const namespace = `/${this.namespacePrefix}/${this.deviceId}/change_admin_password`
+    this.publishMessage({
+      name: namespace,
+      messageType: "std_msgs/String",
+      data: {'data': password},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
   sendUpdateStringMsg(namespace, name, value) {
     this.publishMessage({
       name: namespace,

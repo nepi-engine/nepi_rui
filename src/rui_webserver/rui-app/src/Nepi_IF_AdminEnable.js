@@ -47,14 +47,17 @@ class NepiIFAdminEnable extends Component {
     this.state = {
 
       advancedConfigEnabled: false,
-      adminPassword: ''
+      adminPassword: '',
+      changePassword: ''
 
     }
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
-   
+
     this.onUpdateAdminPasswordText = this.onUpdateAdminPasswordText.bind(this)
     this.onKeyAdminPasswordText = this.onKeyAdminPasswordText.bind(this)
+    this.onUpdateChangePasswordText = this.onUpdateChangePasswordText.bind(this)
+    this.onKeyChangePasswordText = this.onKeyChangePasswordText.bind(this)
     this.renderAdminEnable = this.renderAdminEnable.bind(this)
 
 
@@ -80,17 +83,29 @@ class NepiIFAdminEnable extends Component {
 
   onKeyAdminPasswordText(e) {
     const value = e.target.value
-    const {sendStringMsg} = this.props.ros
     if(e.key === 'Enter'){
-      const base_namespace = this.getBaseNamespace() + "/set_admin_password"
-      sendStringMsg(base_namespace,value)
+      this.props.ros.submitAdminPassword(value)
       this.setState({adminPassword: ''});
       var textbox = document.getElementById(e.target.id)
       styleTextUnedited(textbox)
     }
   }
 
+  onUpdateChangePasswordText(e) {
+    this.setState({changePassword: e.target.value});
+    var textbox = document.getElementById(e.target.id)
+    styleTextEdited(textbox)
+  }
 
+  onKeyChangePasswordText(e) {
+    const value = e.target.value
+    if(e.key === 'Enter'){
+      this.props.ros.changeAdminPassword(value)
+      this.setState({changePassword: ''});
+      var textbox = document.getElementById(e.target.id)
+      styleTextUnedited(textbox)
+    }
+  }
 
 
   renderAdminEnable() {
@@ -135,9 +150,18 @@ class NepiIFAdminEnable extends Component {
                       </Label>
                   : null }
 
+                  { (admin_mode_set === true) ?
+                      <Label title={"Change Admin Password"}>
+                        <Input
+                          id="change_admin_password"
+                          type={"password"}
+                          value={this.state.changePassword}
+                          onChange={this.onUpdateChangePasswordText}
+                          onKeyDown={this.onKeyChangePasswordText}
+                        />
+                      </Label>
+                  : null }
 
-
-                   
                   </Column>
                   <Column>
 
