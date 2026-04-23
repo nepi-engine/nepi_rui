@@ -87,7 +87,7 @@ class Nepi_IF_AiTracking extends Component {
     this.updateStatusListeners = this.updateStatusListeners.bind(this)
     this.statusListener = this.statusListener.bind(this)
 
-    this.getDetectorOptions = this.getDetectorOptions.bind(this)
+    this.getSourceOptions = this.getSourceOptions.bind(this)
     this.onDetectorSelected = this.onDetectorSelected.bind(this)
 
     this.createImageTopicsOptions = this.createImageTopicsOptions.bind(this)
@@ -220,7 +220,7 @@ class Nepi_IF_AiTracking extends Component {
 
 
   // Function for creating image topic options.
-  getDetectorOptions() {
+  getSourceOptions() {
     const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
     const ai_models_display_names = this.props.ros.ai_models_running_name_list
     const ai_models_types = this.props.ros.ai_models_running_type_list
@@ -261,7 +261,7 @@ class Nepi_IF_AiTracking extends Component {
 
   renderAiDetector() {
 
-    const detector_options = this.getDetectorOptions()
+    const detector_options = this.getSourceOptions()
 
     const selected_detector = this.state.selected_detector
 
@@ -930,7 +930,7 @@ renderDetectorSettings() {
   }
 
 
-  
+
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
@@ -950,6 +950,9 @@ renderDetectorSettings() {
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
     const aitracking_view_restricted = userRestricted.indexOf('SYSTEM-AITRACKING-VIEW') !== -1 && (ignore_restrictions === false)
 
+    const selected_topic = (this.props.selected_topic !== undefined) ? this.props.selected_topic : null
+
+    const title = (this.props.title !== undefined) ? this.props.title : "AiTracking"
     if (has_aitracking === false || aitracking_view_restricted === true){
       return (
         <Columns>
@@ -966,8 +969,8 @@ renderDetectorSettings() {
       return (
 
           <React.Fragment>
-
-               {this.renderAiTracking()}
+              { (selected_topic == null) ? this.renderSelection() : null }
+              {this.renderAiTracking()}
 
 
           </React.Fragment>
@@ -976,9 +979,9 @@ renderDetectorSettings() {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "AiTracking"}>
-
-              {this.renderAiTracking()}
+          <Section title={title}>
+              { (selected_topic == null) ? this.renderSelection() : null }
+              {this.renderControls()}
 
 
         </Section>
