@@ -30,14 +30,10 @@ import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 //import BooleanIndicator from "./BooleanIndicator"
 
-import {setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue} from "./Utilities"
+import {setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue, round} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
 
 @inject("ros")
 @observer
@@ -374,13 +370,50 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       return (
         <React.Fragment>
 
+          { (has_homing === false) ?
 
-          <Label title={""}>
+
+          <ButtonMenu>
+            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+          </ButtonMenu>
+
+          :
+
+          <ButtonMenu>
+            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"GO HOME"}</Button>
+          </ButtonMenu>
+
+          }
+
+
+          <Label title={""} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
             <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
             <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
           </Label>
 
+            <div hidden={(has_abs_pos === false)}>
 
+              <Label title={"GoTo Position "}>
+                <Input
+                  disabled={!has_abs_pos}
+                  id={"PTXPanGoto"}
+                  style={{ width: "45%", float: "left" }}
+                  value={this.state.panGoto}
+                  onChange= {this.onUpdateText}
+                  onKeyDown= {this.onKeyText}
+                />
+                <Input
+                  disabled={!has_abs_pos}
+                  id={"PTXTiltGoto"}
+                  style={{ width: "45%" }}
+                  value={this.state.tiltGoto}
+                  onChange= {this.onUpdateText}
+                  onKeyDown= {this.onKeyText}
+                />
+              </Label>
+
+          </div>
 
           <div hidden={(has_abs_pos === false)}>
 
@@ -428,51 +461,6 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-
-          { (has_homing === false) ?
-
-
-          <ButtonMenu>
-            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
-          </ButtonMenu>
-
-          :
-
-          <ButtonMenu>
-            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
-            <Button disabled={!has_homing} onClick={() => onPTXGoHome(namespace)}>{"GO HOME"}</Button>
-          </ButtonMenu>
-
-          }
-
-
-          <Label title={""} style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
-            <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Tilt"}</div>
-          </Label>
-
-            <div hidden={(has_abs_pos === false)}>
-
-              <Label title={"GoTo Position "}>
-                <Input
-                  disabled={!has_abs_pos}
-                  id={"PTXPanGoto"}
-                  style={{ width: "45%", float: "left" }}
-                  value={this.state.panGoto}
-                  onChange= {this.onUpdateText}
-                  onKeyDown= {this.onKeyText}
-                />
-                <Input
-                  disabled={!has_abs_pos}
-                  id={"PTXTiltGoto"}
-                  style={{ width: "45%" }}
-                  value={this.state.tiltGoto}
-                  onChange= {this.onUpdateText}
-                  onKeyDown= {this.onKeyText}
-                />
-              </Label>
-
-          </div>
 
 
 

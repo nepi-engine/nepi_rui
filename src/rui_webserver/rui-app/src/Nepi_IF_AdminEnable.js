@@ -65,7 +65,7 @@ class NepiIFAdminEnable extends Component {
   getBaseNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
     var baseNamespace = null
-    if (namespacePrefix !== null && deviceId !== null){
+    if (namespacePrefix != null && deviceId != null){
       baseNamespace = "/" + namespacePrefix + "/" + deviceId
     }
     return baseNamespace
@@ -83,7 +83,9 @@ class NepiIFAdminEnable extends Component {
     const value = e.target.value
     if(e.key === 'Enter'){
       const password = this.props.ros.stringEncript(value)
-      const namespace = this.getBaseNamespace() + '/set_admin_password'
+      const base_namespace = this.getBaseNamespace()
+    
+      const namespace = base_namespace + '/set_admin_password'
       this.props.ros.sendStringMsg(namespace, password)
       this.setState({adminPassword: ''});
       var textbox = document.getElementById(e.target.id)
