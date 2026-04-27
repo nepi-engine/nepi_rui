@@ -2216,6 +2216,18 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
+  setupTrackingStatusListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_interfaces/TrackingStatus",
+        noPrefix: true,
+        callback: callback,
+
+      })
+    }
+  }
 
   /*******************************/
   // Data Polling Functions
