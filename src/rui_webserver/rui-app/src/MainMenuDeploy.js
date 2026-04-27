@@ -33,6 +33,9 @@ import NepiIFAppSelector from "./Nepi_IF_AppSelector"
 
 import NepiMgr from "./NepiSystemAdmin"
 
+
+import AiModelsMgr from "./NepiSystemAiModels"
+import AiDetectorMgr from "./NepiMgrAiDetector"
 //const IS_LOCAL = window.location.hostname === "localhost"
 
 @inject("ros")
@@ -100,6 +103,15 @@ class MainMenuDeploy extends Component {
             render={(props) => <NepiIFAppSelector {...props} app_id={'SYSTEM'} />} 
           />
         
+
+          <Route 
+            path="/ai_models_mgr" 
+            render={(props) => <AiModelsMgr {...props} app_id={'AI_MODELS_MGR'} />} 
+          />          
+          <Route 
+            path="/ai_detectors_mgr" 
+            render={(props) => <AiDetectorMgr {...props} app_id={'AI_DETECTORS_MGR'} />} 
+          />        
 
           <Route path='/docs' component={() => {
              window.location.href = 'https://nepi.com/documentation/';
