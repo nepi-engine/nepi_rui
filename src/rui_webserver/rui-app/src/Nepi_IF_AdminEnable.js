@@ -79,12 +79,12 @@ class NepiIFAdminEnable extends Component {
     styleTextEdited(textbox)
   }
 
-  onKeyAdminPasswordText(e) {
+  async onKeyAdminPasswordText(e) {
     const value = e.target.value
     if(e.key === 'Enter'){
-      const password = this.props.ros.stringEncript(value)
+      const password = await this.props.ros.stringEncript(value)
       const base_namespace = this.getBaseNamespace()
-    
+
       const namespace = base_namespace + '/set_admin_password'
       this.props.ros.sendStringMsg(namespace, password)
       this.setState({adminPassword: ''});

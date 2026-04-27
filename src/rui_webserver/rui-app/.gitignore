@@ -16,3 +16,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# AES build-time key — generated per environment, never committed
+src/keys/rui_key

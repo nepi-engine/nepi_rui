@@ -53,6 +53,8 @@ const NODE_DISPLAY_NAMES = {
 
 const UPDATE_PERIOD = 100 // ms between sending updates
 
+let _ruiCryptoKey = null
+
 function displayNameFromNodeName(node_name) {
   var display_name = NODE_DISPLAY_NAMES[node_name]
   if (display_name) {
@@ -2430,18 +2432,59 @@ class ROSConnectionStore {
   // RUI_KEY_PATH = '/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src/keys/rui_key'
 
   @action.bound
-  stringEncript(str) {
-    var estr = str
-    // estr = Encrypt str using rui key encrypted within rui during build process from RUI_KEY_PATH key
-    return estr
+  async stringEncript(str) {
+    try {
+      const hexKey = process.env.REACT_APP_RUI_KEY
+      if (!hexKey) {
+        console.warn("REACT_APP_RUI_KEY is not set — encryption disabled")
+        return str
+      }
+      if (!_ruiCryptoKey) {
+        const keyBytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(b => parseInt(b, 16)))
+        _ruiCryptoKey = await crypto.subtle.importKey(
+          "raw", keyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]
+        )
+      }
+      const nonce = crypto.getRandomValues(new Uint8Array(12))
+      const ct = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: nonce }, _ruiCryptoKey, new TextEncoder().encode(str)
+      )
+      const payload = new Uint8Array(nonce.byteLength + ct.byteLength)
+      payload.set(nonce, 0)
+      payload.set(new Uint8Array(ct), nonce.byteLength)
+      return btoa(String.fromCharCode(...payload))
+    } catch (err) {
+      console.error(err)
+      return str
+    }
   }
 
 
   @action.bound
-  stringDecript(str) {
-    var dstr = str
-    // dstr = Decript str using rui key encrypted within rui during build process from RUI_KEY_PATH key
-    return dstr
+  async stringDecript(str) {
+    try {
+      const hexKey = process.env.REACT_APP_RUI_KEY
+      if (!hexKey) {
+        console.warn("REACT_APP_RUI_KEY is not set — decryption disabled")
+        return str
+      }
+      if (!_ruiCryptoKey) {
+        const keyBytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(b => parseInt(b, 16)))
+        _ruiCryptoKey = await crypto.subtle.importKey(
+          "raw", keyBytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]
+        )
+      }
+      const raw = Uint8Array.from(atob(str), c => c.charCodeAt(0))
+      const nonce = raw.slice(0, 12)
+      const ct = raw.slice(12)
+      const plaintext = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: nonce }, _ruiCryptoKey, ct
+      )
+      return new TextDecoder().decode(plaintext)
+    } catch (err) {
+      console.error(err)
+      return str
+    }
   }
 
 

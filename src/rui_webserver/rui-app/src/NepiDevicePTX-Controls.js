@@ -48,6 +48,7 @@ class NepiDevicePTXControls extends Component {
       namespace : null,
       status_msg: null,
       show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : false,
+      linkSpeeds: false,
 
       panHomePos : null,
       tiltHomePos : null,
@@ -479,18 +480,22 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     var has_abs_pos = false
     var has_speed_control = false
     var has_homing = false
+    var has_sep_speed = false
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
       has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
       has_speed_control = capabilities && (capabilities.has_adjustable_speed)
       has_homing = capabilities && (capabilities.has_homing)
+      has_sep_speed = capabilities && (capabilities.has_seperate_pan_tilt_speed === true)
     }
 
     const reversePanEnabled = status_msg.reverse_pan_enabled
     const reverseTiltEnabled = status_msg.reverse_tilt_enabled
 
     const speedRatio = status_msg.speed_ratio
+    const speedPanRatio = status_msg.speed_pan_ratio
+    const speedTiltRatio = status_msg.speed_tilt_ratio
 
     const panHomePos = this.state.panHomePos
     const tiltHomePos = this.state.tiltHomePos
@@ -547,6 +552,65 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                         {"PT STATE - Angles in ENU frame (Tilt+:Down , Pan+:Left)"}
                       </label>
 
+                        <div hidden={(has_speed_control === false)}>
+
+                          {(has_sep_speed === true) ?
+                          <Columns>
+                            <Column>
+                              <Label title="Link Speeds">
+                                <Toggle
+                                  checked={this.state.linkSpeeds === true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("linkSpeeds", this.state.linkSpeeds)}>
+                                </Toggle>
+                              </Label>
+                            </Column>
+                            <Column></Column>
+                          </Columns>
+                          : null }
+
+                          {(has_sep_speed === true && this.state.linkSpeeds === false) ? (
+                            <React.Fragment>
+                              <SliderAdjustment
+                                disabled={!has_speed_control}
+                                title={"Pan Speed"}
+                                msgType={"std_msgs/Float32"}
+                                adjustment={speedPanRatio}
+                                topic={namespace + "/set_pan_speed_ratio"}
+                                scaled={0.01}
+                                min={0}
+                                max={100}
+                                tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                                unit={"%"}
+                              />
+                              <SliderAdjustment
+                                disabled={!has_speed_control}
+                                title={"Tilt Speed"}
+                                msgType={"std_msgs/Float32"}
+                                adjustment={speedTiltRatio}
+                                topic={namespace + "/set_tilt_speed_ratio"}
+                                scaled={0.01}
+                                min={0}
+                                max={100}
+                                tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                                unit={"%"}
+                              />
+                            </React.Fragment>
+                          ) : (
+                            <SliderAdjustment
+                              disabled={!has_speed_control}
+                              title={"Speed"}
+                              msgType={"std_msgs/Float32"}
+                              adjustment={speedRatio}
+                              topic={namespace + "/set_speed_ratio"}
+                              scaled={0.01}
+                              min={0}
+                              max={100}
+                              tooltip={"Speed as a percentage (0%=min, 100%=max)"}
+                              unit={"%"}
+                            />
+                          )}
+
+                        </div>
 
                         <Label title={""}>
                           <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Pan"}</div>
@@ -561,26 +625,6 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                               <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
                             </div>
                           </Label>
-
-
-                        <div hidden={(has_speed_control === false)}>
-
-                        <SliderAdjustment
-                          disabled={!has_speed_control}
-                          title={"Speed"}
-                          msgType={"std_msgs/Float32"}
-                          adjustment={speedRatio}
-                          topic={namespace + "/set_speed_ratio"}
-                          scaled={0.01}
-                          min={0}
-                          max={100}
-                          tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-                          unit={"%"}
-                        />
-
-                        </div>
-
-
 
 
 
