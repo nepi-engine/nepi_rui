@@ -78,7 +78,6 @@ class Nepi_IF_ImageViewer extends Component {
       image_topic: 'None',
       prev_image_topic: 'None',
       image_index: 0,
-      mouse_event_topic: '',
       select_updated_topic: '',
       pixel: null,
       mouse_drag: false,
@@ -128,10 +127,6 @@ class Nepi_IF_ImageViewer extends Component {
     this.mouseUpEvent = this.mouseUpEvent.bind(this)
 
     this.sendImageMouseEventMsg = this.sendImageMouseEventMsg.bind(this)
-    this.sendMouseClickEventMsg = this.sendMouseClickEventMsg.bind(this)
-    this.sendMouseDragEventMsg = this.sendMouseDragEventMsg.bind(this)
-    this.sendMouseWindowEventMsg = this.sendMouseWindowEventMsg.bind(this)
-
 
     this.onKeySaveInputOverlayValue = this.onKeySaveInputOverlayValue.bind(this)
     this.onUpdateInputOverlayValue = this.onUpdateInputOverlayValue.bind(this)
@@ -161,7 +156,6 @@ class Nepi_IF_ImageViewer extends Component {
     const status_topic = (this.props.status_topic !== undefined) ? this.props.status_topic : image_topic
     const prev_image_topic = (this.state.image_topic != null) ? this.state.image_topic : 'None'
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
-    const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
 
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
     if (this.state.status_listenter != null) {
@@ -183,7 +177,6 @@ class Nepi_IF_ImageViewer extends Component {
                     image_topic: image_topic,
                     prev_image_topic: prev_image_topic,
                     image_index: image_index,
-                    mouse_event_topic: mouse_event_topic,
                     select_updated_topic: select_updated_topic
     })
 
@@ -360,8 +353,8 @@ class Nepi_IF_ImageViewer extends Component {
 
 
       // pixelData is a Uint8ClampedArray with 4 values: [R, G, B, A]
-      const ctx = canvas.getContext('2d')
-      const imageData = ctx.getImageData(x, y, 1, 1, { willReadFrequently: true })
+      const ctx = canvas.getContext('2d', { willReadFrequently: true })
+      const imageData = ctx.getImageData(x, y, 1, 1)
       const pixelData = imageData.data // This is a Uint8ClampedArray [R, G, B, A]
       const r = pixelData[0]
       const g = pixelData[1]
@@ -381,36 +374,46 @@ class Nepi_IF_ImageViewer extends Component {
   }
 
 
+
   mouseDragEvent(canvas,event){
       const {sendImageDragMsg} = this.props.ros
-      var namespace = this.state.image_topic
+      var namespace = (this.props.mouse_event_topic !== undefined && this.props.mouse_event_topic != null) ? this.props.mouse_event_topic : this.state.image_topic + '/mouse_event'
       if (namespace === 'None Available') {
           namespace = 'None'
         }
       const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
-      const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
       //const rect = canvas.getBoundingClientRect()
 
       const is_drag = this.state.mouse_drag
       if (is_drag === true && allow_pan_zoom === true && namespace !== 'None'){
-          const [x2,y2] = this.getPixelLoc(canvas, event)
-          const pixel = this.state.pixel
-          if (pixel !== null){
-            const [x1,y1] = pixel
+          const drag_namespace = (this.props.mouse_drag_topic !== undefined && this.props.mouse_drag_topic != null) ? this.props.mouse_drag_topic : namespace
+
+
+          const start_pixel = this.state.pixel
+          if (start_pixel !== null){
+
+            const [x1,y1] = [start_pixel[0],start_pixel[1]]
+            const [r1,g1,b1,a1] = [start_pixel[2],start_pixel[3],start_pixel[4],start_pixel[5]]
+            const mouse_drag_start = {x:x1,y:y1,r:r1,g:g1,b:b1,a:a1}
+
+
+            const [x2,y2] = this.getPixelLoc(canvas, event)
+            const [r2,g2,b2,a2] = this.getPixelColor(canvas,x2, y2)
+            const mouse_drag_stop = {x:x2,y:y2,r:r2,g:g2,b:b2,a:a2}
+
+
             const dx = Math.abs(x2 - x1) 
             const dy = Math.abs(y2 - y1) 
 
             const pt = 5
-            if (dx > pt && dy > pt){
-              const [r,g,b,a] = this.getPixelColor(canvas,x2, y2)
-              sendImageDragMsg(namespace + '/set_drag',x2,y2,r,g,b,a)
-              const mouse_drag = {x:x1,y:y1,r:r,g:g,b:b,a:a}
-              if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
-                  this.sendImageMouseEventMsg(mouse_event_topic ,
+            if (dx > pt && dy > pt){        
+              if ( this.state.status_msg != null){
+                  this.sendImageMouseEventMsg(drag_namespace,
                                                       this.state.image_topic,
                                                       this.state.image_index,
                                                       null,
-                                                      mouse_drag, 
+                                                      mouse_drag_start, 
+                                                      mouse_drag_stop, 
                                                       null, 
                                                       this.state.status_msg
                                                       )
@@ -422,18 +425,18 @@ class Nepi_IF_ImageViewer extends Component {
 
   mouseUpEvent(canvas,event){
       const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
-      var namespace = this.state.image_topic
+      var namespace = (this.props.mouse_event_topic !== undefined && this.props.mouse_event_topic != null) ? this.props.mouse_event_topic : this.state.image_topic + '/mouse_event'
       if (namespace === 'None Available') {
           namespace = 'None'
         }
       const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
-      const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
       //const rect = canvas.getBoundingClientRect()
       if (namespace !== 'None'){
         const [x2,y2] = this.getPixelLoc(canvas, event)
         const pixel = this.state.pixel
-        this.setState({pixel: null, mouse_drag: false})
+        
         if (pixel !== null){
+          this.setState({pixel: null, mouse_drag: false})
           const [x1,y1,r,g,b,a] = pixel
           const mouse_click = {x:x1,y:y1,r:r,g:g,b:b,a:a}
           const mouse_window = {x_min:x1, x_max:x2, y_min:y1, y_max:y2}
@@ -443,23 +446,25 @@ class Nepi_IF_ImageViewer extends Component {
 
           const pt = 5
           if (dx < pt && dy < pt){
+            const click_namespace = (this.props.mouse_click_topic !== undefined && this.props.mouse_click_topic != null) ? this.props.mouse_click_topic : namespace
             const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
             //const cur_ms = Date.now()
             //const last_click_ms = this.state.last_click_ms
 
             // Send Mouse Click Event
-            sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
+            //sendImagePixelMsg(namespace + '/set_click',x1,y1,r,g,b,a)
             const click_count = this.state.click_count + 1
-            if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
+            if (this.state.status_msg != null){
                 this.setState({click_count: click_count})
                 if (click_count === 1){
                   setTimeout(() => {
-                      this.sendImageMouseEventMsg(mouse_event_topic ,
+                      this.sendImageMouseEventMsg(click_namespace  ,
                                                           this.state.image_topic,
                                                           this.state.image_index,
                                                           mouse_click,
                                                           null, 
                                                           null, 
+                                                          null,
                                                           this.state.status_msg
                                                           );
                   }, 500);
@@ -471,99 +476,44 @@ class Nepi_IF_ImageViewer extends Component {
 
             //this.setState({last_click_ms: cur_ms})
           }
+          else {
+            const window_namespace = (this.props.mouse_window_topic !== undefined && this.props.mouse_window_topic != null) ? this.props.mouse_window_topic : namespace
+            const wt = Math.max(canvas.width, canvas.height) * 0.05
+            if (dx > wt && dy > wt && allow_pan_zoom === true){
+              // Send Mouse Window Event
+              //sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
+              if (this.state.status_msg != null){
+                  this.sendImageMouseEventMsg(window_namespace  ,
+                                                      this.state.image_topic,
+                                                      this.state.image_index,
+                                                      null, 
+                                                      null,
+                                                      null,
+                                                      mouse_window,
+                                                      this.state.status_msg
+                                                      )
 
-          const wt = Math.max(canvas.width, canvas.height) * 0.05
-          if (dx > wt && dy > wt && allow_pan_zoom === true){
-            // Send Mouse Window Event
-            this.setState({click_count: 0})
-            sendImageWindowMsg(namespace + '/set_window',x1,x2,y1,y2)
-            if (mouse_event_topic !== '' && mouse_event_topic != null && this.state.status_msg != null){
-                this.sendImageMouseEventMsg(mouse_event_topic ,
-                                                    this.state.image_topic,
-                                                    this.state.image_index,
-                                                    null, 
-                                                    null, 
-                                                    mouse_window,
-                                                    this.state.status_msg
-                                                    )
-
+              }
             }
           }
         }
       }
   }
 
-  sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag, mouse_window, status_msg ) {
+  sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag_start, mouse_drag_stop , mouse_window, status_msg ) {
     if (mouse_click !== null){
-      this.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, status_msg )
+      this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )
+      this.setState({click_count: 0})
     }
-    else if (mouse_drag !== null){
-      this.sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag, status_msg )
+    else if (mouse_drag_start !== null){
+      this.props.ros.sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag_start, mouse_drag_stop, status_msg )
     }
-    else if (mouse_drag !== null){
-      this.sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg )
+    else if (mouse_window !== null){
+      this.props.ros.sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg )
     }
 
   }
 
-  sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, status_msg ) {
-    this.props.ros.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/ImageMouseEvent",
-      data: { 
-          image_topic: image_topic,
-          image_index: image_index,
-
-          click_event: true, 
-          click_count: this.state.click_count,
-          click_pixel: mouse_click,
-          drag_event: false, 
-          drag_pixel: {x:0,y:0,r:0,g:0,b:0,a:0},
-          window_event: false, 
-          window: {x_min:0, x_max:0, y_min:0, y_max:0},
-          image_status_msg: status_msg
-      },
-      noPrefix: true
-
-    })
-    this.setState({click_count: 0})
-  }
-
-  sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag, status_msg ) {
-    this.props.ros.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/ImageMouseEvent",
-
-        data: {
-          image_topic: image_topic,
-          image_index: image_index,
-
-          drag_event: true, 
-          drag_pixel: mouse_drag,
-
-          image_status_msg: status_msg
-        },
-      noPrefix: true
-    })
-  }
-
-  sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg ) {
-    this.props.ros.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/ImageMouseEvent",
-      data: { 
-          image_topic: image_topic,
-          image_index: image_index,
-
-          window_event: true, 
-          ImageWindow: mouse_window,
-
-          image_status_msg: status_msg
-      },
-      noPrefix: true
-
-    })
-  }
 
 
   getImgInfoText(){

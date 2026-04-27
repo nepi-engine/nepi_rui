@@ -266,6 +266,15 @@ class NepiIFImageViewersSelector extends Component {
    
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
     const mouse_event_topics = (this.props.mouse_event_topics !== undefined) ? this.props.mouse_event_topics : [mouse_event_topic,mouse_event_topic,mouse_event_topic,mouse_event_topic]
+
+    const mouse_click_topic = (this.props.mouse_click_topic !== undefined) ? this.props.mouse_click_topic : null
+    const mouse_click_topics = (this.props.mouse_click_topics !== undefined) ? this.props.mouse_click_topics : [mouse_click_topic,mouse_click_topic,mouse_click_topic,mouse_click_topic]
+
+    const mouse_drag_topic = (this.props.mouse_drag_topic !== undefined) ? this.props.mouse_drag_topic : null
+    const mouse_drag_topics = (this.props.mouse_drag_topics !== undefined) ? this.props.mouse_drag_topics : [mouse_drag_topic,mouse_drag_topic,mouse_drag_topic,mouse_drag_topic]
+
+    const mouse_window_topic = (this.props.mouse_window_topic !== undefined) ? this.props.mouse_window_topic : null
+    const mouse_window_topics = (this.props.mouse_window_topics !== undefined) ? this.props.mouse_window_topics : [mouse_window_topic,mouse_window_topic,mouse_window_topic,mouse_window_topic]
   
     const show_selectors = ((images_available && image_topics[0] === 'None') || 
                                       (images_available && num_windows === 2 && image_topics[1] === 'None') || 
@@ -315,6 +324,9 @@ class NepiIFImageViewersSelector extends Component {
                           show_reset_button={show_reset_button}
                           allow_pan_zoom={allow_pan_zoom}
                           mouse_event_topic={mouse_event_topics[0]}
+                          mouse_click_topic={mouse_click_topics[0]}
+                          mouse_drag_topic={mouse_drag_topics[0]}
+                          mouse_window_topic={mouse_window_topics[0]}
                           select_updated_topic={select_updated_topics[0]}
                           auto_select_image={auto_select_image}
                           make_section={make_section}
@@ -348,6 +360,9 @@ class NepiIFImageViewersSelector extends Component {
                               show_reset_button={show_reset_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
+                              mouse_click_topic={mouse_click_topics[1]}
+                              mouse_drag_topic={mouse_drag_topics[1]}
+                              mouse_window_topic={mouse_window_topics[1]}
                               select_updated_topic={select_updated_topics[1]}
                               auto_select_image={auto_select_image}
                              make_section={make_section}
@@ -384,6 +399,9 @@ class NepiIFImageViewersSelector extends Component {
                               show_reset_button={show_reset_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
+                              mouse_click_topic={mouse_click_topics[2]}
+                              mouse_drag_topic={mouse_drag_topics[2]}
+                              mouse_window_topic={mouse_window_topics[2]}
                               select_updated_topic={select_updated_topics[2]}
                               auto_select_image={auto_select_image}
                               make_section={make_section}
@@ -417,6 +435,9 @@ class NepiIFImageViewersSelector extends Component {
                               show_reset_button={show_reset_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
+                              mouse_click_topic={mouse_click_topics[3]}
+                              mouse_drag_topic={mouse_drag_topics[3]}
+                              mouse_window_topic={mouse_window_topics[3]}
                               select_updated_topic={select_updated_topics[3]}
                               auto_select_image={auto_select_image}
                              make_section={make_section}

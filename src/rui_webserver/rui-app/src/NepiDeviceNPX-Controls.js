@@ -47,8 +47,7 @@ class NepiDeviceNPXControls extends Component {
 
     }
 
-    this.renderControlData = this.renderControlData.bind(this)
-    this.renderControlPanel = this.renderControlPanel.bind(this)
+
 
     
     this.updateStatusListener = this.updateStatusListener.bind(this)
@@ -108,105 +107,6 @@ class NepiDeviceNPXControls extends Component {
   }
 
 
-
-  renderControlData() {
-
-    const namespace = this.props.namespace ? this.props.namespace : null
- 
-    const status_msg = this.state.status_msg
-
-    
-      return (
-          <React.Fragment>
-
-
-
-          </React.Fragment>
-        )
- 
-  }
-
-  renderControlPanel() {
-
-    const namespace = this.props.namespace ? this.props.namespace : null
-    
-    const status_msg = this.state.status_msg
-    //Unused const update_rate = status_msg.update_rate
-    //Unused const navpose_frame = status_msg.navpose_frame
-    //Unused const frame_nav = status_msg.frame_nav
-    //Unused const frame_altitude = status_msg.frame_altitude
-    //Unused const frame_depth = status_msg.frame_depth
-    const has_loc = status_msg.has_location
-    const has_head = status_msg.has_heading
-    const has_orien = status_msg.has_orientation
-    const has_pos = status_msg.has_position
-    const has_alt = status_msg.has_altitude
-    const has_depth = status_msg.has_depth
-    const has_transform = status_msg.has_transform
-    const updates = status_msg.supports_updates
-
-    // const devices = this.props.ros.npxDevices
- 
-    // const devicesList = Object.keys(devices)
-    // if (devicesList.indexOf(namespace) !== -1){
-    //   const capabilities = devices[namespace]
-
-    // }
-
-    const { userRestricted} = this.props.ros
-    const device_controls_restricted = userRestricted.indexOf('DEVICE-NPX-CONTROL') !== -1
-
-    const show_controls_option = (this.props.show_controls_option != undefined) ? this.props.show_controls_option : device_controls_restricted === false
-    const hide_controls = (this.props.hide_controls != undefined) ? this.props.hide_controls : false
-    const show_controls = (show_controls_option === true) ? true : (this.props.show_controls != undefined) ? this.props.show_controls : this.state.show_controls
-
-
-
-    if (hide_controls === true || device_controls_restricted === true){
-              <Columns>
-                <Column>
-
-                </Column>
-              </Columns>
-
-    }
-
-    else {
-      return (
-        <React.Fragment>
-
-
-              <Columns>
-                <Column>
-
-                    {(show_controls_option === true) ?
-                    <Label title="Show Controls">
-                        <Toggle
-                          checked={show_controls===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
-                        </Toggle>
-                    </Label>
-                    : null }
-
-                  </Column>
-                  <Column>
-
-                  </Column>
-                </Columns>
-
-
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                  <NepiIFConfig
-                      namespace={namespace}
-                      title={"Nepi_IF_Conig"}
-                />
-
-
-          </React.Fragment>
-        )
-    }
-  }
 
 
   render() {

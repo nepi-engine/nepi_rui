@@ -126,6 +126,14 @@ export function onChangeSwitchStateValue(stateVarNameStr,currentVal){
   this.setState(obj)
 }
 
+export function onChangeChangeStateValue(stateVarNameStr,newVal){
+  var key = stateVarNameStr
+  var value = newVal
+  var obj  = {}
+  obj[key] = value
+  this.setState(obj)
+}
+
 export function onChangeSwitchStateNestedValue(parentKey, nestedKey, currentVal) {
   var value = currentVal === false;
   

@@ -35,6 +35,8 @@ class NepiIFConfig extends Component {
     this.state = {
       save_all_config_ids: ['idx','ptx','lsx','npx','rbx']
     }
+
+    this.sendConfigMsg = this.sendConfigMsg.bind(this)
    
   }
 
@@ -52,6 +54,17 @@ class NepiIFConfig extends Component {
 
   }
 
+
+
+  sendConfigMsg(topic_name) {
+    const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
+    const add_namspaces = (this.props.add_namspaces !== undefined) ? this.props.add_namspaces : []
+    this.props.ros.sendTriggerMsg(namespace + '/' + topic_name)
+    for (var i = 0; i < add_namspaces.length; i++) {
+      this.props.ros.sendTriggerMsg(add_namspaces[i] + '/' + topic_name)
+    }
+
+  }
 
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
@@ -85,7 +98,7 @@ class NepiIFConfig extends Component {
 
 
                       <ButtonMenu>
-                          <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config")}>{"Save"}</Button>
+                          <Button onClick={() => this.sendConfigMsg("save_config")}>{"Save"}</Button>
                     </ButtonMenu>
 
 
@@ -93,7 +106,7 @@ class NepiIFConfig extends Component {
 
 
                         <ButtonMenu>
-                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/save_config_all")}>{'Save All'}</Button>
+                            <Button onClick={() => this.sendConfigMsg("save_config_all")}>{'Save All'}</Button>
                       </ButtonMenu>
                    
 
@@ -105,7 +118,7 @@ class NepiIFConfig extends Component {
 
 
                     <ButtonMenu>
-                        <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/reset_config")}>{"Reset"}</Button>
+                        <Button onClick={() => this.sendConfigMsg("reset_config")}>{"Reset"}</Button>
                       </ButtonMenu>
 
 
@@ -113,7 +126,7 @@ class NepiIFConfig extends Component {
 
 
                         <ButtonMenu>
-                            <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/delete_configs")}>{'Delete All'}</Button>
+                            <Button onClick={() => this.sendConfigMsg("delete_configs")}>{'Delete All'}</Button>
                       </ButtonMenu>
                    
 
@@ -124,7 +137,7 @@ class NepiIFConfig extends Component {
                     <Column>
 
                     <ButtonMenu>
-                          <Button onClick={() => this.props.ros.sendTriggerMsg( namespace + "/factory_reset_config")}>{"Factory"}</Button>
+                          <Button onClick={() => this.sendConfigMsg("factory_reset_config")}>{"Factory"}</Button>
                     </ButtonMenu>
 
 
