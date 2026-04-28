@@ -30,11 +30,8 @@ import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFAdmin from "./Nepi_IF_Admin"
 
 
-import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
 import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
-
-
-
+import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
 
 @inject("ros")
 @observer
@@ -56,6 +53,8 @@ class NepiDevicePTX extends Component {
     this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
     this.createDeviceOptions = this.createDeviceOptions.bind(this)
     this.onDeviceSelected = this.onDeviceSelected.bind(this)
+
+    this.renderDeviceSelection = this.renderDeviceSelection.bind(this)
 
    }
 
@@ -106,27 +105,27 @@ class NepiDevicePTX extends Component {
     const namespace = this.state.namespace ? this.state.namespace : "None"
 
       return(
-                <Section title={"Selection"}>
 
-                  <Columns>
-                  <Column>
-                  
-                    <Label title={"Device"}>
-                      <Select
-                        onChange={this.onDeviceSelected}
-                        value={namespace}
-                      >
-                        {this.createDeviceOptions()}
-                      </Select>
-                    </Label>
 
-                  </Column>
-                  <Column>
-    
-                  </Column>
-                </Columns>
-                  
-                </Section>
+          <Columns>
+          <Column>
+          
+            <Label title={"Device"}>
+              <Select
+                onChange={this.onDeviceSelected}
+                value={namespace}
+              >
+                {this.createDeviceOptions()}
+              </Select>
+            </Label>
+
+          </Column>
+          <Column>
+
+          </Column>
+        </Columns>
+          
+
 
       )
   }
@@ -134,7 +133,7 @@ class NepiDevicePTX extends Component {
 
 
   renderImageViewer() {
-    const namespace = this.state.namespace ? this.state.namespace : "None"
+    const namespace = (this.state.namespace !== null) ? this.state.namespace : "None"
     return (
       <React.Fragment>
 
@@ -184,34 +183,41 @@ class NepiDevicePTX extends Component {
 
               <div style={{ width: "25%"}}>
 
+                <Section title={"Pan Tilt Device"}>
+
                     {this.renderDeviceSelection()}
 
 
                           {(device_selected === true) ?
                           <NepiDevicePTXControls
                               namespace={namespace}
-                              title={ "Pan Tilt Controls"}
+                              make_section={false}
                         />
                         : null}
 
                         
-                          {(device_selected === true) ?
-                          <NepiIFSettings
-                            settingsNamespace={namespace + '/settings'}
-                            allways_show_settings={true}
-                            title={"Device Settings"}
-                        />
-                        : null}
+                    </Section>
 
-                        {(device_selected === true) ?
-                          <NepiIFAdmin
-                              title={"Advanced Settings"}
-                              show_advanced_option={true}
-                              show_admin_device_names={true}
-                              node_name={node_name}
-                              make_section={true}
-                        />
-                        : null}
+                      {(device_selected === true) ?
+                      <NepiIFSettings
+                        settingsNamespace={namespace + '/settings'}
+                        allways_show_settings={true}
+                        make_section={true}
+                        title={"Device Settings"}
+                    />
+                    : null}
+
+
+
+                    {(device_selected === true) ?
+                      <NepiIFAdmin
+                          title={"Advanced Settings"}
+                          show_advanced_option={true}
+                          show_admin_device_names={true}
+                          node_name={node_name}
+                          make_section={true}
+                    />
+                    : null}
 
               </div>
 

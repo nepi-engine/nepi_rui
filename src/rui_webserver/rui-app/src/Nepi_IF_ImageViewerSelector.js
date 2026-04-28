@@ -370,6 +370,9 @@ class NepiIFImageViewerSelector extends Component {
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
     const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
     const mouse_event_topic = (this.props.mouse_event_topic !== undefined) ? this.props.mouse_event_topic : null
+    const mouse_click_topic = (this.props.mouse_click_topic !== undefined) ? this.props.mouse_click_topic : null
+    const mouse_drag_topic = (this.props.mouse_drag_topic !== undefined) ? this.props.mouse_drag_topic : null
+    const mouse_window_topic = (this.props.mouse_window_topic !== undefined) ? this.props.mouse_window_topic : null
 
     const streamingImageQuality = (this.props.streamingImageQuality !== undefined) ? 
                 (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
@@ -388,6 +391,9 @@ class NepiIFImageViewerSelector extends Component {
       title={title}
       image_index={image_index}
       mouse_event_topic={mouse_event_topic}
+      mouse_click_topic={mouse_click_topic}
+      mouse_drag_topic={mouse_drag_topic}
+      mouse_window_topic={mouse_window_topic}
       select_updated_topic={select_updated_topic}
       show_image_controls={show_image_controls}
       show_save_controls={show_save_controls}
