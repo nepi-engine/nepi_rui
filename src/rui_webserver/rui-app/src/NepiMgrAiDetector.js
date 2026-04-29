@@ -111,6 +111,9 @@ class AiDetectorMgr extends Component {
     this.onDisplayImgSelected = this.onDisplayImgSelected.bind(this)
     this.getSaveNamespace = this.getSaveNamespace.bind(this)
 
+    this.renderAiDetector = this.renderAiDetector.bind(this)
+    this.renderDetectorSettings = this.renderDetectorSettings.bind(this)
+
   }
   
   getBaseNamespace(){
@@ -214,7 +217,9 @@ class AiDetectorMgr extends Component {
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to Status3DX message
   componentWillUnmount() {
+    if (this.state.statusListener) {
       this.state.statusListener.unsubscribe()
+    }
       this.setState({
         status_msg: null,
         connected: false,
@@ -273,7 +278,6 @@ class AiDetectorMgr extends Component {
     const selected_detector = this.state.selected_detector
 
     const status_msg = this.state.status_msg
-    //const detector_name = (status_msg == null) ? "None" : status_msg.ai_detector_name
     const detector_namespace = (status_msg == null) ? "None" : status_msg.namespace
     const connected = (detector_namespace === selected_detector)? this.state.connected : false
 
@@ -359,7 +363,7 @@ class AiDetectorMgr extends Component {
     const remove_imgs_namespace = detector_namespace + "/remove_img_topics"
     const filter_str_list = this.state.img_filter_str_list
     const img_options = filterStrList(imageTopics,filter_str_list)
-    const det_img_topics = this.state.status_msg.selected_img_topics
+    const det_img_topics = this.state.status_msg.selected_images
     const img_topic = event.target.value
     //this.setState({selected_display_topic: img_topic})
 
@@ -466,7 +470,7 @@ renderDetectorSettings() {
       const classes_selected = (selectedClassesList.length > 0)
 
       const detector_enabled = status_msg.enabled
-      const detecting = status_msg.detecting
+      const detecting = status_msg.state
       const detector_state = status_msg.msg_str
       const det_running = (detector_state === "Detecting")
 
@@ -482,7 +486,7 @@ renderDetectorSettings() {
       const max_img_rate = status_msg.max_img_rate_hz
       const use_last_image = status_msg.use_last_image
 
-      const det_img_topics = status_msg.selected_img_topics
+      const det_img_topics = status_msg.selected_images
 
       const img_selected = status_msg.image_selected
       const img_connected = status_msg.image_connected
@@ -893,7 +897,7 @@ renderDetectorSettings() {
     var detector_name = 'None'
     var img_name = 'None'
     if (status_msg != null){
-      detector_name = status_msg.ai_detector_name 
+      detector_name = status_msg.node_name
       img_name = detector_name + img_topic.split(detector_name)[1]
     }
     this.setState({selected_display_topic: img_topic,

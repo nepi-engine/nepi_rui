@@ -376,40 +376,80 @@ export function createShortImageFromNamespace(baseNamespace,namespace) {
 }
 
 
-export function createMenuListFromStrList(optionsStrList, useShortNames, filterOut, prefixOptionsStrList, appendOptionsStrList) {
+export function createMenuListFromStrList(optionsStrList, useShortNames, filterOut, prefixOptionsStrList, appendOptionsStrList, noOptionStr) {
+  var menuList = []
   var filteredTopics = []
   var i
-  if (filterOut) {
-    for (i = 0; i < optionsStrList.length; i++) {
-        if (filterOut.includes(optionsStrList[i]) === false){
-          filteredTopics.push(String(optionsStrList[i]))
-        }
+  if (optionsStrList.length === 0){
+    if (noOptionStr !== undefined){
+        menuList.push(<Option value={noOptionStr}>{noOptionStr}</Option>)
     }
   }
-  var unique_names = null
-  if (useShortNames === true){
-    unique_names = createShortValuesFromNamespaces(filteredTopics)
-  } 
-  else{
-    unique_names = filteredTopics
-  }
-  var menuList = []
-  for (i = 0; i < prefixOptionsStrList.length; i++) {
-      let option = prefixOptionsStrList[i]
+  else {
+    if (filterOut) {
+      for (i = 0; i < optionsStrList.length; i++) {
+          if (filterOut.includes(optionsStrList[i]) === false){
+            filteredTopics.push(String(optionsStrList[i]))
+          }
+      }
+    }
+    var unique_names = null
+    if (useShortNames === true){
+      unique_names = createShortValuesFromNamespaces(filteredTopics)
+    } 
+    else{
+      unique_names = filteredTopics
+    }
+    
+    for (i = 0; i < prefixOptionsStrList.length; i++) {
+        let option = prefixOptionsStrList[i]
+        menuList.push(<Option value={option}>{option}</Option>)
+    }
+
+    for (i = 0; i < filteredTopics.length; i++) {
+      menuList.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
+    }
+
+    for (i = 0; i < appendOptionsStrList.length; i++) {
+      let option = appendOptionsStrList[i]
       menuList.push(<Option value={option}>{option}</Option>)
-  }
-
-  for (i = 0; i < filteredTopics.length; i++) {
-    menuList.push(<Option value={filteredTopics[i]}>{unique_names[i]}</Option>)
-  }
-
-  for (i = 0; i < appendOptionsStrList.length; i++) {
-    let option = appendOptionsStrList[i]
-    menuList.push(<Option value={option}>{option}</Option>)
+    }
   }
 
    return menuList
 }
+
+
+
+export function createMenuListFromStrLists(optionsStrList, namesStrList, prefixOptionsStrList, appendOptionsStrList, noOptionStr) {
+  var menuList = []
+ 
+  var i
+  if (optionsStrList.length === 0){
+    if (noOptionStr !== ''){
+        menuList.push(<Option value={noOptionStr}>{noOptionStr}</Option>)
+    }
+  }
+  else {   
+    
+    for (i = 0; i < prefixOptionsStrList.length; i++) {
+        let option = prefixOptionsStrList[i]
+        menuList.push(<Option value={option}>{option}</Option>)
+    }
+
+    for (i = 0; i < optionsStrList.length; i++) {
+      menuList.push(<Option value={optionsStrList[i]}>{namesStrList[i]}</Option>)
+    }
+
+    for (i = 0; i < appendOptionsStrList.length; i++) {
+      let option = appendOptionsStrList[i]
+      menuList.push(<Option value={option}>{option}</Option>)
+    }
+  }
+
+   return menuList
+}
+
 
 // Depriciated
 //////////////////////////////////////

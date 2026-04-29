@@ -546,6 +546,7 @@ class Nepi_IF_Settings extends Component {
     )
 
   }
+  
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
