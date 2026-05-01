@@ -62,6 +62,8 @@ class NepiIFNavPose extends Component {
     }
 
 
+    this.dirtyFields = new Set()
+
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
 
@@ -102,7 +104,7 @@ class NepiIFNavPose extends Component {
     const last_navpose_data = this.state.navpose_data
     
 
-     const navpose_data = {
+     const navpose_data_from_msg = {
         navpose_frame: message.navpose_frame,
         navpose_description: message.navpose_description,
 
@@ -140,9 +142,20 @@ class NepiIFNavPose extends Component {
         tilt_deg: message.tilt_deg
       }
 
+      // Preserve fields the user is currently editing so subscription doesn't reset them
+      const navpose_data = { ...navpose_data_from_msg }
+      if (last_navpose_data && this.dirtyFields.size > 0) {
+        for (const field of this.dirtyFields) {
+          if (field in last_navpose_data) {
+            navpose_data[field] = last_navpose_data[field]
+          }
+        }
+      }
+
       if (JSON.stringify(navpose_data) !== JSON.stringify(last_navpose_data)){
           this.setState({
-            navpose_data: navpose_data
+            navpose_data: navpose_data,
+            navpose_data_copy: navpose_data_from_msg
           })
       }
 
@@ -339,7 +352,7 @@ class NepiIFNavPose extends Component {
     const comp_name = (this.props.comp_name !== undefined)? this.props.comp_name : ""
     const type_name = (this.props.type_name !== undefined)? this.props.type_name : ""
     if (navpose_data != null) {
-      sendUpdateNavposeMsg(updateNamespace,navpose_data,frame_name,comp_name,type_name)
+      sendUpdateNavposeMsg(updateNamespace,frame_name,navpose_data,comp_name,type_name)
     }
   }
 
@@ -352,28 +365,49 @@ class NepiIFNavPose extends Component {
 
   onUpdateInputNavposeValue(event, name) {
     const value = event.target.value
-    var navpose_data = this.state.navpose_data
-    navpose_data[name] = value
-    this.setState({ navpose_data: navpose_data })
-    document.getElementById(name).style.color = Styles.vars.colors.red
-    //this.render()
+    this.dirtyFields.add(name)
+    const navpose_data = { ...this.state.navpose_data, [name]: value }
+    this.setState({ navpose_data })
+    const el = document.getElementById(name)
+    if (el) el.style.color = Styles.vars.colors.red
   }
 
   onKeySaveInputNavposeValue(event, name) {
-    var navpose_data = this.state.navpose_data
     const navpose_data_copy = this.state.navpose_data_copy
-    if(event.key === 'Enter'){
+    const force_enable = this.props.update_namespace !== undefined
+    const HAS_FLAG_MAP = {
+      latitude: 'has_location', longitude: 'has_location',
+      heading_deg: 'has_heading',
+      roll_deg: 'has_orientation', pitch_deg: 'has_orientation', yaw_deg: 'has_orientation',
+      x_m: 'has_position', y_m: 'has_position', z_m: 'has_position',
+      altitude_m: 'has_altitude',
+      depth_m: 'has_depth',
+      pan_deg: 'has_pan_tilt', tilt_deg: 'has_pan_tilt',
+    }
+    if (event.key === 'Enter') {
       const value = parseFloat(event.target.value)
+      const navpose_data = { ...this.state.navpose_data }
       if (isNaN(value)) {
-        navpose_data[name] = navpose_data_copy[name]
-      }
-      else{
+        navpose_data[name] = navpose_data_copy ? navpose_data_copy[name] : 0
+      } else {
         navpose_data[name] = value
+        if (force_enable && HAS_FLAG_MAP[name]) {
+          navpose_data[HAS_FLAG_MAP[name]] = true
+        }
       }
-      this.setState({ navpose_data: navpose_data })
+      this.dirtyFields.delete(name)
+      this.setState({ navpose_data })
       this.sendNavposeUpdateMessage(navpose_data)
-      
-      document.getElementById(name).style.color = Styles.vars.colors.black
+      const el = document.getElementById(name)
+      if (el) el.style.color = Styles.vars.colors.black
+    }
+    if (event.key === 'Escape') {
+      const navpose_data = { ...this.state.navpose_data }
+      navpose_data[name] = navpose_data_copy ? navpose_data_copy[name] : 0
+      this.dirtyFields.delete(name)
+      this.setState({ navpose_data })
+      const el = document.getElementById(name)
+      if (el) el.style.color = Styles.vars.colors.black
     }
   }
 
@@ -401,43 +435,47 @@ class NepiIFNavPose extends Component {
           const frame_alt =navpose_data.frame_alt
           const frame_depth = navpose_data.frame_depth
 
+          const force_enable = this.props.update_namespace !== undefined
+
           const has_location = navpose_data.has_location
-          const latitude = has_location === true && navpose_data.latitude !== -999 ? navpose_data.latitude : null
-          const longitude = has_location === true && navpose_data.longitude !== -999 ? navpose_data.longitude : null
+          const latitude = (force_enable || has_location === true) && navpose_data.latitude !== -999 ? navpose_data.latitude : null
+          const longitude = (force_enable || has_location === true) && navpose_data.longitude !== -999 ? navpose_data.longitude : null
 
           const has_heading = navpose_data.has_heading
-          const heading_deg = has_heading === true && navpose_data.heading_deg !== -999  ? navpose_data.heading_deg : null
+          const heading_deg = (force_enable || has_heading === true) && navpose_data.heading_deg !== -999 ? navpose_data.heading_deg : null
 
           const has_position = navpose_data.has_position
-          const x_m = has_position === true && navpose_data.x_m !== -999 ? navpose_data.x_m : null
-          const y_m = has_position === true && navpose_data.y_m !== -999 ? navpose_data.y_m : null
-          const z_m = has_position === true && navpose_data.z_m !== -999 ? navpose_data.z_m : null
+          const x_m = (force_enable || has_position === true) && navpose_data.x_m !== -999 ? navpose_data.x_m : null
+          const y_m = (force_enable || has_position === true) && navpose_data.y_m !== -999 ? navpose_data.y_m : null
+          const z_m = (force_enable || has_position === true) && navpose_data.z_m !== -999 ? navpose_data.z_m : null
 
           const has_orientation = navpose_data.has_orientation
-          const roll_deg = has_orientation === true && navpose_data.roll_deg !== -999 ? navpose_data.roll_deg : null
-          const pitch_deg = has_orientation === true && navpose_data.pitch_deg !== -999 ? navpose_data.pitch_deg : null
-          const yaw_deg = has_orientation === true && navpose_data.yaw_deg !== -999 ? navpose_data.yaw_deg : null
+          const roll_deg = (force_enable || has_orientation === true) && navpose_data.roll_deg !== -999 ? navpose_data.roll_deg : null
+          const pitch_deg = (force_enable || has_orientation === true) && navpose_data.pitch_deg !== -999 ? navpose_data.pitch_deg : null
+          const yaw_deg = (force_enable || has_orientation === true) && navpose_data.yaw_deg !== -999 ? navpose_data.yaw_deg : null
 
           const has_altitude = navpose_data.has_altitude
-          const altitude_m = has_altitude === true && navpose_data.altitude_m !== -999 ? navpose_data.altitude_m : null
+          const altitude_m = navpose_data.altitude_m !== -999 ? navpose_data.altitude_m : null
 
-          const has_depth= navpose_data.has_depth          
-          const depth_m = has_depth === true && navpose_data.depth_m !== -999 ? navpose_data.depth_m : null
+          const has_depth = navpose_data.has_depth
+          const depth_m = navpose_data.depth_m !== -999 ? navpose_data.depth_m : null
 
           const has_pan_tilt = navpose_data.has_pan_tilt
-          const pan_deg = has_pan_tilt === true && navpose_data.pan_deg !== -999 ? navpose_data.pan_deg : null
-          const tilt_deg = has_pan_tilt === true && navpose_data.tilt_deg !== -999 ? navpose_data.tilt_deg : null
+          const pan_deg = (force_enable || has_pan_tilt === true) && navpose_data.pan_deg !== -999 ? navpose_data.pan_deg : null
+          const tilt_deg = (force_enable || has_pan_tilt === true) && navpose_data.tilt_deg !== -999 ? navpose_data.tilt_deg : null
 
           const msg = ("\nRef Desc: " + navpose_description +
           "\n\nNav Frame: " + frame_nav + "  Alt Frame: " + frame_alt + "  Depth Frame: " + frame_depth
           )
           
           const allow_updates = (this.props.allow_updates !== undefined)? this.props.allow_updates : false
-    
+          const read_only = this.props.read_only === true
+
           const { userRestricted} = this.props.ros
           const navpose_control_restricted = userRestricted.indexOf('DATA-NAVPOSE_CONTROL') !== -1
 
           const disabled = navpose_control_restricted === true && allow_updates === true
+          const mk_disabled = (has_flag) => read_only || disabled || (!force_enable && !has_flag)
 
 
 
@@ -462,8 +500,9 @@ class NepiIFNavPose extends Component {
                   </label>
                   <Label title={"Latitude"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
-                      value={round(latitude, 6)}
+                      id={"latitude"}
+                      disabled={mk_disabled(has_location)}
+                      value={this.dirtyFields.has('latitude') ? navpose_data.latitude : round(latitude, 6)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"latitude")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"latitude")}
@@ -471,8 +510,9 @@ class NepiIFNavPose extends Component {
                   </Label>
                   <Label title={"Longitude"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
-                      value={round(longitude, 6)}
+                      id={"longitude"}
+                      disabled={mk_disabled(has_location)}
+                      value={this.dirtyFields.has('longitude') ? navpose_data.longitude : round(longitude, 6)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"longitude")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"longitude")}
@@ -481,28 +521,31 @@ class NepiIFNavPose extends Component {
 
                   <Label title={"Heading (deg)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"heading_deg"}
+                      disabled={mk_disabled(has_heading)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"heading_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"heading_deg")}
-                      value={round(heading_deg, 2)}
+                      value={this.dirtyFields.has('heading_deg') ? navpose_data.heading_deg : round(heading_deg, 2)}
                     />
                   </Label>
 
                   <Label title={"Altitude (m) " + frame_alt + " (m)"}>
                     <Input
-                      disabled={disabled === true || has_altitude === false}
-                      value={round(altitude_m, 2)}
-                      style={{ altitude_m: "80%" }}
+                      id={"altitude_m"}
+                      disabled={read_only || disabled}
+                      value={this.dirtyFields.has('altitude_m') ? navpose_data.altitude_m : round(altitude_m, 2)}
+                      style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"altitude_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"altitude_m")}
                     />
                   </Label>
 
-                  <Label title={"Depth (m) " + frame_alt + " (m)"}>
+                  <Label title={"Depth (m) " + frame_depth + " (m)"}>
                     <Input
-                      disabled={disabled === true || has_altitude === false}
-                      value={round(depth_m, 2)}
+                      id={"depth_m"}
+                      disabled={read_only || disabled}
+                      value={this.dirtyFields.has('depth_m') ? navpose_data.depth_m : round(depth_m, 2)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"depth_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"depth_m")}
@@ -519,18 +562,20 @@ class NepiIFNavPose extends Component {
                   </div>
                   <Label title={"Roll (deg)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"roll_deg"}
+                      disabled={mk_disabled(has_orientation)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(roll_deg, 2)}
+                      value={this.dirtyFields.has('roll_deg') ? navpose_data.roll_deg : round(roll_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"roll_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"roll_deg")}
                     />
                   </Label>
                   <Label title={"Pitch (deg)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"pitch_deg"}
+                      disabled={mk_disabled(has_orientation)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(pitch_deg, 2)}
+                      value={this.dirtyFields.has('pitch_deg') ? navpose_data.pitch_deg : round(pitch_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"pitch_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"pitch_deg")}
                     />
@@ -538,9 +583,10 @@ class NepiIFNavPose extends Component {
                   </Label>
                   <Label title={"Yaw (deg)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"yaw_deg"}
+                      disabled={mk_disabled(has_orientation)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(yaw_deg, 2)}
+                      value={this.dirtyFields.has('yaw_deg') ? navpose_data.yaw_deg : round(yaw_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"yaw_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"yaw_deg")}
                     />
@@ -550,9 +596,10 @@ class NepiIFNavPose extends Component {
 
                   <Label title={"Pan (degs)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"pan_deg"}
+                      disabled={mk_disabled(has_pan_tilt)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(pan_deg, 2)}
+                      value={this.dirtyFields.has('pan_deg') ? navpose_data.pan_deg : round(pan_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"pan_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"pan_deg")}
                     />
@@ -571,27 +618,30 @@ class NepiIFNavPose extends Component {
 
                   <Label title={"X (m)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"x_m"}
+                      disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(x_m, 2)}
+                      value={this.dirtyFields.has('x_m') ? navpose_data.x_m : round(x_m, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"x_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"x_m")}
                     />
                   </Label>
                   <Label title={"Y (m)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"y_m"}
+                      disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(y_m, 2)}
+                      value={this.dirtyFields.has('y_m') ? navpose_data.y_m : round(y_m, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"y_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"y_m")}
                     />
                   </Label>
                   <Label title={"Z (m)"}>
                     <Input
-                      disabled={disabled === true || has_location === false}
+                      id={"z_m"}
+                      disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(z_m, 2)}
+                      value={this.dirtyFields.has('z_m') ? navpose_data.z_m : round(z_m, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"z_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"z_m")}
                     />
@@ -601,9 +651,10 @@ class NepiIFNavPose extends Component {
 
                   <Label title={"Tilt (deg)"}>
                     <Input
-                     disabled={disabled === true || has_location === false}
+                      id={"tilt_deg"}
+                      disabled={mk_disabled(has_pan_tilt)}
                       style={{ width: "45%", float: "left" }}
-                      value={round(tilt_deg, 2)}
+                      value={this.dirtyFields.has('tilt_deg') ? navpose_data.tilt_deg : round(tilt_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"tilt_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"tilt_deg")}
                     />

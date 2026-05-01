@@ -2516,12 +2516,14 @@ class ROSConnectionStore {
   
 
   @action.bound
-  sendUpdateStringMsg(namespace, name, value) {
+  sendUpdateStringMsg(namespace, name, value, name2 = '', name3 = '') {
     this.publishMessage({
       name: namespace,
       messageType: "nepi_interfaces/UpdateString",
       data: {
         name: name,
+        name2: name2,
+        name3: name3,
         value: value
       },
       noPrefix: true

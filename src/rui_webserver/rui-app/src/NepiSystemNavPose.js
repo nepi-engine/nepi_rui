@@ -28,7 +28,7 @@ import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
-//import Input from "./Input"
+import Input from "./Input"
 
 import {  onChangeSwitchStateValue } from "./Utilities"
 
@@ -51,16 +51,19 @@ class NavPoseMgr extends Component {
       selected_frame_name: 'None',
       selected_frame_topic: null,
       selected_frame_solution: null,
+
+      selected_topic_config: 'init',
       selected_frame_ind: -1,
 
-      show_navpose_init: false,
-      show_navpose_source_replace: false,
-      show_navpose_source_offset: false,
-      show_navpose_update_offset: false,
-      show_navpose_update_reset: false,
+      show_init: false,
+      show_source_replace: false,
+      show_source_offset: false,
+      show_update_offset: false,
+      show_update_reset: false,
 
       connected: false,
-    
+      connectedToNavposeMgr: false,
+
       needs_update: true,
 
     }
@@ -75,9 +78,7 @@ class NavPoseMgr extends Component {
     this.renderFrameNavPoseComps = this.renderFrameNavPoseComps.bind(this)
     this.renderNavPoseMgr = this.renderNavPoseMgr.bind(this)
 
-    this.getFrameOptions = this.getFrameOptions.bind(this)
-    this.toggleViewableFrames = this.toggleViewableFrames.bind(this)
-    this.onToggleFrameSelection = this.onToggleFrameSelection.bind(this)
+    this.onSelectFrame = this.onSelectFrame.bind(this)
   }
 
   getBaseNamespace(){
@@ -102,15 +103,24 @@ class NavPoseMgr extends Component {
 
 
   async checkConnection() {
-    const { connectedToNepi , connectedToNavposeMgr} = this.props.ros
-    if (this.state.connectedToNepi !== connectedToNepi){
-      this.setState({connectedToNepi: connectedToNepi,
-                    status_msg: null,
-                    selected_frame: 'None', needs_update: true})
+    const { connectedToNepi, connectedToNavposeMgr } = this.props.ros
+    if (this.state.connectedToNepi !== connectedToNepi) {
+      this.setState({
+        connectedToNepi: connectedToNepi,
+        status_msg: null,
+        selected_frame: 'None',
+        selected_frame_topic: null,
+        selected_frame_solution: null,
+        selected_frame_ind: -1,
+        needs_update: true
+      })
     }
-    if (this.state.connectedToNavposeMgr !== connectedToNavposeMgr )
-    {
-      this.setState({connected: true, needs_update: true})
+    if (this.state.connectedToNavposeMgr !== connectedToNavposeMgr) {
+      this.setState({
+        connectedToNavposeMgr: connectedToNavposeMgr,
+        connected: connectedToNavposeMgr === true,
+        needs_update: true
+      })
     }
 
     setTimeout(async () => {
@@ -123,13 +133,24 @@ class NavPoseMgr extends Component {
     this.checkConnection()
   }
 
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const needs_update = this.state.needs_update
-    if (needs_update === true) {
-        this.setState({needs_update: false})
-      }
+    const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
+    if (this.state.needs_update === true) {
+      this.setState({needs_update: false})
+    }
+    // Auto-select first frame when frames become available and none is selected
+    if (
+      this.state.selected_frame_topic === null &&
+      navpose_frames && navpose_frames.length > 0
+    ) {
+      this.setState({
+        selected_frame: navpose_frames[0],
+        selected_frame_name: navpose_frames[0],
+        selected_frame_topic: navpose_frames_topics[0],
+        selected_frame_solution: navpose_frames_solutions[0],
+        selected_frame_ind: 0
+      })
+    }
   }
 
   // Lifecycle method called just before the component umounts.
@@ -142,195 +163,97 @@ class NavPoseMgr extends Component {
 
   ////////////////////////////////////////////////
 
-
-    
-  toggleViewableFrames() {
-    this.setState({viewableFrames: true})
-  }
-
-
-  // Function for creating image topic options.
-  getFrameOptions() {
-
-
-    const navpose_frames = this.props.ros.navpose_frames  
-    const navpose_frames_names = this.props.ros.navpose_frames
-    const navpose_frames_topics = this.props.ros.navpose_frames_topics
-    const navpose_frames_solutions = this.props.ros.navpose_frames_solutions
-
-    var selected_frame = this.state.selected_frame
-    var selected_frame_name = this.state.selected_frame_name    
-    var selected_frame_topic = this.state.selected_frame_topic
-    var selected_frame_solution = this.state.selected_frame_solution
-
-    var selected_frame_ind = -1
-
-    var items = []
-    if (navpose_frames.length > 0){
-      if ( selected_frame_topic == null ){
-        selected_frame_ind = 0
-      }
-      for (var i = 0; i < navpose_frames.length; i++) {
-            items.push(<Option value={navpose_frames_topics[i]}>{navpose_frames_names[i]}</Option>)
-
-            if (selected_frame_topic === navpose_frames_topics[i]) {
-              selected_frame_ind = i
-            }
-     }
-    }
-    else{
-      items.push(<Option value={'None'}>{'None'}</Option>)
-      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
-    }
-
-
-    // Update Selection if needed
-    if (selected_frame_ind !== this.state.selected_frame_ind){
-      if (selected_frame_ind === -1){
-        selected_frame = 'None'
-        selected_frame_name = 'None'
-        selected_frame_topic = null
-        selected_frame_solution = null
-      }
-      else {
-        selected_frame = navpose_frames[selected_frame_ind]
-        selected_frame_name = navpose_frames_names[selected_frame_ind]
-        selected_frame_topic = navpose_frames_topics[selected_frame_ind]
-        selected_frame_solution = navpose_frames_solutions[selected_frame_ind]
-      }
+  onSelectFrame(ind) {
+    const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
+    if (ind < 0 || ind >= navpose_frames.length) {
       this.setState({
-        selected_frame: selected_frame,
-        selected_frame_name: selected_frame_name,
-        selected_frame_topic:  selected_frame_topic,
-        selected_frame_ind: selected_frame_ind,
-        selected_frame_solution: selected_frame_solution
+        selected_frame: 'None',
+        selected_frame_name: 'None',
+        selected_frame_topic: null,
+        selected_frame_solution: null,
+        selected_frame_ind: -1
       })
-
-    }
-
-    return items
-  }
-  
-
-
-  onToggleFrameSelection(event){
-    const navpose_frames = this.props.ros.navpose_frames  
-    const navpose_frames_names = this.props.ros.navpose_frames
-    const navpose_frames_topics = this.props.ros.navpose_frames_topics
-    const navpose_frames_solutions = this.props.ros.navpose_frames_solutions
-
-    var selected_frame_topic = event.target.value
-
-    var selected_frame = this.state.selected_frame
-    var selected_frame_name = this.state.selected_frame_name    
-    var selected_frame_solution = this.state.selected_frame_solution
-    var selected_frame_ind = navpose_frames_topics.indexOf(selected_frame_topic)
-      if (selected_frame_ind === -1){
-        selected_frame = 'None'
-        selected_frame_name = 'None'
-        selected_frame_topic = null
-        selected_frame_solution = null
-      }
-      else {
-        selected_frame = navpose_frames[selected_frame_ind]
-        selected_frame_name = navpose_frames_names[selected_frame_ind]
-        selected_frame_topic = navpose_frames_topics[selected_frame_ind]
-        selected_frame_solution = navpose_frames_solutions[selected_frame_ind]
-      }
+    } else {
       this.setState({
-        selected_frame: selected_frame,
-        selected_frame_name: selected_frame_name,
-        selected_frame_topic:  selected_frame_topic,
-        selected_frame_ind: selected_frame_ind,
-        selected_frame_solution: selected_frame_solution
+        selected_frame: navpose_frames[ind],
+        selected_frame_name: navpose_frames[ind],
+        selected_frame_topic: navpose_frames_topics[ind],
+        selected_frame_solution: navpose_frames_solutions[ind],
+        selected_frame_ind: ind
       })
+    }
   }
   
  
 
   renderFrameSelection() {
-    const selected_frame_topic = this.state.selected_frame_topic
-    const frame_options = this.getFrameOptions()
-    const hide_frame_list = !this.state.viewableFrames && !this.state.connected
+    const { navpose_frames, navpose_frames_topics } = this.props.ros
+    const { selected_frame_topic } = this.state
+
     return (
+      <React.Fragment>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {"Select NavPose Frame"}
+        </label>
 
-        <React.Fragment>
-
-                
-
-                                    <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                                      {"Select NavPose Frame"}
-                                    </label>
-
-                                    <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                                      <div onClick={this.toggleViewableFrames} style={{backgroundColor: Styles.vars.colors.grey0}}>
-                                        <Select style={{width: "10px"}}/>
-                                      </div>
-                                      <div hidden={hide_frame_list}>
-                                      {frame_options.map((frame) =>
-                                      <div onClick={this.onToggleFrameSelection}
-                                        style={{
-                                          textAlign: "center",
-                                          padding: `${Styles.vars.spacing.xs}`,
-                                          color: Styles.vars.colors.black,
-                                          backgroundColor: (frame.props.value === selected_frame_topic) ?
-                                            Styles.vars.colors.blue : Styles.vars.colors.grey0,
-                                          cursor: "pointer",
-                                          }}>
-                                          <body frame-topic ={frame} style={{color: Styles.vars.colors.black}}>{frame}</body>
-                                      </div>
-                                      )}
-                                      </div>
-
-        </React.Fragment>
-
+        <div style={{ marginTop: Styles.vars.spacing.medium }}>
+          {(navpose_frames && navpose_frames.length > 0)
+            ? navpose_frames.map((name, i) => (
+                <div
+                  key={navpose_frames_topics[i]}
+                  onClick={() => this.onSelectFrame(i)}
+                  style={{
+                    textAlign: "center",
+                    padding: `${Styles.vars.spacing.xs}`,
+                    color: Styles.vars.colors.black,
+                    backgroundColor: (navpose_frames_topics[i] === selected_frame_topic)
+                      ? Styles.vars.colors.blue
+                      : Styles.vars.colors.grey0,
+                    cursor: "pointer",
+                    marginBottom: "2px"
+                  }}>
+                  {name}
+                </div>
+              ))
+            : <div style={{color: Styles.vars.colors.grey}}> {'None'} </div>
+          }
+        </div>
+      </React.Fragment>
     )
   }
 
 
     renderFrameNavPoseComps() {
 
-    const selected_frame_topic = this.state.selected_frame_topic
-    const selected_frame_solution = this.state.selected_frame_solution
+    const { selected_frame_topic, selected_frame_ind } = this.state
+    const { navpose_frames_solutions } = this.props.ros
 
+    const live_solution = (selected_frame_ind >= 0 && navpose_frames_solutions)
+      ? navpose_frames_solutions[selected_frame_ind]
+      : null
 
-    if (selected_frame_solution == null || selected_frame_topic == null){
+    if (live_solution == null || selected_frame_topic == null){
 
       return(
         <React.Fragment>
-          
+
         </React.Fragment>
       )
     }
     else{
 
-      const show_fixed = selected_frame_solution.has_fixed 
       return (
         
         <React.Fragment>
 
               <NepiIFNavPose
-                navposeNamespace={this.state.selected_frame_topic + '/navpose'}
+                navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
                 title={"NavPose Fixed Data"}
                 show_line={false}
                 make_section={false}
+                update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
+                frame_name={this.state.selected_frame}
               />
-
-
-
-                <div align={"left"} textAlign={"left"} hidden={(show_fixed !== true)}>
-
-                        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
-                          title={"NavPose Fixed Data"}
-                          make_section={false}
-                        />
-
-                      </div>
 
                 
 
@@ -411,6 +334,7 @@ class NavPoseMgr extends Component {
                           navposeNamespace={this.state.selected_frame_topic + '/navpose_init'}
                           title={"NavPose Init Data"}
                           make_section={false}
+                          read_only={true}
                         />
 
                     : null }
@@ -421,16 +345,18 @@ class NavPoseMgr extends Component {
                           navposeNamespace={this.state.selected_frame_topic + '/navpose_source_replace'}
                           title={"NavPose Source Replaces Data"}
                           make_section={false}
+                          read_only={true}
                         />
 
                     : null }
 
-                    { (this.state.show_offset === true) ?
+                    { (this.state.show_source_offset === true) ?
 
                         <NepiIFNavPose
                           navposeNamespace={this.state.selected_frame_topic + '/navpose_source_offset'}
                           title={"NavPose Source Offsets Data"}
                           make_section={false}
+                          read_only={true}
                         />
 
                     : null }
@@ -441,6 +367,7 @@ class NavPoseMgr extends Component {
                           navposeNamespace={this.state.selected_frame_topic + '/navpose_update_offset'}
                           title={"NavPose Update Offset Data"}
                           make_section={false}
+                          read_only={true}
                         />
 
                     : null }
@@ -451,6 +378,7 @@ class NavPoseMgr extends Component {
                           navposeNamespace={this.state.selected_frame_topic + '/navpose_update_reset'}
                           title={"NavPose Update Reset Data"}
                           make_section={false}
+                          read_only={true}
                         />
 
                     : null }
@@ -467,17 +395,173 @@ class NavPoseMgr extends Component {
 
 
 
-    renderFrameConfig() {
+  renderFrameConfig() {
+    const { selected_frame, selected_frame_ind } = this.state
+    const mgrNamespace = this.getMgrNamespace()
+    const { navpose_frames_solutions } = this.props.ros
+
+    const live_solution = (selected_frame_ind >= 0 && navpose_frames_solutions)
+      ? navpose_frames_solutions[selected_frame_ind]
+      : null
+
+    if (live_solution == null || mgrNamespace == null) {
+      return <React.Fragment />
+    }
+
+    const components_info = live_solution.components_info || []
+
+    const renderCompTopicSection = (typeLabel, typeKey, availKey, connectedKey, connectingKey, availableKey, rateKey) => (
+      <React.Fragment>
+        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+          {typeLabel}
+        </label>
+        <div style={{ marginTop: Styles.vars.spacing.small }}>
+          {components_info.map((comp) => {
+            const availTopics = comp[availKey] || []
+            const currentTopic = comp[typeKey] || 'None'
+            const isConnected = comp[connectedKey]
+            const isConnecting = comp[connectingKey]
+            const isAvailable = comp[availableKey]
+            const typeShort = typeKey.replace('_topic', '')
+
+            const statusColor = isConnected
+              ? Styles.vars.colors.green
+              : isConnecting
+                ? Styles.vars.colors.orange
+                : isAvailable
+                  ? Styles.vars.colors.yellow
+                  : Styles.vars.colors.grey
+
+            const optionsList = comp[typeShort + '_options_list'] || []
+            const currentOption = comp[typeShort + '_option'] || ''
+
+            return (
+              <div key={comp.comp_name} style={{ marginBottom: Styles.vars.spacing.small }}>
+
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{
+                    width: '10px', height: '10px', borderRadius: '50%',
+                    backgroundColor: statusColor,
+                    marginRight: Styles.vars.spacing.xs,
+                    flexShrink: 0
+                  }} />
+                  <label style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+                    {comp.comp_name}
+                  </label>
+                </div>
+
+                <div style={{ marginTop: '4px' }}>
+                  <Select
+                    style={{ width: '100%' }}
+                    value={currentTopic}
+                    onChange={(e) => {
+                      this.props.ros.sendUpdateStringMsg(
+                        mgrNamespace + '/set_frame_comp_topic',
+                        selected_frame,
+                        e.target.value,
+                        comp.comp_name,
+                        typeShort
+                      )
+                    }}
+                  >
+                    <Option value={'None'}>{'None'}</Option>
+                    {currentTopic !== 'None' && (
+                      <Option value={currentTopic}>
+                        {currentTopic + (isAvailable ? '' : ' (unavailable)')}
+                      </Option>
+                    )}
+                    {availTopics.filter(t => t !== currentTopic).map((t) => (
+                      <Option key={t} value={t}>{t}</Option>
+                    ))}
+                  </Select>
+                </div>
+
+                {currentTopic !== 'None' && (
+                  <div style={{ fontSize: '0.8em', color: Styles.vars.colors.grey, marginTop: '2px' }}>
+                    {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : isAvailable ? 'Available' : 'Unavailable'}
+                    {comp[rateKey] > 0 && ` · ${comp[rateKey].toFixed(1)} Hz`}
+                  </div>
+                )}
+
+                {optionsList.length > 0 && currentTopic !== 'None' && (
+                  <div style={{ marginTop: '4px' }}>
+                    <Select
+                      style={{ width: '100%' }}
+                      value={currentOption}
+                      onChange={(e) => {
+                        this.props.ros.sendUpdateStringMsg(
+                          mgrNamespace + '/set_frame_comp_option',
+                          selected_frame,
+                          e.target.value,
+                          comp.comp_name,
+                          typeShort
+                        )
+                      }}
+                    >
+                      {optionsList.map((opt) => (
+                        <Option key={opt} value={opt}>{opt}</Option>
+                      ))}
+                    </Select>
+                  </div>
+                )}
+
+                {typeShort === 'init' && currentOption === 'TIMED' && currentTopic !== 'None' && (
+                  <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.85em', color: Styles.vars.colors.grey0, marginRight: '6px', whiteSpace: 'nowrap' }}>
+                      {'Interval (s)'}
+                    </label>
+                    <Input
+                      style={{ width: '70px' }}
+                      defaultValue={comp.init_timed_sec != null ? comp.init_timed_sec : 1}
+                      key={comp.comp_name + '_timed_' + comp.init_timed_sec}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          const val = parseFloat(e.target.value)
+                          if (!isNaN(val) && val >= 0.1) {
+                            this.props.ros.sendUpdateFloatMsg(
+                              mgrNamespace + '/reset_frame_comp_init_timed_sec',
+                              selected_frame,
+                              val,
+                              comp.comp_name
+                            )
+                          }
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+
+              </div>
+            )
+          })}
+        </div>
+      </React.Fragment>
+    )
+
+    const { selected_topic_config } = this.state
+
+    const CONFIG_SECTIONS = {
+      init: ['NavPose Init Topic Config', 'init_topic', 'available_init_topics', 'init_topic_connected', 'init_topic_connecting', 'init_topic_available', 'init_topic_avg_rate'],
+      source: ['NavPose Source Topic Config', 'source_topic', 'available_source_topics', 'source_topic_connected', 'source_topic_connecting', 'source_topic_available', 'source_topic_avg_rate'],
+      update: ['NavPose Update Topic Config', 'update_topic', 'available_update_topics', 'update_topic_connected', 'update_topic_connecting', 'update_topic_available', 'update_topic_avg_rate'],
+    }
 
     return (
+      <React.Fragment>
 
-        <React.Fragment>
+        <Select
+          style={{ width: '100%', marginBottom: Styles.vars.spacing.small }}
+          value={selected_topic_config}
+          onChange={(e) => this.setState({ selected_topic_config: e.target.value })}
+        >
+          <Option value={'init'}>{'Init Topic Config'}</Option>
+          <Option value={'source'}>{'Source Topic Config'}</Option>
+          <Option value={'update'}>{'Update Topic Config'}</Option>
+        </Select>
 
-                
+        {renderCompTopicSection(...CONFIG_SECTIONS[selected_topic_config])}
 
-
-        </React.Fragment>
-
+      </React.Fragment>
     )
   }
 
