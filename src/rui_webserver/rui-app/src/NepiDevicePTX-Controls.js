@@ -59,10 +59,12 @@ class NepiDevicePTXControls extends Component {
       tiltHardStopMin : null,
       panHardStopMax : null,
       tiltHardStopMax : null,
+      panSoftStopMin : null,
       tiltSoftStopMin : null,
       panSoftStopMax : null,
       tiltSoftStopMax : null,
-            
+      moveDecimalPlace : null,
+      reportDecimalPlace : null,
 
       statusListener: null,
   
@@ -116,11 +118,13 @@ class NepiDevicePTXControls extends Component {
           panSoftStopMin !== last_status_msg.pan_min_softstop_deg  ||
           tiltSoftStopMin !== last_status_msg.tilt_min_softstop_deg  ||
           panSoftStopMax !== last_status_msg.pan_max_softstop_deg  ||
-          tiltSoftStopMax !== last_status_msg.tilt_max_softstop_deg 
+          tiltSoftStopMax !== last_status_msg.tilt_max_softstop_deg  ||
+          message.move_decimal_place !== last_status_msg.move_decimal_place  ||
+          message.report_decimal_place !== last_status_msg.report_decimal_place
       )
     }
     if (needs_update === true){
-      this.setState({  
+      this.setState({
           panHomePos : round(message.pan_home_pos_deg, 1),
           tiltHomePos : round(message.tilt_home_pos_deg, 1),
           panHardStopMin : round(message.pan_min_hardstop_deg, 1),
@@ -130,7 +134,9 @@ class NepiDevicePTXControls extends Component {
           panSoftStopMin : round(message.pan_min_softstop_deg, 1),
           tiltSoftStopMin : round(message.tilt_min_softstop_deg, 1),
           panSoftStopMax : round(message.pan_max_softstop_deg, 1),
-          tiltSoftStopMax : round(message.tilt_max_softstop_deg, 1)
+          tiltSoftStopMax : round(message.tilt_max_softstop_deg, 1),
+          moveDecimalPlace : message.move_decimal_place,
+          reportDecimalPlace : message.report_decimal_place
       })
     }
 
@@ -148,10 +154,12 @@ class NepiDevicePTXControls extends Component {
                     tiltHardStopMin : null,
                     panHardStopMax : null,
                     tiltHardStopMax : null,
-                    tiltSoftStopMin : null,
                     panSoftStopMin : null,
+                    tiltSoftStopMin : null,
                     panSoftStopMax : null,
-                    tiltSoftStopMax : null
+                    tiltSoftStopMax : null,
+                    moveDecimalPlace : null,
+                    reportDecimalPlace : null
       })
     }
     if (namespace != null && namespace !== 'None'){
@@ -265,14 +273,27 @@ componentDidUpdate(prevProps, prevState, snapshot) {
         {
           tiltElement = document.getElementById("PTXTiltGoto")
           setElementStyleModified(tiltElement)
-          this.setState({tiltGoto: e.target.value})         
-          
+          this.setState({tiltGoto: e.target.value})
+
         }
+
+    else if (e.target.id === "PTXMoveDecimalPlace")
+    {
+      const el = document.getElementById("PTXMoveDecimalPlace")
+      setElementStyleModified(el)
+      this.setState({moveDecimalPlace: e.target.value})
+    }
+    else if (e.target.id === "PTXReportDecimalPlace")
+    {
+      const el = document.getElementById("PTXReportDecimalPlace")
+      setElementStyleModified(el)
+      this.setState({reportDecimalPlace: e.target.value})
+    }
 
   }
 
   onKeyText(e) {
-    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos} = this.props.ros
+    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, sendIntMsg} = this.props.ros
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
 
     const devicesList = Object.keys(ptxDevices)
@@ -364,7 +385,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       }
       else if  (e.target.id === "PTXTiltGoto")
         {
-          
+
           panElement = document.getElementById("PTXPanGoto")
           tiltElement = document.getElementById("PTXTiltGoto")
 
@@ -373,11 +394,24 @@ componentDidUpdate(prevProps, prevState, snapshot) {
           }
           else {
             onSetPTXGotoPos(namespace, Number(panElement.value),Number(tiltElement.value))
-          }              
+          }
           clearElementStyleModified(tiltElement)
-          this.setState({tiltGoto: null})      
-          
+          this.setState({tiltGoto: null})
+
         }
+
+      else if (e.target.id === "PTXMoveDecimalPlace")
+      {
+        const el = document.getElementById("PTXMoveDecimalPlace")
+        clearElementStyleModified(el)
+        sendIntMsg(namespace + "/set_move_decimal_place", Number(el.value))
+      }
+      else if (e.target.id === "PTXReportDecimalPlace")
+      {
+        const el = document.getElementById("PTXReportDecimalPlace")
+        clearElementStyleModified(el)
+        sendIntMsg(namespace + "/set_report_decimal_place", Number(el.value))
+      }
 
     }
   }
@@ -655,6 +689,28 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                         </ButtonMenu>
 
                       </div>
+
+                      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                      <Label title={"Move Decimal Place"}>
+                        <Input
+                          id={"PTXMoveDecimalPlace"}
+                          style={{ width: "45%", float: "left" }}
+                          value={this.state.moveDecimalPlace}
+                          onChange={this.onUpdateText}
+                          onKeyDown={this.onKeyText}
+                        />
+                      </Label>
+
+                      <Label title={"Report Decimal Place"}>
+                        <Input
+                          id={"PTXReportDecimalPlace"}
+                          style={{ width: "45%", float: "left" }}
+                          value={this.state.reportDecimalPlace}
+                          onChange={this.onUpdateText}
+                          onKeyDown={this.onKeyText}
+                        />
+                      </Label>
 
 
                   </div>

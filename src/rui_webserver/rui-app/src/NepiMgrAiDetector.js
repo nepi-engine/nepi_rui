@@ -469,10 +469,11 @@ renderDetectorSettings() {
       const selectedClassesList = status_msg.selected_classes
       const classes_selected = (selectedClassesList.length > 0)
 
-      const detector_enabled = status_msg.enabled
+      const enabled = status_msg.enabled
+      const running = status_msg.running
       const detecting = status_msg.state
       const detector_state = status_msg.msg_str
-      const det_running = (detector_state === "Detecting")
+
 
 
       const pub_image_enabled = status_msg.pub_image_enabled
@@ -505,6 +506,7 @@ renderDetectorSettings() {
 
       const max_detect_rate = round(status_msg.max_detect_rate, 3)
 
+      const save_config_enabled = status_msg.save_config_enabled
 
       const img_options = this.createImageTopicsOptions()
 
@@ -589,8 +591,8 @@ renderDetectorSettings() {
 
         <Label title="Enable">
               <Toggle
-              checked={detector_enabled===true}
-              onClick={() => sendBoolMsg(detector_namespace + "/enable",!detector_enabled)}>
+              checked={enabled===true}
+              onClick={() => sendBoolMsg(detector_namespace + "/enable",!enabled)}>
               </Toggle>
         </Label>
 
@@ -609,8 +611,8 @@ renderDetectorSettings() {
               <Columns>
         <Column>
 
-        <Label title={"Detecting"}>
-                        <BooleanIndicator value={det_running} />
+        <Label title={"Processing"}>
+                        <BooleanIndicator value={running} />
          </Label>
 
         </Column>
@@ -664,7 +666,7 @@ renderDetectorSettings() {
 
                       <div style={{ width: '40%' }}>
                        
-                      <Label title={"Detected"}>
+                      <Label title={"Detect State"}>
                         <BooleanIndicator value={detecting} />
                       </Label>
 
@@ -690,12 +692,14 @@ renderDetectorSettings() {
 
 
 
-        <NepiIFConfig
-                        namespace={detector_namespace}
-                        title={"Nepi_IF_Conig"}
-        />
+        <dev hidden={save_config_enabled === false}>
 
+              <NepiIFConfig
+                              namespace={detector_namespace}
+                              title={"Nepi_IF_Conig"}
+              />
 
+      </dev>
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
