@@ -412,8 +412,8 @@ class NepiIFNavPose extends Component {
     this.dirtyFields.add(name)
     const navpose_data = { ...this.state.navpose_data, [name]: value }
     this.setState({ navpose_data })
-    const el = document.getElementById(name)
-    if (el) el.style.color = Styles.vars.colors.red
+    event.target.style.color = Styles.vars.colors.red
+    event.target.style.fontWeight = "bold"
   }
 
   onKeySaveInputNavposeValue(event, name) {
@@ -442,16 +442,16 @@ class NepiIFNavPose extends Component {
       this.dirtyFields.delete(name)
       this.setState({ navpose_data })
       this.sendNavposeUpdateMessage(navpose_data)
-      const el = document.getElementById(name)
-      if (el) el.style.color = Styles.vars.colors.black
+      event.target.style.color = Styles.vars.colors.black
+      event.target.style.fontWeight = "normal"
     }
     if (event.key === 'Escape') {
       const navpose_data = { ...this.state.navpose_data }
       navpose_data[name] = navpose_data_copy ? navpose_data_copy[name] : 0
       this.dirtyFields.delete(name)
       this.setState({ navpose_data })
-      const el = document.getElementById(name)
-      if (el) el.style.color = Styles.vars.colors.black
+      event.target.style.color = Styles.vars.colors.black
+      event.target.style.fontWeight = "normal"
     }
   }
 
@@ -659,6 +659,10 @@ class NepiIFNavPose extends Component {
       */}
                   </Column>
                 <Column>
+
+                  <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
+                    <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>{" "}</label>
+                  </div>
 
                   <Label title={"X (m)"}>
                     <Input

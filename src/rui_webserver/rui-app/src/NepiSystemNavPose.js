@@ -30,10 +30,11 @@ import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Input from "./Input"
 
-import {  onChangeSwitchStateValue } from "./Utilities"
+import { onChangeSwitchStateValue, createMenuBaseName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 
 import NepiIFNavPose from "./Nepi_IF_NavPose"
+import NepiIFConfig from "./Nepi_IF_Config"
 
 
 @inject("ros")
@@ -55,11 +56,14 @@ class NavPoseMgr extends Component {
       selected_topic_config: 'init',
       selected_frame_ind: -1,
 
+      show_fixed: false,
       show_init: false,
       show_source_replace: false,
       show_source_offset: false,
       show_update_offset: false,
       show_update_reset: false,
+
+      transform_expanded: {},
 
       connected: false,
       connectedToNavposeMgr: false,
@@ -243,16 +247,15 @@ class NavPoseMgr extends Component {
     else{
 
       return (
-        
+
         <React.Fragment>
 
               <NepiIFNavPose
-                navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
-                title={"NavPose Fixed Data"}
+                navposeNamespace={this.state.selected_frame_topic + '/navpose'}
+                title={"NavPose Live Data"}
                 show_line={false}
                 make_section={false}
-                update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
-                frame_name={this.state.selected_frame}
+                read_only={true}
               />
 
                 
@@ -268,7 +271,18 @@ class NavPoseMgr extends Component {
                   </label>
 
                   <div style={{ display: 'flex' }}>
-                          <div style={{ width: '15%' }} hidden={false}>
+                          <div style={{ width: '13%' }} hidden={false}>
+                                <Label title="Fixed">
+                                  <Toggle
+                                    checked={this.state.show_fixed===true}
+                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_fixed",this.state.show_fixed)}>
+                                  </Toggle>
+                              </Label>
+                          </div>
+                          <div style={{ width: '3%' }}>
+                          </div>
+
+                          <div style={{ width: '13%' }} hidden={false}>
                                 <Label title="Init">
                                   <Toggle
                                     checked={this.state.show_init===true}
@@ -276,11 +290,11 @@ class NavPoseMgr extends Component {
                                   </Toggle>
                               </Label>
                           </div>
-                          <div style={{ width: '5%' }}>
+                          <div style={{ width: '3%' }}>
                           </div>
 
-              
-                          <div style={{ width: '15%' }} hidden={false}>
+
+                          <div style={{ width: '13%' }} hidden={false}>
                               <Label title="Source Replaces">
                                   <Toggle
                                     checked={this.state.show_source_replace===true}
@@ -288,10 +302,10 @@ class NavPoseMgr extends Component {
                                   </Toggle>
                                 </Label>
                           </div>
-                          <div style={{ width: '5%' }}>
+                          <div style={{ width: '3%' }}>
                           </div>
 
-                          <div style={{ width: '15%' }} hidden={false}>
+                          <div style={{ width: '13%' }} hidden={false}>
                               <Label title="Source Offsets">
                                   <Toggle
                                     checked={this.state.show_source_offset===true}
@@ -300,26 +314,26 @@ class NavPoseMgr extends Component {
                                 </Label>
                           </div>
 
-                          <div style={{ width: '5%' }}>
+                          <div style={{ width: '3%' }}>
                           </div>
 
 
-                          <div style={{ width: '15%' }} hidden={false}>
+                          <div style={{ width: '13%' }} hidden={false}>
                               <Label title="Update Replaces">
-                                  <Toggle
-                                    checked={this.state.show_update_offset===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_update_offset",this.state.show_update_offset)}>
-                                  </Toggle>
-                                </Label>
-                          </div>
-                          <div style={{ width: '5%' }}>
-                          </div>
-
-                          <div style={{ width: '15%' }} hidden={false}>
-                              <Label title="Update Offsets">
                                   <Toggle
                                     checked={this.state.show_update_reset===true}
                                     onClick={() => onChangeSwitchStateValue.bind(this)("show_update_reset",this.state.show_update_reset)}>
+                                  </Toggle>
+                                </Label>
+                          </div>
+                          <div style={{ width: '3%' }}>
+                          </div>
+
+                          <div style={{ width: '13%' }} hidden={false}>
+                              <Label title="Update Offsets">
+                                  <Toggle
+                                    checked={this.state.show_update_offset===true}
+                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_update_offset",this.state.show_update_offset)}>
                                   </Toggle>
                                 </Label>
                           </div>
@@ -327,6 +341,18 @@ class NavPoseMgr extends Component {
                     </div>
 
 
+
+                    { (this.state.show_fixed === true) ?
+
+                        <NepiIFNavPose
+                          navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
+                          title={"NavPose Fixed Data"}
+                          make_section={false}
+                          update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
+                          frame_name={this.state.selected_frame}
+                        />
+
+                    : null }
 
                     { (this.state.show_init === true) ?
 
@@ -450,9 +476,9 @@ class NavPoseMgr extends Component {
                   </label>
                 </div>
 
-                <div style={{ marginTop: '4px' }}>
+                <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Select
-                    style={{ width: '100%' }}
+                    style={{ flex: 1, minWidth: 0 }}
                     value={currentTopic}
                     onChange={(e) => {
                       this.props.ros.sendUpdateStringMsg(
@@ -465,28 +491,22 @@ class NavPoseMgr extends Component {
                     }}
                   >
                     <Option value={'None'}>{'None'}</Option>
+                    {typeShort === 'init' && currentTopic !== 'Fixed' && (
+                      <Option value={'Fixed'}>{'Fixed'}</Option>
+                    )}
                     {currentTopic !== 'None' && (
                       <Option value={currentTopic}>
-                        {currentTopic + (isAvailable ? '' : ' (unavailable)')}
+                        {createMenuBaseName(currentTopic) + (isAvailable ? '' : ' (unavailable)')}
                       </Option>
                     )}
                     {availTopics.filter(t => t !== currentTopic).map((t) => (
-                      <Option key={t} value={t}>{t}</Option>
+                      <Option key={t} value={t}>{createMenuBaseName(t)}</Option>
                     ))}
                   </Select>
-                </div>
 
-                {currentTopic !== 'None' && (
-                  <div style={{ fontSize: '0.8em', color: Styles.vars.colors.grey, marginTop: '2px' }}>
-                    {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : isAvailable ? 'Available' : 'Unavailable'}
-                    {comp[rateKey] > 0 && ` · ${comp[rateKey].toFixed(1)} Hz`}
-                  </div>
-                )}
-
-                {optionsList.length > 0 && currentTopic !== 'None' && (
-                  <div style={{ marginTop: '4px' }}>
+                  {optionsList.length > 0 && currentTopic !== 'None' && (
                     <Select
-                      style={{ width: '100%' }}
+                      style={{ width: '120px', flexShrink: 0 }}
                       value={currentOption}
                       onChange={(e) => {
                         this.props.ros.sendUpdateStringMsg(
@@ -502,6 +522,13 @@ class NavPoseMgr extends Component {
                         <Option key={opt} value={opt}>{opt}</Option>
                       ))}
                     </Select>
+                  )}
+                </div>
+
+                {currentTopic !== 'None' && (
+                  <div style={{ fontSize: '0.8em', color: Styles.vars.colors.grey1, marginTop: '2px' }}>
+                    {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : isAvailable ? 'Available' : 'Unavailable'}
+                    {comp[rateKey] > 0 && ` · ${comp[rateKey].toFixed(1)} Hz`}
                   </div>
                 )}
 
@@ -514,10 +541,12 @@ class NavPoseMgr extends Component {
                       style={{ width: '70px' }}
                       defaultValue={comp.init_timed_sec != null ? comp.init_timed_sec : 1}
                       key={comp.comp_name + '_timed_' + comp.init_timed_sec}
+                      onChange={(e) => setElementStyleModified(e.target)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           const val = parseFloat(e.target.value)
                           if (!isNaN(val) && val >= 0.1) {
+                            clearElementStyleModified(e.target)
                             this.props.ros.sendUpdateFloatMsg(
                               mgrNamespace + '/reset_frame_comp_init_timed_sec',
                               selected_frame,
@@ -530,6 +559,79 @@ class NavPoseMgr extends Component {
                     />
                   </div>
                 )}
+
+                {currentTopic !== 'None' && (() => {
+                  const tfKey = comp.comp_name + '_' + typeShort
+                  const isExpanded = !!this.state.transform_expanded[tfKey]
+                  const tf = comp[typeShort + '_topic_transform'] || {}
+                  const sendTransform = (overrides) => {
+                    this.props.ros.sendUpdateTransformMsg(
+                      mgrNamespace + '/set_frame_comp_transform',
+                      { ...tf, ...overrides },
+                      selected_frame,
+                      comp.comp_name,
+                      typeShort
+                    )
+                  }
+                  const tfCols = [
+                    [
+                      { field: 'x_m',       label: 'X (m)'    },
+                      { field: 'y_m',       label: 'Y (m)'    },
+                      { field: 'z_m',       label: 'Z (m)'    },
+                    ],
+                    [
+                      { field: 'roll_deg',  label: 'Roll (°)' },
+                      { field: 'pitch_deg', label: 'Pitch (°)'},
+                      { field: 'yaw_deg',   label: 'Yaw (°)'  },
+                    ],
+                  ]
+                  const tfFields = tfCols[0].concat(tfCols[1])
+                  const renderTfInput = ({ field, label }) => (
+                    <div key={field} style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '3px' }}>
+                      <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
+                      <Input
+                        defaultValue={tf[field] != null ? Number(tf[field]).toFixed(3) : '0.000'}
+                        key={tfKey + '_' + field + '_' + tf[field]}
+                        onChange={(e) => setElementStyleModified(e.target)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const val = parseFloat(e.target.value)
+                            if (!isNaN(val)) {
+                              clearElementStyleModified(e.target)
+                              sendTransform({ [field]: val })
+                            }
+                          }
+                        }}
+                        style={{ width: '70px' }}
+                      />
+                    </div>
+                  )
+                  return (
+                    <div>
+                      <div
+                        style={{ cursor: 'pointer', fontSize: '0.8em', color: Styles.vars.colors.grey1, marginTop: '4px', userSelect: 'none' }}
+                        onClick={() => this.setState({ transform_expanded: { ...this.state.transform_expanded, [tfKey]: !isExpanded } })}
+                      >
+                        {'Transform ' + (isExpanded ? '▲' : '▼')}
+                      </div>
+                      {isExpanded && (
+                        <div style={{ marginTop: '4px' }}>
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '3px' }}>{tfCols[0].map(renderTfInput)}</div>
+                          <div style={{ display: 'flex', gap: '8px' }}>{tfCols[1].map(renderTfInput)}</div>
+                          <div
+                            style={{ cursor: 'pointer', fontSize: '0.75em', color: Styles.vars.colors.red, marginTop: '4px', textAlign: 'right', userSelect: 'none' }}
+                            onClick={() => {
+                              const zeros = tfFields.reduce((acc, { field }) => { acc[field] = 0; return acc }, {})
+                              sendTransform(zeros)
+                            }}
+                          >
+                            {'Clear Transform'}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
 
               </div>
             )
@@ -561,6 +663,11 @@ class NavPoseMgr extends Component {
 
         {renderCompTopicSection(...CONFIG_SECTIONS[selected_topic_config])}
 
+        <NepiIFConfig
+          namespace={this.state.selected_frame_topic}
+          title={"Nepi_IF_Config"}
+        />
+
       </React.Fragment>
     )
   }
@@ -574,26 +681,26 @@ class NavPoseMgr extends Component {
 
 
                <div style={{ display: 'flex' }}>
-                        <div style={{ width: '20%' }} >                     
+                        <div style={{ width: '13%' }} >
 
                           {this.renderFrameSelection()}
 
                         </div>
 
 
-                        <div style={{ width: '5%' }} >
+                        <div style={{ width: '2%' }} >
                         </div>
 
-                        <div style={{ width: '40%' }}>
+                        <div style={{ width: '57%' }}>
 
                           {this.renderFrameNavPoseComps()}
 
                         </div>
 
-                        <div style={{ width: '5%' }} >
+                        <div style={{ width: '2%' }} >
                         </div>
-                        
-                        <div style={{ width: '40%' }}>
+
+                        <div style={{ width: '26%' }}>
 
                           {this.renderFrameConfig()}
 
