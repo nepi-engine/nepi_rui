@@ -103,43 +103,87 @@ class NepiIFNavPose extends Component {
 
     const last_navpose_data = this.state.navpose_data
     
+     const has_pan_tilt = message.has_pan_tilt
+     var navpose_data_from_msg = null
+     if (has_pan_tilt === true) {
+        navpose_data_from_msg = {
+            navpose_frame: message.navpose_frame,
+            navpose_description: message.navpose_description,
 
-     const navpose_data_from_msg = {
-        navpose_frame: message.navpose_frame,
-        navpose_description: message.navpose_description,
+            frame_nav: message.frame_nav,
+            frame_altitude: message.frame_altitude,
+            frame_depth: message.frame_depth,
 
-        frame_nav: message.frame_nav,
-        frame_altitude: message.frame_altitude,
-        frame_depth: message.frame_depth,
-
-        has_location: message.has_location,
-        latitude: message.latitude,
-        longitude: message.longitude,
+            has_location: message.has_location,
+            latitude: message.latitude,
+            longitude: message.longitude,
 
 
-        has_heading: message.has_heading,
-        heading_deg: message.heading_deg,
+            has_heading: message.has_heading,
+            heading_deg: message.heading_deg,
 
-        has_orientation: message.has_orientation,
-        roll_deg: message.roll_deg,
-        pitch_deg: message.pitch_deg,
-        yaw_deg: message.yaw_deg,
+            has_orientation: message.has_orientation,
+            roll_deg: message.roll_deg,
+            pitch_deg: message.pitch_deg,
+            yaw_deg: message.yaw_deg,
 
-        has_position: message.has_position,
-        x_m: message.x_m,
-        y_m: message.y_m,
-        z_m: message.z_m,
+            has_position: message.has_position,
+            x_m: message.x_m,
+            y_m: message.y_m,
+            z_m: message.z_m,
 
-        has_altitude: message.has_altitude,
-        altitude_m: message.altitude_m,
-        geoid_height_meters: message.geoid_height_meters,
+            has_altitude: message.has_altitude,
+            altitude_m: message.altitude_m,
+            geoid_height_meters: message.geoid_height_meters,
 
-        has_depth: message.has_depth,
-        depth_m: message.depth_m,
+            has_depth: message.has_depth,
+            depth_m: message.depth_m,
 
-        has_pan_tilt: message.has_pan_tilt,
-        pan_deg: message.pan_deg,
-        tilt_deg: message.tilt_deg
+            has_pan_tilt: message.has_pan_tilt,
+            pan_deg: message.pan_deg,
+            tilt_deg: message.tilt_deg
+          }
+        }
+      else {
+
+        navpose_data_from_msg = {
+            navpose_frame: message.navpose_frame,
+            navpose_description: message.navpose_description,
+
+            frame_nav: message.frame_nav,
+            frame_altitude: message.frame_altitude,
+            frame_depth: message.frame_depth,
+
+            has_location: message.has_location,
+            latitude: message.latitude,
+            longitude: message.longitude,
+
+
+            has_heading: true,
+            heading_deg: message.pan_tilt_heading_deg,
+
+            has_orientation: true,
+            roll_deg: message.pan_tilt_roll_deg,
+            pitch_deg: message.pan_tilt_pitch_deg,
+            yaw_deg: message.pan_tilt_yaw_deg,
+
+            has_position: true,
+            x_m: message.pan_tilt_x_m,
+            y_m: message.pan_tilt_y_m,
+            z_m: message.pan_tilt_z_m,
+
+            has_altitude: message.has_altitude,
+            altitude_m: message.altitude_m,
+            geoid_height_meters: message.geoid_height_meters,
+
+            has_depth: message.has_depth,
+            depth_m: message.depth_m,
+
+            has_pan_tilt: message.has_pan_tilt,
+            pan_deg: message.pan_deg,
+            tilt_deg: message.tilt_deg
+          }
+
       }
 
       // Preserve fields the user is currently editing so subscription doesn't reset them
