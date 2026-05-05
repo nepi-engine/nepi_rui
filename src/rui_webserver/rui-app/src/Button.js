@@ -94,7 +94,9 @@ class Button extends Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (prevProps.style.backgroundColor !== this.props.style.backgroundColor) {
+    const prevBg = prevProps.style && prevProps.style.backgroundColor
+    const nextBg = this.props.style && this.props.style.backgroundColor
+    if (prevBg !== nextBg) {
       this.setState({
         actualStyle: this.props.style
       })

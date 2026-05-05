@@ -3116,11 +3116,11 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
         this.publishMessage({
           name: namespace,
           messageType: "nepi_interfaces/UpdateTransform",
-          data: { 
+          data: {
             name: name,
             name2: name2,
             name3: name3,
-            value: transform_msg
+            transform: transform_msg
 
           },
           noPrefix: true
