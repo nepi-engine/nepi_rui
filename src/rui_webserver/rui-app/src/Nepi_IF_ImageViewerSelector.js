@@ -192,7 +192,7 @@ class NepiIFImageViewerSelector extends Component {
   
       const {sendStringMsg} = this.props.ros
       const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
-      if ((select_updated_topic != null) && (updated_image === true)){
+      if ((select_updated_topic != null) && (updated_image === true) && selected_image !== undefined && selected_image != null){
         sendStringMsg(select_updated_topic,selected_image)
       }
 
@@ -237,7 +237,7 @@ class NepiIFImageViewerSelector extends Component {
 
     const {sendStringMsg} = this.props.ros
     const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
-    if ((select_updated_topic != null)){
+    if ((select_updated_topic != null && selected_image !== undefined && selected_image != null)){
       sendStringMsg(select_updated_topic,selected_image)
     }
 
@@ -318,7 +318,7 @@ class NepiIFImageViewerSelector extends Component {
     const selected_image = image_topics[index]
     const {sendStringMsg} = this.props.ros
     const select_updated_topic = this.props.select_updated_topic ? this.props.select_updated_topic : null
-    if ((select_updated_topic != null)){
+    if ((select_updated_topic != null && selected_image !== undefined && selected_image != null)){
       sendStringMsg(select_updated_topic,selected_image)
     }
     else {
