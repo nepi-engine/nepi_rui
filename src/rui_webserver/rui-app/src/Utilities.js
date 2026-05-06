@@ -164,9 +164,9 @@ export function createMenuBaseName(optionStr) {
     else {
       menu_name = optionStr
     }
-    
+
     return menu_name
-    
+
 }
 
 

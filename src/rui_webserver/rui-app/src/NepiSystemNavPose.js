@@ -22,7 +22,7 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
-//import Button, { ButtonMenu } from "./Button"
+import Button from "./Button"
 import Select, { Option } from "./Select"
 import Toggle from "react-toggle"
 import Label from "./Label"
@@ -30,11 +30,21 @@ import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Input from "./Input"
 
-import { onChangeSwitchStateValue, createMenuBaseName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
-
+import { onChangeSwitchStateValue, createMenuBaseName as createMenuBaseNameUtil, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFConfig from "./Nepi_IF_Config"
+
+function createMenuBaseName(optionStr) {
+  var parts = optionStr.split('/')
+  if (parts.length > 3) {
+    var sliced = parts.slice(3)
+    if (sliced[0] === 'app_nav_sim' && sliced.length > 1) {
+      return sliced[1] + ' sim'
+    }
+  }
+  return createMenuBaseNameUtil(optionStr)
+}
 
 
 @inject("ros")
@@ -62,6 +72,10 @@ class NavPoseMgr extends Component {
       show_source_offset: false,
       show_update_offset: false,
       show_update_reset: false,
+
+      show_edit_frames: false,
+      edit_frame_name: '',
+      next_custom_num: 1,
 
       transform_expanded: {},
 
@@ -137,7 +151,7 @@ class NavPoseMgr extends Component {
     this.checkConnection()
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate(prevProps, prevState) {
     const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
     if (this.state.needs_update === true) {
       this.setState({needs_update: false})
@@ -154,6 +168,21 @@ class NavPoseMgr extends Component {
         selected_frame_solution: navpose_frames_solutions[0],
         selected_frame_ind: 0
       })
+    }
+    // Mirror selected frame name into the edit box when selection changes
+    if (prevState.selected_frame !== this.state.selected_frame && this.state.selected_frame !== 'None') {
+      this.setState({ edit_frame_name: this.state.selected_frame })
+    }
+    // Keep next_custom_num above any existing custom_N frames
+    if (this.props.ros.navpose_frames !== prevProps.ros.navpose_frames) {
+      let maxN = 0
+      for (const f of (navpose_frames || [])) {
+        const m = f.match(/^custom_(\d+)$/)
+        if (m) maxN = Math.max(maxN, parseInt(m[1], 10))
+      }
+      if (maxN + 1 > this.state.next_custom_num) {
+        this.setState({ next_custom_num: maxN + 1 })
+      }
     }
   }
 
@@ -192,10 +221,86 @@ class NavPoseMgr extends Component {
 
   renderFrameSelection() {
     const { navpose_frames, navpose_frames_topics } = this.props.ros
-    const { selected_frame_topic } = this.state
+    const { selected_frame, selected_frame_topic, show_edit_frames, edit_frame_name, next_custom_num } = this.state
+    const mgrNamespace = this.getMgrNamespace()
+    const hasSelection = selected_frame_topic !== null && selected_frame !== 'None'
+    const canDelete = hasSelection && selected_frame !== 'base_frame'
+    const customName = 'custom_' + next_custom_num
+
+    const onNew = () => {
+      this.props.ros.sendUpdateStringMsg(mgrNamespace + '/add_frame', customName, customName)
+      this.setState({ next_custom_num: next_custom_num + 1 })
+    }
+
+    const onCopy = () => {
+      this.props.ros.sendUpdateStringMsg(mgrNamespace + '/copy_frame', customName, selected_frame)
+      this.setState({ next_custom_num: next_custom_num + 1 })
+    }
+
+    const onDelete = () => {
+      this.props.ros.sendStringMsg(mgrNamespace + '/delete_frame', selected_frame)
+    }
+
+    const onRename = (newName) => {
+      if (newName && newName !== selected_frame) {
+        this.props.ros.sendUpdateStringMsg(mgrNamespace + '/rename_frame', selected_frame, newName)
+      }
+    }
 
     return (
       <React.Fragment>
+
+        <Label title={"Edit Frames"}>
+          <Toggle
+            checked={show_edit_frames}
+            onClick={() => this.setState({ show_edit_frames: !show_edit_frames })}
+          />
+        </Label>
+
+        {show_edit_frames && (
+          <div style={{ marginTop: Styles.vars.spacing.xs }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: Styles.vars.spacing.xs }}>
+              <label style={{ fontSize: '0.85em', whiteSpace: 'nowrap' }}>{'Name'}</label>
+              <Input
+                id={'NavPoseFrameName'}
+                style={{ flex: 1, minWidth: 0 }}
+                value={edit_frame_name}
+                onChange={(e) => {
+                  const el = document.getElementById('NavPoseFrameName')
+                  setElementStyleModified(el)
+                  this.setState({ edit_frame_name: e.target.value })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const el = document.getElementById('NavPoseFrameName')
+                    clearElementStyleModified(el)
+                    onRename(el.value)
+                  }
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: Styles.vars.spacing.small }}>
+              <Button style={{ flex: 1, padding: '2px 0', fontSize: '0.8em' }} onClick={onNew}>
+                {'New'}
+              </Button>
+              <Button
+                style={{ flex: 1, padding: '2px 0', fontSize: '0.8em', opacity: hasSelection ? 1 : 0.4 }}
+                disabled={!hasSelection}
+                onClick={onCopy}
+              >
+                {'Copy'}
+              </Button>
+              <Button
+                style={{ flex: 1, padding: '2px 0', fontSize: '0.8em', opacity: canDelete ? 1 : 0.4 }}
+                disabled={!canDelete}
+                onClick={onDelete}
+              >
+                {'Delete'}
+              </Button>
+            </div>
+          </div>
+        )}
+
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Select NavPose Frame"}
         </label>
