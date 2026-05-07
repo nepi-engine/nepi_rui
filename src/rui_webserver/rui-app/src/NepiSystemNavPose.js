@@ -22,7 +22,7 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
-//import Button, { ButtonMenu } from "./Button"
+import Button from "./Button"
 import Select, { Option } from "./Select"
 import Toggle from "react-toggle"
 import Label from "./Label"
@@ -30,11 +30,21 @@ import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Input from "./Input"
 
-import { onChangeSwitchStateValue, createMenuBaseName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
-
+import { onChangeSwitchStateValue, createMenuBaseName as createMenuBaseNameUtil, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFConfig from "./Nepi_IF_Config"
+
+function createMenuBaseName(optionStr) {
+  var parts = optionStr.split('/')
+  if (parts.length > 3) {
+    var sliced = parts.slice(3)
+    if (sliced[0] === 'app_nav_sim' && sliced.length > 1) {
+      return sliced[1] + ' sim'
+    }
+  }
+  return createMenuBaseNameUtil(optionStr)
+}
 
 
 @inject("ros")
@@ -62,6 +72,10 @@ class NavPoseMgr extends Component {
       show_source_offset: false,
       show_update_offset: false,
       show_update_reset: false,
+
+      show_edit_frames: false,
+      edit_frame_name: '',
+      next_custom_num: 1,
 
       transform_expanded: {},
 
@@ -137,7 +151,7 @@ class NavPoseMgr extends Component {
     this.checkConnection()
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate(prevProps, prevState) {
     const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
     if (this.state.needs_update === true) {
       this.setState({needs_update: false})
@@ -154,6 +168,21 @@ class NavPoseMgr extends Component {
         selected_frame_solution: navpose_frames_solutions[0],
         selected_frame_ind: 0
       })
+    }
+    // Mirror selected frame name into the edit box when selection changes
+    if (prevState.selected_frame !== this.state.selected_frame && this.state.selected_frame !== 'None') {
+      this.setState({ edit_frame_name: this.state.selected_frame })
+    }
+    // Keep next_custom_num above any existing custom_N frames
+    if (this.props.ros.navpose_frames !== prevProps.ros.navpose_frames) {
+      let maxN = 0
+      for (const f of (navpose_frames || [])) {
+        const m = f.match(/^custom_(\d+)$/)
+        if (m) maxN = Math.max(maxN, parseInt(m[1], 10))
+      }
+      if (maxN + 1 > this.state.next_custom_num) {
+        this.setState({ next_custom_num: maxN + 1 })
+      }
     }
   }
 
@@ -192,10 +221,86 @@ class NavPoseMgr extends Component {
 
   renderFrameSelection() {
     const { navpose_frames, navpose_frames_topics } = this.props.ros
-    const { selected_frame_topic } = this.state
+    const { selected_frame, selected_frame_topic, show_edit_frames, edit_frame_name, next_custom_num } = this.state
+    const mgrNamespace = this.getMgrNamespace()
+    const hasSelection = selected_frame_topic !== null && selected_frame !== 'None'
+    const canDelete = hasSelection && selected_frame !== 'base_frame'
+    const customName = 'custom_' + next_custom_num
+
+    const onNew = () => {
+      this.props.ros.sendUpdateStringMsg(mgrNamespace + '/add_frame', customName, customName)
+      this.setState({ next_custom_num: next_custom_num + 1 })
+    }
+
+    const onCopy = () => {
+      this.props.ros.sendUpdateStringMsg(mgrNamespace + '/copy_frame', customName, selected_frame)
+      this.setState({ next_custom_num: next_custom_num + 1 })
+    }
+
+    const onDelete = () => {
+      this.props.ros.sendStringMsg(mgrNamespace + '/delete_frame', selected_frame)
+    }
+
+    const onRename = (newName) => {
+      if (newName && newName !== selected_frame) {
+        this.props.ros.sendUpdateStringMsg(mgrNamespace + '/rename_frame', selected_frame, newName)
+      }
+    }
 
     return (
       <React.Fragment>
+
+        <Label title={"Edit Frames"}>
+          <Toggle
+            checked={show_edit_frames}
+            onClick={() => this.setState({ show_edit_frames: !show_edit_frames })}
+          />
+        </Label>
+
+        {show_edit_frames && (
+          <div style={{ marginTop: Styles.vars.spacing.xs }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: Styles.vars.spacing.xs }}>
+              <label style={{ fontSize: '0.85em', whiteSpace: 'nowrap' }}>{'Name'}</label>
+              <Input
+                id={'NavPoseFrameName'}
+                style={{ flex: 1, minWidth: 0 }}
+                value={edit_frame_name}
+                onChange={(e) => {
+                  const el = document.getElementById('NavPoseFrameName')
+                  setElementStyleModified(el)
+                  this.setState({ edit_frame_name: e.target.value })
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const el = document.getElementById('NavPoseFrameName')
+                    clearElementStyleModified(el)
+                    onRename(el.value)
+                  }
+                }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '4px', marginBottom: Styles.vars.spacing.small }}>
+              <Button style={{ flex: 1, padding: '2px 0', fontSize: '0.8em' }} onClick={onNew}>
+                {'New'}
+              </Button>
+              <Button
+                style={{ flex: 1, padding: '2px 0', fontSize: '0.8em', opacity: hasSelection ? 1 : 0.4 }}
+                disabled={!hasSelection}
+                onClick={onCopy}
+              >
+                {'Copy'}
+              </Button>
+              <Button
+                style={{ flex: 1, padding: '2px 0', fontSize: '0.8em', opacity: canDelete ? 1 : 0.4 }}
+                disabled={!canDelete}
+                onClick={onDelete}
+              >
+                {'Delete'}
+              </Button>
+            </div>
+          </div>
+        )}
+
         <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
           {"Select NavPose Frame"}
         </label>
@@ -575,37 +680,51 @@ class NavPoseMgr extends Component {
                   }
                   const tfCols = [
                     [
-                      { field: 'x_m',       label: 'X (m)'    },
-                      { field: 'y_m',       label: 'Y (m)'    },
-                      { field: 'z_m',       label: 'Z (m)'    },
+                      { field: 'x_m',       label: 'X (m)',    invertField: 'x_invert'     },
+                      { field: 'y_m',       label: 'Y (m)',    invertField: 'y_invert'     },
+                      { field: 'z_m',       label: 'Z (m)',    invertField: 'z_invert'     },
                     ],
                     [
-                      { field: 'roll_deg',  label: 'Roll (°)' },
-                      { field: 'pitch_deg', label: 'Pitch (°)'},
-                      { field: 'yaw_deg',   label: 'Yaw (°)'  },
+                      { field: 'roll_deg',  label: 'Roll (°)', invertField: 'roll_invert'  },
+                      { field: 'pitch_deg', label: 'Pitch (°)',invertField: 'pitch_invert' },
+                      { field: 'yaw_deg',   label: 'Yaw (°)',  invertField: 'yaw_invert'   },
                     ],
                   ]
                   const tfFields = tfCols[0].concat(tfCols[1])
-                  const renderTfInput = ({ field, label }) => (
-                    <div key={field} style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '3px' }}>
-                      <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
-                      <Input
-                        defaultValue={tf[field] != null ? Number(tf[field]).toFixed(3) : '0.000'}
-                        key={tfKey + '_' + field + '_' + tf[field]}
-                        onChange={(e) => setElementStyleModified(e.target)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            const val = parseFloat(e.target.value)
-                            if (!isNaN(val)) {
-                              clearElementStyleModified(e.target)
-                              sendTransform({ [field]: val })
-                            }
-                          }
-                        }}
-                        style={{ width: '70px' }}
-                      />
-                    </div>
-                  )
+                  const renderTfInput = ({ field, label, invertField }) => {
+                    const invertChecked = !!tf[invertField]
+                    return (
+                      <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
+                          <Input
+                            defaultValue={tf[field] != null ? Number(tf[field]).toFixed(3) : '0.000'}
+                            key={tfKey + '_' + field + '_' + tf[field]}
+                            onChange={(e) => setElementStyleModified(e.target)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const val = parseFloat(e.target.value)
+                                if (!isNaN(val)) {
+                                  clearElementStyleModified(e.target)
+                                  sendTransform({ [field]: val })
+                                }
+                              }
+                            }}
+                            style={{ width: '70px' }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <label style={{ fontSize: '0.7em', width: '46px', flexShrink: 0, color: Styles.vars.colors.grey1 }}>{'Invert'}</label>
+                          <div style={{ width: '70px', display: 'flex', justifyContent: 'center' }}>
+                            <Toggle
+                              checked={invertChecked}
+                              onClick={() => sendTransform({ [invertField]: !invertChecked })}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
                   return (
                     <div>
                       <div
@@ -616,12 +735,16 @@ class NavPoseMgr extends Component {
                       </div>
                       {isExpanded && (
                         <div style={{ marginTop: '4px' }}>
-                          <div style={{ display: 'flex', gap: '8px', marginBottom: '3px' }}>{tfCols[0].map(renderTfInput)}</div>
-                          <div style={{ display: 'flex', gap: '8px' }}>{tfCols[1].map(renderTfInput)}</div>
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>{tfCols[1].map(renderTfInput)}</div>
                           <div
                             style={{ cursor: 'pointer', fontSize: '0.75em', color: Styles.vars.colors.red, marginTop: '4px', textAlign: 'right', userSelect: 'none' }}
                             onClick={() => {
-                              const zeros = tfFields.reduce((acc, { field }) => { acc[field] = 0; return acc }, {})
+                              const zeros = tfFields.reduce((acc, { field, invertField }) => {
+                                acc[field] = 0
+                                acc[invertField] = false
+                                return acc
+                              }, {})
                               sendTransform(zeros)
                             }}
                           >
@@ -664,7 +787,7 @@ class NavPoseMgr extends Component {
         {renderCompTopicSection(...CONFIG_SECTIONS[selected_topic_config])}
 
         <NepiIFConfig
-          namespace={this.state.selected_frame_topic}
+          namespace={this.getMgrNamespace()}
           title={"Nepi_IF_Config"}
         />
 

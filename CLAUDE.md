@@ -108,6 +108,50 @@ rosrun nepi_rui run_webserver.py         # start Flask backend
 
 **Port conflicts.** Flask uses port 5003, rosbridge uses 9090, web_video_server uses 9091. These are not configurable via runtime flags — changes require modifying source. Verify port availability before deployment.
 
+## Editable Input Box Pattern
+
+All editable text/number inputs in the RUI must follow the PTX controls pattern. This is the authoritative pattern — do not deviate.
+
+**Requirements:**
+- Controlled input: `value` bound to a state field, updated in `onChange`
+- `id` prop on the `<Input>` for DOM targeting via `document.getElementById`
+- `onChange`: look up element by id, call `setElementStyleModified(el)`, then `setState` with new value
+- `onKeyDown` Enter: look up element by id, call `clearElementStyleModified(el)`, then send the value
+- Import `setElementStyleModified` and `clearElementStyleModified` from `./Utilities`
+- When the backing value changes externally (e.g. a new item is selected), update the state field via `componentDidUpdate` — this resets the displayed value and the dirty style is cleared by the next render
+
+**Template:**
+```jsx
+// State
+this.state = { myValue: '' }
+
+// componentDidUpdate — reset when source changes
+if (prevState.someSource !== this.state.someSource) {
+  this.setState({ myValue: this.state.someSource })
+}
+
+// JSX
+<Input
+  id={'MyUniqueInputId'}
+  value={this.state.myValue}
+  onChange={(e) => {
+    const el = document.getElementById('MyUniqueInputId')
+    setElementStyleModified(el)
+    this.setState({ myValue: e.target.value })
+  }}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter') {
+      const el = document.getElementById('MyUniqueInputId')
+      clearElementStyleModified(el)
+      // send el.value to ROS here
+    }
+  }}
+/>
+```
+
+**Reference implementations:** `NepiDevicePTX-Controls.js` (`onUpdateText`/`onKeyText` methods), `NepiSystemNavPose.js` (frame rename box).
+
 ## Decision Log
 
 - 2026-03 — CLAUDE.md created — Initial developer reference, Claude Code authoring pass.
+- 2026-05 — Editable input pattern documented — PTX controls are the canonical reference; all editable inputs must follow this pattern.
