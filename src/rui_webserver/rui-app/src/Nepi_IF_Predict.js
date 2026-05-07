@@ -42,13 +42,13 @@ import {createMenuBaseNames, createMenuFirstLastNames, createMenuListFromStrList
 @observer
 
 
-class NepiIFTracking extends Component {
+class NepiIFPredict extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
 
-      topic: 'track',
+      topic: 'predict',
       status_msg: null,
 
       statusListener: null,
@@ -66,7 +66,7 @@ class NepiIFTracking extends Component {
     this.statusListener = this.statusListener.bind(this)
 
     this.onMenuSelection = this.onMenuSelection.bind(this)
-    this.renderTrackingIF = this.renderTrackingIF.bind(this)
+    this.renderPredictIF = this.renderPredictIF.bind(this)
 
   }
   
@@ -104,7 +104,7 @@ class NepiIFTracking extends Component {
 
       var statusListener = this.props.ros.setupStatusListener(
         namespace + '/status',
-        "nepi_interfaces/TrackingStatus",
+        "nepi_interfaces/PredictStatus",
         this.statusListener
       )
       this.setState({ 
@@ -160,7 +160,7 @@ class NepiIFTracking extends Component {
 
 
 
-renderTrackingIF() {
+renderPredictIF() {
   const namespace = this.getNamespace()
   const status_msg = (this.props.status_msg !== undefined)? this.props.status_msg : this.state.status_msg    
    
@@ -255,7 +255,7 @@ renderTrackingIF() {
                       </div>
 
                       <div style={{ width: '40%' }}>
-                          <Label title={"Tracking"}>
+                          <Label title={"Predict"}>
                             <BooleanIndicator value={state} />
                           </Label>
                       </div>
@@ -400,7 +400,7 @@ renderTrackingIF() {
 
           <React.Fragment>
 
-               {this.renderTrackingIF()}
+               {this.renderPredictIF()}
 
           </React.Fragment>
       )
@@ -408,9 +408,9 @@ renderTrackingIF() {
     else {
       return (
 
-          <Section title={(this.props.title !== undefined) ? this.props.title : "Tracking"}>
+          <Section title={(this.props.title !== undefined) ? this.props.title : "Predict"}>
 
-              {this.renderTrackingIF()}
+              {this.renderPredictIF()}
 
         </Section>
      )
@@ -419,4 +419,4 @@ renderTrackingIF() {
   }
 
 }
-export default NepiIFTracking
+export default NepiIFPredict
