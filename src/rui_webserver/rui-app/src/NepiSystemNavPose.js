@@ -680,37 +680,51 @@ class NavPoseMgr extends Component {
                   }
                   const tfCols = [
                     [
-                      { field: 'x_m',       label: 'X (m)'    },
-                      { field: 'y_m',       label: 'Y (m)'    },
-                      { field: 'z_m',       label: 'Z (m)'    },
+                      { field: 'x_m',       label: 'X (m)',    invertField: 'x_invert'     },
+                      { field: 'y_m',       label: 'Y (m)',    invertField: 'y_invert'     },
+                      { field: 'z_m',       label: 'Z (m)',    invertField: 'z_invert'     },
                     ],
                     [
-                      { field: 'roll_deg',  label: 'Roll (°)' },
-                      { field: 'pitch_deg', label: 'Pitch (°)'},
-                      { field: 'yaw_deg',   label: 'Yaw (°)'  },
+                      { field: 'roll_deg',  label: 'Roll (°)', invertField: 'roll_invert'  },
+                      { field: 'pitch_deg', label: 'Pitch (°)',invertField: 'pitch_invert' },
+                      { field: 'yaw_deg',   label: 'Yaw (°)',  invertField: 'yaw_invert'   },
                     ],
                   ]
                   const tfFields = tfCols[0].concat(tfCols[1])
-                  const renderTfInput = ({ field, label }) => (
-                    <div key={field} style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', gap: '3px' }}>
-                      <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
-                      <Input
-                        defaultValue={tf[field] != null ? Number(tf[field]).toFixed(3) : '0.000'}
-                        key={tfKey + '_' + field + '_' + tf[field]}
-                        onChange={(e) => setElementStyleModified(e.target)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            const val = parseFloat(e.target.value)
-                            if (!isNaN(val)) {
-                              clearElementStyleModified(e.target)
-                              sendTransform({ [field]: val })
-                            }
-                          }
-                        }}
-                        style={{ width: '70px' }}
-                      />
-                    </div>
-                  )
+                  const renderTfInput = ({ field, label, invertField }) => {
+                    const invertChecked = !!tf[invertField]
+                    return (
+                      <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
+                          <Input
+                            defaultValue={tf[field] != null ? Number(tf[field]).toFixed(3) : '0.000'}
+                            key={tfKey + '_' + field + '_' + tf[field]}
+                            onChange={(e) => setElementStyleModified(e.target)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const val = parseFloat(e.target.value)
+                                if (!isNaN(val)) {
+                                  clearElementStyleModified(e.target)
+                                  sendTransform({ [field]: val })
+                                }
+                              }
+                            }}
+                            style={{ width: '70px' }}
+                          />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <label style={{ fontSize: '0.7em', width: '46px', flexShrink: 0, color: Styles.vars.colors.grey1 }}>{'Invert'}</label>
+                          <div style={{ width: '70px', display: 'flex', justifyContent: 'center' }}>
+                            <Toggle
+                              checked={invertChecked}
+                              onClick={() => sendTransform({ [invertField]: !invertChecked })}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
                   return (
                     <div>
                       <div
@@ -721,12 +735,16 @@ class NavPoseMgr extends Component {
                       </div>
                       {isExpanded && (
                         <div style={{ marginTop: '4px' }}>
-                          <div style={{ display: 'flex', gap: '8px', marginBottom: '3px' }}>{tfCols[0].map(renderTfInput)}</div>
-                          <div style={{ display: 'flex', gap: '8px' }}>{tfCols[1].map(renderTfInput)}</div>
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>{tfCols[1].map(renderTfInput)}</div>
                           <div
                             style={{ cursor: 'pointer', fontSize: '0.75em', color: Styles.vars.colors.red, marginTop: '4px', textAlign: 'right', userSelect: 'none' }}
                             onClick={() => {
-                              const zeros = tfFields.reduce((acc, { field }) => { acc[field] = 0; return acc }, {})
+                              const zeros = tfFields.reduce((acc, { field, invertField }) => {
+                                acc[field] = 0
+                                acc[invertField] = false
+                                return acc
+                              }, {})
                               sendTransform(zeros)
                             }}
                           >
@@ -769,7 +787,7 @@ class NavPoseMgr extends Component {
         {renderCompTopicSection(...CONFIG_SECTIONS[selected_topic_config])}
 
         <NepiIFConfig
-          namespace={this.state.selected_frame_topic}
+          namespace={this.getMgrNamespace()}
           title={"Nepi_IF_Config"}
         />
 

@@ -105,7 +105,7 @@ class NepiIFNavPose extends Component {
     
      const has_pan_tilt = message.has_pan_tilt
      var navpose_data_from_msg = null
-     if (has_pan_tilt === true) {
+     if (has_pan_tilt === false) {
         navpose_data_from_msg = {
             navpose_frame: message.navpose_frame,
             navpose_description: message.navpose_description,
