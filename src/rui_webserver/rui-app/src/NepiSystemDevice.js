@@ -459,9 +459,10 @@ updateMgrTimeStatusListener() {
   }
 
   renderLicenseInfo() {
-    const {license_key, license_type, license_valid, license_status} = this.props.ros
+    const {license_key, hardware_key, license_type, license_valid, license_status} = this.props.ros
 
-    const license_hw_key = license_key
+    const license_hw_key = license_key !== undefined ? license_key : hardware_key
+
 
     const license_info_valid = license_valid
   

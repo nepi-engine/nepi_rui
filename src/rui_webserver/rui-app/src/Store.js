@@ -726,6 +726,8 @@ class ROSConnectionStore {
   @observable license_server = null
   @observable license_valid = true // Default to true to avoid initial DEVELOPER message]
   @observable license_key = ''
+  @observable hardware_key = ''
+
   @observable license_type = 'Unlicensed'
   @observable license_status = 'No License Found'
   @observable license_info = null
@@ -748,6 +750,7 @@ class ROSConnectionStore {
           {
             this.license_info = yaml.load(event.data)
             this.license_key = this.license_info['licensed_components']['nepi_base']['hardware_key']
+            this.hardware_key = this.license_info['licensed_components']['hardware_key']
             this.license_type = this.license_info['licensed_components']['nepi_base']['commercial_license_type']
             this.license_status = this.license_info['licensed_components']['nepi_base']['status']
             if ( this.license_type === 'Unlicensed') {
