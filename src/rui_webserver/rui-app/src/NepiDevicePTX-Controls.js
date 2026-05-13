@@ -697,6 +697,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const speedRatio = status_msg.speed_ratio
     const speedPanRatio = status_msg.speed_pan_ratio
     const speedTiltRatio = status_msg.speed_tilt_ratio
+    const speedMax = status_msg.speed_max
 
     const speed_pan_dps = status_msg.speed_pan_dps
     const speed_tilt_dps = status_msg.speed_tilt_dps
@@ -788,7 +789,26 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
           <div hidden={(has_speed_control === false)}>
 
+            <Label title={"Max Speed (dps)"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(speedMax, 2)}
+              />
+            </Label>
 
+            <Label title={"Speed (dps)"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(speed_pan_dps, 2)}
+              />
+              <Input
+                disabled
+                style={{ width: "45%" }}
+                value={round(speed_tilt_dps, 2)}
+              />
+            </Label>
 
             {(has_sep_speed === true && this.state.linkSpeeds === false) ? (
               <React.Fragment>
@@ -832,41 +852,19 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               />
             )}
 
-
-                {(has_sep_speed === true) ?
-                <Columns>
-
-                  <Column>
-                  </Column>
-
-                  <Column>
-                      <Label title="Link Speeds">
-                      <Toggle
-                        checked={this.state.linkSpeeds === true}
-                        onClick={() => onChangeSwitchStateValue.bind(this)("linkSpeeds", this.state.linkSpeeds)}>
-                      </Toggle>
-                    </Label>
-                  </Column>
-
-
-
-                  
-
-                </Columns>
-                : null }
-
-            <Label title={"Speed (dps)"}>
-              <Input
-                disabled
-                style={{ width: "45%", float: "left" }}
-                value={round(speed_pan_dps, 2)}
-              />
-              <Input
-                disabled
-                style={{ width: "45%" }}
-                value={round(speed_tilt_dps, 2)}
-              />
-            </Label>
+            {(has_sep_speed === true) ?
+            <Columns>
+              <Column></Column>
+              <Column>
+                <Label title="Link Speeds">
+                  <Toggle
+                    checked={this.state.linkSpeeds === true}
+                    onClick={() => onChangeSwitchStateValue.bind(this)("linkSpeeds", this.state.linkSpeeds)}>
+                  </Toggle>
+                </Label>
+              </Column>
+            </Columns>
+            : null }
 
           </div>
 
