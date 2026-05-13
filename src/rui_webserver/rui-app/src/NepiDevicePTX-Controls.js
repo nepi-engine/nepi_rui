@@ -500,66 +500,6 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
 
-                        <div hidden={(has_speed_control === false)}>
-
-                          {(has_sep_speed === true) ?
-                          <Columns>
-                            <Column>
-                              <Label title="Link Speeds">
-                                <Toggle
-                                  checked={this.state.linkSpeeds === true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("linkSpeeds", this.state.linkSpeeds)}>
-                                </Toggle>
-                              </Label>
-                            </Column>
-                            <Column></Column>
-                          </Columns>
-                          : null }
-
-                          {(has_sep_speed === true && this.state.linkSpeeds === false) ? (
-                            <React.Fragment>
-                              <SliderAdjustment
-                                disabled={!has_speed_control}
-                                title={"Pan Speed"}
-                                msgType={"std_msgs/Float32"}
-                                adjustment={speedPanRatio}
-                                topic={namespace + "/set_pan_speed_ratio"}
-                                scaled={0.01}
-                                min={0}
-                                max={100}
-                                tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-                                unit={"%"}
-                              />
-                              <SliderAdjustment
-                                disabled={!has_speed_control}
-                                title={"Tilt Speed"}
-                                msgType={"std_msgs/Float32"}
-                                adjustment={speedTiltRatio}
-                                topic={namespace + "/set_tilt_speed_ratio"}
-                                scaled={0.01}
-                                min={0}
-                                max={100}
-                                tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-                                unit={"%"}
-                              />
-                            </React.Fragment>
-                          ) : (
-                            <SliderAdjustment
-                              disabled={!has_speed_control}
-                              title={"Speed"}
-                              msgType={"std_msgs/Float32"}
-                              adjustment={speedRatio}
-                              topic={namespace + "/set_speed_ratio"}
-                              scaled={0.01}
-                              min={0}
-                              max={100}
-                              tooltip={"Speed as a percentage (0%=min, 100%=max)"}
-                              unit={"%"}
-                            />
-                          )}
-
-                        </div>
-
                 <div hidden={(show_controls===false)}>
 
 
@@ -915,6 +855,18 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                 </Columns>
                 : null }
 
+            <Label title={"Speed (dps)"}>
+              <Input
+                disabled
+                style={{ width: "45%", float: "left" }}
+                value={round(speed_pan_dps, 2)}
+              />
+              <Input
+                disabled
+                style={{ width: "45%" }}
+                value={round(speed_tilt_dps, 2)}
+              />
+            </Label>
 
           </div>
 
