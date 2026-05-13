@@ -697,7 +697,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const speedRatio = status_msg.speed_ratio
     const speedPanRatio = status_msg.speed_pan_ratio
     const speedTiltRatio = status_msg.speed_tilt_ratio
-    const speedMax = status_msg.speed_max
+    const speedMax = status_msg.speed_max_dps
 
     const speed_pan_dps = status_msg.speed_pan_dps
     const speed_tilt_dps = status_msg.speed_tilt_dps
