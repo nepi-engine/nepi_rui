@@ -267,7 +267,17 @@ export function createMenuShortNames(optionsStrList, filterOutList = [], removeL
     
 }
 
-
+export function removeStringFromMenuNames(optionsStrList, removeString) {
+    var menu_names = []
+    var menu_name = ''
+    var i = 0
+    for (i = 0; i < optionsStrList.length; ++i) {
+      menu_name = optionsStrList[i].replace(removeString,'')
+      menu_names.push(menu_name)
+    }
+    return menu_names
+    
+}
 
 
 
