@@ -242,7 +242,7 @@ class NepiIFAdminDeviceName extends Component {
 
 
                   <div>
-                    {/* Map over the restriction options array */}
+                    {/* Map over the device names array */}
                     {device_names.map((name, index) => (
                       this.renderAdminDeviceNames(name, device_aliases[index], index)
                     ))}

@@ -47,12 +47,12 @@ class NepiDevicePTXControls extends Component {
       
       namespace : null,
       status_msg: null,
-      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : false,
+
+      speedMax: 0.0,
       linkSpeeds: false,
 
       show_controls: false,
 
-      linkSpeeds: false,
       panHomePos : null,
       tiltHomePos : null,
       panHardStopMin : null,
@@ -92,6 +92,7 @@ class NepiDevicePTXControls extends Component {
 
 
 
+    const speedMax = message.speed_max_dps
     const panHomePos = message.pan_home_pos_deg
     const tiltHomePos = message.tilt_home_pos_deg
     const panHardStopMin = message.pan_min_hardstop_deg
@@ -109,6 +110,7 @@ class NepiDevicePTXControls extends Component {
     }
     else {
        needs_update = (
+          speedMax !== last_status_msg.speed_max_dps ||
           panHomePos !== last_status_msg.pan_home_pos_deg  ||
           tiltHomePos !== last_status_msg.tilt_home_pos_deg  ||
           panHardStopMin !== last_status_msg.pan_min_hardstop_deg  ||
@@ -124,7 +126,9 @@ class NepiDevicePTXControls extends Component {
       )
     }
     if (needs_update === true){
+      this.setState({ })
       this.setState({
+          speedMax: speedMax,
           panHomePos : round(message.pan_home_pos_deg, 1),
           tiltHomePos : round(message.tilt_home_pos_deg, 1),
           panHardStopMin : round(message.pan_min_hardstop_deg, 1),
@@ -201,13 +205,20 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
   onUpdateText(e) {
+    var speedMax = null
     var panElement = null
     var tiltElement = null
     var panMinElement = null
     var panMaxElement = null
     var tiltMinElement = null
     var tiltMaxElement = null
-    if ((e.target.id === "PTXPanHomePos") )
+    if ((e.target.id === "MaxSpeed") )
+    {
+      speedMax = document.getElementById("MaxSpeed")
+      setElementStyleModified(speedMax)
+      this.setState({speedMax: e.target.value})
+    }
+    else if ((e.target.id === "PTXPanHomePos") )
     {
       panElement = document.getElementById("PTXPanHomePos")
       setElementStyleModified(panElement)
@@ -293,7 +304,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   }
 
   onKeyText(e) {
-    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, sendIntMsg} = this.props.ros
+    const {ptxDevices, onSetPTXGotoPos, onSetPTXGotoPanPos, onSetPTXGotoTiltPos, onSetPTXHomePos, onSetPTXSoftStopPos, sendFloatMsg, sendIntMsg} = this.props.ros
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
 
     const devicesList = Object.keys(ptxDevices)
@@ -302,6 +313,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       const capabilities = ptxDevices[namespace]
       has_sep_pan_tilt = capabilities && (capabilities.has_seperate_pan_tilt_control === true)
     }
+    var speedMax = null
     var panElement = null
     var tiltElement = null
     var panMinElement = null
@@ -309,7 +321,14 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     var tiltMinElement = null
     var tiltMaxElement = null
     if(e.key === 'Enter'){
-      if ((e.target.id === "PTXPanHomePos") || (e.target.id === "PTXTiltHomePos"))
+
+      if ((e.target.id === "MaxSpeed") )
+      {
+        speedMax = document.getElementById("MaxSpeed")
+        clearElementStyleModified(speedMax)
+        sendFloatMsg(namespace + '/set_speed_max_dps', speedMax.value)
+      }
+      else if ((e.target.id === "PTXPanHomePos") || (e.target.id === "PTXTiltHomePos"))
       {
         panElement = document.getElementById("PTXPanHomePos")
         clearElementStyleModified(panElement)
@@ -697,7 +716,6 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const speedRatio = status_msg.speed_ratio
     const speedPanRatio = status_msg.speed_pan_ratio
     const speedTiltRatio = status_msg.speed_tilt_ratio
-    const speedMax = status_msg.speed_max_dps
 
     const speed_pan_dps = status_msg.speed_pan_dps
     const speed_tilt_dps = status_msg.speed_tilt_dps
@@ -786,16 +804,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
           </div>
 
 
-
           <div hidden={(has_speed_control === false)}>
 
-            <Label title={"Max Speed (dps)"}>
-              <Input
-                disabled
-                style={{ width: "45%", float: "left" }}
-                value={round(speedMax, 2)}
-              />
-            </Label>
+
 
             <Label title={"Speed (dps)"}>
               <Input
@@ -808,6 +819,16 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                 style={{ width: "45%" }}
                 value={round(speed_tilt_dps, 2)}
               />
+            </Label>
+
+            <Label title={"Max Speed (dps)"}>
+                <Input
+                  id={"MaxSpeed"}
+                  style={{ width: "45%" }}
+                  value={this.state.speedMax}
+                  onChange= {this.onUpdateText}
+                  onKeyDown= {this.onKeyText}
+                />
             </Label>
 
             {(has_sep_speed === true && this.state.linkSpeeds === false) ? (
