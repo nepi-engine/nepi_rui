@@ -258,7 +258,7 @@ class AppsMgr extends Component {
     const display_name = (app_status_msg != null) ? app_status_msg.display_name : ''
     const description = (app_status_msg != null) ? app_status_msg.description : ''
     const pkg_name = (app_status_msg != null) ? app_status_msg.pkg_name : ''
-    const group = (app_status_msg != null) ? app_status_msg.group : ''
+    const group = (app_status_msg != null) ? app_status_msg.group_name : ''
     const node_name = (app_status_msg != null) ? app_status_msg.node_name : ''
         
     const enabled = (app_status_msg != null) ? app_status_msg.enabled : false
