@@ -2443,6 +2443,21 @@ class ROSConnectionStore {
     })
   }
 
+  @action.bound
+  sendUpdateBoolMultiMsg(namespace, name, value, name2 = '', name3 = '') {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateBool",
+      data: {
+        name: name,
+        name2: name2,
+        name3: name3,
+        value: value
+      },
+      noPrefix: true
+    })
+  }
+
 
   // RUI_KEY_PATH = '/opt/nepi/nepi_rui/src/rui_webserver/rui-app/src/keys/rui_key'
 

@@ -665,6 +665,54 @@ class NavPoseMgr extends Component {
                   </div>
                 )}
 
+                {typeShort === 'update' && currentOption === 'RESETS' && currentTopic !== 'None' && (
+                  <div style={{ marginTop: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <label style={{ fontSize: '0.85em', color: Styles.vars.colors.grey0, whiteSpace: 'nowrap' }}>
+                        {'Reset on Crossing'}
+                      </label>
+                      <Toggle
+                        checked={!!comp.update_resets_on_crossing}
+                        onClick={() => {
+                          this.props.ros.sendUpdateBoolMultiMsg(
+                            mgrNamespace + '/set_frame_comp_update_resets_on_crossing',
+                            selected_frame,
+                            !comp.update_resets_on_crossing,
+                            comp.comp_name
+                          )
+                        }}
+                      />
+                    </div>
+                    {!!comp.update_resets_on_crossing && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                        <label style={{ fontSize: '0.85em', color: Styles.vars.colors.grey0, whiteSpace: 'nowrap' }}>
+                          {'Crossing'}
+                        </label>
+                        <Input
+                          style={{ width: '70px' }}
+                          defaultValue={comp.update_resets_crossing != null ? comp.update_resets_crossing : 0}
+                          key={comp.comp_name + '_crossing_' + comp.update_resets_crossing}
+                          onChange={(e) => setElementStyleModified(e.target)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              const val = parseFloat(e.target.value)
+                              if (!isNaN(val)) {
+                                clearElementStyleModified(e.target)
+                                this.props.ros.sendUpdateFloatMsg(
+                                  mgrNamespace + '/set_frame_comp_update_resets_crossing',
+                                  selected_frame,
+                                  val,
+                                  comp.comp_name
+                                )
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {currentTopic !== 'None' && (() => {
                   const tfKey = comp.comp_name + '_' + typeShort
                   const isExpanded = !!this.state.transform_expanded[tfKey]
