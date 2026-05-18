@@ -674,7 +674,7 @@ class NavPoseMgr extends Component {
                       <Toggle
                         checked={!!comp.update_resets_on_crossing}
                         onClick={() => {
-                          this.props.ros.sendUpdateBoolMultiMsg(
+                          this.props.ros.sendUpdateBoolMsg(
                             mgrNamespace + '/set_frame_comp_update_resets_on_crossing',
                             selected_frame,
                             !comp.update_resets_on_crossing,

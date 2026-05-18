@@ -2431,20 +2431,7 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  sendUpdateBoolMsg(namespace, name, value) {
-    this.publishMessage({
-      name: namespace,
-      messageType: "nepi_interfaces/UpdateBool",
-      data: {
-        name: name,
-        value: value
-      },
-      noPrefix: true
-    })
-  }
-
-  @action.bound
-  sendUpdateBoolMultiMsg(namespace, name, value, name2 = '', name3 = '') {
+  sendUpdateBoolMsg(namespace, name, value, name2 = '', name3 = '') {
     this.publishMessage({
       name: namespace,
       messageType: "nepi_interfaces/UpdateBool",
