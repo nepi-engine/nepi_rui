@@ -39,8 +39,9 @@ function createMenuBaseName(optionStr) {
   var parts = optionStr.split('/')
   if (parts.length > 3) {
     var sliced = parts.slice(3)
-    if (sliced[0] === 'app_nav_sim' && sliced.length > 1) {
-      return sliced[1] + ' sim'
+    if (sliced[0] === 'app_nav_sim') {
+      if (sliced.length > 2) return sliced[2] + ' sim'
+      if (sliced.length > 1) return sliced[1] + ' sim'
     }
   }
   return createMenuBaseNameUtil(optionStr)
@@ -665,33 +666,33 @@ class NavPoseMgr extends Component {
                   </div>
                 )}
 
-                {typeShort === 'update' && currentOption === 'RESETS' && currentTopic !== 'None' && (
+                {typeShort === 'reset' && currentTopic !== 'None' && (
                   <div style={{ marginTop: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <label style={{ fontSize: '0.85em', color: Styles.vars.colors.grey0, whiteSpace: 'nowrap' }}>
                         {'Reset on Crossing'}
                       </label>
                       <Toggle
-                        checked={!!comp.update_resets_on_crossing}
+                        checked={!!comp.reset_resets_on_crossing}
                         onClick={() => {
                           this.props.ros.sendUpdateBoolMsg(
-                            mgrNamespace + '/set_frame_comp_update_resets_on_crossing',
+                            mgrNamespace + '/set_frame_comp_resets_on_crossing',
                             selected_frame,
-                            !comp.update_resets_on_crossing,
+                            !comp.reset_resets_on_crossing,
                             comp.comp_name
                           )
                         }}
                       />
                     </div>
-                    {!!comp.update_resets_on_crossing && (
+                    {!!comp.reset_resets_on_crossing && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                         <label style={{ fontSize: '0.85em', color: Styles.vars.colors.grey0, whiteSpace: 'nowrap' }}>
                           {'Crossing'}
                         </label>
                         <Input
                           style={{ width: '70px' }}
-                          defaultValue={comp.update_resets_crossing != null ? comp.update_resets_crossing : 0}
-                          key={comp.comp_name + '_crossing_' + comp.update_resets_crossing}
+                          defaultValue={comp.reset_resets_crossing != null ? comp.reset_resets_crossing : 0}
+                          key={comp.comp_name + '_crossing_' + comp.reset_resets_crossing}
                           onChange={(e) => setElementStyleModified(e.target)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -699,7 +700,7 @@ class NavPoseMgr extends Component {
                               if (!isNaN(val)) {
                                 clearElementStyleModified(e.target)
                                 this.props.ros.sendUpdateFloatMsg(
-                                  mgrNamespace + '/set_frame_comp_update_resets_crossing',
+                                  mgrNamespace + '/set_frame_comp_resets_crossing',
                                   selected_frame,
                                   val,
                                   comp.comp_name
@@ -814,9 +815,10 @@ class NavPoseMgr extends Component {
     const { selected_topic_config } = this.state
 
     const CONFIG_SECTIONS = {
-      init: ['NavPose Init Topic Config', 'init_topic', 'available_init_topics', 'init_topic_connected', 'init_topic_connecting', 'init_topic_available', 'init_topic_avg_rate'],
-      source: ['NavPose Source Topic Config', 'source_topic', 'available_source_topics', 'source_topic_connected', 'source_topic_connecting', 'source_topic_available', 'source_topic_avg_rate'],
+      init:   ['NavPose Init Topic Config',   'init_topic',   'available_init_topics',   'init_topic_connected',   'init_topic_connecting',   'init_topic_available',   'init_topic_avg_rate'],
       update: ['NavPose Update Topic Config', 'update_topic', 'available_update_topics', 'update_topic_connected', 'update_topic_connecting', 'update_topic_available', 'update_topic_avg_rate'],
+      offset: ['NavPose Offset Topic Config', 'offset_topic', 'available_offset_topics', 'offset_topic_connected', 'offset_topic_connecting', 'offset_topic_available', 'offset_topic_avg_rate'],
+      reset:  ['NavPose Reset Topic Config',  'reset_topic',  'available_reset_topics',  'reset_topic_connected',  'reset_topic_connecting',  'reset_topic_available',  'reset_topic_avg_rate'],
     }
 
     return (
@@ -828,8 +830,9 @@ class NavPoseMgr extends Component {
           onChange={(e) => this.setState({ selected_topic_config: e.target.value })}
         >
           <Option value={'init'}>{'Init Topic Config'}</Option>
-          <Option value={'source'}>{'Source Topic Config'}</Option>
           <Option value={'update'}>{'Update Topic Config'}</Option>
+          <Option value={'offset'}>{'Offset Topic Config'}</Option>
+          <Option value={'reset'}>{'Reset Topic Config'}</Option>
         </Select>
 
         {renderCompTopicSection(...CONFIG_SECTIONS[selected_topic_config])}
