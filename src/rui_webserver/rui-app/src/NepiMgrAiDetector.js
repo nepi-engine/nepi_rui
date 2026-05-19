@@ -858,7 +858,9 @@ renderDetectorSettings() {
       const { imageTopics } = this.props.ros
       var items = []
       const status_msg = this.state.status_msg
-      const sel_img = this.state.selected_display_topic
+      var sel_img = this.state.selected_display_topic
+      const sel_img_found = (imageTopics.indexOf(sel_img)) !== -1
+
     
 
       var img_topic = "None"
@@ -867,6 +869,12 @@ renderDetectorSettings() {
               const image_pub_topics = status_msg.image_pub_topics
               const image_names = createMenuFirstLastNames(image_pub_topics)
               if (image_pub_topics.length > 0){
+                if (sel_img_found === false){
+                    sel_img = image_pub_topics[0]
+                    if (imageTopics.indexOf(sel_img) !== -1)  {
+                      this.setState({selected_display_topic: sel_img, selected_display_text: image_names[0]  })
+                    }
+                }
                 for (var i = 0; i < image_pub_topics.length; i++) {
                     if (imageTopics.indexOf(image_pub_topics[i]) !== -1) {
                       img_topic = image_pub_topics[i] 
