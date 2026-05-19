@@ -69,10 +69,9 @@ class NavPoseMgr extends Component {
 
       show_fixed: false,
       show_init: false,
-      show_source_replace: false,
-      show_source_offset: false,
-      show_update_offset: false,
-      show_update_reset: false,
+      show_update: false,
+      show_replace: false,
+      show_offset: false,
 
       show_edit_frames: false,
       edit_frame_name: '',
@@ -399,12 +398,11 @@ class NavPoseMgr extends Component {
                           <div style={{ width: '3%' }}>
                           </div>
 
-
                           <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Source Replaces">
+                              <Label title="Update">
                                   <Toggle
-                                    checked={this.state.show_source_replace===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_source_replace",this.state.show_source_replace)}>
+                                    checked={this.state.show_update===true}
+                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_update",this.state.show_update)}>
                                   </Toggle>
                                 </Label>
                           </div>
@@ -412,23 +410,10 @@ class NavPoseMgr extends Component {
                           </div>
 
                           <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Source Offsets">
+                              <Label title="Reset">
                                   <Toggle
-                                    checked={this.state.show_source_offset===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_source_offset",this.state.show_source_offset)}>
-                                  </Toggle>
-                                </Label>
-                          </div>
-
-                          <div style={{ width: '3%' }}>
-                          </div>
-
-
-                          <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Update Replaces">
-                                  <Toggle
-                                    checked={this.state.show_update_reset===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_update_reset",this.state.show_update_reset)}>
+                                    checked={this.state.show_replace===true}
+                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_replace",this.state.show_replace)}>
                                   </Toggle>
                                 </Label>
                           </div>
@@ -436,10 +421,10 @@ class NavPoseMgr extends Component {
                           </div>
 
                           <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Update Offsets">
+                              <Label title="Offset">
                                   <Toggle
-                                    checked={this.state.show_update_offset===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_update_offset",this.state.show_update_offset)}>
+                                    checked={this.state.show_offset===true}
+                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_offset",this.state.show_offset)}>
                                   </Toggle>
                                 </Label>
                           </div>
@@ -471,44 +456,33 @@ class NavPoseMgr extends Component {
 
                     : null }
 
-                    { (this.state.show_source_replace === true) ?
+                    { (this.state.show_update === true) ?
 
                         <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_source_replace'}
-                          title={"NavPose Source Replaces Data"}
+                          navposeNamespace={this.state.selected_frame_topic + '/navpose_update'}
+                          title={"NavPose Update Data"}
                           make_section={false}
                           read_only={true}
                         />
 
                     : null }
 
-                    { (this.state.show_source_offset === true) ?
+                    { (this.state.show_replace === true) ?
 
                         <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_source_offset'}
-                          title={"NavPose Source Offsets Data"}
+                          navposeNamespace={this.state.selected_frame_topic + '/navpose_reset'}
+                          title={"NavPose Reset Data"}
                           make_section={false}
                           read_only={true}
                         />
 
                     : null }
 
-                    { (this.state.show_update_offset === true) ?
+                    { (this.state.show_offset === true) ?
 
                         <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_update_offset'}
-                          title={"NavPose Update Offset Data"}
-                          make_section={false}
-                          read_only={true}
-                        />
-
-                    : null }
-
-                    { (this.state.show_update_reset === true) ?
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_update_reset'}
-                          title={"NavPose Update Reset Data"}
+                          navposeNamespace={this.state.selected_frame_topic + '/navpose_offset'}
+                          title={"NavPose Offset Data"}
                           make_section={false}
                           read_only={true}
                         />
