@@ -58,11 +58,14 @@ class NepiIFSaveData extends Component {
       saveAllEnabled: false,
       saveAllRate: 0.0,
       saveDataPrefix: "",
+      saveDataPrefixModified: false,
       saveDataSubfolder: "",
+      saveDataSubfolderModified: false,
       saveUtcTz: false,
       exp_filename: "",
       saveDataEnabled: false,
       saveDataRate: "",
+      saveDataRateModified: false,
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
@@ -140,8 +143,6 @@ class NepiIFSaveData extends Component {
 
   // CAllback for handling ROS Status messages
   saveStatusListener(message) {
-    const do_updates = ((this.state.saveDataPrefix !== message.filename_prefix) ||  (this.state.saveDataSubfolder !== message.save_subfolder))
-
     if (message.save_data_topic === this.state.saveNamespace){
       this.setState({
         status_msg: message,
@@ -153,11 +154,18 @@ class NepiIFSaveData extends Component {
         saveDataEnabled: message.save_data_enabled
       })
 
-      if (do_updates === true) {
-        this.setState({
-          saveDataPrefix: message.filename_prefix,
-          saveDataSubfolder: message.save_subfolder,
-        })
+      if (!this.state.saveDataPrefixModified) {
+        this.setState({ saveDataPrefix: message.filename_prefix })
+      }
+      if (!this.state.saveDataSubfolderModified) {
+        this.setState({ saveDataSubfolder: message.save_subfolder })
+      }
+      if (!this.state.saveDataRateModified) {
+        const rates = message.save_data_rates
+        const active = rates && rates.find(r => r.save_rate_hz > 0)
+        const displayRate = active ? String(round(active.save_rate_hz, 2))
+                          : (message.save_all_rate > 0 ? String(round(message.save_all_rate, 2)) : "")
+        this.setState({ saveDataRate: displayRate })
       }
       this.updateSaveLists()
       this.updateSelectedDataProducts()
@@ -428,18 +436,23 @@ class NepiIFSaveData extends Component {
   }
  
   onToggleDataProductSelection(event){
-    const data_product = event.target.getAttribute("data-product")
-    var selectedList = this.getSelectedDataProducts()
+    const data_product = event.currentTarget.getAttribute("data-product")
+    if (!data_product || data_product === "None" || data_product === "All") {
+      return
+    }
+    const selectedList = this.getSelectedDataProducts().slice()
     const saveDataRate = this.state.saveDataRate
-    const rate = parseFloat(saveDataRate)
+    const parsedRate = parseFloat(saveDataRate)
+    const rate = isNaN(parsedRate) ? 1.0 : parsedRate
     const ind = selectedList.indexOf(data_product)
-    if ( ind !== -1 ){
-      delete selectedList[ind]
-      this.sendSaveRateUpdate(data_product,0.0)
+    if (ind !== -1) {
+      selectedList.splice(ind, 1)
+      this.sendSaveRateUpdate(data_product, 0.0)
     } else {
       selectedList.push(data_product)
-      this.sendSaveRateUpdate(data_product,rate)
+      this.sendSaveRateUpdate(data_product, rate)
     }
+    this.setState({selectedDataProducts: selectedList})
   }
 
   getSaveDataValue(){
@@ -496,17 +509,15 @@ class NepiIFSaveData extends Component {
 
 
   onUpdateSaveDataRateValue(event) {
-    this.setState({ saveDataRate: event.target.value })
+    this.setState({ saveDataRate: event.target.value, saveDataRateModified: true })
     document.getElementById("save_rate").style.color = Styles.vars.colors.red
-    this.render()
   }
 
   onKeySaveDataRateValue(event) {
-    //Unused const rate = parseFloat(this.state.saveDataRate)
     if(event.key === 'Enter'){
       const rate = parseFloat(event.target.value)
       if (!isNaN(rate)){
-        this.setState({saveDataRate: '' })
+        this.setState({ saveDataRateModified: false })
         this.sendSaveRateUpdate('Active',rate)
       }
       document.getElementById("save_rate").style.color = Styles.vars.colors.black
@@ -517,9 +528,8 @@ class NepiIFSaveData extends Component {
 
 
   onUpdateInputSaveDataPrefixValue(event) {
-    this.setState({ saveDataPrefix: event.target.value })
+    this.setState({ saveDataPrefix: event.target.value, saveDataPrefixModified: true })
     document.getElementById("input_prefix").style.color = Styles.vars.colors.red
-    this.render()
   }
 
   onKeySaveInputSaveDataPrefixValue(event) {
@@ -527,15 +537,15 @@ class NepiIFSaveData extends Component {
     const key = event.key
     const value = event.target.value
     if(key === 'Enter'){
+      this.setState({ saveDataPrefixModified: false })
       sendStringMsg(this.state.saveNamespace + '/save_data_prefix',value)
       document.getElementById("input_prefix").style.color = Styles.vars.colors.black
     }
   }
 
   onUpdateInputSaveDataSubfolderValue(event) {
-    this.setState({ saveDataSubfolder: event.target.value })
+    this.setState({ saveDataSubfolder: event.target.value, saveDataSubfolderModified: true })
     document.getElementById("input_subfolder").style.color = Styles.vars.colors.red
-    this.render()
   }
 
   onKeySaveInputSaveDataSubfolderValue(event) {
@@ -543,6 +553,7 @@ class NepiIFSaveData extends Component {
     const key = event.key
     const value = event.target.value
     if(key === 'Enter'){
+      this.setState({ saveDataSubfolderModified: false })
       sendStringMsg(this.state.saveNamespace + '/save_data_subfolder',value)
       document.getElementById("input_subfolder").style.color = Styles.vars.colors.black
     }
@@ -728,9 +739,6 @@ class NepiIFSaveData extends Component {
     const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.props.save_exclude_filters : []
     const allNamespace = this.getAllNamespace()
     var items = []
-    if (show_all_options === true){
-      items.push(<Option value={allNamespace}>{"All"}</Option>)
-    }
     //items.push(<Option value={"None"}>{"None"}</Option>)
     const saveData_topics = this.props.ros.saveDataNamespaces
     var shortname_split = []
@@ -768,7 +776,10 @@ class NepiIFSaveData extends Component {
         }
       }
     }
-    return items    
+    if (show_all_options === true && items.length > 1){
+      items.unshift(<Option value={allNamespace}>{"All"}</Option>)
+    }
+    return items
   }
 
 
@@ -870,6 +881,7 @@ class NepiIFSaveData extends Component {
 
                             {dataProdcutSources.map((data_product) =>
                             <div onClick={this.onToggleDataProductSelection}
+                                data-product={data_product}
                                 style={{
                                     textAlign: "center",
                                     padding: `${Styles.vars.spacing.xs}`,
@@ -877,7 +889,7 @@ class NepiIFSaveData extends Component {
                                     backgroundColor: (selectedDataProducts.includes(data_product))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
                                     cursor: "pointer",
                                   }}>
-                                  <body data-product={data_product} style={{color: Styles.vars.colors.black}}>{data_product}</body>
+                                  <body style={{color: Styles.vars.colors.black}}>{data_product}</body>
                             </div>
                             )}
                         </Label>
