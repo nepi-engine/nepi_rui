@@ -137,6 +137,7 @@ class NepiDeviceNPX extends Component {
              
                   <NepiIFNavPose
                     navposeNamespace={namespace + '/navpose'}
+                    read_only={true}
                   />
                
 
