@@ -60,8 +60,6 @@ class DataMgr extends Component {
     this.getAllNamespace = this.getAllNamespace.bind(this)
 
     this.renderSavePanel = this.renderSavePanel.bind(this)
-    this.renderSaveData = this.renderSaveData.bind(this)
-
 
     this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
     this.onToggleSaveUTC = this.onToggleSaveUTC.bind(this)
