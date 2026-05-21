@@ -962,11 +962,11 @@ class NavPoseMgr extends Component {
         const show_save_menu = save_data_topic != null && save_data_topic !== ''
 
       return (
-
+      <React.Fragment>
           <Section title={"NAVPOSE MANAGER"}>
 
                   {this.renderNavPoseMgr()}
-
+        </Section>
                 {(show_save_menu) ?
                   <NepiIFSaveData
                   saveNamespace={save_data_topic}
@@ -976,8 +976,8 @@ class NavPoseMgr extends Component {
                 />
               : null }
 
-
-        </Section>
+      </React.Fragment>
+        
      )
    }
 
