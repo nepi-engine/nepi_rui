@@ -514,7 +514,6 @@ class NavPoseMgr extends Component {
     const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
 
     const mgrNamespace = this.getMgrNamespace()
-    const { navpose_frames_solutions } = this.props.ros
 
     const live_solution = (selected_frame_ind >= 0 && navpose_frames_solutions)
       ? navpose_frames_solutions[selected_frame_ind]
@@ -841,7 +840,6 @@ class NavPoseMgr extends Component {
     const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
 
     const mgrNamespace = this.getMgrNamespace()
-    const { navpose_frames_solutions } = this.props.ros
 
     const live_solution = (selected_frame_ind >= 0 && navpose_frames_solutions)
       ? navpose_frames_solutions[selected_frame_ind]
