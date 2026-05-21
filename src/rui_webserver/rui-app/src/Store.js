@@ -306,8 +306,7 @@ class ROSConnectionStore {
       this.connectedToNavposeMgr = false
       this.navposeModelsMgrStatus = null
 
-      this.navposes_topic = ''
-      this.save_data_topic = ''
+      this.navpose_save_data_topic = ''
 
       this.navposes_max_pub_rate = null
 
@@ -1399,8 +1398,7 @@ class ROSConnectionStore {
   @observable connectedToNavposeMgr = false
   @observable navposeModelsMgrStatus = null
 
-  @observable navposes_topic = ''
-  @observable save_data_topic = ''
+  @observable navpose_save_data_topic = ''
 
   @observable navposes_max_pub_rate = null
 
@@ -1426,8 +1424,7 @@ class ROSConnectionStore {
 
       this.navposeModelsMgrStatus = message
 
-      this.navposes_topic = message.navposes_topic
-      this.save_data_topic = message.save_data_topic
+      this.navpose_save_data_topic = message.save_data_topic
 
       this.navposes_max_pub_rate = message.navposes_max_pub_rate
 

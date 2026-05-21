@@ -836,6 +836,7 @@ class NavPoseMgr extends Component {
 
 
   renderNavPoseMgr() {
+   
     const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
     const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
 
@@ -859,10 +860,12 @@ class NavPoseMgr extends Component {
     }
     const onRateUpdate = (newRate) => {
       if (newRate && newRate !== set_rate) {
-        this.props.ros.sendUpdateFloatMsg(mgrNamespace + '/set_frame_max_rate', frame_name, newRate)
+        this.props.ros.sendUpdateFloatMsg(mgrNamespace + '/set_frame_max_rate', frame_name, parseFloat(newRate))
       }
     }
 
+    const save_data_topic = this.props.ros.navpose_save_data_topic
+    const show_save_menu = save_data_topic != null && save_data_topic !== ''
     return (
 
         <React.Fragment>
@@ -880,8 +883,18 @@ class NavPoseMgr extends Component {
                         </div>
 
                         <div style={{ width: '57%' }}>
-
+                          <Section>
                           {this.renderFrameNavPoseComps()}
+                          </Section>
+
+                          {(show_save_menu) ?
+                            <NepiIFSaveData
+                            saveNamespace={save_data_topic}
+                            make_section={true}
+                            show_all_options={false}
+                            show_topic_selector={false}
+                          />
+                        : null }
 
                         </div>
 
@@ -890,15 +903,15 @@ class NavPoseMgr extends Component {
 
                         <div style={{ width: '26%' }}>
 
-
+                       <Section title={"NAVPOSE MANAGER"}>
                         <label style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
                           {frame_name}
                         </label>
                     
 
                       <Label title={""}>
-                        <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Deg"}</div>
-                        <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"DPS"}</div>
+                        <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Max"}</div>
+                        <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Avg"}</div>
                       </Label>
 
 
@@ -923,12 +936,17 @@ class NavPoseMgr extends Component {
                       <Input disabled style={{ width: "45%" }} value={round(avg_rate, 2)} />
                       </Label>
 
+                
 
-
-               <div style={{ borderTop: "1px solid #000000", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                           <div style={{ borderTop: "1px solid #000000", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
                           {this.renderFrameConfig()}
+
+                        </Section>
+
+
+
 
                         </div>
 
@@ -958,23 +976,15 @@ class NavPoseMgr extends Component {
       )
     }
     else {
-        const save_data_topic = this.state.status_msg != null ? this.state.status_msg.save_data_topic : ''
-        const show_save_menu = save_data_topic != null && save_data_topic !== ''
+       
 
       return (
       <React.Fragment>
-          <Section title={"NAVPOSE MANAGER"}>
+         
 
                   {this.renderNavPoseMgr()}
-        </Section>
-                {(show_save_menu) ?
-                  <NepiIFSaveData
-                  saveNamespace={save_data_topic}
-                  make_section={true}
-                  show_all_options={false}
-                  show_topic_selector={false}
-                />
-              : null }
+
+
 
       </React.Fragment>
         
