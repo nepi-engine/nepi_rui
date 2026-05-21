@@ -62,7 +62,7 @@ class DataMgr extends Component {
     this.renderSavePanel = this.renderSavePanel.bind(this)
 
     this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
-    this.onToggleSaveUTC = this.onToggleSaveUTC.bind(this)
+
 
     
   }
