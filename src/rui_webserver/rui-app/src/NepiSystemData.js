@@ -59,18 +59,11 @@ class DataMgr extends Component {
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.getAllNamespace = this.getAllNamespace.bind(this)
 
-    this.renderMgrSystemStatus = this.renderMgrSystemStatus.bind(this)
+    this.renderSavePanel = this.renderSavePanel.bind(this)
     this.renderSaveData = this.renderSaveData.bind(this)
-    this.renderDeleteData = this.renderDeleteData.bind(this)
 
-    this.onUpdateSaveRateText = this.onUpdateSaveRateText.bind(this)
-    this.onKeySaveRateText = this.onKeySaveRateText.bind(this);
-    this.onUpdateSaveSettingFilePrefix = this.onUpdateSaveSettingFilePrefix.bind(this)
-    this.onKeySaveSettingFilePrefix = this.onKeySaveSettingFilePrefix.bind(this)
-    this.onUpdateSaveSettingFileSubfolder = this.onUpdateSaveSettingFileSubfolder.bind(this)
-    this.onKeySaveSettingFileSubfolder = this.onKeySaveSettingFileSubfolder.bind(this)
+
     this.onToggleDataDeletion = this.onToggleDataDeletion.bind(this)
-    this.onToggleSaveData = this.onToggleSaveData.bind(this)
     this.onToggleSaveUTC = this.onToggleSaveUTC.bind(this)
 
     
@@ -94,11 +87,27 @@ class DataMgr extends Component {
     return allNamespace
   }
 
-  renderMgrSystemStatus() {
+
+
+
+  onToggleDataDeletion(e) {
+    this.setState({ allowFileDeletion: e.target.checked})
+  }
+
+  onToggleSaveData(e){
+    const { onToggleSaveDataAll} = this.props.ros
+    const checked = e.target.checked
+    onToggleSaveDataAll(checked)
+  }
+
+
+  renderSavePanel() {
     const {
       systemStatusDiskUsageMB,
       systemDefsDiskCapacityMB,
-      diskUsagePercent
+      systemStatusDiskRate,
+      diskUsagePercent,
+      deleteAllData
     } = this.props.ros
 
     return (
@@ -115,115 +124,16 @@ class DataMgr extends Component {
           <Input disabled value={roundWithSuffix(systemStatusDiskUsageMB / 1000.0, 1, "GB")} />
         </Label>
 
-      </Section>
-    )
-  }
-
-
-  onUpdateSaveRateText(e) {
-    this.setState({saveRate: e.target.value})
-    document.getElementById(e.target.id).style.color = Styles.vars.colors.red
-  }
-
-  onKeySaveRateText(e) {
-    const {updateSaveDataRate} = this.props.ros
-    const namespace = this.getBaseNamespace()
-    if(e.key === 'Enter'){
-      updateSaveDataRate(namespace, 'Active', this.state.saveRate)
-      document.getElementById(e.target.id).style.color = Styles.vars.colors.black
-    }
-  }
-
-  onUpdateSaveSettingFilePrefix(e) {
-    this.setState({ saveSettingsFilePrefix: e.target.value })
-    document.getElementById("file_prefix_input").style.color = Styles.vars.colors.red
-  }
-
-  onKeySaveSettingFilePrefix(event) {
-    const { sendStringMsg } = this.props.ros
-    const key = event.key
-    const value = event.target.value
-    const namespace = this.getBaseNamespace()
-    if(key === 'Enter'){
-      sendStringMsg(namespace + '/save_data_prefix',value)
-      document.getElementById("file_input_prefix").style.color = Styles.vars.colors.black
-    }
-  }
-
-  onUpdateSaveSettingFileSubfolder(e) {
-    this.setState({ saveSettingsFileSubfolder: e.target.value })
-    document.getElementById("file_subfolder_input").style.color = Styles.vars.colors.red
-  }
-
-  onKeySaveSettingFileSubfolder(event) {
-    const { sendStringMsg} = this.props.ros
-    const key = event.key
-    const value = event.target.value
-    const namespace = this.getBaseNamespace()
-    if(key === 'Enter'){
-      sendStringMsg(namespace + '/save_data_subfolder',value)
-      document.getElementById("file_input_subfolder").style.color = Styles.vars.colors.black
-    }
-  }
-
-
-  onToggleDataDeletion(e) {
-    this.setState({ allowFileDeletion: e.target.checked})
-  }
-
-  onToggleSaveData(e){
-    const { onToggleSaveDataAll} = this.props.ros
-    const checked = e.target.checked
-    onToggleSaveDataAll(checked)
-  }
-
-  onToggleSaveUTC(e){
-    const {onToggleSaveUTCAll} = this.props.ros
-    const checked = e.target.checked
-    onToggleSaveUTCAll(checked)
-  }
-
-  onToggleLogNavPose(e){
-    const {onChangeSaveRateAll} = this.props.ros
-    const checked = e.target.checked
-    onChangeSaveRateAll(checked)
-  }
-
-
-
-  renderSaveData() {
-    const { systemStatusDiskRate } = this.props.ros
-    return (
-      <Section title={"Save Data"}>
-        <Label title={"Save All Data (Save all enabled data products)"}>
-          <Toggle id={"toggle_save_data"} onClick={this.onToggleSaveData} />
+        <Label title={"Available"}>
+          <Input disabled value={roundWithSuffix(systemDefsDiskCapacityMB - systemStatusDiskUsageMB , 3, "MB/s")} />
         </Label>
-        <Label title={"Save Rate (Hz)"}>
-          <Input id="saveRateInput" value={this.state.saveRate} onChange={this.onUpdateSaveRateText} onKeyDown= {this.onKeySaveRateText} />
-        </Label>
+
         <Label title={"Disk Usage Rate"}>
           <Input disabled value={roundWithSuffix(systemStatusDiskRate, 3, "MB/s")} />
         </Label>
 
-        <Label title={"File Name Prefix"}>
-          <Input
-            id={"file_prefix_input"}
-            value={this.state.saveSettingsFilePrefix}
-            onChange={this.onUpdateSaveSettingFilePrefix}
-            onKeyDown={this.onKeySaveSettingFilePrefix}
-          />
-        </Label>
-        
-      </Section>
-    )
-  }
 
-
-  renderDeleteData() {
-    const { deleteAllData } = this.props.ros
-    return (
-      <Section title={"Delete Data"}>
-        <Label title={"Allow Data Deletion"}>
+     <Label title={"Allow Data Deletion"}>
           <Toggle onClick={this.onToggleDataDeletion} />
         </Label>
         <ButtonMenu>
@@ -243,9 +153,11 @@ class DataMgr extends Component {
             {""}
           </pre>
           </div>
+
       </Section>
     )
   }
+
 
 
 
@@ -255,25 +167,46 @@ class DataMgr extends Component {
 
     return (
       <React.Fragment>
-      <Columns>
-        <Column>
-        {this.renderMgrSystemStatus()}
-        </Column>
-        <Column>
-          {this.renderSaveData()}
-        </Column>
-        <Column>
-        {this.renderDeleteData()}
-        </Column>
-      </Columns>
+
 
       <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-        <NepiIFSaveData
-        saveNamespace={this.getAllNamespace()}
-        always_show_controls={true}
-        make_section={true}
-        />
+
+
+          <div style={{ display: 'flex' }}>
+
+              <div style={{ width: "73%" }}>
+
+
+            <NepiIFSaveData
+            saveNamespace={this.getAllNamespace()}
+            always_show_controls={true}
+            make_section={true}
+            />
+
+              </div>
+
+
+              <div style={{ width: '2%' }}>
+                    {}
+              </div>
+
+
+
+              <div style={{ width: "25%"}}>
+
+                <Section title={"Save Data Status"}>
+
+                   {this.renderSavePanel()}
+
+                        
+                   </Section>
+
+
+              </div>
+
+        </div>
+
 
     </React.Fragment>
 

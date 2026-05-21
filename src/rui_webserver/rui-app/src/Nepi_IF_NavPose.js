@@ -30,6 +30,7 @@ import Styles from "./Styles"
 import Select, { Option } from "./Select"
 
 import NepiIFConfig from "./Nepi_IF_Config"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -745,7 +746,11 @@ class NepiIFNavPose extends Component {
         const navposeNamespace = this.state.navposeNamespace
         const { userRestricted} = this.props.ros
         const navpose_view_restricted = userRestricted.indexOf('DATA-NAVPOSE-VIEW') !== -1
-
+        
+        const save_data_topic = this.state.status_msg != null ? this.state.status_msg.save_data_topic : ''
+        const save_topic = this.props.save_data_topic !== undefined ? this.props.save_data_topic : save_data_topic
+        const show_save = this.props.show_save !== undefined ? this.props.show_save : true
+        const show_save_menu = show_save === true && save_topic != null && save_topic !== ''
 
         if (navposeNamespace == null || navpose_view_restricted === true) {
     
@@ -769,6 +774,19 @@ class NepiIFNavPose extends Component {
                 { (show_config === true) ?
                     this.renderConfigs()
                 : null }
+                
+                {(show_save_menu) ?
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                : null }
+                {(show_save_menu) ?
+                
+                  <NepiIFSaveData
+                  saveNamespace={save_topic}
+                  make_section={false}
+                  show_all_options={false}
+                  show_topic_selector={false}
+                />
+              : null }
     
                 </Section>
               )

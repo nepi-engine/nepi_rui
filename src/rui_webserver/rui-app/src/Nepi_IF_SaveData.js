@@ -776,7 +776,10 @@ class NepiIFSaveData extends Component {
         }
       }
     }
-    if (show_all_options === true && items.length > 1){
+    if (items.length === 0){
+      items.unshift(<Option value={"None"}>{"None"}</Option>)
+    }
+    if (show_all_options === true && items.length > 0){
       items.unshift(<Option value={allNamespace}>{"All"}</Option>)
     }
     return items

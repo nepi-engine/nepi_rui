@@ -30,10 +30,11 @@ import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Input from "./Input"
 
-import { onChangeSwitchStateValue, createMenuBaseName as createMenuBaseNameUtil, setElementStyleModified, clearElementStyleModified } from "./Utilities"
+import { round, onChangeSwitchStateValue, createMenuBaseName as createMenuBaseNameUtil, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFConfig from "./Nepi_IF_Config"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 function createMenuBaseName(optionStr) {
   var parts = optionStr.split('/')
@@ -66,6 +67,7 @@ class NavPoseMgr extends Component {
 
       selected_topic_config: 'init',
       selected_frame_ind: -1,
+      selected_frame_rate: 0.0,
 
       show_fixed: false,
       show_init: false,
@@ -74,6 +76,7 @@ class NavPoseMgr extends Component {
       show_offset: false,
 
       show_edit_frames: false,
+      edit_frame_rate: 0.0,
       edit_frame_name: '',
       next_custom_num: 1,
 
@@ -164,6 +167,7 @@ class NavPoseMgr extends Component {
       this.setState({
         selected_frame: navpose_frames[0],
         selected_frame_name: navpose_frames[0],
+        selected_frame_rate: 0.0,
         selected_frame_topic: navpose_frames_topics[0],
         selected_frame_solution: navpose_frames_solutions[0],
         selected_frame_ind: 0
@@ -341,6 +345,8 @@ class NavPoseMgr extends Component {
       ? navpose_frames_solutions[selected_frame_ind]
       : null
 
+   
+
     if (live_solution == null || selected_frame_topic == null){
 
       return(
@@ -351,13 +357,14 @@ class NavPoseMgr extends Component {
     }
     else{
 
+
       return (
 
         <React.Fragment>
 
               <NepiIFNavPose
                 navposeNamespace={this.state.selected_frame_topic + '/navpose'}
-                title={"NavPose Live Data"}
+                title={live_solution.frame_name}
                 show_line={false}
                 make_section={false}
                 read_only={true}
@@ -501,8 +508,11 @@ class NavPoseMgr extends Component {
 
 
 
+
   renderFrameConfig() {
-    const { selected_frame, selected_frame_ind } = this.state
+    const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
+    const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
+
     const mgrNamespace = this.getMgrNamespace()
     const { navpose_frames_solutions } = this.props.ros
 
@@ -541,6 +551,8 @@ class NavPoseMgr extends Component {
             const optionsList = comp[typeShort + '_options_list'] || []
             const currentOption = comp[typeShort + '_option'] || ''
 
+      
+
             return (
               <div key={comp.comp_name} style={{ marginBottom: Styles.vars.spacing.small }}>
 
@@ -555,6 +567,8 @@ class NavPoseMgr extends Component {
                     {comp.comp_name}
                   </label>
                 </div>
+
+                  
 
                 <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <Select
@@ -795,6 +809,7 @@ class NavPoseMgr extends Component {
       reset:  ['NavPose Reset Topic Config',  'reset_topic',  'available_reset_topics',  'reset_topic_connected',  'reset_topic_connecting',  'reset_topic_available',  'reset_topic_avg_rate'],
     }
 
+   
     return (
       <React.Fragment>
 
@@ -822,7 +837,34 @@ class NavPoseMgr extends Component {
 
 
   renderNavPoseMgr() {
-  
+    const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
+    const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
+
+    const mgrNamespace = this.getMgrNamespace()
+    const { navpose_frames_solutions } = this.props.ros
+
+    const live_solution = (selected_frame_ind >= 0 && navpose_frames_solutions)
+      ? navpose_frames_solutions[selected_frame_ind]
+      : null
+
+    if (live_solution == null || mgrNamespace == null) {
+      return <React.Fragment />
+    }
+
+
+    const frame_name = live_solution.frame_name
+    const set_rate = live_solution.max_pub_rate
+    const avg_rate = live_solution.avg_pub_rate
+    if (this.state.selected_frame_rate !== set_rate) {
+      this.setState({ selected_frame_rate: set_rate,
+                      edit_frame_rate: set_rate })
+    }
+    const onRateUpdate = (newRate) => {
+      if (newRate && newRate !== set_rate) {
+        this.props.ros.sendUpdateFloatMsg(mgrNamespace + '/set_frame_max_rate', frame_name, newRate)
+      }
+    }
+
     return (
 
         <React.Fragment>
@@ -849,6 +891,43 @@ class NavPoseMgr extends Component {
                         </div>
 
                         <div style={{ width: '26%' }}>
+
+
+                        <label style={{ fontWeight: 'bold', textTransform: 'capitalize' }}>
+                          {frame_name}
+                        </label>
+                    
+
+                      <Label title={""}>
+                        <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Deg"}</div>
+                        <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"DPS"}</div>
+                      </Label>
+
+
+
+
+                          <Label title={"Pub Rate"}>
+                        <Input
+                              id={'NavPosePubRate'}
+                              style={{ flex: 1, width: "45%", float: "left" }}
+                              value={round(edit_frame_rate,2)}
+                              onChange={(e) => {
+                                const el = document.getElementById('NavPosePubRate')
+                                setElementStyleModified(el)
+                                this.setState({ edit_frame_rate: e.target.value })
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const el = document.getElementById('NavPosePubRate')
+                                  clearElementStyleModified(el)
+                                  onRateUpdate(el.value)
+                                }
+                              }}
+                          />
+                      <Input disabled style={{ width: "45%" }} value={round(avg_rate, 2)} />
+                      </Label>
+               
+
 
                           {this.renderFrameConfig()}
 
@@ -880,11 +959,23 @@ class NavPoseMgr extends Component {
       )
     }
     else {
+        const save_data_topic = this.state.status_msg != null ? this.state.status_msg.save_data_topic : ''
+        const show_save_menu = save_data_topic != null && save_data_topic !== ''
+
       return (
 
           <Section title={"NAVPOSE MANAGER"}>
 
                   {this.renderNavPoseMgr()}
+
+                {(show_save_menu) ?
+                  <NepiIFSaveData
+                  saveNamespace={save_data_topic}
+                  make_section={true}
+                  show_all_options={false}
+                  show_topic_selector={false}
+                />
+              : null }
 
 
         </Section>
