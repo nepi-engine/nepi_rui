@@ -108,8 +108,10 @@ class DataMgr extends Component {
       deleteAllData
     } = this.props.ros
 
+    const avail_gb = (systemDefsDiskCapacityMB - systemStatusDiskUsageMB) / 1000
+
     return (
-      <Section title={"Storage Status"}>
+      <React.Fragment>
         <Label title={"Storage"}>
           <Input disabled value={diskUsagePercent} />
         </Label>
@@ -123,7 +125,7 @@ class DataMgr extends Component {
         </Label>
 
         <Label title={"Available"}>
-          <Input disabled value={roundWithSuffix(systemDefsDiskCapacityMB - systemStatusDiskUsageMB , 3, "MB/s")} />
+          <Input disabled value={roundWithSuffix(avail_gb, 1, "GB")} />
         </Label>
 
         <Label title={"Disk Usage Rate"}>
@@ -152,7 +154,7 @@ class DataMgr extends Component {
           </pre>
           </div>
 
-      </Section>
+      </React.Fragment>
     )
   }
 
