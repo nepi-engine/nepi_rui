@@ -902,8 +902,6 @@ class NavPoseMgr extends Component {
                       </Label>
 
 
-
-
                           <Label title={"Pub Rate"}>
                         <Input
                               id={'NavPosePubRate'}
@@ -924,7 +922,10 @@ class NavPoseMgr extends Component {
                           />
                       <Input disabled style={{ width: "45%" }} value={round(avg_rate, 2)} />
                       </Label>
-               
+
+
+
+               <div style={{ borderTop: "1px solid #000000", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
                           {this.renderFrameConfig()}
