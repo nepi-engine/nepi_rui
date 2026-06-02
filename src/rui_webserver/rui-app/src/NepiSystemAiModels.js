@@ -309,11 +309,11 @@ class AiModelsMgr extends Component {
           }
      }
     }
-    else{
-      items.push(<Option value={'None'}>{'None'}</Option>)
-      //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
-      //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
-    }
+    // else{
+    //   items.push(<Option value={'None'}>{'None'}</Option>)
+    //   //items.push(<Option value={'TEST1'}>{'TEST1'}</Option>)
+    //   //items.push(<Option value={'TEST2'}>{'TEST2'}</Option>)
+    // }
     return items
   }
 
@@ -399,7 +399,7 @@ class AiModelsMgr extends Component {
     const selected_model = this.state.selected_model
 
     const model_options = this.getModelOptions()
-    const has_models = (model_options.length > 1)
+    const has_models = (model_options.length > 0)
 
     const viewable_models = this.state.viewable_models
     var model_status_msg = null
