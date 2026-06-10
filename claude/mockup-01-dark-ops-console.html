@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEPI RUI — Dark Operations Console</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-edge: #21262d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #00a5ed;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --alert: #f85149;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.5; }
+
+  header {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--panel-edge);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .brand { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; }
+  .brand span { color: var(--accent); }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav a {
+    color: var(--text-dim); text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 13px;
+  }
+  nav a:hover { color: var(--text); background: var(--panel-edge); }
+  nav a.active { color: var(--text); background: var(--panel-edge); box-shadow: inset 0 -2px 0 var(--accent); }
+  .conn { margin-left: auto; display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+
+  /* Health strip */
+  .health-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1px;
+    background: var(--panel-edge); border-bottom: 1px solid var(--panel-edge);
+  }
+  .health-cell { background: var(--panel); padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .health-cell .dot.warn { background: var(--warn); }
+  .health-cell .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+  .health-cell .value { font-family: var(--mono); font-size: 14px; }
+
+  main { padding: 20px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); max-width: 1700px; margin: 0 auto; }
+  .panel { background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 8px; overflow: hidden; }
+  .panel h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim);
+    padding: 10px 14px; border-bottom: 1px solid var(--panel-edge); font-weight: 600;
+  }
+  .panel .body { padding: 14px; }
+
+  .span-3 { grid-column: span 3; }
+  .span-4 { grid-column: span 4; }
+  .span-5 { grid-column: span 5; }
+  .span-7 { grid-column: span 7; }
+  .span-12 { grid-column: span 12; }
+
+  /* Key-value rows */
+  .kv { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dotted var(--panel-edge); }
+  .kv:last-child { border-bottom: none; }
+  .kv .k { color: var(--text-dim); }
+  .kv .v { font-family: var(--mono); }
+
+  /* Gauges */
+  .gauge { margin: 10px 0; }
+  .gauge .gauge-head { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .gauge .gauge-head .num { font-family: var(--mono); }
+  .bar { height: 8px; background: var(--panel-edge); border-radius: 4px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
+  .bar i.ok { background: var(--ok); }
+  .bar i.warn { background: var(--warn); }
+
+  /* Image feed */
+  .feed { position: relative; background: #010409; aspect-ratio: 16/9; }
+  .feed svg { width: 100%; height: 100%; display: block; }
+  .feed .feed-meta {
+    position: absolute; left: 10px; bottom: 10px; font-family: var(--mono); font-size: 11px;
+    background: rgba(13,17,23,0.8); padding: 4px 8px; border-radius: 4px; color: var(--text-dim);
+  }
+  .feed .feed-live {
+    position: absolute; right: 10px; top: 10px; font-family: var(--mono); font-size: 11px; color: var(--ok);
+    background: rgba(13,17,23,0.8); padding: 4px 8px; border-radius: 4px;
+  }
+  .feed-controls { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--panel-edge); flex-wrap: wrap; }
+  select, button {
+    background: var(--panel-edge); color: var(--text); border: 1px solid #30363d; border-radius: 6px;
+    padding: 5px 10px; font-size: 12px; font-family: var(--sans); cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+
+  /* Detections table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 8px; border-bottom: 1px solid var(--panel-edge); }
+  td { padding: 6px 8px; border-bottom: 1px dotted var(--panel-edge); font-family: var(--mono); font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  .conf-bar { display: inline-block; width: 60px; height: 6px; background: var(--panel-edge); border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+  .conf-bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-family: var(--mono); }
+  .pill.ok { background: rgba(63,185,80,0.15); color: var(--ok); }
+  .pill.warn { background: rgba(210,153,34,0.15); color: var(--warn); }
+  .pill.idle { background: rgba(139,148,158,0.15); color: var(--text-dim); }
+
+  /* Log */
+  .log { font-family: var(--mono); font-size: 12px; max-height: 180px; overflow-y: auto; }
+  .log div { padding: 3px 0; border-bottom: 1px dotted var(--panel-edge); }
+  .log .t { color: var(--text-dim); margin-right: 10px; }
+  .log .warn { color: var(--warn); }
+  .log .alert { color: var(--alert); }
+
+  @media (max-width: 1100px) {
+    .span-3, .span-4, .span-5, .span-7 { grid-column: span 6; }
+  }
+  @media (max-width: 720px) {
+    .span-3, .span-4, .span-5, .span-7, .span-6 { grid-column: span 12; }
+    main { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">NEPI <span>RUI</span></div>
+  <nav>
+    <a class="active" href="#">Dashboard</a>
+    <a href="#">Devices</a>
+    <a href="#">Data</a>
+    <a href="#">Process</a>
+    <a href="#">Automation</a>
+    <a href="#">System</a>
+    <a href="#">Help</a>
+  </nav>
+  <div class="conn"><span class="dot"></span> nepi-s2x-4582 · 192.168.179.103 · rosbridge connected</div>
+</header>
+
+<div class="health-strip">
+  <div class="health-cell"><span class="dot"></span><div><div class="label">System</div><div class="value">Running</div></div></div>
+  <div class="health-cell"><span class="dot"></span><div><div class="label">AI Detector</div><div class="value">Running</div></div></div>
+  <div class="health-cell"><span class="dot warn"></span><div><div class="label">CPU Temperature</div><div class="value">71.4 °C</div></div></div>
+  <div class="health-cell"><span class="dot"></span><div><div class="label">Disk Used</div><div class="value">48.2 / 118.8 GB</div></div></div>
+  <div class="health-cell"><span class="dot"></span><div><div class="label">Clock Synced</div><div class="value">NTP</div></div></div>
+  <div class="health-cell"><span class="dot"></span><div><div class="label">Connected Devices</div><div class="value">5</div></div></div>
+</div>
+
+<main>
+
+  <section class="panel span-7">
+    <h2>Detection Feed — color_camera/idx/detection_image</h2>
+    <div class="feed">
+      <svg viewBox="0 0 640 360" role="img" aria-label="Camera frame with two detection boxes">
+        <rect width="640" height="360" fill="#0a1622"/>
+        <path d="M0 230 Q160 210 320 228 T640 222 L640 360 L0 360 Z" fill="#11202e"/>
+        <path d="M0 260 Q200 245 400 258 T640 252 L640 360 L0 360 Z" fill="#16293a"/>
+        <rect x="130" y="168" width="120" height="64" fill="none" stroke="#3fb950" stroke-width="2"/>
+        <text x="132" y="162" fill="#3fb950" font-family="monospace" font-size="13">vessel 0.87</text>
+        <rect x="430" y="196" width="54" height="40" fill="none" stroke="#00a5ed" stroke-width="2"/>
+        <text x="432" y="190" fill="#00a5ed" font-family="monospace" font-size="13">buoy 0.62</text>
+      </svg>
+      <div class="feed-live">● LIVE 14.8 fps</div>
+      <div class="feed-meta">1920×1080 · JPEG 95 · 9091/stream</div>
+    </div>
+    <div class="feed-controls">
+      <select aria-label="Image topic">
+        <option>color_camera/idx/detection_image</option>
+        <option>color_camera/idx/color_image</option>
+        <option>ptx_camera/idx/targeting_image</option>
+      </select>
+      <select aria-label="Stream quality">
+        <option>Quality: High (95)</option>
+        <option>Quality: Medium (50)</option>
+        <option>Quality: Low (10)</option>
+      </select>
+      <button>Snapshot</button>
+      <button>Save Data: Off</button>
+    </div>
+  </section>
+
+  <section class="panel span-5">
+    <h2>AI Detector</h2>
+    <div class="body">
+      <div class="kv"><span class="k">State</span><span class="v"><span class="pill ok">Running</span></span></div>
+      <div class="kv"><span class="k">Model</span><span class="v">yolov8n-maritime</span></div>
+      <div class="kv"><span class="k">Framework</span><span class="v">TensorRT</span></div>
+      <div class="kv"><span class="k">Input topic</span><span class="v">color_camera/idx/color_image</span></div>
+      <div class="kv"><span class="k">Inference rate</span><span class="v">14.8 Hz</span></div>
+      <div class="kv"><span class="k">Active classes</span><span class="v">vessel, buoy, person, debris</span></div>
+      <table style="margin-top:10px">
+        <thead><tr><th>Class</th><th>Confidence</th><th>Box</th></tr></thead>
+        <tbody>
+          <tr><td>vessel</td><td><span class="conf-bar"><i style="width:87%"></i></span>0.87</td><td>130,168 120×64</td></tr>
+          <tr><td>buoy</td><td><span class="conf-bar"><i style="width:62%"></i></span>0.62</td><td>430,196 54×40</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel span-3">
+    <h2>Device Info</h2>
+    <div class="body">
+      <div class="kv"><span class="k">Device ID</span><span class="v">nepi-s2x-4582</span></div>
+      <div class="kv"><span class="k">Serial</span><span class="v">S2X-04582</span></div>
+      <div class="kv"><span class="k">Firmware</span><span class="v">3.2.1</span></div>
+      <div class="kv"><span class="k">Hardware</span><span class="v">Jetson Orin NX</span></div>
+      <div class="kv"><span class="k">In container</span><span class="v">yes</span></div>
+    </div>
+  </section>
+
+  <section class="panel span-4">
+    <h2>System Resources</h2>
+    <div class="body">
+      <div class="gauge">
+        <div class="gauge-head"><span>CPU Temperature</span><span class="num">71.4 °C</span></div>
+        <div class="bar"><i class="warn" style="width:74%"></i></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-head"><span>Disk Used</span><span class="num">48.2 / 118.8 GB</span></div>
+        <div class="bar"><i class="ok" style="width:41%"></i></div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-head"><span>Data Write Rate</span><span class="num">6.2 MB/s</span></div>
+        <div class="bar"><i style="width:31%"></i></div>
+      </div>
+      <div class="kv" style="margin-top:8px"><span class="k">Internet</span><span class="v">not connected</span></div>
+      <div class="kv"><span class="k">NEPI heartbeat</span><span class="v"><span class="pill ok">OK</span></span></div>
+    </div>
+  </section>
+
+  <section class="panel span-5">
+    <h2>Connected Devices</h2>
+    <div class="body">
+      <table>
+        <thead><tr><th>Device</th><th>Type</th><th>State</th><th>Rate</th></tr></thead>
+        <tbody>
+          <tr><td>color_camera</td><td>IDX</td><td><span class="pill ok">streaming</span></td><td>30.0 Hz</td></tr>
+          <tr><td>ptx_unit</td><td>PTX</td><td><span class="pill ok">ready</span></td><td>—</td></tr>
+          <tr><td>sealite_450</td><td>LSX</td><td><span class="pill idle">off</span></td><td>—</td></tr>
+          <tr><td>gps_ahrs</td><td>NPX</td><td><span class="pill ok">fix 3D</span></td><td>10.0 Hz</td></tr>
+          <tr><td>rov_base</td><td>RBX</td><td><span class="pill warn">standby</span></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel span-3">
+    <h2>System Clock</h2>
+    <div class="body">
+      <div class="kv"><span class="k">Time</span><span class="v">17:42:08 UTC</span></div>
+      <div class="kv"><span class="k">Date</span><span class="v">2026-06-09</span></div>
+      <div class="kv"><span class="k">Timezone</span><span class="v">UTC+0</span></div>
+      <div class="kv"><span class="k">Clock synced</span><span class="v"><span class="pill ok">yes</span></span></div>
+      <div class="kv"><span class="k">NTP</span><span class="v"><span class="pill ok">connected</span></span></div>
+    </div>
+  </section>
+
+  <section class="panel span-12">
+    <h2>System Messages</h2>
+    <div class="body log">
+      <div><span class="t">17:42:01</span><span class="warn">system_mgr: CPU temperature 71.4 °C above warn threshold 70.0 °C</span></div>
+      <div><span class="t">17:41:48</span>ai_detector_mgr: detection rate steady at 14.8 Hz</div>
+      <div><span class="t">17:40:12</span>save_data_mgr: data save disabled by operator</div>
+      <div><span class="t">17:38:55</span>nav_pose_mgr: GPS fix 3D, 11 satellites</div>
+      <div><span class="t">17:36:20</span>system_mgr: disk usage 41% of 118.8 GB</div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

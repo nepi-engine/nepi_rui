@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEPI RUI — Data-Dense Industrial</title>
+<style>
+  :root {
+    --bg: #1c1e22;
+    --panel: #24272c;
+    --inset: #1a1c20;
+    --edge: #34383f;
+    --text: #d8dce2;
+    --text-dim: #878d96;
+    --accent: #f5a623;
+    --ok: #5dba6c;
+    --warn: #e0a93f;
+    --alert: #e05c52;
+    --info: #56a8d6;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 12.5px; line-height: 1.45; }
+
+  .topbar {
+    display: flex; align-items: stretch; border-bottom: 2px solid var(--accent);
+    background: var(--panel); flex-wrap: wrap;
+  }
+  .topbar .brand {
+    padding: 8px 16px; font-weight: 700; font-size: 14px; letter-spacing: 1px;
+    background: var(--accent); color: #1c1e22; display: flex; align-items: center;
+  }
+  nav { display: flex; flex-wrap: wrap; }
+  nav a {
+    color: var(--text-dim); text-decoration: none; padding: 10px 14px; font-size: 12px;
+    text-transform: uppercase; letter-spacing: 0.06em; border-right: 1px solid var(--edge);
+  }
+  nav a.active { color: var(--accent); background: var(--inset); box-shadow: inset 0 -2px 0 var(--accent); }
+  nav a:hover { color: var(--text); }
+  .sysid { margin-left: auto; padding: 10px 16px; color: var(--text-dim); font-size: 11.5px; display: flex; align-items: center; gap: 12px; }
+  .sysid b { color: var(--ok); font-weight: 400; }
+
+  main {
+    display: grid; gap: 8px; padding: 8px;
+    grid-template-columns: repeat(16, 1fr);
+  }
+  .blk { background: var(--panel); border: 1px solid var(--edge); }
+  .blk > h2 {
+    font-size: 11px; letter-spacing: 0.1em; color: var(--text-dim); font-weight: 400;
+    padding: 6px 10px; border-bottom: 1px solid var(--edge); text-transform: uppercase;
+    display: flex; justify-content: space-between;
+  }
+  .blk > h2 .tag { color: var(--accent); }
+  .pad { padding: 8px 10px; }
+  .s-3 { grid-column: span 3; }
+  .s-4 { grid-column: span 4; }
+  .s-5 { grid-column: span 5; }
+  .s-6 { grid-column: span 6; }
+  .s-8 { grid-column: span 8; }
+  .s-10 { grid-column: span 10; }
+  .s-16 { grid-column: span 16; }
+
+  .kv { display: flex; justify-content: space-between; padding: 2.5px 0; }
+  .kv .k { color: var(--text-dim); }
+  .ok { color: var(--ok); } .warn { color: var(--warn); } .alert { color: var(--alert); } .info { color: var(--info); }
+
+  /* dense readout grid */
+  .readouts { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1px; background: var(--edge); }
+  .readout { background: var(--inset); padding: 8px 10px; }
+  .readout .rk { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+  .readout .rv { font-size: 17px; margin-top: 1px; }
+  .readout .ru { font-size: 10px; color: var(--text-dim); }
+
+  /* ascii-style meters */
+  .meter { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .meter .mk { width: 110px; color: var(--text-dim); flex-shrink: 0; }
+  .meter .track { flex: 1; height: 10px; background: var(--inset); border: 1px solid var(--edge); position: relative; }
+  .meter .track i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ok); }
+  .meter .track i.warn { background: var(--warn); }
+  .meter .track .tick { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--alert); }
+  .meter .mv { width: 110px; text-align: right; flex-shrink: 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; color: var(--text-dim); font-weight: 400; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 8px; border-bottom: 1px solid var(--edge); background: var(--inset); }
+  td { padding: 4px 8px; border-bottom: 1px solid #2b2e34; }
+  tr:last-child td { border-bottom: none; }
+
+  .feed { position: relative; background: #101418; }
+  .feed svg { width: 100%; height: auto; display: block; }
+  .feed .stamp { position: absolute; font-size: 10.5px; background: rgba(16,20,24,0.85); padding: 2px 6px; color: var(--text-dim); }
+
+  .log { max-height: 150px; overflow-y: auto; }
+  .log div { padding: 2px 10px; border-bottom: 1px solid #2b2e34; }
+  .log .t { color: var(--text-dim); margin-right: 8px; }
+
+  .statline {
+    display: flex; gap: 16px; padding: 5px 12px; background: var(--inset); border-top: 1px solid var(--edge);
+    font-size: 11px; color: var(--text-dim); flex-wrap: wrap;
+  }
+
+  @media (max-width: 1200px) {
+    .s-3, .s-4, .s-5 { grid-column: span 8; }
+    .s-6, .s-8, .s-10 { grid-column: span 16; }
+  }
+  @media (max-width: 700px) {
+    .s-3, .s-4, .s-5 { grid-column: span 16; }
+    .readouts { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">NEPI RUI</div>
+  <nav>
+    <a class="active" href="#">Dashboard</a>
+    <a href="#">Devices</a>
+    <a href="#">Data</a>
+    <a href="#">Process</a>
+    <a href="#">Automation</a>
+    <a href="#">System</a>
+    <a href="#">Help</a>
+  </nav>
+  <div class="sysid">
+    <span>nepi-s2x-4582 @ 192.168.179.103</span>
+    <span>ws:9090 <b>UP</b></span>
+    <span>img:9091 <b>UP</b></span>
+  </div>
+</div>
+
+<main>
+
+  <section class="blk s-16">
+    <div class="readouts">
+      <div class="readout"><div class="rk">CPU Temp</div><div class="rv warn">71.4</div><div class="ru">°C · warn ≥ 70.0</div></div>
+      <div class="readout"><div class="rk">Disk Used</div><div class="rv">48.2</div><div class="ru">/ 118.8 GB · 41%</div></div>
+      <div class="readout"><div class="rk">Write Rate</div><div class="rv">6.2</div><div class="ru">MB/s</div></div>
+      <div class="readout"><div class="rk">Detect Rate</div><div class="rv ok">14.8</div><div class="ru">Hz · yolov8n-maritime</div></div>
+      <div class="readout"><div class="rk">GPS Fix</div><div class="rv ok">3D</div><div class="ru">11 satellites</div></div>
+      <div class="readout"><div class="rk">Clock</div><div class="rv ok">NTP</div><div class="ru">17:42:08 UTC</div></div>
+    </div>
+  </section>
+
+  <section class="blk s-6">
+    <h2>Image Feed <span class="tag">idx/detection_image</span></h2>
+    <div class="feed">
+      <svg viewBox="0 0 640 330" role="img" aria-label="Camera frame with detection boxes">
+        <rect width="640" height="330" fill="#15202b"/>
+        <path d="M0 205 Q160 192 320 204 T640 200 L640 330 L0 330 Z" fill="#1b2a38"/>
+        <rect x="125" y="140" width="125" height="66" fill="none" stroke="#5dba6c" stroke-width="2"/>
+        <text x="127" y="134" fill="#5dba6c" font-family="monospace" font-size="12">vessel 0.87</text>
+        <rect x="435" y="168" width="55" height="41" fill="none" stroke="#56a8d6" stroke-width="2"/>
+        <text x="437" y="162" fill="#56a8d6" font-family="monospace" font-size="12">buoy 0.62</text>
+        <line x1="320" y1="0" x2="320" y2="330" stroke="#2b3b4a" stroke-width="1" stroke-dasharray="4 4"/>
+        <line x1="0" y1="165" x2="640" y2="165" stroke="#2b3b4a" stroke-width="1" stroke-dasharray="4 4"/>
+      </svg>
+      <div class="stamp" style="left:6px;top:6px">2026-06-09 17:42:08.214Z</div>
+      <div class="stamp" style="right:6px;top:6px">1920x1080 q95</div>
+      <div class="stamp" style="left:6px;bottom:6px">frame 482711 · 14.8 fps</div>
+    </div>
+    <div class="statline">
+      <span>src: color_camera</span><span>enc: mjpeg</span><span>port: 9091</span><span>save: OFF</span>
+    </div>
+  </section>
+
+  <section class="blk s-5">
+    <h2>Devices <span class="tag">5 attached</span></h2>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>State</th><th>Rate</th><th>Pwr</th></tr></thead>
+      <tbody>
+        <tr><td>color_camera</td><td>IDX</td><td class="ok">STREAM</td><td>30.0</td><td>2.1W</td></tr>
+        <tr><td>ptx_unit</td><td>PTX</td><td class="ok">READY</td><td>—</td><td>0.4W</td></tr>
+        <tr><td>sealite_450</td><td>LSX</td><td>OFF</td><td>—</td><td>0.0W</td></tr>
+        <tr><td>gps_ahrs</td><td>NPX</td><td class="ok">FIX3D</td><td>10.0</td><td>0.8W</td></tr>
+        <tr><td>rov_base</td><td>RBX</td><td class="warn">STBY</td><td>—</td><td>1.2W</td></tr>
+      </tbody>
+    </table>
+    <h2 style="border-top:1px solid var(--edge)">Nav / Pose <span class="tag">gps_ahrs</span></h2>
+    <div class="pad">
+      <div class="kv"><span class="k">LAT</span><span>47.60621°</span></div>
+      <div class="kv"><span class="k">LON</span><span>-122.33207°</span></div>
+      <div class="kv"><span class="k">HDG</span><span>214.6°</span></div>
+      <div class="kv"><span class="k">DEPTH</span><span>12.4 m</span></div>
+    </div>
+  </section>
+
+  <section class="blk s-5">
+    <h2>AI Detector <span class="tag ok">RUNNING</span></h2>
+    <div class="pad">
+      <div class="kv"><span class="k">MODEL</span><span>yolov8n-maritime</span></div>
+      <div class="kv"><span class="k">FRAMEWORK</span><span>TensorRT</span></div>
+      <div class="kv"><span class="k">INPUT</span><span>idx/color_image</span></div>
+      <div class="kv"><span class="k">CLASSES</span><span>4 active / 12 avail</span></div>
+      <div class="kv"><span class="k">THRESHOLD</span><span>0.50</span></div>
+    </div>
+    <table>
+      <thead><tr><th>Det</th><th>Conf</th><th>X,Y</th><th>WxH</th></tr></thead>
+      <tbody>
+        <tr><td class="ok">vessel</td><td>0.87</td><td>130,168</td><td>120x64</td></tr>
+        <tr><td class="info">buoy</td><td>0.62</td><td>430,196</td><td>54x40</td></tr>
+      </tbody>
+    </table>
+    <h2 style="border-top:1px solid var(--edge)">System <span class="tag">system_mgr</span></h2>
+    <div class="pad">
+      <div class="meter"><span class="mk">CPU TEMP</span><span class="track"><i class="warn" style="width:74%"></i><span class="tick" style="left:83%"></span></span><span class="mv warn">71.4/85.0 °C</span></div>
+      <div class="meter"><span class="mk">DISK</span><span class="track"><i style="width:41%"></i><span class="tick" style="left:90%"></span></span><span class="mv">48.2/118.8 GB</span></div>
+      <div class="kv" style="margin-top:6px"><span class="k">HEARTBEAT</span><span class="ok">OK</span></div>
+      <div class="kv"><span class="k">INTERNET</span><span>NO (edge mode)</span></div>
+      <div class="kv"><span class="k">FIRMWARE</span><span>3.2.1 · S2X-04582</span></div>
+    </div>
+  </section>
+
+  <section class="blk s-16">
+    <h2>System Messages <span class="tag">messages</span></h2>
+    <div class="log">
+      <div><span class="t">17:42:01</span><span class="warn">[system_mgr] CPU temperature 71.4 °C above warn threshold 70.0 °C</span></div>
+      <div><span class="t">17:41:48</span>[ai_detector_mgr] detection rate steady at 14.8 Hz</div>
+      <div><span class="t">17:40:12</span>[save_data_mgr] data save disabled by operator</div>
+      <div><span class="t">17:38:55</span>[nav_pose_mgr] GPS fix 3D, 11 satellites</div>
+      <div><span class="t">17:36:20</span>[system_mgr] disk usage 41% of 118.8 GB</div>
+      <div><span class="t">17:31:02</span>[ai_model_mgr] model yolov8n-maritime loaded in 8.2 s</div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

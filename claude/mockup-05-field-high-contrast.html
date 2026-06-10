@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEPI RUI — Field High-Contrast</title>
+<style>
+  /* Built for outdoor tablets: maximum contrast, large type, big touch targets.
+     Every interactive element is at least 48px tall. */
+  :root {
+    --bg: #000000;
+    --panel: #0a0a0a;
+    --edge: #3a3a3a;
+    --text: #ffffff;
+    --text-dim: #b8b8b8;
+    --accent: #00d4ff;
+    --ok: #00e676;
+    --warn: #ffd600;
+    --alert: #ff5252;
+    --sans: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "SFMono-Regular", Consolas, Menlo, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 17px; line-height: 1.5; }
+
+  header {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px; flex-wrap: wrap;
+    border-bottom: 2px solid var(--edge);
+  }
+  .brand { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; margin-right: 8px; }
+  .brand span { color: var(--accent); }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; }
+  nav a {
+    color: var(--text); text-decoration: none; font-size: 16px; font-weight: 600;
+    padding: 12px 18px; border: 2px solid var(--edge); border-radius: 10px; min-height: 48px;
+    display: inline-flex; align-items: center;
+  }
+  nav a.active { border-color: var(--accent); color: var(--accent); }
+  nav a:active { background: #1a1a1a; }
+  .ident { margin-left: auto; font-family: var(--mono); font-size: 14px; color: var(--text-dim); text-align: right; }
+  .ident b { color: var(--ok); font-weight: 400; }
+
+  /* Big status banner — the first thing an operator reads */
+  .banner {
+    display: flex; align-items: center; gap: 16px; padding: 14px 20px; flex-wrap: wrap;
+    background: #1f1a00; border-bottom: 2px solid var(--warn);
+  }
+  .banner .sig { width: 22px; height: 22px; border-radius: 50%; background: var(--warn); flex-shrink: 0; }
+  .banner .head { font-size: 18px; font-weight: 800; color: var(--warn); }
+  .banner .detail { color: var(--text); font-size: 16px; }
+  .banner button {
+    margin-left: auto; background: none; border: 2px solid var(--warn); color: var(--warn);
+    font-size: 15px; font-weight: 700; padding: 10px 20px; border-radius: 10px; min-height: 48px; cursor: pointer;
+  }
+
+  main { padding: 16px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); max-width: 1500px; margin: 0 auto; }
+  .tile { background: var(--panel); border: 2px solid var(--edge); border-radius: 12px; overflow: hidden; }
+  .tile h2 {
+    font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 12px 16px; border-bottom: 2px solid var(--edge); color: var(--text-dim);
+  }
+  .tile .body { padding: 16px; }
+  .t-4 { grid-column: span 4; }
+  .t-6 { grid-column: span 6; }
+  .t-8 { grid-column: span 8; }
+  .t-12 { grid-column: span 12; }
+
+  /* Huge numerals: readable at arm's length in sunlight */
+  .bignum-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .bignum { text-align: center; padding: 10px 4px; border: 2px solid var(--edge); border-radius: 10px; }
+  .bignum .n { font-family: var(--mono); font-size: 40px; font-weight: 700; line-height: 1.1; }
+  .bignum .n.ok { color: var(--ok); } .bignum .n.warn { color: var(--warn); }
+  .bignum .l { font-size: 13px; color: var(--text-dim); margin-top: 4px; font-weight: 600; }
+
+  .kv { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--edge); }
+  .kv:last-child { border-bottom: 0; }
+  .kv .k { color: var(--text-dim); font-weight: 600; font-size: 15px; }
+  .kv .v { font-family: var(--mono); font-size: 16px; }
+  .v.ok { color: var(--ok); } .v.warn { color: var(--warn); }
+
+  .feed { background: #06121c; position: relative; }
+  .feed svg { width: 100%; height: auto; display: block; }
+  .feed .overlay-tl, .feed .overlay-br {
+    position: absolute; font-family: var(--mono); font-size: 14px; font-weight: 700;
+    background: rgba(0,0,0,0.85); padding: 6px 10px; border-radius: 6px;
+  }
+  .overlay-tl { top: 12px; left: 12px; color: var(--ok); }
+  .overlay-br { bottom: 12px; right: 12px; color: var(--text-dim); }
+
+  .bigbtn-row { display: flex; gap: 12px; padding: 14px 16px; border-top: 2px solid var(--edge); flex-wrap: wrap; }
+  .bigbtn {
+    flex: 1; min-width: 140px; min-height: 56px; font-size: 16px; font-weight: 700; cursor: pointer;
+    background: none; color: var(--text); border: 2px solid var(--edge); border-radius: 10px;
+  }
+  .bigbtn:active { background: #1a1a1a; }
+  .bigbtn.primary { border-color: var(--accent); color: var(--accent); }
+  .bigbtn.danger { border-color: var(--alert); color: var(--alert); }
+
+  .devrow {
+    display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--edge);
+    font-size: 16px;
+  }
+  .devrow:last-child { border-bottom: 0; }
+  .lamp { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; }
+  .lamp.ok { background: var(--ok); } .lamp.warn { background: var(--warn); } .lamp.off { background: #555; }
+  .devrow .nm { font-weight: 700; }
+  .devrow .ty { color: var(--text-dim); font-size: 13px; font-family: var(--mono); }
+  .devrow .st { margin-left: auto; font-family: var(--mono); font-size: 15px; color: var(--text-dim); }
+
+  .msg { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--edge); font-size: 15px; }
+  .msg:last-child { border-bottom: 0; }
+  .msg .t { font-family: var(--mono); color: var(--text-dim); flex-shrink: 0; }
+  .msg.warn { color: var(--warn); }
+
+  @media (max-width: 1100px) {
+    .t-4 { grid-column: span 6; }
+    .t-6, .t-8 { grid-column: span 12; }
+  }
+  @media (max-width: 700px) {
+    .t-4 { grid-column: span 12; }
+    .ident { display: none; }
+    .bignum .n { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">NEPI <span>RUI</span></div>
+  <nav>
+    <a class="active" href="#">Dashboard</a>
+    <a href="#">Devices</a>
+    <a href="#">Data</a>
+    <a href="#">Process</a>
+    <a href="#">Automation</a>
+    <a href="#">System</a>
+  </nav>
+  <div class="ident">nepi-s2x-4582 · 192.168.179.103<br>rosbridge <b>connected</b> · 17:42:08 UTC</div>
+</header>
+
+<div class="banner" role="alert">
+  <span class="sig"></span>
+  <span class="head">WARNING</span>
+  <span class="detail">CPU temperature 71.4 °C — above the 70.0 °C warning threshold. Shutdown at 85.0 °C.</span>
+  <button>Acknowledge</button>
+</div>
+
+<main>
+
+  <section class="tile t-8">
+    <h2>Detection Feed — color_camera</h2>
+    <div class="feed">
+      <svg viewBox="0 0 640 320" role="img" aria-label="Camera frame with detection boxes">
+        <rect width="640" height="320" fill="#091825"/>
+        <path d="M0 200 Q160 186 320 198 T640 194 L640 320 L0 320 Z" fill="#0f2536"/>
+        <rect x="124" y="130" width="128" height="68" fill="none" stroke="#00e676" stroke-width="3"/>
+        <text x="126" y="122" fill="#00e676" font-family="monospace" font-size="15" font-weight="bold">vessel 0.87</text>
+        <rect x="436" y="160" width="58" height="44" fill="none" stroke="#00d4ff" stroke-width="3"/>
+        <text x="438" y="152" fill="#00d4ff" font-family="monospace" font-size="15" font-weight="bold">buoy 0.62</text>
+      </svg>
+      <div class="overlay-tl">● LIVE · 14.8 fps</div>
+      <div class="overlay-br">detection_image · 1920×1080</div>
+    </div>
+    <div class="bigbtn-row">
+      <button class="bigbtn primary">Snapshot</button>
+      <button class="bigbtn">Change feed</button>
+      <button class="bigbtn">Start saving data</button>
+      <button class="bigbtn danger">Stop detector</button>
+    </div>
+  </section>
+
+  <section class="tile t-4">
+    <h2>System Vitals</h2>
+    <div class="body">
+      <div class="bignum-row">
+        <div class="bignum"><div class="n warn">71.4°</div><div class="l">CPU TEMP C</div></div>
+        <div class="bignum"><div class="n">41%</div><div class="l">DISK USED</div></div>
+        <div class="bignum"><div class="n ok">14.8</div><div class="l">DETECT HZ</div></div>
+      </div>
+      <div style="height:14px"></div>
+      <div class="kv"><span class="k">Heartbeat</span><span class="v ok">OK</span></div>
+      <div class="kv"><span class="k">Disk</span><span class="v">48.2 / 118.8 GB</span></div>
+      <div class="kv"><span class="k">Clock synced</span><span class="v ok">YES · NTP</span></div>
+      <div class="kv"><span class="k">Internet</span><span class="v">NOT CONNECTED</span></div>
+      <div class="kv"><span class="k">Firmware</span><span class="v">3.2.1</span></div>
+    </div>
+  </section>
+
+  <section class="tile t-6">
+    <h2>Devices — 5 attached</h2>
+    <div class="body">
+      <div class="devrow"><span class="lamp ok"></span><div><div class="nm">color_camera</div><div class="ty">IDX camera</div></div><span class="st">streaming · 30.0 Hz</span></div>
+      <div class="devrow"><span class="lamp ok"></span><div><div class="nm">ptx_unit</div><div class="ty">PTX pan-tilt</div></div><span class="st">ready</span></div>
+      <div class="devrow"><span class="lamp off"></span><div><div class="nm">sealite_450</div><div class="ty">LSX light</div></div><span class="st">off</span></div>
+      <div class="devrow"><span class="lamp ok"></span><div><div class="nm">gps_ahrs</div><div class="ty">NPX nav/pose</div></div><span class="st">fix 3D · 11 sats</span></div>
+      <div class="devrow"><span class="lamp warn"></span><div><div class="nm">rov_base</div><div class="ty">RBX robot</div></div><span class="st">standby</span></div>
+    </div>
+  </section>
+
+  <section class="tile t-6">
+    <h2>AI Detector</h2>
+    <div class="body">
+      <div class="kv"><span class="k">State</span><span class="v ok">RUNNING</span></div>
+      <div class="kv"><span class="k">Model</span><span class="v">yolov8n-maritime</span></div>
+      <div class="kv"><span class="k">Framework</span><span class="v">TensorRT</span></div>
+      <div class="kv"><span class="k">Input</span><span class="v">color_camera/idx/color_image</span></div>
+      <div class="kv"><span class="k">Classes</span><span class="v">vessel buoy person debris</span></div>
+      <div class="kv"><span class="k">Last detections</span><span class="v">vessel 0.87 · buoy 0.62</span></div>
+    </div>
+  </section>
+
+  <section class="tile t-12">
+    <h2>System Messages</h2>
+    <div class="body">
+      <div class="msg warn"><span class="t">17:42:01</span>system_mgr: CPU temperature 71.4 °C above warn threshold 70.0 °C</div>
+      <div class="msg"><span class="t">17:41:48</span>ai_detector_mgr: detection rate steady at 14.8 Hz</div>
+      <div class="msg"><span class="t">17:40:12</span>save_data_mgr: data save disabled by operator</div>
+      <div class="msg"><span class="t">17:38:55</span>nav_pose_mgr: GPS fix 3D, 11 satellites</div>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
