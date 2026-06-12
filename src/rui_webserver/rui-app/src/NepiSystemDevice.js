@@ -1237,7 +1237,7 @@ updateMgrTimeStatusListener() {
             </div>
 
 
-           <div hidden={ network_controls_restricted === true }> 
+           {/* <div hidden={ network_controls_restricted === true }> 
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Columns>
@@ -1272,7 +1272,7 @@ updateMgrTimeStatusListener() {
                   </Column>
                 </Columns>
 
-            </div>
+            </div> */}
         </Column>
         </Columns>
         
