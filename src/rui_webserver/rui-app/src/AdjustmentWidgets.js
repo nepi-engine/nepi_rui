@@ -296,6 +296,9 @@ class SliderAdjustment extends Component {
 
     var newInputVal = this.props.stepMapping?
       this.props.stepMapping[newSliderVal] : newSliderVal
+    if (this.props.displayValue !== undefined){
+      newInputVal = this.props.displayValue
+    } 
     if (this.props.unit) {
       newInputVal = newInputVal.toString() + this.props.unit
     }
