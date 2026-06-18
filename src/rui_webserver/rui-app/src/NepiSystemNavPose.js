@@ -177,6 +177,15 @@ class NavPoseMgr extends Component {
     if (prevState.selected_frame !== this.state.selected_frame && this.state.selected_frame !== 'None') {
       this.setState({ edit_frame_name: this.state.selected_frame })
     }
+    // Sync pub rate from live solution when server reports a new rate
+    const rateIdx = this.state.selected_frame_ind
+    const rateSol = (rateIdx >= 0 && navpose_frames_solutions) ? navpose_frames_solutions[rateIdx] : null
+    if (rateSol != null) {
+      const newRate = rateSol.max_pub_rate != null ? rateSol.max_pub_rate : 0.0
+      if (newRate !== this.state.selected_frame_rate) {
+        this.setState({ selected_frame_rate: newRate, edit_frame_rate: round(newRate, 2) })
+      }
+    }
     // Keep next_custom_num above any existing custom_N frames
     if (this.props.ros.navpose_frames !== prevProps.ros.navpose_frames) {
       let maxN = 0
@@ -852,15 +861,11 @@ class NavPoseMgr extends Component {
 
 
     const frame_name = live_solution.frame_name
-    const set_rate = live_solution.max_pub_rate
     const avg_rate = live_solution.avg_pub_rate
-    if (this.state.selected_frame_rate !== set_rate) {
-      this.setState({ selected_frame_rate: set_rate,
-                      edit_frame_rate: set_rate })
-    }
     const onRateUpdate = (newRate) => {
-      if (newRate && newRate !== set_rate) {
-        this.props.ros.sendUpdateFloatMsg(mgrNamespace + '/set_frame_max_rate', frame_name, parseFloat(newRate))
+      const val = parseFloat(newRate)
+      if (!isNaN(val) && val >= 0) {
+        this.props.ros.sendUpdateFloatMsg(mgrNamespace + '/set_frame_max_rate', frame_name, val)
       }
     }
 
@@ -919,7 +924,7 @@ class NavPoseMgr extends Component {
                         <Input
                               id={'NavPosePubRate'}
                               style={{ flex: 1, width: "45%", float: "left" }}
-                              value={round(edit_frame_rate,2)}
+                              value={edit_frame_rate}
                               onChange={(e) => {
                                 const el = document.getElementById('NavPosePubRate')
                                 setElementStyleModified(el)
@@ -930,10 +935,14 @@ class NavPoseMgr extends Component {
                                   const el = document.getElementById('NavPosePubRate')
                                   clearElementStyleModified(el)
                                   onRateUpdate(el.value)
+                                } else if (e.key === 'Escape') {
+                                  const el = document.getElementById('NavPosePubRate')
+                                  clearElementStyleModified(el)
+                                  this.setState({ edit_frame_rate: this.state.selected_frame_rate })
                                 }
                               }}
                           />
-                      <Input disabled style={{ width: "45%" }} value={round(avg_rate, 2)} />
+                      <Input disabled style={{ width: "45%" }} value={avg_rate != null ? round(avg_rate, 2) : '0.00'} />
                       </Label>
 
                 
