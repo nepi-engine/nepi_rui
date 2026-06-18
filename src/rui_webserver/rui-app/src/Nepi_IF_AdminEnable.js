@@ -146,7 +146,15 @@ class NepiIFAdminEnable extends Component {
                       <ButtonMenu>
                         <Button onClick={() => window.open("/admin", "_blank")}>{"Open Admin Controls"}</Button>
                       </ButtonMenu>
+                      
                   : null }
+
+                      { (admin_mode_set === true && admin_mode === true && show_link_button === true) ?
+                      <ButtonMenu>
+                        <Button onClick={() => window.open("/setup", "_blank")}>{"Open Setup Controls"}</Button>
+                      </ButtonMenu>
+                      
+                  : null }                  
 
                 </Column>
                   </Columns>

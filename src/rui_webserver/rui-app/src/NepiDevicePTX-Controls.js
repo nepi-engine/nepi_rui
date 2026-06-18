@@ -824,6 +824,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
             <Label title={"Max Speed (dps)"}>
                 <Input
                   id={"MaxSpeed"}
+                  disabled={true}
                   style={{ width: "45%" }}
                   value={this.state.speedMax}
                   onChange= {this.onUpdateText}

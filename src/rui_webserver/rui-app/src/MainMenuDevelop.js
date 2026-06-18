@@ -33,6 +33,7 @@ import Dashboard from "./NepiDashboard"
 import NepiIFAppSelector from "./Nepi_IF_AppSelector"
 
 import NepiMgr from "./NepiSystemAdmin"
+import NepiSetup from "./NepiSystemSetup"
 
 import AiModelsMgr from "./NepiSystemAiModels"
 import AiDetectorMgr from "./NepiMgrAiDetector"
@@ -83,6 +84,7 @@ class MainMenuDevelop extends Component {
         <Switch>
           <Route exact path="/" component={Dashboard} />
           <Route exact path="/admin" component={NepiMgr} />
+          <Route exact path="/setup" component={NepiSetup} />
           
           <Route 
             path="/devices_selector" 
