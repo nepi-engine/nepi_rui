@@ -240,50 +240,52 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
               {(has_timed_pos === true) ?
 
-                      <div>
+                      <div style={{display: 'flex', alignItems: 'center', width: '100%'}}>
 
                         {(has_timed_speed_pos === true) &&
-                          <div style={{display: 'flex', alignItems: 'center', marginBottom: '4px'}}>
-                            <label style={{color: 'white', marginRight: '6px', whiteSpace: 'nowrap'}}>
+                          <div style={{flex: 1, paddingRight: '8px', display: 'flex', flexDirection: 'column', alignItems: 'stretch'}}>
+                            <span style={{color: 'white', textAlign: 'center', fontSize: '11px', marginBottom: '2px'}}>
                               {"Jog Speed " + Math.round(jog_speed_ratio * 100) + "%"}
-                            </label>
+                            </span>
                             <input
                               type="range"
                               min="1"
                               max="100"
                               value={Math.round(jog_speed_ratio * 100)}
                               onChange={(e) => this.setState({ jog_speed_ratio: e.target.value / 100 })}
-                              style={{flex: 1}}
+                              style={{width: '100%'}}
                             />
                           </div>
                         }
 
-                        <ButtonMenu>
+                        <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
+                          <ButtonMenu>
 
-                          <Button
-                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedPan(namespace,  1, jog_speed_ratio) : onPTXJogPan(namespace,  1)}
-                            buttonUpAction={() => onPTXPanStop(namespace)}>
-                            {'\u25C0'}
-                          </Button>
-                          <Button
-                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedPan(namespace, -1, jog_speed_ratio) : onPTXJogPan(namespace, -1)}
-                            buttonUpAction={() => onPTXPanStop(namespace)}>
-                            {'\u25B6'}
-                          </Button>
-                          <Button
-                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedTilt(namespace, -1, jog_speed_ratio) : onPTXJogTilt(namespace, -1)}
-                            buttonUpAction={() => onPTXTiltStop(namespace)}>
-                            {'\u25B2'}
-                          </Button>
-                          <Button
-                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedTilt(namespace,  1, jog_speed_ratio) : onPTXJogTilt(namespace,  1)}
-                            buttonUpAction={() => onPTXTiltStop(namespace)}>
-                            {'\u25BC'}
-                          </Button>
+                            <Button
+                              buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedPan(namespace,  1, jog_speed_ratio) : onPTXJogPan(namespace,  1)}
+                              buttonUpAction={() => onPTXPanStop(namespace)}>
+                              {'\u25C0'}
+                            </Button>
+                            <Button
+                              buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedPan(namespace, -1, jog_speed_ratio) : onPTXJogPan(namespace, -1)}
+                              buttonUpAction={() => onPTXPanStop(namespace)}>
+                              {'\u25B6'}
+                            </Button>
+                            <Button
+                              buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedTilt(namespace, -1, jog_speed_ratio) : onPTXJogTilt(namespace, -1)}
+                              buttonUpAction={() => onPTXTiltStop(namespace)}>
+                              {'\u25B2'}
+                            </Button>
+                            <Button
+                              buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedTilt(namespace,  1, jog_speed_ratio) : onPTXJogTilt(namespace,  1)}
+                              buttonUpAction={() => onPTXTiltStop(namespace)}>
+                              {'\u25BC'}
+                            </Button>
 
-                          <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
+                            <Button onClick={() => onPTXStop(namespace)}>{"STOP"}</Button>
 
-                        </ButtonMenu>
+                          </ButtonMenu>
+                        </div>
 
                       </div>
 
