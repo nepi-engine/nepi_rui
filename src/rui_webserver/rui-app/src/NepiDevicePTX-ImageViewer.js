@@ -45,8 +45,10 @@ class NepiDevicePTXImageViewer extends Component {
 
       namespace: null,
 
-      status_msg: null,  
-      statusListener: null
+      status_msg: null,
+      statusListener: null,
+
+      jog_speed_ratio: 0.5
     }
 
 
@@ -125,7 +127,8 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
   render() {
-    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXStop, onPTXPanStop, onPTXTiltStop } = this.props.ros
+    const { ptxDevices, onPTXJogPan, onPTXJogTilt, onPTXJogSpeedPan, onPTXJogSpeedTilt, onPTXStop, onPTXPanStop, onPTXTiltStop } = this.props.ros
+    const jog_speed_ratio = this.state.jog_speed_ratio
     const namespace = (this.props.namespace !== null) ? this.props.namespace : 'None'
     const status_msg = this.state.status_msg
 
@@ -147,10 +150,12 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const ptxDevicesList = Object.keys(ptxDevices)
     var has_abs_pos = false
     var has_timed_pos = false
+    var has_timed_speed_pos = false
     if (ptxDevicesList.indexOf(namespace) !== -1){
       const ptx_caps = ptxDevices[namespace]
       has_abs_pos = ptx_caps && (ptx_caps.has_absolute_positioning === true)
       has_timed_pos = ptx_caps && (ptx_caps.has_timed_positioning === true)
+      has_timed_speed_pos = ptx_caps && (ptx_caps.has_timed_speed_positioning === true)
     }
 
     const ptxImageViewerElement = document.getElementById("ptxImageViewer")
@@ -235,25 +240,43 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
               {(has_timed_pos === true) ?
 
-                      <ButtonMenu>
+                      <div>
 
-                          <Button 
-                            buttonDownAction={() => onPTXJogPan(namespace,  1)}
+                        {(has_timed_speed_pos === true) &&
+                          <div style={{display: 'flex', alignItems: 'center', marginBottom: '4px'}}>
+                            <label style={{color: 'white', marginRight: '6px', whiteSpace: 'nowrap'}}>
+                              {"Jog Speed " + Math.round(jog_speed_ratio * 100) + "%"}
+                            </label>
+                            <input
+                              type="range"
+                              min="1"
+                              max="100"
+                              value={Math.round(jog_speed_ratio * 100)}
+                              onChange={(e) => this.setState({ jog_speed_ratio: e.target.value / 100 })}
+                              style={{flex: 1}}
+                            />
+                          </div>
+                        }
+
+                        <ButtonMenu>
+
+                          <Button
+                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedPan(namespace,  1, jog_speed_ratio) : onPTXJogPan(namespace,  1)}
                             buttonUpAction={() => onPTXPanStop(namespace)}>
                             {'\u25C0'}
-                            </Button>
-                          <Button 
-                            buttonDownAction={() => onPTXJogPan(namespace, - 1)}
+                          </Button>
+                          <Button
+                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedPan(namespace, -1, jog_speed_ratio) : onPTXJogPan(namespace, -1)}
                             buttonUpAction={() => onPTXPanStop(namespace)}>
                             {'\u25B6'}
                           </Button>
-                          <Button 
-                            buttonDownAction={() => onPTXJogTilt(namespace, -1)}
+                          <Button
+                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedTilt(namespace, -1, jog_speed_ratio) : onPTXJogTilt(namespace, -1)}
                             buttonUpAction={() => onPTXTiltStop(namespace)}>
                             {'\u25B2'}
                           </Button>
-                          <Button 
-                            buttonDownAction={() => onPTXJogTilt(namespace, 1)}
+                          <Button
+                            buttonDownAction={() => has_timed_speed_pos ? onPTXJogSpeedTilt(namespace,  1, jog_speed_ratio) : onPTXJogTilt(namespace,  1)}
                             buttonUpAction={() => onPTXTiltStop(namespace)}>
                             {'\u25BC'}
                           </Button>
@@ -262,7 +285,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
                         </ButtonMenu>
 
-                    : 
+                      </div>
+
+                    :
 
                       <ButtonMenu>
 

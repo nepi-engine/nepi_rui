@@ -3786,6 +3786,30 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
     })
   }
 
+  @action.bound
+  onPTXJogSpeedPan(ptxNamespace, direction, speed_ratio) {
+    this.publishMessage({
+      name: ptxNamespace + "/jog_timed_pan_speed_ratio",
+      messageType: "nepi_interfaces/SingleAxisTimedSpeedMove",
+      data: {"direction": direction,
+             "speed_ratio": speed_ratio,
+             "duration_s": -1},
+      noPrefix: true
+    })
+  }
+
+  @action.bound
+  onPTXJogSpeedTilt(ptxNamespace, direction, speed_ratio) {
+    this.publishMessage({
+      name: ptxNamespace + "/jog_timed_tilt_speed_ratio",
+      messageType: "nepi_interfaces/SingleAxisTimedSpeedMove",
+      data: {"direction": direction,
+             "speed_ratio": speed_ratio,
+             "duration_s": -1},
+      noPrefix: true
+    })
+  }
+
   
   @action.bound
   onLSXSetStandby(lsxNamespace, enable) {
