@@ -2163,6 +2163,19 @@ class ROSConnectionStore {
     }
   }
 
+  @action.bound
+  setupRBXStatusListener(rbxDeviceNamespace, callback) {
+    if (rbxDeviceNamespace) {
+      return this.addListener({
+        name: rbxDeviceNamespace + "/status",
+        messageType: "nepi_interfaces/DeviceRBXStatus",
+        noPrefix: true,
+        callback: callback,
+
+      })
+    }
+  }
+
 
 
   @action.bound

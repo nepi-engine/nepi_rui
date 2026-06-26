@@ -76,6 +76,7 @@ class NepiRBXMessages extends Component {
       MessagesStatusListener : null,
       MessagesStatusMsgListener : null,
       MessagesStatusStrListener: null,
+      navposeListener: null,
 
       status_str_list: null
     }
@@ -89,6 +90,9 @@ class NepiRBXMessages extends Component {
     this.MessagesStatusListener = this.MessagesStatusListener.bind(this)
     this.MessagesStatusMsgListener = this.MessagesStatusMsgListener.bind(this)
     this.MessagesStatusStrListener = this.MessagesStatusStrListener.bind(this)
+    this.updateMessagesStatusStrListener = this.updateMessagesStatusStrListener.bind(this)
+    this.updateNavposeListener = this.updateNavposeListener.bind(this)
+    this.navposeListener = this.navposeListener.bind(this)
     this.convertMsgListToStr = this.convertMsgListToStr.bind(this)
     this.convertStrListToJoinedStr = this.convertStrListToJoinedStr.bind(this)
     
@@ -100,32 +104,40 @@ class NepiRBXMessages extends Component {
 
 
 
-  // Callback for handling ROS Status messages
+  // Callback for handling ROS DeviceRBXStatus messages.
+  // Pose values (current_*) are not part of DeviceRBXStatus; they come from the
+  // NavPose topic via navposeListener below.
   MessagesStatusListener(message) {
     this.setState({
-      current_lat: message.current_lat ,      
-      current_long: message.current_long ,
-      current_altitude: message.current_altitude ,
-      current_heading: message.current_heading ,
-      current_roll: message.current_roll ,
-      current_pitch: message.current_pitch ,
-      current_yaw: message.current_yaw , 
-      process_current: message.rocess_current ,
+      process_current: message.process_current ,
       process_last: message.process_last ,
       ready: message.ready ,
       battery: message.battery ,
-      status_message: message.s,
 
-      errors_current: [message.errors_current.x_m ,message.errors_current.x_m, message.errors_current.x_m, message.errors_current.heading_deg, message.errors_current.roll_deg, message.errors_current.pitch_deg, message.errors_current.yaw_deg],
-      errors_prev: [message.errors_prev.x_m ,message.errors_prev.x_m, message.errors_prev.x_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
+      errors_current: [message.errors_current.x_m ,message.errors_current.y_m, message.errors_current.z_m, message.errors_current.heading_deg, message.errors_current.roll_deg, message.errors_current.pitch_deg, message.errors_current.yaw_deg],
+      errors_prev: [message.errors_prev.x_m ,message.errors_prev.y_m, message.errors_prev.z_m, message.errors_prev.heading_deg, message.errors_prev.roll_deg, message.errors_prev.pitch_deg, message.errors_prev.yaw_deg],
       cmd_success: message.cmd_success ,
-      manual_ready: message.manual_motor_control_mode_ready ,
+      manual_ready: message.manual_control_mode_ready ,
       autonomous_ready: message.autonomous_control_mode_ready ,
       last_cmd_str: message.last_cmd_string ,
-      last_error_message: message.last_error_message 
+      last_error_message: message.last_error_message
     })
 
-  
+
+  }
+
+  // Callback for handling NavPose messages. The system/info panel pose values
+  // come from the device's NavPose topic.
+  navposeListener(message) {
+    this.setState({
+      current_lat: message.latitude ,
+      current_long: message.longitude ,
+      current_altitude: message.altitude_m ,
+      current_heading: message.heading_deg ,
+      current_roll: message.roll_deg ,
+      current_pitch: message.pitch_deg ,
+      current_yaw: message.yaw_deg
+    })
   }
 
   MessagesStatusMsgListener(message) {
@@ -156,11 +168,26 @@ class NepiRBXMessages extends Component {
     }
     var listener = this.props.ros.setupStatusListener(
           Namespace + "/status",
-          "nepi_interfaces/RBXStatus",
+          "nepi_interfaces/DeviceRBXStatus",
           this.MessagesStatusListener
         )
     this.setState({ MessagesStatusListener : listener})
       }
+
+
+    // Function for configuring and subscribing to the device NavPose topic
+    updateNavposeListener() {
+      const navposeTopic = this.props.rbxNamespace.split('/rbx')[0] + "/npx/navpose"
+    if (this.state.navposeListener ) {
+      this.state.navposeListener.unsubscribe()
+    }
+    var navposeListener = this.props.ros.setupStatusListener(
+          navposeTopic,
+          "nepi_interfaces/NavPose",
+          this.navposeListener
+        )
+    this.setState({ navposeListener : navposeListener})
+     }
 
 
     updateMessagesStatusMsgListener() {
@@ -188,6 +215,19 @@ class NepiRBXMessages extends Component {
      }
   
 
+  // Lifecycle method called on mount. Sets up listeners for the initially
+  // selected device.
+  componentDidMount() {
+    const { rbxNamespace } = this.props
+    if (rbxNamespace && rbxNamespace.indexOf('null') === -1) {
+      this.updateMessagesStatusMsgListener()
+      this.updateMessagesStatusListener()
+      this.updateMessagesStatusStrListener()
+      this.updateNavposeListener()
+      this.msg_queue = new Queue()
+    }
+  }
+
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
@@ -197,9 +237,10 @@ class NepiRBXMessages extends Component {
         this.updateMessagesStatusMsgListener()
         this.updateMessagesStatusListener()
         this.updateMessagesStatusStrListener()
+        this.updateNavposeListener()
         this.msg_queue = new Queue()
         this.render()
-      } 
+      }
     }
   }
 
@@ -208,6 +249,15 @@ class NepiRBXMessages extends Component {
   componentWillUnmount() {
     if (this.state.MessagesStatusListener ) {
       this.state.MessagesStatusListener.unsubscribe()
+    }
+    if (this.state.MessagesStatusMsgListener ) {
+      this.state.MessagesStatusMsgListener.unsubscribe()
+    }
+    if (this.state.MessagesStatusStrListener ) {
+      this.state.MessagesStatusStrListener.unsubscribe()
+    }
+    if (this.state.navposeListener ) {
+      this.state.navposeListener.unsubscribe()
     }
   }
 
