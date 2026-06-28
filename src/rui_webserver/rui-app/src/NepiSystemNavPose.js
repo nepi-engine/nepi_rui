@@ -233,7 +233,7 @@ class NavPoseMgr extends Component {
  
 
   renderFrameSelection() {
-    const { navpose_frames, navpose_frames_topics } = this.props.ros
+    const { sendBoolMsg, navpose_sync_transforms, navpose_apply_transforms, navpose_frames, navpose_frames_topics } = this.props.ros
     const { selected_frame, selected_frame_topic, show_edit_frames, edit_frame_name, next_custom_num } = this.state
     const mgrNamespace = this.getMgrNamespace()
     const hasSelection = selected_frame_topic !== null && selected_frame !== 'None'
@@ -340,6 +340,30 @@ class NavPoseMgr extends Component {
             : <div style={{color: Styles.vars.colors.grey}}> {'None'} </div>
           }
         </div>
+
+        <Columns>
+          <Column>
+
+                <Label title={"Sync Transforms"}>
+                    <Toggle
+                      checked={navpose_sync_transforms}
+                      onClick={() => sendBoolMsg(mgrNamespace + '/set_sync_tranforms' ,!navpose_sync_transforms)}
+                    /> 
+                  </Label>
+
+                <Label title={"Apply Transforms"}>
+                    <Toggle
+                      checked={navpose_apply_transforms}
+                      onClick={() => sendBoolMsg(mgrNamespace + '/set_apply_tranforms' ,!navpose_apply_transforms)}
+                    /> 
+                  </Label>
+
+              </Column>
+              <Column>
+
+              </Column>
+            </Columns>
+
       </React.Fragment>
     )
   }
