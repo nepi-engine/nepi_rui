@@ -318,7 +318,6 @@ class ROSConnectionStore {
       this.frame_depth = null
 
       this.navpose_sync_transforms = false
-      this.navpose_apply_transforms = true
       this.navpose_frames = []
       this.navpose_frames_topics = []
       this.navpose_frames_solutions = []      
@@ -1411,7 +1410,6 @@ class ROSConnectionStore {
   @observable frame_depth = null
 
   @observable navpose_sync_transforms = false
-  @observable navpose_apply_transforms = true
   @observable navpose_frames = []
   @observable navpose_frames_topics = []
   @observable navpose_frames_solutions = [] 
@@ -1436,7 +1434,6 @@ class ROSConnectionStore {
       this.frame_alt = message.frame_alt
 
       this.navpose_sync_transforms = message.sync_transforms
-      this.navpose_apply_transforms = message.apply_transforms
       this.navpose_frames = message.navpose_frames
       this.navpose_frames_topics = message.navpose_frames_topics
       this.navpose_frames_solutions = message.navpose_frames_solutions
