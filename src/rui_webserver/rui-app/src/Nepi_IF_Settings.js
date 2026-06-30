@@ -47,7 +47,7 @@ class Nepi_IF_Settings extends Component {
       status_msg: null,
       capabilities: null,
 
-      show_controls: true,
+      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : true,
 
       capSettingsTypes: ['Menu','Discrete','String','Bool','Int','Float'],
       capSettingsNamesList: [],
