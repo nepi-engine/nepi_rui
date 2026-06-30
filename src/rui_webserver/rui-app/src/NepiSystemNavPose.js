@@ -233,7 +233,7 @@ class NavPoseMgr extends Component {
  
 
   renderFrameSelection() {
-    const { navpose_frames, navpose_frames_topics } = this.props.ros
+    const { sendBoolMsg, navpose_sync_transforms, navpose_frames, navpose_frames_topics } = this.props.ros
     const { selected_frame, selected_frame_topic, show_edit_frames, edit_frame_name, next_custom_num } = this.state
     const mgrNamespace = this.getMgrNamespace()
     const hasSelection = selected_frame_topic !== null && selected_frame !== 'None'
@@ -340,6 +340,24 @@ class NavPoseMgr extends Component {
             : <div style={{color: Styles.vars.colors.grey}}> {'None'} </div>
           }
         </div>
+
+        <Columns>
+          <Column>
+
+                <Label title={"Sync Transforms"}>
+                    <Toggle
+                      checked={navpose_sync_transforms}
+                      onClick={() => sendBoolMsg(mgrNamespace + '/set_sync_tranforms' ,!navpose_sync_transforms)}
+                    /> 
+                  </Label>
+
+
+              </Column>
+              <Column>
+
+              </Column>
+            </Columns>
+
       </React.Fragment>
     )
   }
@@ -519,6 +537,7 @@ class NavPoseMgr extends Component {
 
 
   renderFrameConfig() {
+    const { sendUpdateBoolMsg } = this.props.ros
     const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
     const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
 
@@ -845,7 +864,7 @@ class NavPoseMgr extends Component {
 
 
   renderNavPoseMgr() {
-   
+   const { sendUpdateBoolMsg } = this.props.ros
     const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
     const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
 
@@ -859,7 +878,7 @@ class NavPoseMgr extends Component {
       return <React.Fragment />
     }
 
-
+    const apply_transforms = live_solution.apply_transforms
     const frame_name = live_solution.frame_name
     const avg_rate = live_solution.avg_pub_rate
     const onRateUpdate = (newRate) => {
@@ -913,6 +932,24 @@ class NavPoseMgr extends Component {
                           {frame_name}
                         </label>
                     
+
+                      <Columns>
+                        <Column>
+
+
+                              <Label title={"Apply Transforms"}>
+                                  <Toggle
+                                    checked={apply_transforms}
+                                    onClick={() => sendUpdateBoolMsg(mgrNamespace + '/set_frame_apply_transforms', frame_name, !apply_transforms)}
+                                  /> 
+                                </Label>
+
+                            </Column>
+                            <Column>
+
+                            </Column>
+                          </Columns>
+
 
                       <Label title={""}>
                         <div style={{ display: "inline-block", width: "45%", float: "left" }}>{"Max"}</div>

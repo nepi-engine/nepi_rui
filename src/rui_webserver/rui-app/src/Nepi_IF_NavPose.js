@@ -18,7 +18,7 @@
 #
  */
 import React, { Component } from "react"
-//Unused import Toggle from "react-toggle"
+import Toggle from "react-toggle"
 import { observer, inject } from "mobx-react"
 
 import Input from "./Input"
@@ -57,6 +57,8 @@ class NepiIFNavPose extends Component {
       navpose_times: null,
 
       connected: false,
+
+      show_pt_values: null,
 
       needs_update: true,
       data_needs_update: true  
@@ -105,8 +107,48 @@ class NepiIFNavPose extends Component {
     const last_navpose_data = this.state.navpose_data
     
      const has_pan_tilt = message.has_pan_tilt
+    const show_pt_values = (this.state.show_pt_values != null && has_pan_tilt === true) ? this.state.show_pt_values === true : has_pan_tilt === true
      var navpose_data_from_msg = null
-     if (has_pan_tilt === false) {
+     if (show_pt_values === true) {
+        navpose_data_from_msg = {
+            navpose_frame: message.navpose_frame,
+            navpose_description: message.navpose_description,
+
+            frame_nav: message.frame_nav,
+            frame_altitude: message.frame_altitude,
+            frame_depth: message.frame_depth,
+
+            has_location: message.has_location,
+            latitude: message.latitude,
+            longitude: message.longitude,
+
+
+            has_heading: true,
+            heading_deg: message.pan_tilt_heading_deg,
+
+            has_orientation: true,
+            roll_deg: message.pan_tilt_roll_deg,
+            pitch_deg: message.pan_tilt_pitch_deg,
+            yaw_deg: message.pan_tilt_yaw_deg,
+
+            has_position: true,
+            x_m: message.pan_tilt_x_m,
+            y_m: message.pan_tilt_y_m,
+            z_m: message.pan_tilt_z_m,
+
+            has_altitude: message.has_altitude,
+            altitude_m: message.altitude_m,
+            geoid_height_meters: message.geoid_height_meters,
+
+            has_depth: message.has_depth,
+            depth_m: message.depth_m,
+
+            has_pan_tilt: message.has_pan_tilt,
+            pan_deg: message.pan_deg,
+            tilt_deg: message.tilt_deg
+          }
+        }
+      else {
         navpose_data_from_msg = {
             navpose_frame: message.navpose_frame,
             navpose_description: message.navpose_description,
@@ -145,47 +187,6 @@ class NepiIFNavPose extends Component {
             tilt_deg: message.tilt_deg
           }
         }
-      else {
-
-        navpose_data_from_msg = {
-            navpose_frame: message.navpose_frame,
-            navpose_description: message.navpose_description,
-
-            frame_nav: message.frame_nav,
-            frame_altitude: message.frame_altitude,
-            frame_depth: message.frame_depth,
-
-            has_location: message.has_location,
-            latitude: message.latitude,
-            longitude: message.longitude,
-
-
-            has_heading: true,
-            heading_deg: message.pan_tilt_heading_deg,
-
-            has_orientation: true,
-            roll_deg: message.pan_tilt_roll_deg,
-            pitch_deg: message.pan_tilt_pitch_deg,
-            yaw_deg: message.pan_tilt_yaw_deg,
-
-            has_position: true,
-            x_m: message.pan_tilt_x_m,
-            y_m: message.pan_tilt_y_m,
-            z_m: message.pan_tilt_z_m,
-
-            has_altitude: message.has_altitude,
-            altitude_m: message.altitude_m,
-            geoid_height_meters: message.geoid_height_meters,
-
-            has_depth: message.has_depth,
-            depth_m: message.depth_m,
-
-            has_pan_tilt: message.has_pan_tilt,
-            pan_deg: message.pan_deg,
-            tilt_deg: message.tilt_deg
-          }
-
-      }
 
       // Preserve fields the user is currently editing so subscription doesn't reset them
       const navpose_data = { ...navpose_data_from_msg }
@@ -523,7 +524,7 @@ class NepiIFNavPose extends Component {
           const mk_disabled = (has_flag) => read_only || disabled || (!force_enable && !has_flag)
 
 
-
+          const show_pt_values = (this.state.show_pt_values != null && has_pan_tilt === true) ? this.state.show_pt_values === true : has_pan_tilt === true
 
           return (
 
@@ -709,6 +710,14 @@ class NepiIFNavPose extends Component {
                     />
                   </Label>
 
+                  <div hidden={has_pan_tilt === false}>
+                    <Label title={"Use PT Frame"}>
+                      <Toggle
+                        checked={show_pt_values}
+                        onClick={() => this.setState({ show_pt_values: !show_pt_values })}
+                      />
+                    </Label>
+                  </div>
 
                 </Column>
               </Columns>
