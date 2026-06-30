@@ -2342,40 +2342,35 @@ class ROSConnectionStore {
   }
 
   async startLaunchScriptService(item) {
-    const _pollOnce = async () => {
-        const response = await this.callService({
-          name: "launch_script",
-          messageType: "nepi_interfaces/LaunchScript",
-          args: {script : item}
-        })
-        if (response != null ) {
-            this.launchScript = response
-        }
-      }
-
+    // One-shot action -- launch exactly once. (Do NOT add a setTimeout re-call here:
+    // the launch_script service is not a poller, and a second call lands as a
+    // "is already running... will not start another instance" rejection.)
     if (this.connectedToNepi === true) {
-        setTimeout(_pollOnce, 3000)
+      const response = await this.callService({
+        name: "launch_script",
+        messageType: "nepi_interfaces/LaunchScript",
+        args: {script : item}
+      })
+      if (response != null ) {
+          this.launchScript = response
       }
-
-    _pollOnce()
+    }
   }
 
 
   async stopLaunchScriptService(item) {
-    const _pollOnce = async () => {
-        const response = await this.callService({
-          name: "stop_script",
-          messageType: "nepi_interfaces/StopScript",
-          args: {script : item}
-        })
+    // One-shot action -- stop exactly once. (See startLaunchScriptService: a second
+    // delayed call just lands as a "Script not running" warning.)
+    if (this.connectedToNepi === true) {
+      const response = await this.callService({
+        name: "stop_script",
+        messageType: "nepi_interfaces/StopScript",
+        args: {script : item}
+      })
       if (response != null ) {
           this.stopScript = response
       }
     }
-    if (this.connectedToNepi === true) {
-      setTimeout(_pollOnce, 3000)
-    }
-    _pollOnce()
   }
 
   async callGetSystemStatsQueryService(item, poll = true) {
