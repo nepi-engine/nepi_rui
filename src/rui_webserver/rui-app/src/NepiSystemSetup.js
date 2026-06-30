@@ -119,7 +119,7 @@ class NepiMgr extends Component {
                     <div hidden={nepi_service_running === false}>
                         <ButtonMenu>
                           <Button disabled={update_disabled}
-                            onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/update_system_config")}>{"Update Config"}
+                            onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/update_system_config")}>{"Apply Updates"}
                           </Button>
                       </ButtonMenu>
 
