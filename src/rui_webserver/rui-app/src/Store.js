@@ -2960,6 +2960,25 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
     })
   }
 
+  // Update several settings with a single message.  settingsList is an array
+  // of {nameStr, typeStr, valueStr} entries.  The backend applies each entry
+  // in order.
+  @action.bound
+  updateSettings(namespace,settingsList) {
+    this.publishMessage({
+      name: namespace + "/update_settings",
+      messageType: "nepi_interfaces/Settings",
+      data: {
+        settings: settingsList.map(s => ({
+          type_str: s.typeStr,
+          name_str: s.nameStr,
+          value_str: s.valueStr
+        }))
+      },
+      noPrefix: true
+    })
+  }
+
  
   @action.bound
   updateSaveDataRate(namespace,data_product,rate_hz) {
