@@ -113,6 +113,9 @@ class Nepi_IF_ImageViewer extends Component {
     this.updateImageSource = this.updateImageSource.bind(this)
     this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
 
+    this.createSaveFileName = this.createSaveFileName.bind(this)
+    this.saveImageFrame = this.saveImageFrame.bind(this)
+
     this.renderImageViewer = this.renderImageViewer.bind(this)
     this.renderFilterControls = this.renderFilterControls.bind(this)
     this.renderRenderControls = this.renderRenderControls.bind(this)
@@ -273,6 +276,59 @@ class Nepi_IF_ImageViewer extends Component {
     this.setState({currentStreamingImageQuality: quality})
     this.updateImageSource()
 
+  }
+
+
+  // Builds a download filename matching the NEPI save naming structure produced by
+  // system_if.py _createFileName with the default image save settings: timestamp on,
+  // milliseconds on, timezone token on, UTC time, empty prefix and suffix.
+  // Result form: <datetime token>_<title>.png
+  //   datetime token: D<YYYY>-<MM>-<DD>T<HH>-<MM>-<SS>p<mmm>TzUTC
+  //   title:          createMenuFirstLastName(image_topic) = <source>-<data_product>
+  createSaveFileName() {
+    const pad = (value, length) => {
+      var str = String(value)
+      while (str.length < length) {
+        str = '0' + str
+      }
+      return str
+    }
+    const now = new Date()
+    const date_str = 'D' + pad(now.getUTCFullYear(), 4) + '-' + pad(now.getUTCMonth() + 1, 2) + '-' + pad(now.getUTCDate(), 2)
+    const time_str = pad(now.getUTCHours(), 2) + '-' + pad(now.getUTCMinutes(), 2) + '-' + pad(now.getUTCSeconds(), 2)
+    const ms_str = 'p' + pad(now.getUTCMilliseconds(), 3)
+    const tz_str = 'TzUTC'
+    const dt_str = date_str + 'T' + time_str + ms_str + tz_str
+    const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
+    return dt_str + '_' + title + '.png'
+  }
+
+
+  // Captures the current canvas frame as a PNG and downloads it to the viewing
+  // computer's browser Downloads folder. Does not touch the device save interface.
+  saveImageFrame() {
+    const image_topic = this.state.image_topic
+    if (image_topic == null || image_topic === 'None' || image_topic === 'None Available') {
+      return
+    }
+    const canvas = this.canvas
+    if (!canvas || canvas.width === 0 || canvas.height === 0) {
+      return
+    }
+    const filename = this.createSaveFileName()
+    canvas.toBlob((blob) => {
+      if (blob == null) {
+        return
+      }
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    }, 'image/png')
   }
 
 
@@ -1477,10 +1533,12 @@ class Nepi_IF_ImageViewer extends Component {
     const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
+    const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : false
     const save_data_topic = (this.props.save_data_topic !== undefined) ? this.props.save_data_topic :  this.state.save_data_topic
 
 
     const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
+    const title_width = (show_browser_save_button === true) ? '80%' : '90%'
     
 
     const single_slider_topic = (this.props.single_slider_topic !== undefined) ? this.props.single_slider_topic : null
@@ -1527,11 +1585,11 @@ class Nepi_IF_ImageViewer extends Component {
                   
                   <div style={{ display: 'flex' }}>
 
-                        <div style={{ width: '90%', align: 'left' }}>
+                        <div style={{ width: title_width, align: 'left' }}>
                           <Label title={title} />
                         </div>
 
-                        
+
                         <div style={{ width: '10%' }} hidden={(show_reset_button === false  || namespace === 'None')}>
 
 
@@ -1540,6 +1598,18 @@ class Nepi_IF_ImageViewer extends Component {
                                 </ButtonMenu>
 
                         </div>
+
+
+                        {(show_browser_save_button === true) ?
+                        <div style={{ width: '10%' }} hidden={(namespace === 'None')}>
+
+
+                                <ButtonMenu>
+                                  <Button onClick={() => this.saveImageFrame()}>{"Snapshot"}</Button>
+                                </ButtonMenu>
+
+                        </div>
+                        : null }
 
 {/* 
                         <div style={{ width: '5%' }}>

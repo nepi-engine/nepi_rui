@@ -289,6 +289,7 @@ class NepiIFImageViewersSelector extends Component {
     const auto_select_image = (this.props.auto_select_image !== undefined) ? this.props.auto_select_image : true
     const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
+    const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : false
     const show_reset_button = (num_windows === 1)
     const allow_pan_zoom = (num_windows === 1)
 
@@ -322,6 +323,7 @@ class NepiIFImageViewersSelector extends Component {
                           show_selector={show_selectors}
                           show_selector_buttons={show_selector_buttons}
                           show_reset_button={show_reset_button}
+                          show_browser_save_button={show_browser_save_button}
                           allow_pan_zoom={allow_pan_zoom}
                           mouse_event_topic={mouse_event_topics[0]}
                           mouse_click_topic={mouse_click_topics[0]}
@@ -358,6 +360,7 @@ class NepiIFImageViewersSelector extends Component {
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
                               show_reset_button={show_reset_button}
+                              show_browser_save_button={show_browser_save_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
                               mouse_click_topic={mouse_click_topics[1]}
@@ -397,6 +400,7 @@ class NepiIFImageViewersSelector extends Component {
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
                               show_reset_button={show_reset_button}
+                              show_browser_save_button={show_browser_save_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
                               mouse_click_topic={mouse_click_topics[2]}
@@ -433,6 +437,7 @@ class NepiIFImageViewersSelector extends Component {
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
                               show_reset_button={show_reset_button}
+                              show_browser_save_button={show_browser_save_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
                               mouse_click_topic={mouse_click_topics[3]}
