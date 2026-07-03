@@ -359,6 +359,9 @@ class SliderAdjustment extends Component {
   }
 }
 
+
+
+
 @inject("ros")
 class DropdownAdjustment extends Component {
   propTypes = {

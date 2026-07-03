@@ -2131,6 +2131,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/RUISettings",
       callback: message => {
         this.streamingImageQuality = message.streaming_image_quality
+        //this.streamingImageRate = message.streaming_image_rate
         this.nepiLinkHbAutoDataOffloadingCheckboxVisible = message.nepi_hb_auto_offload_visible
       }
     })
@@ -3662,6 +3663,15 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
     })
   }
 
+    @action.bound
+  onChangeStreamingImageRate(rate) {
+    this.streamingImageRate = rate
+    this.publishMessage({
+      name: "rui_config_mgr/set_streaming_image_rate",
+      messageType: "std_msgs/UInt8",
+      data: { data: rate }
+    })
+  }
 
   /////////////////////////////////////////////////////////////////////////
   // Nav/Pose Control methods /////////////////////////////////////////////

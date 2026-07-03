@@ -62,6 +62,8 @@ const COMPRESSION_HIGH_QUALITY = 95
 const COMPRESSION_MED_QUALITY = 50
 const COMPRESSION_LOW_QUALITY = 10
 
+const MAX_STREAM_RATE = 20
+
 const PORT = 9091
 const ROS_WEBCAM_URL_BASE = `http://${
   window.location.hostname
@@ -102,6 +104,7 @@ class Nepi_IF_ImageViewer extends Component {
       streamHeight: null,
       streamSize: 0,
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
+      currentStreamingImageRate: MAX_STREAM_RATE,
       status_listenter: null,
 
       click_count: 0,
@@ -112,6 +115,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
     this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
+    this.onChangeImageRate = this.onChangeImageRate.bind(this)
 
     this.createSaveFileName = this.createSaveFileName.bind(this)
     this.saveImageFrame = this.saveImageFrame.bind(this)
@@ -214,8 +218,10 @@ class Nepi_IF_ImageViewer extends Component {
       }
     }
     if (this.image) {
-      const { streamingImageQuality } = this.props.ros
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&quality=' + streamingImageQuality
+      //const { streamingImageQuality } = this.props.ros
+      const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : COMPRESSION_HIGH_QUALITY
+      const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&framerate=' + stream_rate + '&quality=' + stream_quality 
     }
   }
 
@@ -228,7 +234,11 @@ class Nepi_IF_ImageViewer extends Component {
     const height = (this.image) ? this.image.height : 0
     const got_size = width * height
     const size_changed = (size !== got_size)
-    if (prevProps.image_topic !== image_topic || size_changed === true || prevState.currentStreamingImageQuality !== this.state.currentStreamingImageQuality){
+    const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : COMPRESSION_HIGH_QUALITY
+    const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
+    if (prevProps.image_topic !== image_topic || size_changed === true || prevState.currentStreamingImageQuality !== stream_quality){
+      this.setState({currentStreamingImageQuality: stream_quality, currentStreamingImageRate: stream_rate})
+      this.onChangeImageQuality(stream_quality)
       this.updateImageSource()
       if (prevProps.image_topic !== image_topic) {
         this.updateStatusListener()
@@ -274,6 +284,14 @@ class Nepi_IF_ImageViewer extends Component {
   onChangeImageQuality(quality) {
     this.props.ros.onChangeStreamingImageQuality(quality)
     this.setState({currentStreamingImageQuality: quality})
+    this.updateImageSource()
+
+  }
+
+
+  onChangeImageRate(Rate) {
+    this.props.ros.onChangeStreamingImageRate(Rate)
+    this.setState({currentStreamingImageRate: Rate})
     this.updateImageSource()
 
   }
@@ -1445,75 +1463,75 @@ class Nepi_IF_ImageViewer extends Component {
 
   }
 
-  renderCompression(){
-    const currentStreamingImageQuality = this.state.currentStreamingImageQuality
-    const hideQualitySelector = this.props.hideQualitySelector ? this.props.hideQualitySelector: false
-    const streamingImageQuality = this.props.streamingImageQuality ? 
-                (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : this.state.currentStreamingImageQuality
-                : this.state.currentStreamingImageQuality
+  // renderCompression(){
+  //   const currentStreamingImageQuality = this.state.currentStreamingImageQuality
+  //   const hideQualitySelector = this.props.hideQualitySelector ? this.props.hideQualitySelector: false
+  //   const streamingImageQuality = this.props.streamingImageQuality ? 
+  //               (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : this.state.currentStreamingImageQuality
+  //               : this.state.currentStreamingImageQuality
     
-    if (currentStreamingImageQuality !== streamingImageQuality)
-    {
-      this.setState({currentStreamingImageQuality: streamingImageQuality})
-    }
+  //   if (currentStreamingImageQuality !== streamingImageQuality)
+  //   {
+  //     this.setState({currentStreamingImageQuality: streamingImageQuality})
+  //   }
 
-    return(
-          <Columns>
-          <Column>
-          <div align={"left"} textAlign={"left"}>
-            { hideQualitySelector ?
-              null :
-              <Label title={"Compression Level"} />
-            }
-          </div>
-          </Column>
-          <Column>
-          <div align={"left"} textAlign={"left"}>
-            { hideQualitySelector ?
-              null :
-              <div>
-                <Label title={"Low"} />
-                <Toggle
-                  checked={streamingImageQuality >= COMPRESSION_HIGH_QUALITY}
-                  onClick={() => {this.onChangeImageQuality(COMPRESSION_HIGH_QUALITY)}}
-                />
-              </div>
-            }
-          </div>
-          </Column>
-          <Column>
-          <div align={"left"} textAlign={"left"}>
-            { hideQualitySelector ?
-              null :
-              <div>
-                <Label title={"Medium"} />
-                <Toggle
-                  checked={streamingImageQuality >= COMPRESSION_MED_QUALITY && streamingImageQuality < COMPRESSION_HIGH_QUALITY}
-                  onClick={() => {this.onChangeImageQuality(COMPRESSION_MED_QUALITY)}}
-                />
-              </div>
-            }
-          </div>
-          </Column>
-          <Column>
-          <div align={"left"} textAlign={"left"}>
-            { hideQualitySelector ?
-              null :
-              <div>
-                <Label title={"High"} />
-                <Toggle
-                  checked={streamingImageQuality <= COMPRESSION_LOW_QUALITY}
-                  onClick={() => {this.onChangeImageQuality(COMPRESSION_LOW_QUALITY)}}
-                />
-              </div>
-            }
-          </div>
-          </Column>
-        </Columns>
+  //   return(
+  //         <Columns>
+  //         <Column>
+  //         <div align={"left"} textAlign={"left"}>
+  //           { hideQualitySelector ?
+  //             null :
+  //             <Label title={"Compression Level"} />
+  //           }
+  //         </div>
+  //         </Column>
+  //         <Column>
+  //         <div align={"left"} textAlign={"left"}>
+  //           { hideQualitySelector ?
+  //             null :
+  //             <div>
+  //               <Label title={"Low"} />
+  //               <Toggle
+  //                 checked={streamingImageQuality >= COMPRESSION_HIGH_QUALITY}
+  //                 onClick={() => {this.onChangeImageQuality(COMPRESSION_HIGH_QUALITY)}}
+  //               />
+  //             </div>
+  //           }
+  //         </div>
+  //         </Column>
+  //         <Column>
+  //         <div align={"left"} textAlign={"left"}>
+  //           { hideQualitySelector ?
+  //             null :
+  //             <div>
+  //               <Label title={"Medium"} />
+  //               <Toggle
+  //                 checked={streamingImageQuality >= COMPRESSION_MED_QUALITY && streamingImageQuality < COMPRESSION_HIGH_QUALITY}
+  //                 onClick={() => {this.onChangeImageQuality(COMPRESSION_MED_QUALITY)}}
+  //               />
+  //             </div>
+  //           }
+  //         </div>
+  //         </Column>
+  //         <Column>
+  //         <div align={"left"} textAlign={"left"}>
+  //           { hideQualitySelector ?
+  //             null :
+  //             <div>
+  //               <Label title={"High"} />
+  //               <Toggle
+  //                 checked={streamingImageQuality <= COMPRESSION_LOW_QUALITY}
+  //                 onClick={() => {this.onChangeImageQuality(COMPRESSION_LOW_QUALITY)}}
+  //               />
+  //             </div>
+  //           }
+  //         </div>
+  //         </Column>
+  //       </Columns>
 
-    )
+  //   )
 
-  }
+  // }
 
 
 
@@ -1796,7 +1814,6 @@ class Nepi_IF_ImageViewer extends Component {
 
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
 
-                            {this.renderCompression()}
 
                             <NepiIFConfig
                                 namespace={namespace}
@@ -1832,7 +1849,6 @@ class Nepi_IF_ImageViewer extends Component {
 
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
 
-                            {this.renderCompression()}
                             {(show_save_controls === true && namespace !== 'None') ?
                             <NepiIFConfig
                                 namespace={namespace}

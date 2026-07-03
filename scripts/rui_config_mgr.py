@@ -105,6 +105,14 @@ class RUICfgMgrNode:
                 'callback': self.set_streaming_image_quality_cb, 
                 'callback_args': ()
             },
+            'image_rate': {
+                'namespace': self.node_namespace,
+                'topic': 'set_streaming_image_rate',
+                'msg': UInt8,
+                'qsize': None,
+                'callback': self.set_streaming_image_rate_cb, 
+                'callback_args': ()
+            },
 
         }
 
@@ -149,6 +157,11 @@ class RUICfgMgrNode:
     def set_streaming_image_quality_cb(self, msg):
         if (msg.data < 1 or msg.data > 100):
             self.msg_if.pub_warn("Invalid image qualtiy: " + str(msg.data))
+            return
+
+    def set_streaming_image_rate_cb(self, msg):
+        if (msg.data < 1 or msg.data > 100):
+            self.msg_if.pub_warn("Invalid image rate: " + str(msg.data))
             return
 
 

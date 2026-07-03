@@ -375,8 +375,12 @@ class NepiIFImageViewerSelector extends Component {
     const mouse_window_topic = (this.props.mouse_window_topic !== undefined) ? this.props.mouse_window_topic : null
 
     const streamingImageQuality = (this.props.streamingImageQuality !== undefined) ? 
-                (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : null
-                : null
+                (this.props.streamingImageQuality != null) ? this.props.streamingImageQuality : 95
+                : 95
+
+    const streamingImageRate = (this.props.streamingImageRate !== undefined) ? 
+            (this.props.streamingImageRate != null) ? this.props.streamingImageRate : 20
+            : 20
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
@@ -405,6 +409,7 @@ class NepiIFImageViewerSelector extends Component {
       save_data_topic={save_data_topic}
       make_section={false}
       streamingImageQuality={streamingImageQuality}
+      streamingImageRate={streamingImageRate}
 
     />
 
