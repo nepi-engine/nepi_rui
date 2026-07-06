@@ -37,6 +37,8 @@ import Input from "./Input"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiIFNavPose from "./Nepi_IF_NavPose"
+import NepiIFTransform from "./Nepi_IF_Transform"
+import Select, { Option } from "./Select"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
@@ -86,6 +88,9 @@ class Nepi_IF_ImageViewer extends Component {
 
       save_data_topic: '',
       navpose_topic: '',
+      transform_topic: '',
+      selected_frame: 'None',
+      show_transformed_navpose: false,
 
       status_msg: null,
 
@@ -143,6 +148,9 @@ class Nepi_IF_ImageViewer extends Component {
     this.statusListener = this.statusListener.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
 
+    this.onChangeNavposeFrame = this.onChangeNavposeFrame.bind(this)
+    this.renderNavPoseSection = this.renderNavPoseSection.bind(this)
+
   }
 
 
@@ -152,9 +160,86 @@ class Nepi_IF_ImageViewer extends Component {
     this.setState({
       status_msg: message,
       save_data_topic: message.save_data_topic,
-      navpose_topic: message.navpose_topic
-    })    
+      navpose_topic: message.navpose_topic,
+      transform_topic: message.transform_topic
+    })
 
+  }
+
+
+  onChangeNavposeFrame(event) {
+    const frame = event.target.value
+    this.setState({ selected_frame: frame })
+    const tf = this.state.transform_topic
+    if (tf !== undefined && tf !== '' && tf !== 'None') {
+      this.props.ros.sendStringMsg(tf + '/set_source_ref', frame)
+    }
+  }
+
+  // Renders the NavPose Data section: a reference-frame selector (navpose manager
+  // frames), the selected frame's NavPose readout, and the camera mount transform.
+  renderNavPoseSection() {
+    const { navpose_frames, navpose_frames_topics } = this.props.ros
+    const nav_frames = navpose_frames || []
+    const nav_frame_topics = navpose_frames_topics || []
+    var sel_frame = this.state.selected_frame
+    if ((sel_frame === 'None' || sel_frame === '' || nav_frames.indexOf(sel_frame) === -1) && nav_frames.length > 0) {
+      sel_frame = nav_frames[0]
+    }
+    const sel_idx = nav_frames.indexOf(sel_frame)
+    var navpose_ns = this.state.navpose_topic
+    if ((navpose_ns == null || navpose_ns === '' || navpose_ns === 'None') && sel_idx >= 0 && nav_frame_topics[sel_idx]) {
+      navpose_ns = nav_frame_topics[sel_idx] + '/navpose'
+    }
+    const transform_topic = this.state.transform_topic
+    const has_transform = (transform_topic !== undefined && transform_topic !== '' && transform_topic !== 'None')
+    // Transformed navpose is published at <idx_ns>/navpose (reference navpose + mount transform)
+    var transformed_ns = ''
+    const tf_suffix = '/navpose_frame_transform'
+    if (has_transform === true && transform_topic.endsWith(tf_suffix)) {
+      transformed_ns = transform_topic.slice(0, transform_topic.length - tf_suffix.length) + '/navpose'
+    }
+    const show_transformed = this.state.show_transformed_navpose === true && transformed_ns !== ''
+    const navpose_display_ns = show_transformed ? transformed_ns : navpose_ns
+    return (
+      <React.Fragment>
+
+        {(nav_frames.length > 0) ?
+        <Label title={"Reference Frame"}>
+          <Select value={sel_frame} onChange={this.onChangeNavposeFrame}>
+            {nav_frames.map((f, i) => <Option key={i} value={f}>{f}</Option>)}
+          </Select>
+        </Label>
+        : null }
+
+        {(transformed_ns !== '') ?
+        <Label title={"Show Transformed NavPose"}>
+          <Toggle
+            checked={this.state.show_transformed_navpose === true}
+            onClick={() => onChangeSwitchStateValue.bind(this)("show_transformed_navpose", this.state.show_transformed_navpose)}
+          />
+        </Label>
+        : null }
+
+        <NepiIFNavPose
+          navposeNamespace={navpose_display_ns}
+          title={"NavPose Data"}
+          read_only={true}
+          make_section={false}
+        />
+
+        {(has_transform === true) ?
+        <NepiIFTransform
+          transformNamespace={transform_topic}
+          title={"Camera Frame Transform"}
+          device_transform={true}
+          show_config={true}
+          make_section={false}
+        />
+        : null }
+
+      </React.Fragment>
+    )
   }
 
   // Function for configuring and subscribing to Status
@@ -1858,13 +1943,9 @@ class Nepi_IF_ImageViewer extends Component {
 
                     </div>
 
-                    <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>          
+                    <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>
 
-                      <NepiIFNavPose
-                        navposeNamespace={this.state.navpose_topic}
-                        title={"NavPose Data"}
-                        make_section={false}
-                      />
+                      {this.renderNavPoseSection()}
 
                     </div>
 

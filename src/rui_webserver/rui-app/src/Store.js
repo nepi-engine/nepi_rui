@@ -3129,19 +3129,6 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
 
 
     @action.bound
-    sendTransformMsg(namespace, transform_msg) {
-        this.publishMessage({
-          name: namespace,
-          messageType: "nepi_interfaces/Transform",
-          data: { 
-              transform_msg
-          },
-          noPrefix: true
-        })
-    }
-  
-    
-    @action.bound
     sendUpdateTransformMsg(namespace, transform_msg, name = '', name2 = '', name3 = '') {
         this.publishMessage({
           name: namespace,
@@ -3153,6 +3140,20 @@ updateSetting(namespace,nameStr,typeStr,valueStr) {
             transform: transform_msg
 
           },
+          noPrefix: true
+        })
+
+    }
+
+
+    // Publish a plain nepi_interfaces/Transform directly to a device's
+    // Transform3DIF set topic (e.g. <transform_topic>/set_3d_transform).
+    @action.bound
+    sendTransformMsg(namespace, transform_msg) {
+        this.publishMessage({
+          name: namespace,
+          messageType: "nepi_interfaces/Transform",
+          data: transform_msg,
           noPrefix: true
         })
 
