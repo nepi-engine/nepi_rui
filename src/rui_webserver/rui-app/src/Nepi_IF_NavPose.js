@@ -31,6 +31,10 @@ import Select, { Option } from "./Select"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
+import NepiIFTransform from "./Nepi_IF_Transform"
+
+// Mirrors nepi_nav.NAVPOSE_3D_FRAME_OPTIONS
+const NAVPOSE_3D_FRAME_OPTIONS = ['base_frame','nepi_frame','sensor_frame','world_frame']
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -79,6 +83,7 @@ class NepiIFNavPose extends Component {
     this.toggleViewableNavpose = this.toggleViewableNavpose.bind(this)
     this.onToggleNavposeSelection = this.onToggleNavposeSelection.bind(this)
     this.getNavposeOptions = this.getNavposeOptions.bind(this)
+    this.onChangeNavposeFrame = this.onChangeNavposeFrame.bind(this)
 
 
     this.sendNavposeUpdateMessage = this.sendNavposeUpdateMessage.bind(this)
@@ -334,57 +339,69 @@ class NepiIFNavPose extends Component {
   }
 
 
+  onChangeNavposeFrame(event) {
+    const frame = event.target.value
+    const navposeNamespace = this.state.navposeNamespace
+    if (navposeNamespace == null || navposeNamespace === 'None' || navposeNamespace === '') {
+      return
+    }
+    // The camera's navpose data topic is <device_ns>/navpose; the frame setter
+    // lives on the device node, so strip the trailing /navpose segment.
+    var device_ns = navposeNamespace
+    const suffix = '/navpose'
+    if (device_ns.endsWith(suffix)) {
+      device_ns = device_ns.slice(0, device_ns.length - suffix.length)
+    }
+    this.props.ros.sendStringMsg(device_ns + '/set_navpose_frame', frame)
+  }
+
+
   renderSelection() {
     const show_selection = (this.props.show_selection !== undefined)? this.props.show_selection : false
-    const navpose_options = this.getNavposeOptions()
-    const hide_navpose_list = !this.state.viewableNavpose && !this.state.connected
     if (show_selection === false) {
-
-      return(
+      return (
         <Columns>
           <Column>
-
           </Column>
         </Columns>
       )
-
     }
-    else {
+
+    const status_msg = this.state.status_msg
+    const navpose_data = this.state.navpose_data
+    const current_frame = (navpose_data != null && navpose_data.navpose_frame)
+        ? navpose_data.navpose_frame
+        : ((status_msg != null && status_msg.frame_name) ? status_msg.frame_name : 'None')
+    const transform_topic = (status_msg != null && status_msg.transform_topic) ? status_msg.transform_topic : ''
+
+    const { userRestricted } = this.props.ros
+    const navpose_control_restricted = userRestricted.indexOf('DATA-NAVPOSE_CONTROL') !== -1
+
     return (
       <React.Fragment>
 
-      <Columns>
-        <Column>
+        <Label title={"NavPose Frame"}>
+          <Select
+            id={"navpose_frame"}
+            value={current_frame}
+            disabled={navpose_control_restricted}
+            onChange={this.onChangeNavposeFrame}
+          >
+            {NAVPOSE_3D_FRAME_OPTIONS.map((f) => <Option value={f}>{f}</Option>)}
+          </Select>
+        </Label>
 
-        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-          {"Select NavPose Navpose"}
-         </label>
-         
-
-          <div onClick={this.toggleViewableNavpose} style={{backgroundColor: Styles.vars.colors.grey0}}>
-            <Select style={{width: "10px"}}/>
-          </div>
-          <div hidden={hide_navpose_list}>
-          {navpose_options.map((navpose) =>
-          <div onClick={this.onToggleNavposeSelection}
-            style={{
-              textAlign: "center",
-              padding: `${Styles.vars.spacing.xs}`,
-              color: Styles.vars.colors.black,
-              backgroundColor: (navpose.props.value === this.state.selected_navpose) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
-              cursor: "pointer",
-              }}>
-              <body navpose-topic ={navpose} style={{color: Styles.vars.colors.black}}>{navpose}</body>
-          </div>
-          )}
-          </div>
-
-      </Column>
-      </Columns>
+        {(transform_topic !== '' && transform_topic !== 'None') ?
+        <NepiIFTransform
+          transformNamespace={transform_topic}
+          title={"Camera Frame Transform"}
+          device_transform={true}
+          make_section={false}
+        />
+        : null }
 
       </React.Fragment>
     )
-    }
   }
 
 

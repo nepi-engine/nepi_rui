@@ -24,13 +24,18 @@ import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
-import Button, { ButtonMenu } from "./Button"
 import Input from "./Input"
 import Toggle from "react-toggle"
+import Select, { Option } from "./Select"
 
 
 import NepiIFConfig from "./Nepi_IF_Config"
 //import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
+
+import { setElementStyleModified, clearElementStyleModified } from "./Utilities"
+
+// Mirrors nepi_nav.NAVPOSE_3D_FRAME_OPTIONS (the reference frame the transform is defined from)
+const NAVPOSE_3D_FRAME_OPTIONS = ['base_frame','nepi_frame','sensor_frame','world_frame']
 
 @inject("ros")
 @observer
@@ -51,10 +56,16 @@ class NepiIFTransform extends Component {
 
       listener: null,
 
+      expanded: true,
+
       needs_update: false,
       connected: false
 
     }
+
+    // Fields the user is currently editing, so the 1Hz latched-transform republish
+    // does not overwrite in-progress typing (mirrors Nepi_IF_NavPose).
+    this.dirtyFields = new Set()
 
     this.sendTransformUpdateMessage = this.sendTransformUpdateMessage.bind(this)
     this.sendTransformClearMessage = this.sendTransformClearMessage.bind(this)
@@ -64,6 +75,7 @@ class NepiIFTransform extends Component {
 
     this.onUpdateInputTransformToggle = this.onUpdateInputTransformToggle.bind(this)
 
+    this.onChangeSourceFrame = this.onChangeSourceFrame.bind(this)
 
     this.renderTransform = this.renderTransform.bind(this)
 
@@ -104,11 +116,21 @@ class NepiIFTransform extends Component {
       heading_invert: message.heading_invert
     }
 
+    // Preserve any fields the user is mid-edit so the republish doesn't reset them
+    const transform_data_from_msg = { ...transform_data }
+    if (last_transform_data && this.dirtyFields.size > 0) {
+      for (const field of this.dirtyFields) {
+        if (field in last_transform_data) {
+          transform_data[field] = last_transform_data[field]
+        }
+      }
+    }
+
 
     if (JSON.stringify(transform_data) !== JSON.stringify(last_transform_data)) {
       this.setState({
         transform_data: transform_data,
-        transform_data_copy: transform_data
+        transform_data_copy: transform_data_from_msg
       })
     }
 
@@ -167,15 +189,23 @@ class NepiIFTransform extends Component {
 
 
   sendTransformUpdateMessage(transform_data){
-    const {sendUpdateTransformMsg} = this.props.ros
+    const {sendUpdateTransformMsg, sendTransformMsg} = this.props.ros
     const transformNamespace = this.state.transformNamespace
+    if (transform_data == null) {
+      return
+    }
+    // Device (Transform3DIF) mode: publish a plain Transform to set_3d_transform
+    if (this.props.device_transform === true) {
+      const setNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : transformNamespace + "/set_3d_transform"
+      sendTransformMsg(setNamespace, transform_data)
+      return
+    }
+    // NavPose-manager mode: publish an UpdateTransform to update_transform
     const updateNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : transformNamespace + "/update_transform"
     const frame_name = (this.props.frame_name !== undefined)? this.props.frame_name : ""
     const comp_name = (this.props.comp_name !== undefined)? this.props.comp_name : ""
     const type_name = (this.props.type_name !== undefined)? this.props.type_name : ""
-    if (transform_data != null) {
-      sendUpdateTransformMsg(updateNamespace,transform_data,frame_name,comp_name,type_name)
-    }
+    sendUpdateTransformMsg(updateNamespace,transform_data,frame_name,comp_name,type_name)
   }
 
 
@@ -186,12 +216,11 @@ class NepiIFTransform extends Component {
 
 
   onUpdateInputTransformValue(event, name) {
-    const value = event.target.value
+    this.dirtyFields.add(name)
     var transform_data = this.state.transform_data
-    transform_data[name] = value
+    transform_data[name] = event.target.value
     this.setState({ transform_data: transform_data })
-    document.getElementById(name).style.color = Styles.vars.colors.red
-    //this.render()
+    setElementStyleModified(event.target)
   }
 
   onKeySaveInputTransformValue(event, name) {
@@ -205,10 +234,16 @@ class NepiIFTransform extends Component {
       else{
         transform_data[name] = value
       }
+      this.dirtyFields.delete(name)
       this.setState({ transform_data: transform_data })
       this.sendTransformUpdateMessage(transform_data)
-      
-      document.getElementById(name).style.color = Styles.vars.colors.black
+      clearElementStyleModified(event.target)
+    }
+    if(event.key === 'Escape'){
+      transform_data[name] = transform_data_copy ? transform_data_copy[name] : 0
+      this.dirtyFields.delete(name)
+      this.setState({ transform_data: transform_data })
+      clearElementStyleModified(event.target)
     }
   }
 
@@ -219,6 +254,16 @@ class NepiIFTransform extends Component {
     this.setState({ transform_data: transform_data })
     this.sendTransformUpdateMessage(transform_data)
     //this.render()
+  }
+
+
+  onChangeSourceFrame(event) {
+    const frame = event.target.value
+    const transformNamespace = this.state.transformNamespace
+    if (transformNamespace == null || transformNamespace === 'None') {
+      return
+    }
+    this.props.ros.sendStringMsg(transformNamespace + '/set_source_ref', frame)
   }
 
 
@@ -245,155 +290,89 @@ class NepiIFTransform extends Component {
 
       const disabled = transform_control_restricted === true && allow_updates === true
 
-      const msg = ("\n\nSource Desc: " + transform_data.source_ref_description + 
-      "\n\nEnd Desc: " + transform_data.end_ref_description
+      const show_frame_select = (this.props.show_frame_select !== undefined) ? this.props.show_frame_select : false
+      const expanded = this.state.expanded !== false
+
+      const msg = ("Source Desc: " + transform_data.source_ref_description +
+      "   End Desc: " + transform_data.end_ref_description)
+
+      const tfCols = [
+        [
+          { field: 'x_m',       label: 'X (m)',    invertField: 'x_invert'     },
+          { field: 'y_m',       label: 'Y (m)',    invertField: 'y_invert'     },
+          { field: 'z_m',       label: 'Z (m)',    invertField: 'z_invert'     },
+        ],
+        [
+          { field: 'roll_deg',  label: 'Roll (°)', invertField: 'roll_invert'  },
+          { field: 'pitch_deg', label: 'Pitch (°)',invertField: 'pitch_invert' },
+          { field: 'yaw_deg',   label: 'Yaw (°)',  invertField: 'yaw_invert'   },
+        ],
+      ]
+
+      const renderTfInput = ({ field, label, invertField }) => (
+        <div key={field} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
+            <Input
+              value={transform_data[field]}
+              id={field}
+              disabled={disabled === true}
+              onChange={(event) => this.onUpdateInputTransformValue(event, field)}
+              onKeyDown={(event) => this.onKeySaveInputTransformValue(event, field)}
+              style={{ width: '70px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <label style={{ fontSize: '0.7em', width: '46px', flexShrink: 0, color: Styles.vars.colors.grey1 }}>{'Invert'}</label>
+            <div style={{ width: '70px', display: 'flex', justifyContent: 'center' }}>
+              <Toggle
+                disabled={disabled === true}
+                checked={transform_data[invertField]}
+                onClick={() => this.onUpdateInputTransformToggle(!transform_data[invertField], invertField)}
+              />
+            </div>
+          </div>
+        </div>
       )
 
       return (
         <React.Fragment>
 
-
-
-            <label align={"left"} textAlign={"left"}>
+            <label align={"left"} textAlign={"left"} style={{ fontSize: '0.8em', color: Styles.vars.colors.grey1 }}>
             {msg}
             </label>
 
-            <Columns>
-            <Column>
-
-            <Label title={"X (m)"}>
-              <Input
-                value={transform_data.x_m}
-                id="x_m"
+            {(show_frame_select === true) ?
+            <Label title={"Reference Frame"}>
+              <Select
+                value={transform_data.source_ref_description}
                 disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"x_m")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"x_m")}
-                style={{ width: "80%" }}
-              />
-                <Toggle
-                disabled={disabled === true}
-                  checked={transform_data.x_invert}
-                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.x_invert, 'x_invert')}>
-                </Toggle>  
-
-
+                onChange={this.onChangeSourceFrame}
+              >
+                {NAVPOSE_3D_FRAME_OPTIONS.map((f) => <Option value={f}>{f}</Option>)}
+              </Select>
             </Label>
+            : null }
 
-            <Label title={"Y (m)"}>
-              <Input
-                value={transform_data.y_m}
-                id="y_m"
-                disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"y_m")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"y_m")}
-                style={{ width: "80%" }}
-              />
+            <div
+              style={{ cursor: 'pointer', fontSize: '0.8em', color: Styles.vars.colors.grey1, marginTop: '4px', userSelect: 'none' }}
+              onClick={() => this.setState({ expanded: !expanded })}
+            >
+              {'Transform ' + (expanded ? '▲' : '▼')}
+            </div>
 
-                <Toggle
-                disabled={disabled === true}
-                  checked={transform_data.y_invert}
-                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.y_invert, 'y_invert')}>
-                </Toggle>  
-
-            </Label>
-
-          
-
-            <Label title={"Z (m)"}>
-              <Input
-                value={transform_data.z_m}
-                id="z_m"
-                disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"z_m")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"z_m")}
-                style={{ width: "80%" }}
-              />
-
-                <Toggle
-                disabled={disabled === true}
-                  checked={transform_data.z_invert}
-                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.z_invert, 'z_invert')}>
-                </Toggle>
-            </Label>
-
-
-
-            {/* <div hidden={updates === false}>
-            <ButtonMenu>
-              <Button onClick={() => this.sendTransformUpdateMessage()}>{"Update Transform"}</Button>
-            </ButtonMenu>
-            </div> */}
-
-
-
-
-          </Column>
-          <Column>
-
-            <Label title={"Roll (deg)"}>
-              <Input
-                value={transform_data.roll_deg}
-                id="roll_deg"
-                disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"roll_deg")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"roll_deg")}
-                style={{ width: "80%" }}
-              />
-
-                <Toggle
-                disabled={disabled === true}
-                  checked={transform_data.roll_invert}
-                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.roll_invert, 'roll_invert')}>
-                </Toggle>
-
-            </Label>
-
-            <Label title={"Pitch (deg)"}>
-              <Input
-                value={transform_data.pitch_deg}
-                id="pitch_deg"
-                disabled={disabled === true}
-                onChange= {(event) => this.onUpdateInputTransformValue(event,"pitch_deg")}
-                onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"pitch_deg")}
-                style={{ width: "80%" }}
-              />
-
-                <Toggle
-                disabled={disabled === true}
-                  checked={transform_data.pitch_invert}
-                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.pitch_invert, 'pitch_invert')}>
-                </Toggle>
-
-            </Label>
-
-                <Label title={"Yaw (deg)"}>
-                  <Input
-                    value={transform_data.yaw_deg}
-                    id="yaw_deg"
-                    disabled={disabled === true}
-                    onChange= {(event) => this.onUpdateInputTransformValue(event,"yaw_deg")}
-                    onKeyDown= {(event) => this.onKeySaveInputTransformValue(event,"yaw_deg")}
-                    style={{ width: "80%" }}
-                  />
-
-                <Toggle
-                disabled={disabled === true}
-                  checked={transform_data.yaw_invert}
-                  onClick={() => this.onUpdateInputTransformToggle(!transform_data.yaw_invert, 'yaw_invert')}>
-                </Toggle>
-                </Label>
-
-
-
-                <div hidden={disabled === true}>
-                    <ButtonMenu>
-                        <Button onClick={() => this.sendTransformClearMessage()}>{"Clear Transform"}</Button>
-                    </ButtonMenu>
-                </div>
-
-
-              </Column>
-            </Columns>
+            {(expanded === true) ?
+            <div style={{ marginTop: '4px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>{tfCols[1].map(renderTfInput)}</div>
+              <div hidden={disabled === true}
+                style={{ cursor: 'pointer', fontSize: '0.75em', color: Styles.vars.colors.red, marginTop: '4px', textAlign: 'right', userSelect: 'none' }}
+                onClick={() => this.sendTransformClearMessage()}
+              >
+                {'Clear Transform'}
+              </div>
+            </div>
+            : null }
 
         </React.Fragment>
       )
@@ -409,7 +388,7 @@ class NepiIFTransform extends Component {
 
           <NepiIFConfig
                         namespace={configNamespace}
-                        title={"Nepi_IF_Config"}
+                        title={"Save Camera Frame Transform"}
           />
 
         </Column>
@@ -421,7 +400,7 @@ class NepiIFTransform extends Component {
   }
 
   render() {
-    const make_section = this.props.make_section ? this.props.make_section : true
+    const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const transformNamespace = this.state.transformNamespace ? this.state.transformNamespace : 'None'
     const title = this.props.title  ? this.props.title : "NavPose Transform";
     const show_line = (this.props.show_line !== undefined)? this.props.show_line : true
