@@ -322,12 +322,11 @@ class Nepi_IF_ImageViewer extends Component {
     const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : COMPRESSION_HIGH_QUALITY
     const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
     if (prevProps.image_topic !== image_topic || size_changed === true || prevState.currentStreamingImageQuality !== stream_quality){
-      this.setState({currentStreamingImageQuality: stream_quality, currentStreamingImageRate: stream_rate})
+      this.setState({streamSize: got_size, currentStreamingImageQuality: stream_quality, currentStreamingImageRate: stream_rate})
       this.onChangeImageQuality(stream_quality)
       this.updateImageSource()
-      if (prevProps.image_topic !== image_topic) {
-        this.updateStatusListener()
-      }
+      this.updateStatusListener()
+
     }
   }
 
