@@ -98,9 +98,8 @@ class Nepi_IF_ImageViewer extends Component {
       has_status: false,
       show_config: false,
       show_info: false,
-      show_render: false,
+      show_overlay: false,
       has_overlay: false,
-      show_overlays: false,
       has_navpose: false,
       show_navpose: false,
       hasInitialized: false,
@@ -1000,13 +999,13 @@ class Nepi_IF_ImageViewer extends Component {
   renderRenderControls() {
 
     const namespace = this.state.image_topic
-    const show_render = this.props.show_render ? this.props.show_render : true
+    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
 
     const { imageCaps, sendTriggerMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
    
-    if (show_render === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+    if (show_overlay_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
@@ -1438,9 +1437,9 @@ class Nepi_IF_ImageViewer extends Component {
   renderOverlayControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
     const namespace = this.state.image_topic
-    const show_overlays = this.props.show_overlays ? this.props.show_overlays : true
+    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
    
-    if (show_overlays === true && this.state.status_msg !== null && namespace !== null){
+    if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
       const size_ratio = message.overlay_size_ratio
       const name = message.overlay_img_name
@@ -1654,15 +1653,13 @@ class Nepi_IF_ImageViewer extends Component {
 
     const show_info = this.state.show_info && (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
     const show_config = this.state.show_config && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
-    const show_render = this.state.show_render && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
     const show_navpose = this.state.show_navpose  && (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
-
+    const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls : true
 
     const hide_info = (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') !== -1)
     const hide_config = (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') !== -1)
-    const hide_render = (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') !== -1)
     const hide_navpose = (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') !== -1)
-
+    const hide_overlays = (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') !== -1) || show_overlay_controls === false
 
     return (
       
@@ -1776,12 +1773,12 @@ class Nepi_IF_ImageViewer extends Component {
                           : null }
 
 
-      <div align={"left"} textAlign={"left"} hidden={(show_image_controls === false || namespace === 'None')}>
+      <div align={"left"} textAlign={"left"} hidden={( namespace === 'None')}>
 
        
 
                 <div style={{ display: 'flex' }}>
-                        <div style={{ width: '15%' }} hidden={hide_config}>
+                        <div style={{ width: '15%' }} hidden={show_image_controls === false }>
                               <Label title="Show Image Config">
                                 <Toggle
                                   checked={this.state.show_config===true}
@@ -1793,7 +1790,7 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
             
-                        <div style={{ width: '15%' }} hidden={hide_info}>
+                        <div style={{ width: '15%' }} hidden={show_image_controls === false }>
                             <Label title="Show Image Info">
                                 <Toggle
                                   checked={this.state.show_info===true}
@@ -1804,7 +1801,7 @@ class Nepi_IF_ImageViewer extends Component {
                         <div style={{ width: '10%' }}>
                         </div>
 
-                        <div style={{ width: '15%' }} hidden={hide_navpose}>
+                        <div style={{ width: '15%' }} hidden={show_image_controls === false }>
                             <Label title="Show NavPose Data">
                                 <Toggle
                                   checked={this.state.show_navpose===true}
@@ -1816,11 +1813,11 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
 
-                       <div style={{ width: '15%' }} hidden={hide_render}>
-                              <Label title="Show Image Render">
+                       <div style={{ width: '15%' }} hidden={hide_overlays === true}>
+                              <Label title="Show Overlay Controls">
                                 <Toggle
-                                  checked={this.state.show_render===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_render",this.state.show_render)}>
+                                  checked={this.state.show_overlay===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_overlay",this.state.show_overlay)}>
                                 </Toggle>
                             </Label>
                         </div>
@@ -1871,7 +1868,7 @@ class Nepi_IF_ImageViewer extends Component {
        
 
 
-                  <div align={"left"} textAlign={"left"} hidden={(show_render !== true || namespace === 'None')}>
+                  <div align={"left"} textAlign={"left"} hidden={(show_overlay_controls === false || this.state.show_overlay === false)}>
 
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -1890,8 +1887,9 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '40%' }}>
-                                  <Label title={"ZOOM PAN ROTATE"} />
-                                  {this.renderRenderControls()}
+                                  {}
+                                  {/* <Label title={"ZOOM PAN ROTATE"} />
+                                  {this.renderRenderControls()} */}
                                 </div>
                 
                           </div>

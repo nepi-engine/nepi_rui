@@ -382,6 +382,7 @@ class NepiIFImageViewerSelector extends Component {
             (this.props.streamingImageRate != null) ? this.props.streamingImageRate : 20
             : 20
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
+    const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls : true
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
@@ -401,6 +402,7 @@ class NepiIFImageViewerSelector extends Component {
       mouse_window_topic={mouse_window_topic}
       select_updated_topic={select_updated_topic}
       show_image_controls={show_image_controls}
+      show_overlay_controls={show_overlay_controls}
       show_save_controls={show_save_controls}
       show_save_bottom={show_save_bottom}
       show_reset_button={show_reset_button}
