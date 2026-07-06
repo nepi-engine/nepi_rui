@@ -258,8 +258,8 @@ class NepiIFImageViewersSelector extends Component {
       image_topics =  ['None Available','None Available','None Available','None Available']
     }
     const titles = (this.props.titles !== undefined) ? this.props.titles : [null,null,null,null]
-    const exclude_filters = (this.props.exclude_filters !== undefined) ? this.props.exclude_filters : []
-    const include_filters = (this.props.include_filters !== undefined) ? this.props.include_filters : []
+    const image_exclude_filters = (this.props.image_exclude_filters !== undefined) ? this.props.image_exclude_filters : []
+    const image_include_filters = (this.props.image_include_filters !== undefined) ? this.props.image_include_filters : []
 
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
     const select_updated_topics = (this.props.select_updated_topics !== undefined) ? this.props.select_updated_topics : [select_updated_topic,select_updated_topic,select_updated_topic,select_updated_topic]
@@ -276,14 +276,11 @@ class NepiIFImageViewersSelector extends Component {
     const mouse_window_topic = (this.props.mouse_window_topic !== undefined) ? this.props.mouse_window_topic : null
     const mouse_window_topics = (this.props.mouse_window_topics !== undefined) ? this.props.mouse_window_topics : [mouse_window_topic,mouse_window_topic,mouse_window_topic,mouse_window_topic]
   
-    const show_selectors = ((images_available && image_topics[0] === 'None') || 
-                                      (images_available && num_windows === 2 && image_topics[1] === 'None') || 
-                                      (images_available && num_windows === 4 && image_topics.indexOf('None') !== -1)) ? true :
-                                            this.props.show_selectors !== undefined ? this.props.show_selectors : this.state.show_selectors
+    const show_selectors = this.props.show_selectors !== undefined ? this.props.show_selectors : true
 
-    if (show_selectors !== this.state.show_selectors){
-      this.setState({show_selectors: show_selectors})
-    }
+    // if (show_selectors !== this.state.show_selectors){
+    //   this.setState({show_selectors: show_selectors})
+    // }
 
 
     const auto_select_image = (this.props.auto_select_image !== undefined) ? this.props.auto_select_image : true
@@ -317,8 +314,8 @@ class NepiIFImageViewersSelector extends Component {
                           image_topic={image_topics[0]}
                           title={titles[0]}
                           streamingImageQuality={streamingImageQuality}
-                          exclude_filters={exclude_filters}
-                          include_filters={include_filters}
+                          image_exclude_filters={image_exclude_filters}
+                          image_include_filters={image_include_filters}
                           show_image_controls={show_image_controls}
                           show_selector={show_selectors}
                           show_selector_buttons={show_selector_buttons}
@@ -354,8 +351,8 @@ class NepiIFImageViewersSelector extends Component {
                               image_topic={image_topics[1]}
                               title={titles[1]}
                               streamingImageQuality={streamingImageQuality}
-                              exclude_filters={exclude_filters}
-                              include_filters={include_filters}
+                              image_exclude_filters={image_exclude_filters}
+                              image_include_filters={image_include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
@@ -394,8 +391,8 @@ class NepiIFImageViewersSelector extends Component {
                               image_topic={image_topics[2]}
                               title={titles[2]}
                               streamingImageQuality={streamingImageQuality}
-                              exclude_filters={exclude_filters}
-                              include_filters={include_filters}
+                              image_exclude_filters={image_exclude_filters}
+                              image_include_filters={image_include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
@@ -431,8 +428,8 @@ class NepiIFImageViewersSelector extends Component {
                               image_topic={image_topics[3]}
                               title={titles[3]}
                               streamingImageQuality={streamingImageQuality}
-                              exclude_filters={exclude_filters}
-                              include_filters={include_filters}
+                              image_exclude_filters={image_exclude_filters}
+                              image_include_filters={image_include_filters}
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}

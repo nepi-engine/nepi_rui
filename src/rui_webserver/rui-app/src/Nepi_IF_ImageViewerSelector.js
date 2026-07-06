@@ -102,7 +102,7 @@ class NepiIFImageViewerSelector extends Component {
             push_item = false
           }
         }
-        for (i2 = 0; i2 < image_exclude_filters.length; i2++) {
+        for (i2 = 0; i2 < image_include_filters.length; i2++) {
           if (image.indexOf(image_include_filters[i2]) === -1 ){
             push_item = false
           }
@@ -253,7 +253,7 @@ class NepiIFImageViewerSelector extends Component {
 
     const image_topics = this.state.image_topics
     //const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
-    const show_selector = (image_topics.length > 0) && (this.props.show_selector !== undefined ? this.props.show_selector : menu_options.length > 0)
+    const show_selector = (this.props.show_selector !== undefined ? this.props.show_selector : menu_options.length > 0)
 
 
     // const show_controls = ((menu_options.length > 0 && selected_item === 'None') || (menu_options.length > 1 )) && (show_selector === true )
