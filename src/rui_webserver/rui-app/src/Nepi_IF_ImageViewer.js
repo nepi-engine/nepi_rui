@@ -306,7 +306,7 @@ class Nepi_IF_ImageViewer extends Component {
       //const { streamingImageQuality } = this.props.ros
       const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : COMPRESSION_HIGH_QUALITY
       const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&framerate=' + stream_rate + '&quality=' + stream_quality 
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&type=mjpeg' + '&framerate=' + stream_rate + '&quality=' + stream_quality 
     }
   }
 
