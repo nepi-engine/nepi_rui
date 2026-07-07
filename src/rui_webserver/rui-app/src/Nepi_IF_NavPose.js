@@ -375,7 +375,8 @@ class NepiIFNavPose extends Component {
     const transform_topic = (status_msg != null && status_msg.transform_topic) ? status_msg.transform_topic : ''
 
     const { userRestricted } = this.props.ros
-    const navpose_control_restricted = userRestricted.indexOf('DATA-NAVPOSE_CONTROL') !== -1
+    const navpose_view_restricted = userRestricted.indexOf('DATA-NAVPOSE-VIEW') !== -1
+    const navpose_control_restricted = userRestricted.indexOf('DATA-NAVPOSE-CONTROL') !== -1
 
     return (
       <React.Fragment>
@@ -391,7 +392,7 @@ class NepiIFNavPose extends Component {
           </Select>
         </Label>
 
-        {(transform_topic !== '' && transform_topic !== 'None') ?
+        {(transform_topic !== '' && transform_topic !== 'None' && navpose_control_restricted === false) ?
         <NepiIFTransform
           transformNamespace={transform_topic}
           title={"Camera Frame Transform"}
@@ -746,6 +747,7 @@ class NepiIFNavPose extends Component {
 
         renderConfigs(){
           const configNamespace = this.state.configNamespace ? this.state.configNamespace : this.state.navposeNamespace
+          const show_all_config_options = (this.props.show_all_config_options !== undefined)? this.props.show_all_config_options : true
           return(
             <Columns>
             <Column>
@@ -753,6 +755,7 @@ class NepiIFNavPose extends Component {
 
                 <NepiIFConfig
                               namespace={configNamespace}
+                              show_all_config_options={show_all_config_options}
                               title={"Nepi_IF_Config"}
                 />
 
@@ -809,7 +812,6 @@ class NepiIFNavPose extends Component {
                   <NepiIFSaveData
                   saveNamespace={save_topic}
                   make_section={false}
-                  show_all_options={false}
                   show_topic_selector={false}
                 />
               : null }

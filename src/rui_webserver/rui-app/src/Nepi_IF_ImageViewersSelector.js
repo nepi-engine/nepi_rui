@@ -286,8 +286,11 @@ class NepiIFImageViewersSelector extends Component {
     const auto_select_image = (this.props.auto_select_image !== undefined) ? this.props.auto_select_image : true
     const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
     const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
-    const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : false
-    const show_reset_button = (num_windows === 1)
+    const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : (num_windows === 1)
+    const show_all_save_options = (this.props.show_all_save_options !== undefined) ? this.props.show_all_save_options : true
+    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : (num_windows === 1)
+    const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : (num_windows === 1)
     const allow_pan_zoom = (num_windows === 1)
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
@@ -319,7 +322,6 @@ class NepiIFImageViewersSelector extends Component {
                           show_image_controls={show_image_controls}
                           show_selector={show_selectors}
                           show_selector_buttons={show_selector_buttons}
-                          show_reset_button={show_reset_button}
                           show_browser_save_button={show_browser_save_button}
                           allow_pan_zoom={allow_pan_zoom}
                           mouse_event_topic={mouse_event_topics[0]}
@@ -329,7 +331,10 @@ class NepiIFImageViewersSelector extends Component {
                           select_updated_topic={select_updated_topics[0]}
                           auto_select_image={auto_select_image}
                           make_section={make_section}
-                          show_save_controls={false}
+                          show_save_controls={show_save_controls}
+                          show_all_save_options={show_all_save_options}
+                          show_all_config_options={show_all_config_options}
+                          show_reset_button={show_reset_button}
                         />
                       </div>
 
@@ -356,7 +361,6 @@ class NepiIFImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
-                              show_reset_button={show_reset_button}
                               show_browser_save_button={show_browser_save_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[1]}
@@ -366,7 +370,10 @@ class NepiIFImageViewersSelector extends Component {
                               select_updated_topic={select_updated_topics[1]}
                               auto_select_image={auto_select_image}
                              make_section={make_section}
-                             show_save_controls={false}
+                            show_save_controls={show_save_controls}
+                            show_all_save_options={show_all_save_options}
+                            show_all_config_options={show_all_config_options}
+                            show_reset_button={show_reset_button}
                             />
                           </div>          
                         : null
@@ -396,7 +403,6 @@ class NepiIFImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
-                              show_reset_button={show_reset_button}
                               show_browser_save_button={show_browser_save_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[2]}
@@ -406,7 +412,10 @@ class NepiIFImageViewersSelector extends Component {
                               select_updated_topic={select_updated_topics[2]}
                               auto_select_image={auto_select_image}
                               make_section={make_section}
-                              show_save_controls={false}
+                              show_save_controls={show_save_controls}
+                              show_all_save_options={show_all_save_options}
+                              show_all_config_options={show_all_config_options}
+                              show_reset_button={show_reset_button}
                             />
                           </div>        
                         : null
@@ -433,7 +442,6 @@ class NepiIFImageViewersSelector extends Component {
                               show_image_controls={show_image_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
-                              show_reset_button={show_reset_button}
                               show_browser_save_button={show_browser_save_button}
                               allow_pan_zoom={allow_pan_zoom}
                               mouse_event_topic={mouse_event_topics[3]}
@@ -443,7 +451,10 @@ class NepiIFImageViewersSelector extends Component {
                               select_updated_topic={select_updated_topics[3]}
                               auto_select_image={auto_select_image}
                              make_section={make_section}
-                             show_save_controls={false}
+                            show_save_controls={show_save_controls}
+                            show_all_save_options={show_all_save_options}
+                            show_all_config_options={show_all_config_options}
+                            show_reset_button={show_reset_button}
                             />
                           </div>          
                         : null
@@ -470,7 +481,6 @@ class NepiIFImageViewersSelector extends Component {
                           <NepiIFSaveData
                             saveNamespace={saveNamespace}
                             make_section={false}
-                            show_all_options={true}
                             show_topic_selector={true}
                           />
         
@@ -483,7 +493,6 @@ class NepiIFImageViewersSelector extends Component {
 
   renderImageViewersSelection() {
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
-    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
     const show_constrols_bar_bottom = (this.props.show_constrols_bar_bottom !== undefined) ? this.props.show_constrols_bar_bottom : false
     
@@ -500,11 +509,11 @@ class NepiIFImageViewersSelector extends Component {
             : null }              
          
               
-                {(show_save_controls === true && show_save_bottom === false) ?
+                {(show_save_controls === true ) ?
                  this.renderSaveData()
               : null }
 
-              {(show_save_controls === true && show_save_bottom === false) ?
+              {(show_save_controls === true ) ?
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
               : null }
 
@@ -512,12 +521,12 @@ class NepiIFImageViewersSelector extends Component {
 
 
 
-              {(show_save_controls === true && show_save_bottom === true) ?
+              {(show_save_controls === true ) ?
                 this.renderSaveData()
             : null }
 
 
-            {(show_save_controls === true && show_save_bottom === true && show_controls_bar === true && show_constrols_bar_bottom === true) ?
+            {(show_save_controls === true  && show_controls_bar === true && show_constrols_bar_bottom === true) ?
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
             : null }              
 

@@ -264,7 +264,7 @@ class NepiDeviceIDX extends Component {
               title={image_text}
               hideQualitySelector={false}
               show_topic_selector={false}
-              show_all_options={false}
+              show_all_config_options={false}
             />
 
           </Column>

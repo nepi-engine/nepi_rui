@@ -86,7 +86,7 @@ class NepiIFConfig extends Component {
     }
 
     else {
-    const show_save_all = (this.props.show_save_all !== undefined) ? this.props.show_save_all : this.supports_all_config(namespace)
+    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : this.supports_all_config(namespace)
     const all_config_restricted = (this.props.ros.userRestricted.indexOf('Sav-All') !== -1)
         return (
 
@@ -102,7 +102,7 @@ class NepiIFConfig extends Component {
                     </ButtonMenu>
 
 
-                    { (show_save_all === true && all_config_restricted === false) ?
+                    { (show_all_config_options === true && all_config_restricted === false) ?
 
 
                         <ButtonMenu>
@@ -122,7 +122,7 @@ class NepiIFConfig extends Component {
                       </ButtonMenu>
 
 
-                    { (show_save_all === true && all_config_restricted === false) ?
+                    { (show_all_config_options === true && all_config_restricted === false) ?
 
 
                         <ButtonMenu>
