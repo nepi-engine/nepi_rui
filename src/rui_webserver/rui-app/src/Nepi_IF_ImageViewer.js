@@ -90,7 +90,6 @@ class Nepi_IF_ImageViewer extends Component {
       navpose_topic: '',
       transform_topic: '',
       selected_frame: 'None',
-      show_transformed_navpose: false,
 
       status_msg: null,
 
@@ -198,8 +197,10 @@ class Nepi_IF_ImageViewer extends Component {
     if (has_transform === true && transform_topic.endsWith(tf_suffix)) {
       transformed_ns = transform_topic.slice(0, transform_topic.length - tf_suffix.length) + '/navpose'
     }
-    const show_transformed = this.state.show_transformed_navpose === true && transformed_ns !== ''
-    const navpose_display_ns = show_transformed ? transformed_ns : navpose_ns
+    // Always display the camera's navpose (reference navpose + mount transform), published
+    // at <idx_ns>/navpose. Fall back to the raw reference-frame navpose only if this device
+    // has no mount transform (transformed_ns unavailable).
+    const navpose_display_ns = transformed_ns !== '' ? transformed_ns : navpose_ns
     return (
       <React.Fragment>
 
@@ -208,15 +209,6 @@ class Nepi_IF_ImageViewer extends Component {
           <Select value={sel_frame} onChange={this.onChangeNavposeFrame}>
             {nav_frames.map((f, i) => <Option key={i} value={f}>{f}</Option>)}
           </Select>
-        </Label>
-        : null }
-
-        {(transformed_ns !== '') ?
-        <Label title={"Show Transformed NavPose"}>
-          <Toggle
-            checked={this.state.show_transformed_navpose === true}
-            onClick={() => onChangeSwitchStateValue.bind(this)("show_transformed_navpose", this.state.show_transformed_navpose)}
-          />
         </Label>
         : null }
 
