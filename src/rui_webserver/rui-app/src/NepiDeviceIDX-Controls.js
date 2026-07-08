@@ -409,7 +409,7 @@ class NepiDeviceIDXControls extends Component {
                 <Column>
 
                     {(show_controls_option === true) ?
-                    <Label title="Show Controls">
+                    <Label title="Show Image Controls">
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>

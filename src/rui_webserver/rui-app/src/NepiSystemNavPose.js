@@ -919,7 +919,7 @@ class NavPoseMgr extends Component {
                             <NepiIFSaveData
                             saveNamespace={save_data_topic}
                             make_section={true}
-                            show_all_options={false}
+                            show_all_config_options={false}
                             show_topic_selector={false}
                           />
                         : null }

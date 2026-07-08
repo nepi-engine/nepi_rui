@@ -600,7 +600,7 @@ class NepiIFSaveData extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
     
-    const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
+    const show_all_data_options = (this.props.show_all_data_options !== undefined) ? this.props.show_all_data_options : true
 
     const saveAll = this.state.saveAll
     const save_enabled = saveDataEnabled
@@ -650,13 +650,13 @@ class NepiIFSaveData extends Component {
 
                         <div style={{ width: '10%' }}>
                           
-                                { ((show_all_options === true) && (is_all_namespace === true)) ?
+                                { ((show_all_data_options === true) && (is_all_namespace === true)) ?
                                 <Label title={"All Enabled"}>
                                   <BooleanIndicator value={(true)} />
                                 </Label>
                                   : null }
 
-                                  { ((show_all_options === true) && (is_all_namespace === false)) ?
+                                  { ((show_all_data_options === true) && (is_all_namespace === false)) ?
                                       <Label title="Enable All">
                                         <Toggle
                                           checked={ (saveAll === true) }
@@ -734,7 +734,7 @@ class NepiIFSaveData extends Component {
 
   createTopicOptions() {
     const { namespacePrefix, deviceId} = this.props.ros
-    const show_all_options = (this.props.show_all_options !== undefined) ? this.props.show_all_options : true
+    const show_all_data_options = (this.props.show_all_data_options !== undefined) ? this.props.show_all_data_options : true
     const save_include_filters = (this.props.save_include_filters !== undefined) ? this.props.save_include_filters : []
     const save_exclude_filters = (this.props.save_exclude_filters !== undefined) ? this.props.save_exclude_filters : []
     const allNamespace = this.getAllNamespace()
@@ -779,7 +779,7 @@ class NepiIFSaveData extends Component {
     if (items.length === 0){
       items.unshift(<Option value={"None"}>{"None"}</Option>)
     }
-    if (show_all_options === true && items.length > 0){
+    if (show_all_data_options === true && items.length > 0){
       items.unshift(<Option value={allNamespace}>{"All"}</Option>)
     }
     return items

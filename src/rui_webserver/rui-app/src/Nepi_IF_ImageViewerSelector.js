@@ -382,11 +382,16 @@ class NepiIFImageViewerSelector extends Component {
             (this.props.streamingImageRate != null) ? this.props.streamingImageRate : 20
             : 20
     const show_image_controls = (this.props.show_image_controls !== undefined)? this.props.show_image_controls : true
-    const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls : true
+    const show_info_controls = (this.props.show_info_controls !== undefined) ? this.props.show_info_controls : show_image_controls === true
+    const show_config_controls = (this.props.show_config_controls !== undefined) ? this.props.show_config_controls : show_image_controls === true
+    const show_navpose_controls = (this.props.show_navpose_controls !== undefined) ? this.props.show_navpose_controls : show_image_controls === true
+    const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls : show_image_controls === true
+
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
-    const show_save_bottom = (this.props.show_save_bottom !== undefined) ? this.props.show_save_bottom : false
+    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
+    const show_all_save_options = (this.props.show_all_save_options !== undefined) ? this.props.show_all_save_options : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
-    const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : false
+    const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
     const save_data_topic = this.props.save_data_topic
 
     return (
@@ -402,9 +407,13 @@ class NepiIFImageViewerSelector extends Component {
       mouse_window_topic={mouse_window_topic}
       select_updated_topic={select_updated_topic}
       show_image_controls={show_image_controls}
+      show_info_controls={show_info_controls}
+      show_config_controls={show_config_controls}
+      show_navpose_controls={show_navpose_controls}
       show_overlay_controls={show_overlay_controls}
       show_save_controls={show_save_controls}
-      show_save_bottom={show_save_bottom}
+      show_all_save_options={show_all_save_options}
+      show_all_config_options={show_all_config_options}
       show_reset_button={show_reset_button}
       show_browser_save_button={show_browser_save_button}
       allow_pan_zoom={allow_pan_zoom}
