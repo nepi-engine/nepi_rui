@@ -31,7 +31,7 @@ const TRIGGER_MASKS = {
   DEFAULT: 0x7fffffff
 }
 
-
+const NEPI_TIMEOUT_MSEC = 3000
 
 
 // TODO: Would be better to query the display_name property of all nodes to generate
@@ -390,7 +390,7 @@ class ROSConnectionStore {
       }
 
       if (this.ros != null ) {
-        update_time = 2000
+        update_time = (this.connectedToNepi === false) ? 3000 : NEPI_TIMEOUT_MSEC
         if (this.connectedToNepi === true && this.watchdogNepiCounter >= this.watchdogNepiMax ) {
             this.connectedToNepi = false
             this.destroyROSConnection()
