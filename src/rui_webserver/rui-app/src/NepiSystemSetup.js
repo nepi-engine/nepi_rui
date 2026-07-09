@@ -88,6 +88,7 @@ class NepiMgr extends Component {
       const base_namespace = this.getBaseNamespace()
       const systemMgrStatus = this.props.ros.systemMgrStatus
       const nepi_updating_config = systemMgrStatus.nepi_updating_config
+      const nepi_service_running = systemMgrStatus.nepi_service_running
 
       var show_update_button = false
       var update_disabled = false
