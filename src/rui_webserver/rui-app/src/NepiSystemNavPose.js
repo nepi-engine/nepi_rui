@@ -44,6 +44,10 @@ function createMenuBaseName(optionStr) {
       if (sliced.length > 2) return sliced[2] + ' sim'
       if (sliced.length > 1) return sliced[1] + ' sim'
     }
+    // Show the source node name plus the rest of the topic path (e.g.
+    // "app_fake_gps/navpose/orientation" vs "app_fake_gps/odom") so that
+    // multiple topics from the same source node can be told apart.
+    return sliced.join('/')
   }
   return createMenuBaseNameUtil(optionStr)
 }
