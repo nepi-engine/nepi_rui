@@ -87,25 +87,18 @@ class NepiMgr extends Component {
   renderSystemSetup(){
       const base_namespace = this.getBaseNamespace()
       const systemMgrStatus = this.props.ros.systemMgrStatus
-      const nepi_service_running = systemMgrStatus.nepi_service_running
       const nepi_updating_config = systemMgrStatus.nepi_updating_config
 
       var show_update_button = false
       var update_disabled = true
-      var update_message = 'NEPI SERVICE NOT RUNNING'
+      var update_message = ''
 
-      if (nepi_service_running === true){
-        show_update_button
-        if (nepi_updating_config === true ){
-          update_disabled = true
-          update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
-        }
-        else {
-          update_disabled = false
-          update_message = 'NEPI SERVICE RUNNING'
-
-        }
+      show_update_button
+      if (nepi_updating_config === true ){
+        update_disabled = true
+        update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
       }
+    
       return (
 
 
@@ -179,6 +172,7 @@ class NepiMgr extends Component {
   render() {
     const base_namespace = this.getBaseNamespace()
     const systemMgrStatus = this.props.ros.systemMgrStatus
+    const nepi_service_running = systemMgrStatus.nepi_service_running
     const admin_mode_set = this.props.ros.systemAdminModeSet
 
     const { userRestricted} = this.props.ros
@@ -198,6 +192,17 @@ class NepiMgr extends Component {
       )
     }
 
+    else if (nepi_service_running === false) {
+      return (
+                <React.Fragment>
+
+                    <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                      {'NEPI SERVICE NOT RUNNING'}
+                    </label> 
+
+              </React.Fragment>
+            )
+    }
 
     else {
 
