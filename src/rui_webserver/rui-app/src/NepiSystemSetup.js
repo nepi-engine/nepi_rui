@@ -90,7 +90,7 @@ class NepiMgr extends Component {
       const nepi_updating_config = systemMgrStatus.nepi_updating_config
 
       var show_update_button = false
-      var update_disabled = true
+      var update_disabled = false
       var update_message = ''
 
       show_update_button
