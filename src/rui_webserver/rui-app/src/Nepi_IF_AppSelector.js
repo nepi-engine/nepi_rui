@@ -51,6 +51,7 @@ import ScriptsMgr from "./NepiMgrScripts"
 // Other SYSTEM Classes
 import DeviceMgr from "./NepiSystemDevice"
 import NepiMgr from "./NepiSystemAdmin"
+import SystemMgr from "./NepiSystemSetup"
 import DataMgr from "./NepiSystemData"
 import SoftwareMgr from "./NepiSystemSoftware"
 import AppsMgr from "./NepiSystemApps"
@@ -449,7 +450,24 @@ class NepiIFAppSelector extends Component {
         </React.Fragment>
       )
     }
+    else if (sel_app === "System Manager"){
+      return (
+        <React.Fragment>
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {sel_app}
+            </label>
+            <Columns>
+            <Column>
 
+              <SystemMgr
+              title={"System Manager"}
+              />
+
+          </Column>
+          </Columns>  
+        </React.Fragment>
+      )
+    }
     else if (sel_app === "Scripts Mgr"){
       return (
         <React.Fragment>
@@ -659,8 +677,12 @@ class NepiIFAppSelector extends Component {
             items.push(<Option value={'Device Manager'}>{'Device Manager'}</Option>)
         }   
         
-        if (restricted.indexOf('MANAGER-ADMIN-VIEW') === -1) { 
+        if (restricted.indexOf('MANAGER-NEPI-VIEW') === -1) { 
             items.push(<Option value={'NEPI Manager'}>{'NEPI Manager'}</Option>)
+        }   
+
+        if (restricted.indexOf('MANAGER-System-VIEW') === -1) { 
+            items.push(<Option value={'System Manager'}>{'System Manager'}</Option>)
         }   
 
         if (restricted.indexOf('MANAGER-DATA-VIEW') === -1) { 

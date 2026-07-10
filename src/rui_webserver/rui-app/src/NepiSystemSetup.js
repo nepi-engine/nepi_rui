@@ -31,7 +31,7 @@ import NepiIFSettings from "./Nepi_IF_Settings"
 
 @inject("ros")
 @observer
-class NepiMgr extends Component {
+class SystemMgr extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -87,17 +87,17 @@ class NepiMgr extends Component {
   renderSystemSetup(){
       const base_namespace = this.getBaseNamespace()
       const systemMgrStatus = this.props.ros.systemMgrStatus
+      const nepi_update_requested = systemMgrStatus.nepi_update_requested
       const nepi_updating_config = systemMgrStatus.nepi_updating_config
       const nepi_service_running = systemMgrStatus.nepi_service_running
+      const hide_update_config = (nepi_update_requested === true || nepi_updating_config === true)
+      var update_message = systemMgrStatus.nepi_update_msg
 
-      var show_update_button = false
-      var update_disabled = false
-      var update_message = ''
-
-      show_update_button
       if (nepi_updating_config === true ){
-        update_disabled = true
         update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
+      }
+      else if (nepi_update_requested === true){
+        update_message = 'UPDATE REQUEST SENT.  WAITING FOR RESPONSE'
       }
     
       return (
@@ -110,9 +110,9 @@ class NepiMgr extends Component {
                     <div style={{ width: '25%' }}>
 
 
-                    <div hidden={nepi_service_running === false}>
+                    <div hidden={nepi_service_running === false || hide_update_config === true}>
                         <ButtonMenu>
-                          <Button disabled={update_disabled}
+                          <Button 
                             onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/update_system_config")}>{"Apply Updates"}
                           </Button>
                       </ButtonMenu>
@@ -217,7 +217,7 @@ class NepiMgr extends Component {
                     <div style={{ width: '30%' }} >
 
 
-                          <Section title={("NEPI Setup")}>
+                          <Section title={("NEPI System")}>
                             
                                   {<NepiIFAdminEnable
                                     make_section={false}
@@ -228,7 +228,7 @@ class NepiMgr extends Component {
 
 
                                   { admin_mode_set ? 
-                                      this.renderSystemSetup()
+                                      this.renderSystemSystem()
                                       : null}
 
                                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -270,4 +270,4 @@ class NepiMgr extends Component {
 
 
 }
-export default NepiMgr
+export default SystemMgr
