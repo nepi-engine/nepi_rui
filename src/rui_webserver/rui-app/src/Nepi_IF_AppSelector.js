@@ -681,7 +681,7 @@ class NepiIFAppSelector extends Component {
             items.push(<Option value={'NEPI Manager'}>{'NEPI Manager'}</Option>)
         }   
 
-        if (restricted.indexOf('MANAGER-System-VIEW') === -1) { 
+        if (restricted.indexOf('MANAGER-SYSTEM-VIEW') === -1) { 
             items.push(<Option value={'System Manager'}>{'System Manager'}</Option>)
         }   
 
