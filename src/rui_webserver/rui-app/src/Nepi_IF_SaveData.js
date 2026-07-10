@@ -829,7 +829,9 @@ class NepiIFSaveData extends Component {
     const selectedDataProducts = this.getSelectedDataProducts()
     const diskUsage = this.getDiskUsageRate()
     const saveUtcTz = this.state.saveUtcTz
-
+    const show_all_data_options = (this.props.show_all_data_options !== undefined) ? this.props.show_all_data_options : true
+    const allSaveNamespace = (allNamespace != null) ? allNamespace: 'None'
+    const is_all_namespace = (saveNamespace === allSaveNamespace)
     const show_active_settings = this.state.show_active_settings
     const all_str = (isAllNamespace === true) ? 'ALL '  : ''
 
@@ -853,28 +855,32 @@ class NepiIFSaveData extends Component {
                                 onKeyDown= {this.onKeySaveDataRateValue} />
                         </Label>
 
+                        { ((show_all_data_options === true) && (is_all_namespace === true)) ?
                         <Label title={"Set Save Prefix " + all_str}>
                           <Input id="input_prefix" 
                               value={this.state.saveDataPrefix} 
                               onChange={this.onUpdateInputSaveDataPrefixValue} 
                               onKeyDown= {this.onKeySaveInputSaveDataPrefixValue} />
                         </Label>
+                        : null }
 
-
+                        { ((show_all_data_options === true) && (is_all_namespace === true)) ?
                         <Label title={"Set Save Subfolder " + all_str}>
                           <Input id="input_subfolder" 
                               value={this.state.saveDataSubfolder} 
                               onChange={this.onUpdateInputSaveDataSubfolderValue} 
                               onKeyDown= {this.onKeySaveInputSaveDataSubfolderValue} />
                         </Label>
+                        : null }
 
-
+                       { ((show_all_data_options === true) && (is_all_namespace === true)) ?
                         <Label title={"Use UTC Time " + all_str}>
                             <Toggle
                               checked={ (saveUtcTz) }
                               onClick={this.onChangeBoolUtcTzValue}
                             />
                           </Label>
+                       : null }
 
                   <div  hidden={isAllNamespace === true}>
                         <Label title={"Selected Message Topics"}>
@@ -982,12 +988,17 @@ class NepiIFSaveData extends Component {
 
 
  renderControlOptions() {
+    const {sendBoolMsg}  = this.props.ros
+    const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
-    
+    const status_msg = this.state.status_msg
+    const saving_disabled = (status_msg != null) ? status_msg.saving_disabled : true
+    const allow_enable = (this.props.allow_enable !== undefined) ? this.props.allow_enable : true
 
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
-
+    const allSaveNamespace = (allNamespace != null) ? allNamespace: 'None'
+    const is_all_namespace = (saveNamespace === allSaveNamespace)
     const { userRestricted} = this.props.ros
     const save_controls_restricted = userRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 
@@ -1007,10 +1018,35 @@ class NepiIFSaveData extends Component {
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+
+        <div style={{ display: 'flex' }}>
+
+          <div style={{ width: '30%' }}>
+            { ((is_all_namespace === false) ) ?
+            <Label title={"Enabled"}>
+                <Toggle
+                  disable={allow_enable === false}
+                  checked={ (saving_disabled === false) }
+                  onClick={() => sendBoolMsg(saveNamespace + '/saving_disable',!saving_disabled)}
+                />
+              </Label>
+            : null }
+
+          </div>
+
+          <div style={{ width: '70%' }}>
+            {}
+          </div>
+
+        </div>
+
         <div style={{ display: 'flex' }}>
 
           <div style={{ width: '65%' }}>
-            {this.renderSaveControls()}
+   
+          { ((is_all_namespace === true || saving_disabled === false)) ?
+            this.renderSaveControls()
+          : null }
           </div>
 
           <div style={{ width: '35%' }}>
