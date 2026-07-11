@@ -992,7 +992,7 @@ class NepiIFSaveData extends Component {
     const allNamespace = this.getAllNamespace()
     const saveNamespace = this.state.saveNamespace
     const status_msg = this.state.status_msg
-    const saving_disabled = (status_msg != null) ? status_msg.saving_disabled : true
+    const disabled = (status_msg != null) ? status_msg.disabled : true
     const allow_enable = (this.props.allow_enable !== undefined) ? this.props.allow_enable : true
 
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
@@ -1002,6 +1002,10 @@ class NepiIFSaveData extends Component {
     const { userRestricted} = this.props.ros
     const save_controls_restricted = userRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 
+    var disable_topic = '/disable'
+    if (is_all_namespace){
+      disable_topic = '/saving_disable'
+    }
     if (saveNamespace === 'None' || showControls === false || save_controls_restricted === true){
       return (
         <Columns>
@@ -1026,8 +1030,8 @@ class NepiIFSaveData extends Component {
             <Label title={"Enabled"}>
                 <Toggle
                   disable={allow_enable === false}
-                  checked={ (saving_disabled === false) }
-                  onClick={() => sendBoolMsg(saveNamespace + '/saving_disable',!saving_disabled)}
+                  checked={ (disabled === false) }
+                  onClick={() => sendBoolMsg(saveNamespace + disable_topic,!disabled)}
                 />
               </Label>
             : null }
@@ -1044,7 +1048,7 @@ class NepiIFSaveData extends Component {
 
           <div style={{ width: '65%' }}>
    
-          { ((is_all_namespace === true || saving_disabled === false)) ?
+          { ((is_all_namespace === true || disabled === false)) ?
             this.renderSaveControls()
           : null }
           </div>
