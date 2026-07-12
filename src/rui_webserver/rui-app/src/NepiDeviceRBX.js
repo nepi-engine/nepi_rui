@@ -95,8 +95,9 @@ class NepiDeviceRBX extends Component {
     this.updateInfoListener = this.updateInfoListener.bind(this)
     this.infoListener = this.infoListener.bind(this)
 
-    this.onTopicRBXSelected = this.onTopicRBXSelected.bind(this)
-    this.clearTopicRBXSelection = this.clearTopicRBXSelection.bind(this)
+    this.setDeviceSelection = this.setDeviceSelection.bind(this)
+    this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
+
     this.createTopicOptions = this.createTopicOptions.bind(this)
     this.createImageOptions = this.createImageOptions.bind(this)
     this.onEnterSetInputErrorBoundValue = this.onEnterSetInputErrorBoundValue.bind(this)
@@ -202,6 +203,7 @@ class NepiDeviceRBX extends Component {
 
   // Function for creating topic options for Select input
   createTopicOptions(topics) {
+    const namespace = this.state.currentRBXNamespace
     var items = []
     items.push(<Option>{"None"}</Option>)
     var device_name = ""
@@ -210,9 +212,13 @@ class NepiDeviceRBX extends Component {
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeared as an available option
-    const { currentRBXNamespace } = this.state
-    if ((currentRBXNamespace != null) && (!topics.includes(currentRBXNamespace))) {
-      this.clearTopicRBXSelection()
+    
+    // Check that our current selection hasn't disappeard as an available option
+    if ((namespace != null && namespace !== 'None')  && (topics.includes(namespace) === false)) {    
+        this.clearDeviceSelection()
+    }
+    if ((namespace == null || namespace === 'None') && topics.length > 0) {    
+        this.setDeviceSelection(topics[0])
     }
     return items
   }
@@ -239,7 +245,7 @@ class NepiDeviceRBX extends Component {
     return items
   }
 
-  clearTopicRBXSelection() {
+  clearDeviceSelection() {
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
     }
@@ -256,14 +262,14 @@ class NepiDeviceRBX extends Component {
   }
 
   // Handler for RBX device topic selection
-  onTopicRBXSelected(event) {
+  setDeviceSelection(event) {
     var rbx = event.nativeEvent.target.selectedIndex
     var text = event.nativeEvent.target[rbx].text
     var value = event.target.value
 
     // Handle the "None" option -- always index 0
     if (rbx === 0) {
-      this.clearTopicRBXSelection()
+      this.clearDeviceSelection()
       return
     }
 
@@ -326,7 +332,7 @@ class NepiDeviceRBX extends Component {
 
               <Label title={"Device"}>
                 <Select
-                  onChange={this.onTopicRBXSelected}
+                  onChange={this.setDeviceSelection}
                   value={namespace}
                 >
                   {this.createTopicOptions(Object.keys(rbxDevices))}

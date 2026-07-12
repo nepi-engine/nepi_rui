@@ -385,11 +385,11 @@ class NepiIFImageViewerSelector extends Component {
     const show_info_controls = (this.props.show_info_controls !== undefined) ? this.props.show_info_controls : show_image_controls === true
     const show_config_controls = (this.props.show_config_controls !== undefined) ? this.props.show_config_controls : show_image_controls === true
     const show_navpose_controls = (this.props.show_navpose_controls !== undefined) ? this.props.show_navpose_controls : show_image_controls === true
+    const show_render_controls = (this.props.show_render_controls !== undefined) ? this.props.show_render_controls : show_image_controls === true
     const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls : show_image_controls === true
 
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
-    const show_all_save_options = (this.props.show_all_save_options !== undefined) ? this.props.show_all_save_options : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
     const save_data_topic = this.props.save_data_topic
@@ -410,9 +410,9 @@ class NepiIFImageViewerSelector extends Component {
       show_info_controls={show_info_controls}
       show_config_controls={show_config_controls}
       show_navpose_controls={show_navpose_controls}
+      show_render_controls={show_render_controls}
       show_overlay_controls={show_overlay_controls}
       show_save_controls={show_save_controls}
-      show_all_save_options={show_all_save_options}
       show_all_config_options={show_all_config_options}
       show_reset_button={show_reset_button}
       show_browser_save_button={show_browser_save_button}

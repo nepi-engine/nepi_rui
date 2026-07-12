@@ -616,11 +616,11 @@ class NepiDeviceIDXControls extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-
+    const namespace = this.state.namespace
     const status_msg = this.state.status_msg
     const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
 
-    if (status_msg == null && data_product !== 'None'){
+    if (status_msg == null || data_product === 'None' || data_product === "None"){
       return (
         <Columns>
         <Column>
@@ -632,24 +632,64 @@ class NepiDeviceIDXControls extends Component {
 
     }
     else if (make_section === false){
-
+      const disabled = status_msg.disabled
       return (
 
-    <React.Fragment>
-              { this.renderControlData()}
-              { this.renderControlPanel()}
+          <React.Fragment>
 
 
-    </React.Fragment>
+                      <Columns>
+                      <Column >
+
+                        
+                      <Label title="Disabled">
+                            <Toggle
+                              checked={disabled === true}
+                              onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!disabled)}>
+                            </Toggle>
+                      </Label>
+
+                      </Column>
+                    <Column>
+
+                      </Column>
+                    </Columns>
+
+                    { disabled === false ? this.renderControlData() : null}
+                    { disabled === false ? this.renderControlPanel() : null}
+
+
+
+
+
+          </React.Fragment>
       )
     }
     else {
+      const disabled = status_msg.disabled
       return (
 
           <Section title={(this.props.title !== undefined) ? this.props.title : null}>
 
-              { this.renderControlData()}
-              { this.renderControlPanel()}
+                <Columns>
+                <Column >
+
+                  
+                <Label title="Disabled">
+                      <Toggle
+                        checked={disabled === true}
+                        onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!disabled)}>
+                      </Toggle>
+                </Label>
+
+                </Column>
+              <Column>
+
+                </Column>
+              </Columns>
+
+              { disabled === false ? this.renderControlData() : null}
+              { disabled === false ? this.renderControlPanel() : null}
 
 
         </Section>

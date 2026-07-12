@@ -84,11 +84,11 @@ class NepiDevicePTX extends Component {
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
-    if ((namespace !== null) && (namespace !== 'None') && (topics.includes(namespace) === false)) {
-      this.clearDeviceSelection()
+    if ((namespace != null && namespace !== 'None')  && (topics.includes(namespace) === false)) {    
+        this.clearDeviceSelection()
     }
-    if (namespace !== 'None' && (topics.indexOf(namespace) === -1)){
-      this.setState({namespace: 'None'})
+    if ((namespace == null || namespace === 'None') && topics.length > 0) {    
+        this.setDeviceSelection(topics[0])
     }
     return items
   }

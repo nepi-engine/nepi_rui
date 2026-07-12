@@ -390,7 +390,7 @@ class ROSConnectionStore {
       }
 
       if (this.ros != null ) {
-        update_time = (this.connectedToNepi === false) ? 3000 : NEPI_TIMEOUT_MSEC
+        update_time = (this.connectedToNepi === false) ? 500 : NEPI_TIMEOUT_MSEC
         if (this.connectedToNepi === true && this.watchdogNepiCounter >= this.watchdogNepiMax ) {
             this.connectedToNepi = false
             this.destroyROSConnection()

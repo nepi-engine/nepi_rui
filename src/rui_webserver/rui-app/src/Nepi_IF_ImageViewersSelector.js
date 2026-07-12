@@ -37,7 +37,7 @@ class NepiIFImageViewersSelector extends Component {
     this.state = {
 
       image_topics: ['None','None','None','None'],
-      num_windows: 0,
+      num_windows: 1,
 
       needs_update: false,
 
@@ -130,8 +130,7 @@ class NepiIFImageViewersSelector extends Component {
     const images_available = imageTopics.length > 0
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
     const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
-    const show_image_controls_option = ((this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1) && images_available === true)
-    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls === true && (num_windows === 1) : (num_windows === 1)
     
     const show_selectors_option =  images_available === true
     const custom_selection_options = (this.props.custom_selection_options !== undefined) ? this.props.custom_selection_options : []
@@ -183,14 +182,14 @@ class NepiIFImageViewersSelector extends Component {
 
 
 
-                      <div style={{ width: '10%' }} centered={"true"} hidden={show_image_controls_option === false}>
-
+                      <div style={{ width: '10%' }} centered={"true"} >
+{/* 
                         <Label title="Show Controls">
                           <Toggle
                             checked={show_image_controls===true}
                             onClick={() => onChangeSwitchStateValue.bind(this)("show_image_controls",show_image_controls)}>
                           </Toggle>
-                      </Label>
+                      </Label> */}
 
                     </div>
 
@@ -199,16 +198,16 @@ class NepiIFImageViewersSelector extends Component {
                         {}
                       </div>
 
-                      <div style={{ width: '10%' }} centered={"true"} hidden={show_selectors_option === false}>
+                      <div style={{ width: '10%' }} centered={"true"} >
 
 
-
+{/* 
                         <Label title="Show Selectors">
                           <Toggle
                             checked={show_selectors===true}
                             onClick={() => onChangeSwitchStateValue.bind(this)("show_selectors",show_selectors)}>
                           </Toggle>
-                      </Label>
+                      </Label> */}
 
                     </div>
 
@@ -246,10 +245,7 @@ class NepiIFImageViewersSelector extends Component {
     const {imageTopics} = this.props.ros
     const images_available = imageTopics.length > 0
 
-    var show_selector_buttons = false
-    if (this.state.num_windows === 1){
-      show_selector_buttons = true
-    }
+    const show_selector_buttons = false
 
 
 
@@ -284,13 +280,16 @@ class NepiIFImageViewersSelector extends Component {
 
 
     const auto_select_image = (this.props.auto_select_image !== undefined) ? this.props.auto_select_image : true
-    const show_image_controls_option = (this.props.show_image_controls_option !== undefined) ? this.props.show_image_controls_option : (num_windows === 1)
-    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls : (this.state.show_image_controls && show_image_controls_option)
+    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls  === true && (num_windows === 1): (num_windows === 1)
+    const show_info_controls = (this.props.show_info_controls !== undefined) ? this.props.show_info_controls === true && show_image_controls === true: show_image_controls === true
+    const show_config_controls = (this.props.show_config_controls !== undefined) ? this.props.show_config_controls === true && show_image_controls === true: show_image_controls === true
+    const show_navpose_controls = (this.props.show_navpose_controls !== undefined) ? this.props.show_navpose_controls === true && show_image_controls === true: show_image_controls === true
+    const show_render_controls = (this.props.show_render_controls !== undefined) ? this.props.show_render_controls === true && show_image_controls === true: show_image_controls === true
+    const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls === true && show_image_controls === true: show_image_controls === true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
-    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : (num_windows === 1)
-    const show_all_save_options = (this.props.show_all_save_options !== undefined) ? this.props.show_all_save_options : true
-    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : (num_windows === 1)
-    const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : (num_windows === 1)
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls === true && (num_windows === 1) : (num_windows === 1)
+    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options === true && (num_windows === 1) : (num_windows === 1)
+    const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button  === true && (num_windows === 1): (num_windows === 1)
     const allow_pan_zoom = (num_windows === 1)
 
     const streamingImageQuality = (num_windows > 1) ? 50 : 95
@@ -320,6 +319,11 @@ class NepiIFImageViewersSelector extends Component {
                           image_exclude_filters={image_exclude_filters}
                           image_include_filters={image_include_filters}
                           show_image_controls={show_image_controls}
+                          show_info_controls={show_info_controls}
+                          show_config_controls={show_config_controls}
+                          show_navpose_controls={show_navpose_controls}
+                          show_render_controls={show_render_controls}
+                          show_overlay_controls={show_overlay_controls}
                           show_selector={show_selectors}
                           show_selector_buttons={show_selector_buttons}
                           show_browser_save_button={show_browser_save_button}
@@ -332,7 +336,6 @@ class NepiIFImageViewersSelector extends Component {
                           auto_select_image={auto_select_image}
                           make_section={make_section}
                           show_save_controls={show_save_controls}
-                          show_all_save_options={show_all_save_options}
                           show_all_config_options={show_all_config_options}
                           show_reset_button={show_reset_button}
                         />
@@ -359,6 +362,11 @@ class NepiIFImageViewersSelector extends Component {
                               image_exclude_filters={image_exclude_filters}
                               image_include_filters={image_include_filters}
                               show_image_controls={show_image_controls}
+                              show_info_controls={show_info_controls}
+                              show_config_controls={show_config_controls}
+                              show_navpose_controls={show_navpose_controls}
+                              show_render_controls={show_render_controls}
+                              show_overlay_controls={show_overlay_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
                               show_browser_save_button={show_browser_save_button}
@@ -371,7 +379,6 @@ class NepiIFImageViewersSelector extends Component {
                               auto_select_image={auto_select_image}
                              make_section={make_section}
                             show_save_controls={show_save_controls}
-                            show_all_save_options={show_all_save_options}
                             show_all_config_options={show_all_config_options}
                             show_reset_button={show_reset_button}
                             />
@@ -401,6 +408,11 @@ class NepiIFImageViewersSelector extends Component {
                               image_exclude_filters={image_exclude_filters}
                               image_include_filters={image_include_filters}
                               show_image_controls={show_image_controls}
+                              show_info_controls={show_info_controls}
+                              show_config_controls={show_config_controls}
+                              show_navpose_controls={show_navpose_controls}
+                              show_render_controls={show_render_controls}
+                              show_overlay_controls={show_overlay_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
                               show_browser_save_button={show_browser_save_button}
@@ -413,7 +425,6 @@ class NepiIFImageViewersSelector extends Component {
                               auto_select_image={auto_select_image}
                               make_section={make_section}
                               show_save_controls={show_save_controls}
-                              show_all_save_options={show_all_save_options}
                               show_all_config_options={show_all_config_options}
                               show_reset_button={show_reset_button}
                             />
@@ -440,6 +451,11 @@ class NepiIFImageViewersSelector extends Component {
                               image_exclude_filters={image_exclude_filters}
                               image_include_filters={image_include_filters}
                               show_image_controls={show_image_controls}
+                              show_info_controls={show_info_controls}
+                              show_config_controls={show_config_controls}
+                              show_navpose_controls={show_navpose_controls}
+                              show_render_controls={show_render_controls}
+                              show_overlay_controls={show_overlay_controls}
                               show_selector={show_selectors}
                               show_selector_buttons={show_selector_buttons}
                               show_browser_save_button={show_browser_save_button}
@@ -452,7 +468,6 @@ class NepiIFImageViewersSelector extends Component {
                               auto_select_image={auto_select_image}
                              make_section={make_section}
                             show_save_controls={show_save_controls}
-                            show_all_save_options={show_all_save_options}
                             show_all_config_options={show_all_config_options}
                             show_reset_button={show_reset_button}
                             />
@@ -509,9 +524,6 @@ class NepiIFImageViewersSelector extends Component {
             : null }              
          
               
-                {(show_save_controls === true ) ?
-                 this.renderSaveData()
-              : null }
 
               {(show_save_controls === true ) ?
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>

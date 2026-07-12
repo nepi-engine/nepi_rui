@@ -97,6 +97,7 @@ class Nepi_IF_ImageViewer extends Component {
       has_status: false,
       show_config: false,
       show_info: false,
+      show_render: false,
       show_overlay: false,
       has_overlay: false,
       has_navpose: false,
@@ -991,13 +992,13 @@ class Nepi_IF_ImageViewer extends Component {
   renderRenderControls() {
 
     const namespace = this.state.image_topic
-    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+    const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
     const { imageCaps, sendTriggerMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
    
-    if (show_overlay_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
@@ -1623,7 +1624,6 @@ class Nepi_IF_ImageViewer extends Component {
 
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
-    const show_all_save_options = (this.props.show_all_save_options !== undefined) ? this.props.show_all_save_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
@@ -1647,31 +1647,19 @@ class Nepi_IF_ImageViewer extends Component {
     const show_info_controls = (this.props.show_info_controls !== undefined) ? this.props.show_info_controls && show_image_controls: show_image_controls
     const show_config_controls = (this.props.show_config_controls !== undefined) ? this.props.show_config_controls && show_image_controls: show_image_controls
     const show_navpose_controls = (this.props.show_navpose_controls !== undefined) ? this.props.show_navpose_controls && show_image_controls: show_image_controls
+    const show_render_controls = (this.props.show_render_controls !== undefined) ? this.props.show_render_controls && show_image_controls: show_image_controls
     const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls && show_image_controls: show_image_controls
 
     const show_info = this.state.show_info && (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
     const show_config = this.state.show_config && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
     const show_navpose = this.state.show_navpose  && (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
+    const show_render = this.state.show_render  && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
     const show_overlay = this.state.show_overlay  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
 
     return (
       
       <Columns>
       <Column>
-
-
-                            {(show_save_controls === true  && namespace !== 'None') ?
-                              <NepiIFSaveData
-                              saveNamespace={save_data_topic}
-                              make_section={false}
-                              show_all_save_options={show_all_save_options}
-                              show_topic_selector={show_topic_selector}
-                            />
-                          : null }
-
-                          {(show_save_controls === true  && namespace !== 'None') ?
-                            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                          : null }
 
                   
                   
@@ -1755,7 +1743,7 @@ class Nepi_IF_ImageViewer extends Component {
                               <NepiIFSaveData
                               saveNamespace={save_data_topic}
                               make_section={false}
-                              show_all_save_options={show_all_save_options}
+                              show_all_save_options={false}
                               show_topic_selector={show_topic_selector}
                             />
                           : null }
@@ -1774,7 +1762,7 @@ class Nepi_IF_ImageViewer extends Component {
                         <div style={{ width: '15%' }}>
 
                               { (show_config_controls === true ) ?
-                              <Label title="Show Image Config">
+                              <Label title="Image Config">
                                 <Toggle
                                   checked={this.state.show_config===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_config",this.state.show_config)}>
@@ -1782,14 +1770,14 @@ class Nepi_IF_ImageViewer extends Component {
                             </Label>
                             : null }
                         </div>
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '5%' }}>
                         </div>
 
             
                         <div style={{ width: '15%' }} >
 
                            { (show_info_controls === true ) ?
-                            <Label title="Show Image Info">
+                            <Label title="Image Info">
                                 <Toggle
                                   checked={this.state.show_info===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_info",this.state.show_info)}>
@@ -1797,12 +1785,12 @@ class Nepi_IF_ImageViewer extends Component {
                               </Label>
                               : null }
                         </div>
-                        <div style={{ width: '10%' }}>
+                        <div style={{ width: '5%' }}>
                         </div>
 
                         <div style={{ width: '15%' }} >
                             { (show_navpose_controls === true ) ?
-                            <Label title="Show NavPose">
+                            <Label title="NavPose">
                                 <Toggle
                                   checked={this.state.show_navpose===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
@@ -1810,13 +1798,30 @@ class Nepi_IF_ImageViewer extends Component {
                               </Label>
                               : null }
                         </div>
-                        <div style={{ width: '10%' }}>
+
+                        <div style={{ width: '5%' }}>
+                        </div>
+
+                       <div style={{ width: '15%' }} >
+                              { (show_render_controls === true ) ?
+                              <Label title="Render">
+                                <Toggle
+                                  checked={this.state.show_render===true}
+                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_render",this.state.show_render)}>
+                                </Toggle>
+                            </Label>
+                            : null }
+                        </div>
+
+                      </div>
+
+                        <div style={{ width: '5%' }}>
                         </div>
 
 
                        <div style={{ width: '15%' }} >
                               { (show_overlay_controls === true ) ?
-                              <Label title="Show Overlays">
+                              <Label title="Overlays">
                                 <Toggle
                                   checked={this.state.show_overlay===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_overlay",this.state.show_overlay)}>
@@ -1826,10 +1831,7 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
 
-                        <div style={{ width: '10%' }}>
-                        </div>
 
-                  </div>
 
 
 
@@ -1891,8 +1893,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                                 <div style={{ width: '40%' }}>
                                   {}
-                                  {/* <Label title={"ZOOM PAN ROTATE"} />
-                                  {this.renderRenderControls()} */}
+
                                 </div>
                 
                           </div>
@@ -1949,6 +1950,46 @@ class Nepi_IF_ImageViewer extends Component {
                       {this.renderNavPoseSection()}
 
                     </div>
+
+
+
+                  <div align={"left"} textAlign={"left"} hidden={(show_render !== true || namespace === 'None')}>
+
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                          <div style={{ display: 'flex' }}>
+                                <div style={{ width: '40%' }}>
+
+                                  <Label title={"ZOOM PAN ROTATE"} />
+                                  {this.renderRenderControls()}
+
+
+                                </div>
+
+                                <div style={{ width: '20%' }}>
+                                  {}
+                                </div>
+
+                                <div style={{ width: '40%' }}>
+                                  {}
+                
+                                </div>
+                              </div>
+
+                      </div>
+
+
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
+
+                    {(show_save_controls === true && namespace !== 'None') ?
+                    <NepiIFConfig
+                        namespace={namespace}
+                        show_all_config_options={false}
+                        title={"Nepi_IF_Config"}
+                    />
+                    : null }
+
+
 
         </div>
 
