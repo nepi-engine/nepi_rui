@@ -43,11 +43,14 @@ class NepiIFConfig extends Component {
 
   supports_all_config(namespace){
     var supports = false
+    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : false
     const save_all_config_ids = this.state.save_all_config_ids
-    for (var i = 0; i < save_all_config_ids.length; i++) {
-      if (namespace.indexOf('/' + save_all_config_ids[i]) !== -1) {
-        supports = true
-        break
+    if (show_all_config_options === true){
+      for (var i = 0; i < save_all_config_ids.length; i++) {
+        if (namespace.indexOf('/' + save_all_config_ids[i]) !== -1) {
+          supports = true
+          break
+        }
       }
     }
     return supports
@@ -86,7 +89,7 @@ class NepiIFConfig extends Component {
     }
 
     else {
-    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : this.supports_all_config(namespace)
+    const show_all_config_options =  this.supports_all_config(namespace)
     const all_config_restricted = (this.props.ros.userRestricted.indexOf('Sav-All') !== -1)
         return (
 
