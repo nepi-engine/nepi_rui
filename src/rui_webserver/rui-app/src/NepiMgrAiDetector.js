@@ -363,7 +363,7 @@ class AiDetectorMgr extends Component {
     const remove_imgs_namespace = detector_namespace + "/remove_img_topics"
     const filter_str_list = this.state.img_filter_str_list
     const img_options = filterStrList(imageTopics,filter_str_list)
-    const det_img_topics = this.state.status_msg.selected_images
+    const det_img_topics = this.state.status_msg.selected_sources
     const img_topic = event.target.value
     //this.setState({selected_display_topic: img_topic})
 
@@ -487,10 +487,10 @@ renderDetectorSettings() {
       const max_img_rate = status_msg.max_img_rate_hz
       const use_last_image = status_msg.use_last_image
 
-      const det_img_topics = status_msg.selected_images
+      const det_img_topics = status_msg.selected_sources
 
       const img_selected = status_msg.image_selected
-      const img_connected = status_msg.image_connected
+      const img_connected = status_msg.source_connected
 
       const image_receive_rate = round(status_msg.avg_image_receive_rate, 3)
 
