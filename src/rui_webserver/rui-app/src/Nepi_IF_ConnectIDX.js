@@ -25,6 +25,7 @@ import Section from "./Section"
 import Select, { Option } from "./Select"
 import { Columns, Column } from "./Columns"
 import { SliderAdjustment } from "./AdjustmentWidgets"
+import RangeAdjustment from "./RangeAdjustment"
 import BooleanIndicator from "./BooleanIndicator"
 import Label from "./Label"
 import Input from "./Input"
@@ -446,6 +447,8 @@ class NepiIFConnectIDX extends Component {
     const rangeWindow = status_msg.range_window_ratios
     const startRange = (rangeWindow !== undefined && rangeWindow !== null) ? rangeWindow.start_range : 0
     const stopRange = (rangeWindow !== undefined && rangeWindow !== null) ? rangeWindow.stop_range : 1
+    const minRangeM = status_msg.min_range_m
+    const maxRangeM = status_msg.max_range_m
 
     // Edit buffers for the editable command inputs.
     const widthDeg = this.state.widthDeg
@@ -550,28 +553,15 @@ class NepiIFConnectIDX extends Component {
 
         <div hidden={(has_ranging === false)}>
 
-          <SliderAdjustment
-            title={"Range Start"}
-            msgType={"std_msgs/Float32"}
-            adjustment={startRange}
-            topic={namespace + "/set_range_window_start"}
-            scaled={0.01}
-            min={0}
-            max={100}
-            tooltip={"Range window start as a percentage of max range"}
-            unit={"%"}
-          />
-
-          <SliderAdjustment
-            title={"Range Stop"}
-            msgType={"std_msgs/Float32"}
-            adjustment={stopRange}
-            topic={namespace + "/set_range_window_stop"}
-            scaled={0.01}
-            min={0}
-            max={100}
-            tooltip={"Range window stop as a percentage of max range"}
-            unit={"%"}
+          <RangeAdjustment
+            title={"Range Clip"}
+            min={startRange}
+            max={stopRange}
+            min_limit_m={minRangeM}
+            max_limit_m={maxRangeM}
+            topic={namespace + "/set_range_window"}
+            tooltip={"Adjustable range window (start and stop as a ratio of max range)"}
+            noTextBox={true}
           />
 
         </div>
