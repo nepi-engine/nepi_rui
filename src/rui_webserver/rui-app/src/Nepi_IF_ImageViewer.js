@@ -136,6 +136,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.mouseDownEvent = this.mouseDownEvent.bind(this)
     this.mouseDragEvent = this.mouseDragEvent.bind(this)
     this.mouseUpEvent = this.mouseUpEvent.bind(this)
+    this.mouseScrollEvent = this.mouseScrollEvent.bind(this)
 
     this.sendImageMouseEventMsg = this.sendImageMouseEventMsg.bind(this)
 
@@ -350,6 +351,10 @@ class Nepi_IF_ImageViewer extends Component {
           this.canvas.addEventListener('mouseup', (e) => {
           this.mouseUpEvent(this.canvas, e)
           })
+
+          this.canvas.addEventListener('wheel', (e) => {
+          this.mouseScrollEvent(this.canvas, e)
+          }, { passive: false })
       }
 
     //this.updateImageSource()
@@ -651,7 +656,37 @@ class Nepi_IF_ImageViewer extends Component {
       }
   }
 
-  sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag_start, mouse_drag_stop , mouse_window, status_msg ) {
+  mouseScrollEvent(canvas, event){
+      var namespace = (this.props.mouse_event_topic !== undefined && this.props.mouse_event_topic != null) ? this.props.mouse_event_topic : this.state.image_topic + '/mouse_event'
+      if (namespace === 'None Available') {
+          namespace = 'None'
+        }
+      const allow_pan_zoom = (this.props.allow_pan_zoom !== undefined) ? this.props.allow_pan_zoom : true
+      if (allow_pan_zoom !== true || namespace === 'None' || this.state.status_msg == null){
+          return
+      }
+      // Keep the wheel from scrolling the page while zooming the pointcloud
+      event.preventDefault()
+      const scroll_namespace = (this.props.mouse_scroll_topic !== undefined && this.props.mouse_scroll_topic != null) ? this.props.mouse_scroll_topic : namespace
+      const [x,y] = this.getPixelLoc(canvas, event)
+      const [r,g,b,a] = this.getPixelColor(canvas, x, y)
+      const mouse_scroll = {x:x, y:y, r:r, g:g, b:b, a:a}
+      // Normalize the wheel to a unit step: scroll up (deltaY < 0) => zoom in (+1)
+      const scroll_amount = (event.deltaY < 0) ? 1.0 : -1.0
+      this.sendImageMouseEventMsg(scroll_namespace,
+                                          this.state.image_topic,
+                                          this.state.image_index,
+                                          null,
+                                          null,
+                                          null,
+                                          null,
+                                          this.state.status_msg,
+                                          mouse_scroll,
+                                          scroll_amount
+                                          )
+  }
+
+  sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag_start, mouse_drag_stop , mouse_window, status_msg, mouse_scroll = null, scroll_amount = 0 ) {
     if (mouse_click !== null){
       this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )
       this.setState({click_count: 0})
@@ -661,6 +696,9 @@ class Nepi_IF_ImageViewer extends Component {
     }
     else if (mouse_window !== null){
       this.props.ros.sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg )
+    }
+    else if (mouse_scroll !== null){
+      this.props.ros.sendMouseScrollEventMsg(namespace, image_topic, image_index, mouse_scroll, scroll_amount, status_msg )
     }
 
   }
@@ -997,7 +1035,7 @@ class Nepi_IF_ImageViewer extends Component {
     const { imageCaps, sendTriggerMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
-   
+
     if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
@@ -1210,8 +1248,7 @@ class Nepi_IF_ImageViewer extends Component {
           </div>
 
 
-
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
           <ButtonMenu>
@@ -1620,7 +1657,22 @@ class Nepi_IF_ImageViewer extends Component {
     if (namespace === 'None Available') {
         namespace = 'None'
       }
-    const { sendTriggerMsg } = this.props.ros
+    const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+
+    // 3D render controls (pointcloud viewers only): shown in the header next to the name
+    // only when the selected data product is a pointcloud. Prefer the explicit data_product
+    // prop (the selected Data Product) when provided; otherwise fall back to the live
+    // ImageStatus.data_source_description ('pointcloud' for the pointcloud image node).
+    const render_ns = this.state.image_topic
+    const render_status = this.state.status_msg
+    const data_product = (this.props.data_product !== undefined && this.props.data_product !== null) ? String(this.props.data_product).toLowerCase() : null
+    const is_pointcloud = (data_product !== null)
+        ? (data_product.indexOf('pointcloud') !== -1)
+        : (render_status !== null && render_status !== undefined
+            && render_status.data_source_description !== undefined
+            && String(render_status.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
+    const show_3d_controls = (is_pointcloud === true && this.state.status_msg !== null && render_ns !== 'None' && render_ns !== null)
+    const render_3d_controls_enabled = (render_status !== null && render_status !== undefined && render_status.render_3d_controls_enabled !== undefined) ? render_status.render_3d_controls_enabled : false
 
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
@@ -1631,8 +1683,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
     const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
-    const title_width = (show_browser_save_button === true) ? '80%' : '90%'
-    
+
 
     const single_slider_topic = (this.props.single_slider_topic !== undefined) ? this.props.single_slider_topic : null
     const single_slider_value = (this.props.single_slider_value !== undefined) ? this.props.single_slider_value : 0.5
@@ -1663,14 +1714,40 @@ class Nepi_IF_ImageViewer extends Component {
 
                   
                   
-                  <div style={{ display: 'flex' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
 
-                        <div style={{ width: title_width, align: 'left' }}>
+                        <div style={{ align: 'left' }}>
                           <Label title={title} />
                         </div>
 
 
-                        <div style={{ width: '10%' }} hidden={(show_reset_button === false  || namespace === 'None')}>
+                        {(show_3d_controls === true) ?
+                        <div style={{ display: 'flex', alignItems: 'center', marginLeft: Styles.vars.spacing.regular }}>
+
+                                <Label title={"3D Controls"}>
+                                  <Toggle
+                                    checked={render_3d_controls_enabled===true}
+                                    onClick={() => sendBoolMsg(render_ns + "/render_3d_controls",!render_3d_controls_enabled)}>
+                                  </Toggle>
+                                </Label>
+
+                                {(render_3d_controls_enabled === true) ?
+                                <ButtonMenu>
+                                  <Button onClick={() => sendTriggerMsg( render_ns + "/reset_render_3d_controls")}>{"Reset Orientation"}</Button>
+                                </ButtonMenu>
+                                : null }
+
+                                {(render_3d_controls_enabled === true) ?
+                                <ButtonMenu>
+                                  <Button onClick={() => sendTriggerMsg( render_ns + "/reset_render_3d_position")}>{"Reset Position"}</Button>
+                                </ButtonMenu>
+                                : null }
+
+                        </div>
+                        : null }
+
+
+                        <div style={{ marginLeft: 'auto' }} hidden={(show_reset_button === false  || namespace === 'None')}>
 
 
                                 <ButtonMenu>
@@ -1681,7 +1758,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
                         {(show_browser_save_button === true) ?
-                        <div style={{ width: '10%' }} hidden={(namespace === 'None')}>
+                        <div style={{ marginLeft: Styles.vars.spacing.regular }} hidden={(namespace === 'None')}>
 
 
                                 <ButtonMenu>

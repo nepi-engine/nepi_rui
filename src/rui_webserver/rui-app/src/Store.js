@@ -2920,9 +2920,34 @@ sendSaveConfigTrigger(namespace) {
           drag_event: false, 
           drag_start: {x:0,y:0,r:0,g:0,b:0,a:0},
           drag_stop: {x:0,y:0,r:0,g:0,b:0,a:0},
-          window_event: true, 
+          window_event: true,
           window: mouse_window,
 
+          image_status_msg: status_msg
+      },
+      noPrefix: true
+
+    })
+  }
+
+  sendMouseScrollEventMsg(namespace, image_topic, image_index, mouse_scroll, scroll_amount, status_msg ) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImageMouseEvent",
+      data: {
+          image_topic: image_topic,
+          image_index: image_index,
+          click_event: false,
+          click_count: 0,
+          click: {x:0,y:0,r:0,g:0,b:0,a:0},
+          drag_event: false,
+          drag_start: {x:0,y:0,r:0,g:0,b:0,a:0},
+          drag_stop: {x:0,y:0,r:0,g:0,b:0,a:0},
+          window_event: false,
+          window: {x_min:0, x_max:0, y_min:0, y_max:0},
+          scroll_event: true,
+          scroll: mouse_scroll,
+          scroll_amount: scroll_amount,
           image_status_msg: status_msg
       },
       noPrefix: true

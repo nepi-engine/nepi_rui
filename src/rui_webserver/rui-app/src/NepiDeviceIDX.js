@@ -262,6 +262,7 @@ class NepiDeviceIDX extends Component {
             <NepiIFImageViewer
               image_topic={image_topic}
               title={image_text}
+              data_product={this.state.data_product}
               hideQualitySelector={false}
               show_topic_selector={false}
               show_all_config_options={false}
