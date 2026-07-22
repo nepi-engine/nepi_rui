@@ -2794,6 +2794,19 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  sendMotorControlMsg(namespace, motor_ind, speed_ratio) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/MotorControl",
+      data: {
+        motor_ind: motor_ind,
+        speed_ratio: speed_ratio
+      },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
   sendImagePixelMsg(namespace,x,y,r,g,b,a) {
     this.publishMessage({
       name: namespace,

@@ -184,7 +184,7 @@ class SliderAdjustment extends Component {
     reverse: PropTypes.Bool
   }
   
-  defaultProps = {
+  static defaultProps = {
     step: 1,
     markSteps: false,
     invisibleSlider: false,
