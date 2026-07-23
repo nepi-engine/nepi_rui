@@ -49,7 +49,7 @@ function round(value, decimals = 0) {
 @observer
 
 
-class AiDetectorMgr extends Component {
+class DetectorMgr extends Component {
   detector_info = []
   constructor(props) {
     super(props)
@@ -61,13 +61,15 @@ class AiDetectorMgr extends Component {
 
 
       status_msg: null,
+      process_status_msg: null,
 
 
-      selected_detector: "None",
-      last_selected_detector: "None",
+      selected_process: "None",
+      detector_ind: 0,
+      last_selected_process: "None",
 
-      img_list_viewable: false,
-      img_filter_str_list: ['detection_image','targeting_image','alert_image','tracking_image'],
+      source_list_detector_viewable: false,
+      source_filter_str_list: ['detections_image','targeting_image','alert_image','tracking_image'],
 
 
       selected_display_topic: "None",
@@ -75,7 +77,7 @@ class AiDetectorMgr extends Component {
 
       classes_list_viewable: false,
       availableClassesList: [],
-      selectedClassesList:[],
+      selected_classes:[],
 
       showSettingsControl: this.props.showSettingsControl ? this.props.showSettingsControl : false,      
       showSettings: false,
@@ -111,7 +113,7 @@ class AiDetectorMgr extends Component {
     this.onDisplayImgSelected = this.onDisplayImgSelected.bind(this)
     this.getSaveNamespace = this.getSaveNamespace.bind(this)
 
-    this.renderAiDetector = this.renderAiDetector.bind(this)
+    this.renderDetector = this.renderDetector.bind(this)
     this.renderDetectorSettings = this.renderDetectorSettings.bind(this)
 
   }
@@ -130,6 +132,7 @@ class AiDetectorMgr extends Component {
     if (this.state.connectedToNepi !== connectedToNepi){
       this.setState({connectedToNepi: connectedToNepi,
                     status_msg: null,
+                    process_status_msg: null,
                     selected_model: 'None'})
     }
     if (this.state.connectedToAiModelsMgr !== connectedToAiModelsMgr )
@@ -151,12 +154,13 @@ class AiDetectorMgr extends Component {
 
   // Callback for handling ROS Status messages
   statusListener(message) {
-    const sel_detector = this.state.selected_detector
-    const got_detector = message.namespace
+    const sel_detector = this.state.selected_process
+    const got_detector = message.process_status.namespace
 
     if (sel_detector === got_detector){
       this.setState({
       status_msg: message,
+      process_status_msg: message.process_status,
       connected: true
       })
     }
@@ -170,6 +174,7 @@ class AiDetectorMgr extends Component {
       this.state.statusListener.unsubscribe()
       this.setState({
         status_msg: null,
+        process_status_msg: null,
         connected: false,
         statusListener: null,
         selected_display_topic: "None",
@@ -177,13 +182,15 @@ class AiDetectorMgr extends Component {
     })
     }
     const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
-    const selected_detector = this.state.selected_detector
-    const detector_ind = ai_models_namespaces.indexOf(selected_detector)
+    const selected_process = this.state.selected_process
+    const check_process = this.state.selected_process.replace('/detections','')
+    const detector_ind = ai_models_namespaces.indexOf(check_process)
+    this.setState({detector_ind: detector_ind})
     if (detector_ind !== -1){
 
       var statusListener = this.props.ros.setupStatusListener(
-        selected_detector + '/status',
-        "nepi_interfaces/AiDetectorStatus",
+        selected_process + '/status',
+        "nepi_interfaces/DetectorStatus",
         this.statusListener
       )
       this.setState({ 
@@ -199,12 +206,12 @@ class AiDetectorMgr extends Component {
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
     if (this.state.needs_update === true){
-      const selected_detector = this.state.selected_detector
-      const last_detector = this.state.last_selected_detector
+      const selected_process = this.state.selected_process
+      const last_detector = this.state.last_selected_process
 
-      if (last_detector !== selected_detector) {
+      if (last_detector !== selected_process) {
           this.setState({      
-            last_selected_detector: selected_detector
+            last_selected_process: selected_process
           })  
           this.updateStatusListeners()
 
@@ -222,6 +229,7 @@ class AiDetectorMgr extends Component {
     }
       this.setState({
         status_msg: null,
+        process_status_msg: null,
         connected: false,
         statusListener: null,
         selected_display_topic: "None",
@@ -236,7 +244,7 @@ class AiDetectorMgr extends Component {
     const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
     const ai_models_display_names = this.props.ros.ai_models_running_name_list
     const ai_models_types = this.props.ros.ai_models_running_type_list
-    const selected_detector = this.state.selected_detector
+    const selected_process = this.state.selected_process
     var items = []
     var check_type = 'detection'
     var type = 'Unknown'
@@ -249,17 +257,17 @@ class AiDetectorMgr extends Component {
           type = ai_models_types[i]
           if (type === check_type ){
             //items.push(<Option value={ai_models_namespaces[i]}>{ai_models_names[i]}</Option>)
-            items.push(<Option value={ai_models_namespaces[i]}>{ai_models_display_names[i]}</Option>)
+            items.push(<Option value={ai_models_namespaces[i] + '/detections'}>{ai_models_display_names[i]}</Option>)
           }
       }
     }
 
-    if ( ai_models_namespaces.indexOf(selected_detector) === -1){
+    if ( ai_models_namespaces.indexOf(selected_process.replace('/detections','')) === -1){
       if (ai_models_namespaces.length > 0){
-        this.setState({selected_detector: ai_models_namespaces[0]})
+        this.setState({selected_process: ai_models_namespaces[0] + '/detections'})
       }
-      else if (selected_detector !== 'None') {
-        this.setState({selected_detector: 'None'})
+      else if (selected_process !== 'None') {
+        this.setState({selected_process: 'None'})
       }
     }
     return items
@@ -267,19 +275,20 @@ class AiDetectorMgr extends Component {
 
   onDetectorSelected(event){
     const detector = event.target.value
-    this.setState({selected_detector: detector})
+    this.setState({selected_process: detector})
     this.setState({needs_update: true})
   }
 
-  renderAiDetector() {
+  renderDetector() {
 
     const detector_options = this.getDetectorOptions()
 
-    const selected_detector = this.state.selected_detector
+    const selected_process = this.state.selected_process
 
     const status_msg = this.state.status_msg
-    const detector_namespace = (status_msg == null) ? "None" : status_msg.namespace
-    const connected = (detector_namespace === selected_detector)? this.state.connected : false
+    const process_status_msg = this.state.process_status_msg
+    const process_namespace = (status_msg == null) ? "None" : process_status_msg.namespace
+    const connected = (process_namespace === selected_process)? this.state.connected : false
 
 
 
@@ -297,14 +306,14 @@ class AiDetectorMgr extends Component {
 
              <Label title="Select Detector">
                   <Select id="DetectorSelect" onChange={this.onDetectorSelected} 
-                      value={selected_detector}
+                      value={selected_process}
                       disabled={false}>
                     {detector_options}
                   </Select>
               </Label>
     
 
-              <div hidden={((status_msg != null) || selected_detector === 'None')}>
+              <div hidden={((status_msg != null) || selected_process === 'None')}>
 
                   <pre style={{ height: "50px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
                   {"Loading..."}
@@ -332,14 +341,14 @@ class AiDetectorMgr extends Component {
 
   // Function for creating image topic options.
   createImageTopicsOptions() {
-    const filter_str_list = this.state.img_filter_str_list
+    const source_filter_str_list = this.state.source_filter_str_list
     const { imageTopics } = this.props.ros
-    const img_options = filterStrList(imageTopics,filter_str_list)
+    const img_options = filterStrList(imageTopics,source_filter_str_list)
     var imageTopicShortnames = createMenuFirstLastNames(img_options)
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     items.push(<Option value={'All'}>{'All'}</Option>)
-    const sel_det = this.state.selected_detector
+    const sel_det = this.state.selected_process
     for (var i = 0; i < img_options.length; i++) {
       if (img_options[i].indexOf(sel_det) === -1){
        items.push(<Option value={img_options[i]}>{imageTopicShortnames[i]}</Option>)
@@ -356,28 +365,28 @@ class AiDetectorMgr extends Component {
 
   onImagesTopicSelected(event){
     const {imageTopics, sendStringMsg, sendStringArrayMsg} = this.props.ros
-    const detector_namespace = this.state.selected_detector
-    const add_img_namespace = detector_namespace + "/add_img_topic"
-    const add_imgs_namespace = detector_namespace + "/add_img_topics"
-    const remove_img_namespace = detector_namespace + "/remove_img_topic"
-    const remove_imgs_namespace = detector_namespace + "/remove_img_topics"
-    const filter_str_list = this.state.img_filter_str_list
-    const img_options = filterStrList(imageTopics,filter_str_list)
-    const det_img_topics = this.state.status_msg.selected_sources
-    const img_topic = event.target.value
-    //this.setState({selected_display_topic: img_topic})
+    const process_namespace = this.state.selected_process
+    const add_img_namespace = process_namespace + "/add_source_topic"
+    const add_imgs_namespace = process_namespace + "/add_source_topics"
+    const remove_img_namespace = process_namespace + "/remove_source_topic"
+    const remove_imgs_namespace = process_namespace + "/remove_source_topics"
+    const source_filter_str_list = this.state.source_filter_str_list
+    const img_options = filterStrList(imageTopics,source_filter_str_list)
+    const selected_sources = this.state.process_status_msg.selected_sources
+    const source_topic = event.target.value
+    //this.setState({selected_display_topic: source_topic})
 
-    if (img_topic === "None"){
+    if (source_topic === "None"){
         sendStringArrayMsg(remove_imgs_namespace,img_options)
     }
-    else if (img_topic === "All"){
+    else if (source_topic === "All"){
         sendStringArrayMsg(add_imgs_namespace,img_options)
     }
-    else if (det_img_topics.indexOf(img_topic) === -1){
-      sendStringMsg(add_img_namespace,img_topic)
+    else if (selected_sources.indexOf(source_topic) === -1){
+      sendStringMsg(add_img_namespace,source_topic)
     }
     else {
-      sendStringMsg(remove_img_namespace,img_topic)
+      sendStringMsg(remove_img_namespace,source_topic)
     }
   }
 
@@ -387,12 +396,12 @@ class AiDetectorMgr extends Component {
 
     var items = []
     items.push(<Option>{"None"}</Option>)
-
-    const selected_detector = this.state.selected_detector
     const status_msg = this.state.status_msg
     if (status_msg != null){
-      const detector_namespace = status_msg.namespace 
-      if (selected_detector === detector_namespace){
+      const selected_process = this.state.selected_process
+      const process_status_msg = this.state.process_status_msg
+      const process_namespace = process_status_msg.namespace 
+      if (selected_process === process_namespace){
         items.push(<Option>{"All"}</Option>)
         if (status_msg.available_classes.length > 0 ){
           for (var i = 0; i < status_msg.available_classes.length; i++) {
@@ -416,25 +425,27 @@ class AiDetectorMgr extends Component {
     onToggleClassSelection(event){
       const {sendTriggerMsg, sendStringMsg} = this.props.ros
 
-      const selected_detector = this.state.selected_detector
-      const status_msg = this.state.status_msg
-      if (status_msg != null){
-        const detector_namespace = status_msg.namespace 
-        if (selected_detector === detector_namespace){
+    const status_msg = this.state.status_msg
+    
+    if (status_msg != null){
+      const selected_process = this.state.selected_process
+      const process_status_msg = this.state.process_status_msg
+      const process_namespace = process_status_msg.namespace 
+        if (selected_process === process_namespace){
           const classSelection = event.target.value
-          const selectedClassesList = status_msg.selected_classes
-          const addAllNamespace = detector_namespace + "/add_all_classes"
-          const removeAllNamespace = detector_namespace + "/remove_all_classes"
-          const addNamespace = detector_namespace + "/add_class"
-          const removeNamespace = detector_namespace + "/remove_class"
-          if (detector_namespace){
+          const selected_classes = status_msg.selected_classes
+          const addAllNamespace = process_namespace + "/add_all_classes"
+          const removeAllNamespace = process_namespace + "/remove_all_classes"
+          const addNamespace = process_namespace + "/add_class"
+          const removeNamespace = process_namespace + "/remove_class"
+          if (process_namespace){
             if (classSelection === "None"){
                 sendTriggerMsg(removeAllNamespace)
             }
             else if (classSelection === "All"){
               sendTriggerMsg(addAllNamespace)
           }
-            else if (selectedClassesList.indexOf(classSelection) !== -1){
+            else if (selected_classes.indexOf(classSelection) !== -1){
               sendStringMsg(removeNamespace,classSelection)
             }
             else {
@@ -450,65 +461,61 @@ renderDetectorSettings() {
   const { sendBoolMsg } = this.props.ros
 
 
-  const sel_img = 'Unselected' //this.state.selected_display_topic
+  const selected_image_topic = 'Unselected' //this.state.selected_display_topic
 
   const classOptions = this.getClassOptions()
 
-  const selected_detector = this.state.selected_detector
   const status_msg = this.state.status_msg
   if (status_msg != null){
-    const detector_namespace = status_msg.namespace
-    if (selected_detector === detector_namespace){
+    const selected_process = this.state.selected_process
+    const process_status_msg = this.state.process_status_msg
+    const process_namespace = process_status_msg.namespace
+    if (selected_process === process_namespace){
       
 
 
 
 
-
-
-      const selectedClassesList = status_msg.selected_classes
-      const classes_selected = (selectedClassesList.length > 0)
-
-      const enabled = status_msg.enabled
-      const running = status_msg.running
-      const detecting = status_msg.state
-      const detector_state = status_msg.msg_str
+      const enabled = process_status_msg.enabled
+      const running = process_status_msg.running
+      const processing = process_status_msg.state
+      const msg_str = process_status_msg.msg_str
 
 
 
-      const pub_image_enabled = status_msg.pub_image_enabled
-      const overlay_labels = status_msg.overlay_labels
-      const overlay_range_bearing = status_msg.overlay_range_bearing
-      const overlay_detector_name = status_msg.overlay_clf_name
-      const overlay_img_name = status_msg.overlay_img_name
+    
 
-      const threshold = status_msg.threshold_filter
-      const max_det_rate = status_msg.max_proc_rate_hz 
-      const max_img_rate = status_msg.max_img_rate_hz
-      const use_last_image = status_msg.use_last_image
 
-      const det_img_topics = status_msg.selected_sources
+      const max_process_rate_hz = process_status_msg.max_process_rate_hz 
+      const max_image_pub_rate_hz = process_status_msg.max_image_pub_rate_hz
 
-      const img_selected = status_msg.image_selected
-      const img_connected = status_msg.source_connected
+      const imaging_enabled = process_status_msg.imaging_enabled
+      const use_last_image = process_status_msg.use_last_image
 
-      const image_receive_rate = round(status_msg.avg_image_receive_rate, 3)
+      const selected_sources = process_status_msg.selected_sources
 
-      const image_process_time = round(status_msg.avg_image_process_time, 3)
+      const img_selected = process_status_msg.source_selected
+      const img_connected = process_status_msg.source_connected
 
-      const image_process_latency = round(status_msg.avg_image_process_latency, 3)
-      const image_process_rate = round(status_msg.avg_image_process_rate, 3)
+      const avg_source_latency = round(process_status_msg.avg_source_latency, 3)
+      const avg_source_rate = round(process_status_msg.avg_source_rate, 3)
 
-      const detect_process_time = round(status_msg.avg_detect_process_time, 3)
+      const avg_preprocess_latency = round(process_status_msg.avg_preprocess_latency, 3)
+      const avg_preprocess_rate = round(process_status_msg.avg_preprocess_rate, 3)
 
-      const detect_process_latency = round(status_msg.avg_detect_process_latency, 3)
-      const detect_process_rate = round(status_msg.avg_detect_process_rate, 3)
+      const avg_process_latency = round(process_status_msg.avg_process_latency, 3)
+      const avg_process_rate = round(process_status_msg.avg_process_rate, 3)
 
-      const max_detect_rate = round(status_msg.max_detect_rate, 3)
+      const max_process_rate = round(process_status_msg.max_process_rate, 3)
 
-      const save_config_enabled = status_msg.save_config_enabled
 
       const img_options = this.createImageTopicsOptions()
+
+      //////////////////////////
+      // Custom Process Controls
+      const selected_classes = status_msg.selected_classes
+      const classes_selected = (selected_classes.length > 0)
+      const threshold = status_msg.threshold
 
       return (
       <Columns>
@@ -536,9 +543,9 @@ renderDetectorSettings() {
             textAlign: "center",
             padding: `${Styles.vars.spacing.xs}`,
             color: Styles.vars.colors.black,
-            backgroundColor: (image.props.value === sel_img) ?
+            backgroundColor: (image.props.value === selected_image_topic) ?
               Styles.vars.colors.green :
-              (det_img_topics.indexOf(image.props.value) !== -1 ) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+              (selected_sources.indexOf(image.props.value) !== -1 ) ? Styles.vars.colors.blue : Styles.vars.colors.grey0,
             cursor: "pointer",
             }}>
             <body image-topic ={image} style={{color: Styles.vars.colors.black}}>{image}</body>
@@ -571,7 +578,7 @@ renderDetectorSettings() {
                         textAlign: "center",
                         padding: `${Styles.vars.spacing.xs}`,
                         color: Styles.vars.colors.black,
-                        backgroundColor: (selectedClassesList.includes(Class.props.value))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
+                        backgroundColor: (selected_classes.includes(Class.props.value))? Styles.vars.colors.blue : Styles.vars.colors.grey0,
                         cursor: "pointer",
                         }}>
                         <body class_name ={Class} style={{color: Styles.vars.colors.black}}>{Class}</body>
@@ -592,7 +599,7 @@ renderDetectorSettings() {
         <Label title="Enable">
               <Toggle
               checked={enabled===true}
-              onClick={() => sendBoolMsg(detector_namespace + "/enable",!enabled)}>
+              onClick={() => sendBoolMsg(process_namespace + "/enable",!enabled)}>
               </Toggle>
         </Label>
 
@@ -667,7 +674,7 @@ renderDetectorSettings() {
                       <div style={{ width: '40%' }}>
                        
                       <Label title={"Detect State"}>
-                        <BooleanIndicator value={detecting} />
+                        <BooleanIndicator value={processing} />
                       </Label>
 
                       </div>
@@ -676,30 +683,28 @@ renderDetectorSettings() {
 
 
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-        {"\n Avg Detect Rate: " + detect_process_rate +
-        "\n Avg Image Process Latency: " + image_process_latency +
-        "\n Avg Detect Publish Latency: " + detect_process_latency +
+        {"\n Avg Process Rate: " + avg_process_rate +
+        "\n Avg Process Latency: " + avg_process_latency +
+
         "\n" +
-        "\n Avg Image Process Time: " + image_process_time +
-        "\n Avg Detect Process Time: " + detect_process_time +
-        "\n Max Detect Rate Hz: " + max_detect_rate +
+        "\n Avg Preprocess Rate: " + avg_preprocess_rate +
+        "\n Avg Preprocess Latency: " + avg_preprocess_latency +
+
         "\n" +
-        "\n Avg Image Receive Rate: " + image_receive_rate +
-        "\n Avg Image Process Rate: " + image_process_rate}
+        "\n Avg Source Rate: " + avg_source_rate +
+        "\n Avg Source Latency: " + avg_source_latency +
+        "\n" +
+        "\n Max Possible Process Rate Hz: " + max_process_rate }
 
       
         </pre>
 
 
-
-        <dev hidden={save_config_enabled === false}>
-
-              <NepiIFConfig
-                              namespace={detector_namespace}
+             <NepiIFConfig
+                              namespace={process_namespace}
                               title={"Nepi_IF_Conig"}
               />
 
-      </dev>
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -730,38 +735,38 @@ renderDetectorSettings() {
                     title={"Threshold"}
                     msgType={"std_msgs/Float32"}
                     adjustment={threshold}
-                    topic={detector_namespace + "/set_threshold"}
+                    topic={process_namespace + "/set_threshold"}
                     scaled={0.01}
                     min={0}
                     max={100}
                     disabled={false}
-                    tooltip={"Sets detection confidence threshold"}
+                    tooltip={"Sets detections confidence threshold"}
                     unit={"%"}
                   />
                   
           <SliderAdjustment
                   title={"Max Detection Rate"}
                   msgType={"std_msgs/Float32"}
-                  adjustment={max_det_rate}
-                  topic={detector_namespace + "/set_max_proc_rate"}
+                  adjustment={max_process_rate_hz}
+                  topic={process_namespace + "/set_max_proc_rate"}
                   scaled={1.0}
                   min={1}
                   max={20}
                   disabled={false}
-                  tooltip={"Sets detection max rate in hz"}
+                  tooltip={"Sets detections max rate in hz"}
                   unit={"Hz"}
             />
 
           <SliderAdjustment
                   title={"Max Image Publish Rate"}
                   msgType={"std_msgs/Float32"}
-                  adjustment={max_img_rate}
-                  topic={detector_namespace + "/set_max_img_rate"}
+                  adjustment={max_image_pub_rate_hz}
+                  topic={process_namespace + "/set_max_image_pub_rate_hz"}
                   scaled={1.0}
                   min={1}
                   max={20}
                   disabled={false}
-                  tooltip={"Sets detection max rate in hz"}
+                  tooltip={"Sets detections max rate in hz"}
                   unit={"Hz"}
             />
 
@@ -773,38 +778,38 @@ renderDetectorSettings() {
 
                   <Label title="Publish Image">
                   <Toggle
-                  checked={pub_image_enabled===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_image_pub", pub_image_enabled===false)}>
+                  checked={imaging_enabled===true}
+                  onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_image_pub", imaging_enabled===false)}>
                   </Toggle>
                   </Label>
 
 
-                <div hidden={pub_image_enabled === false}>
+                <div hidden={imaging_enabled === false}>
                   <Label title="Use Last Image">
                     <Toggle
                     checked={use_last_image===true}
-                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_use_last_image", use_last_image===false)}>
+                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_use_last_image", use_last_image===false)}>
                     </Toggle>
                     </Label>
 
-                  <Label title="Overlay Labels">
+                  {/* <Label title="Overlay Labels">
                     <Toggle
                     checked={overlay_labels===true}
-                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_labels", overlay_labels===false)}>
+                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_labels", overlay_labels===false)}>
                     </Toggle>
                   </Label>
 
                   <Label title="Overlay Range Bearing">
                     <Toggle
                     checked={overlay_range_bearing===true}
-                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_range_bearing", overlay_range_bearing===false)}>
+                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_range_bearing", overlay_range_bearing===false)}>
                     </Toggle>
                   </Label>
 
                   <Label title="Overlay Image Name">
                     <Toggle
                     checked={overlay_img_name===true}
-                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_img_name", overlay_img_name===false)}>
+                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_img_name", overlay_img_name===false)}>
                     </Toggle>
                     </Label>
 
@@ -812,9 +817,9 @@ renderDetectorSettings() {
                     <Label title="Overlay Classifier">
                     <Toggle
                     checked={overlay_detector_name===true}
-                    onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_overlay_clf_name", overlay_detector_name===false)}>
+                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_clf_name", overlay_detector_name===false)}>
                     </Toggle>
-                    </Label>
+                    </Label> */}
                 </div>
 
               </Column>
@@ -827,7 +832,7 @@ renderDetectorSettings() {
                 <Label title="Enable Image Tiling">
                   <Toggle
                   checked={is_tiling===true}
-                  onClick={() => this.props.ros.sendBoolMsg(detector_namespace + "/set_img_tiling", is_tiling===false)}>
+                  onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_img_tiling", is_tiling===false)}>
                   </Toggle>
                   </Label>
 
@@ -858,40 +863,42 @@ renderDetectorSettings() {
       const { imageTopics } = this.props.ros
       var items = []
       const status_msg = this.state.status_msg
-      var sel_img = this.state.selected_display_topic
-      const sel_img_found = (imageTopics.indexOf(sel_img)) !== -1
+      const process_status_msg = this.state.process_status_msg
+
+      var selected_image_topic = this.state.selected_display_topic
+      const selected_image_topic_found = (imageTopics.indexOf(selected_image_topic)) !== -1
 
     
 
-      var img_topic = "None"
+      var source_topic = "None"
       var shortname = ''
       if (status_msg != null){
-              const image_pub_topics = status_msg.image_pub_topics
+              const image_pub_topics = process_status_msg.imaging_pub_topics
               const image_names = createMenuFirstLastNames(image_pub_topics)
               if (image_pub_topics.length > 0){
-                if (sel_img_found === false){
-                    sel_img = image_pub_topics[0]
-                    if (imageTopics.indexOf(sel_img) !== -1)  {
-                      this.setState({selected_display_topic: sel_img, selected_display_text: image_names[0]  })
+                if (selected_image_topic_found === false){
+                    selected_image_topic = image_pub_topics[0]
+                    if (imageTopics.indexOf(selected_image_topic) !== -1)  {
+                      this.setState({selected_display_topic: selected_image_topic, selected_display_text: image_names[0]  })
                     }
                 }
                 for (var i = 0; i < image_pub_topics.length; i++) {
                     if (imageTopics.indexOf(image_pub_topics[i]) !== -1) {
-                      img_topic = image_pub_topics[i] 
+                      source_topic = image_pub_topics[i] 
                       shortname =  image_names[i]  
-                      items.push(<Option value={img_topic}>{shortname}</Option>)
+                      items.push(<Option value={source_topic}>{shortname}</Option>)
                    
 
-                      if ((sel_img === "None" || sel_img === '') && i === 0 ){
+                      if ((selected_image_topic === "None" || selected_image_topic === '') && i === 0 ){
                         
-                        this.setState({selected_display_topic: img_topic, selected_display_text: shortname })
+                        this.setState({selected_display_topic: source_topic, selected_display_text: shortname })
                       }
                     }
                 }
               }
               else  {
                 items.push(<Option value={"None"}>{"None"}</Option>)
-                if (sel_img !== 'None'){
+                if (selected_image_topic !== 'None'){
                   this.setState({selected_display_topic: "None", selected_display_text: "None" })
                 }
               }
@@ -904,15 +911,16 @@ renderDetectorSettings() {
 
 
   onDisplayImgSelected(event){
-    const img_topic = event.target.value
+    const source_topic = event.target.value
     const status_msg = this.state.status_msg
+    const process_status_msg = this.state.process_status_msg
     var detector_name = 'None'
     var img_name = 'None'
     if (status_msg != null){
-      detector_name = status_msg.node_name
-      img_name = detector_name + img_topic.split(detector_name)[1]
+      detector_name = process_status_msg.node_name
+      img_name = detector_name + source_topic.split(detector_name)[1]
     }
-    this.setState({selected_display_topic: img_topic,
+    this.setState({selected_display_topic: source_topic,
                    selected_display_text: img_name
     })
   }   
@@ -922,10 +930,10 @@ renderDetectorSettings() {
 
     // Function for creating image topic options.
     getSaveNamespace() {
-      const detector_namespace = this.state.selected_namespace
+      const process_namespace = this.state.selected_namespace
       var saveNamespace = "None"
-      if (detector_namespace){
-        saveNamespace = detector_namespace
+      if (process_namespace){
+        saveNamespace = process_namespace
       }
       return saveNamespace
     }
@@ -937,12 +945,12 @@ renderDetectorSettings() {
   render() {
     const { imageTopics } = this.props.ros
     const img_options = this.getDisplayImgOptions()
-    const sel_img_topic = this.state.selected_display_topic
-    const img_publishning = imageTopics.indexOf(sel_img_topic) !== -1
-    const sel_img = (img_publishning === true && this.state.connected === true) ? sel_img_topic : "None"
-    const sel_img_text = (sel_img_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
+    const selected_image_topic_topic = this.state.selected_display_topic
+    const img_publishning = imageTopics.indexOf(selected_image_topic_topic) !== -1
+    const selected_image_topic = (img_publishning === true && this.state.connected === true) ? selected_image_topic_topic : "None"
+    const selected_image_topic_text = (selected_image_topic_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
-    const save_data_topic = this.state.selected_detector + '/save_data'
+    const save_data_topic = this.state.selected_process + '/save_data'
 
 
     return (
@@ -961,7 +969,7 @@ renderDetectorSettings() {
 
                   <Label title="Select Image">
                       <Select id="ImgSelect" onChange={this.onDisplayImgSelected} 
-                      value={sel_img}
+                      value={selected_image_topic}
                       disabled={false}>
                         {img_options}
                     </Select>
@@ -974,8 +982,8 @@ renderDetectorSettings() {
 
 
       <NepiIFImageViewer
-        image_topic={sel_img}
-        title={sel_img_text}
+        image_topic={selected_image_topic}
+        title={selected_image_topic_text}
         show_res_orient={false}
         save_data_topic={save_data_topic}
       />
@@ -992,7 +1000,7 @@ renderDetectorSettings() {
       <Column>
 
 
-      {this.renderAiDetector()}
+      {this.renderDetector()}
       
 
 
@@ -1008,4 +1016,4 @@ renderDetectorSettings() {
 
 }
 
-export default AiDetectorMgr
+export default DetectorMgr

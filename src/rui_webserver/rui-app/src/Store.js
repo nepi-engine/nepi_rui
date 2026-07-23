@@ -468,7 +468,7 @@ class ROSConnectionStore {
                 var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
                 var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
                 var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
-                var newAiDetectorNamespaces = this.updateAiDetectorNamespaces(this.topicNames, this.topicTypes)
+                var newDetectorNamespaces = this.updateDetectorNamespaces(this.topicNames, this.topicTypes)
                 var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
                 var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
                 var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
@@ -483,7 +483,7 @@ class ROSConnectionStore {
                   this.setupRUISettingsListener()    // services
                 }
 
-                if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newAiDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
+                if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
                   this.initializeSystemListeners()
                 }
 
@@ -694,8 +694,8 @@ class ROSConnectionStore {
 
   @observable resetTopics = []
 
-  @observable aiDetectorNamespaces = []
-  @observable aiDetectorCaps = {}
+  @observable detectorNamespaces = []
+  @observable detectorCaps = {}
 
 
   @observable navSatFixTopics = []
@@ -1608,14 +1608,14 @@ class ROSConnectionStore {
 
 
     @action.bound
-  async callAiDetectorCapabilitiesQueryService(namespace) {
-    this.aiDetectorCaps[namespace] = []
+  async callDetectorCapabilitiesQueryService(namespace) {
+    this.detectorCaps[namespace] = []
       const response = await this.callService({
         name: namespace + "/detector_info_query",
-        messageType: "nepi_interfaces/SaveDataCapabilitiesQuery",  
+        messageType: "nepi_interfaces/DetectorCapabilitiesQuery",  
       })
       if (response != null ) {
-      this.aiDetectorCaps[namespace] = response
+      this.detectorCaps[namespace] = response
       }
   }
 
@@ -1693,28 +1693,28 @@ class ROSConnectionStore {
   }
 
     @action.bound
-  updateAiDetectorNamespaces(topics,types) {
+  updateDetectorNamespaces(topics,types) {
     // Function for updating image topics list
-    var newAiDetectorNamespaces = []
+    var newDetectorNamespaces = []
     if (this.connectedToNepi === true) {
       
       for (var i = 0; i < topics.length; i++) {
-        if (types[i] === "nepi_interfaces/AiDetectorStatus"){
-          newAiDetectorNamespaces.push(topics[i].replace('/status',''))
+        if (types[i] === "nepi_interfaces/DetectorStatus"){
+          newDetectorNamespaces.push(topics[i].replace('/status',''))
         }
       }
 
       // sort the save topics for comparison to work
-      newAiDetectorNamespaces.sort()    
+      newDetectorNamespaces.sort()    
     }  
     else {
-      newAiDetectorNamespaces = []
+      newDetectorNamespaces = []
     }
 
-      if (!this.aiDetectorNamespaces.equals(newAiDetectorNamespaces)) {
-        this.aiDetectorNamespaces = newAiDetectorNamespaces
-        for (var i2 = 0; i2 < newAiDetectorNamespaces.length; i2++) {
-              this.callAiDetectorCapabilitiesQueryService(newAiDetectorNamespaces[i2])
+      if (!this.detectorNamespaces.equals(newDetectorNamespaces)) {
+        this.detectorNamespaces = newDetectorNamespaces
+        for (var i2 = 0; i2 < newDetectorNamespaces.length; i2++) {
+              this.callDetectorCapabilitiesQueryService(newDetectorNamespaces[i2])
             }
         return true
       } else {
