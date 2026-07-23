@@ -515,7 +515,7 @@ renderDetectorSettings() {
       // Custom Process Controls
       const selected_classes = status_msg.selected_classes
       const classes_selected = (selected_classes.length > 0)
-      const threshold = status_msg.threshold
+      const threshold = status_msg.threshold_filter
 
       return (
       <Columns>
@@ -685,16 +685,11 @@ renderDetectorSettings() {
         <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
         {"\n Avg Process Rate: " + avg_process_rate +
         "\n Avg Process Latency: " + avg_process_latency +
-
         "\n" +
-        "\n Avg Preprocess Rate: " + avg_preprocess_rate +
-        "\n Avg Preprocess Latency: " + avg_preprocess_latency +
-
+        "\n Max Possible Process Rate Hz: " + max_process_rate +
         "\n" +
         "\n Avg Source Rate: " + avg_source_rate +
-        "\n Avg Source Latency: " + avg_source_latency +
-        "\n" +
-        "\n Max Possible Process Rate Hz: " + max_process_rate }
+        "\n Avg Source Latency: " + avg_source_latency}
 
       
         </pre>
@@ -748,7 +743,7 @@ renderDetectorSettings() {
                   title={"Max Detection Rate"}
                   msgType={"std_msgs/Float32"}
                   adjustment={max_process_rate_hz}
-                  topic={process_namespace + "/set_max_proc_rate"}
+                  topic={process_namespace + "/set_max_process_rate"}
                   scaled={1.0}
                   min={1}
                   max={20}
@@ -761,8 +756,8 @@ renderDetectorSettings() {
                   title={"Max Image Publish Rate"}
                   msgType={"std_msgs/Float32"}
                   adjustment={max_image_pub_rate_hz}
-                  topic={process_namespace + "/set_max_image_pub_rate_hz"}
-                  scaled={1.0}
+                  topic={process_namespace + "/set_max_image_pub_rate"}
+                  scaled={1.0}max_image_pub_rate_hz
                   min={1}
                   max={20}
                   disabled={false}
