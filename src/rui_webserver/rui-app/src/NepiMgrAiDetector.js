@@ -682,7 +682,7 @@ renderDetectorSettings() {
 
 
 
-        <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
+        {/* <pre style={{ height: "100px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
         {"\n Avg Process Rate: " + avg_process_rate +
         "\n Avg Process Latency: " + avg_process_latency +
         "\n" +
@@ -690,15 +690,12 @@ renderDetectorSettings() {
         "\n" +
         "\n Avg Source Rate: " + avg_source_rate +
         "\n Avg Source Latency: " + avg_source_latency}
+        </pre> */}
 
-      
+        <pre style={{ height: "60px"}} align={"left"} textAlign={"left"}>
+        {"\n Avg Process Rate: " + avg_process_rate +
+        "\n Avg Process Latency: " + avg_process_latency}
         </pre>
-
-
-             <NepiIFConfig
-                              namespace={process_namespace}
-                              title={"Nepi_IF_Conig"}
-              />
 
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -838,6 +835,12 @@ renderDetectorSettings() {
             </Column>
             </Columns>
 
+
+
+             <NepiIFConfig
+                              namespace={process_namespace}
+                              title={"Nepi_IF_Conig"}
+              />
 
 
     </Column>
