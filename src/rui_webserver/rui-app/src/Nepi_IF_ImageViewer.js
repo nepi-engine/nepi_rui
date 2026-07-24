@@ -42,7 +42,7 @@ import Select, { Option } from "./Select"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
-import {  onChangeSwitchStateValue, createMenuFirstLastName } from "./Utilities"
+import {  onChangeSwitchStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -113,6 +113,9 @@ class Nepi_IF_ImageViewer extends Component {
 
       click_count: 0,
 
+      free_cam: false,
+      rotate_deg_input: '',
+
       connected: false
     }
     this.updateFrame = this.updateFrame.bind(this)
@@ -142,6 +145,9 @@ class Nepi_IF_ImageViewer extends Component {
 
     this.onKeySaveInputOverlayValue = this.onKeySaveInputOverlayValue.bind(this)
     this.onUpdateInputOverlayValue = this.onUpdateInputOverlayValue.bind(this)
+
+    this.onUpdateRotateDegInput = this.onUpdateRotateDegInput.bind(this)
+    this.onKeyRotateDegInput = this.onKeyRotateDegInput.bind(this)
 
     //this.ZoomViewer = this.ZoomViewer.bind(this)
 
@@ -1317,13 +1323,33 @@ class Nepi_IF_ImageViewer extends Component {
 
               <div hidden={(hide_rotate_2d)}>
 
+                          <Label title={"Free Cam"}>
+                              <Toggle
+                                checked={this.state.free_cam}
+                                onClick={() => this.setState({ free_cam: !this.state.free_cam })}
+                              />
+                            </Label>
+
                           <Columns>
                           <Column>
 
+                            {this.state.free_cam === false &&
+                              <ButtonMenu>
+                                <Button onClick={() => sendTriggerMsg( namespace + "/rotate_2d")}>{"Rotate 90 Degs"}</Button>
+                              </ButtonMenu>
+                            }
 
-                            <ButtonMenu>
-                              <Button onClick={() => sendTriggerMsg( namespace + "/rotate_2d")}>{"Rotate 90 Degs"}</Button>
-                            </ButtonMenu>
+                            {this.state.free_cam === true &&
+                              <Label title={"Set Angle (0-359)"}>
+                                <Input
+                                  id="free_cam_rotate_deg"
+                                  value={this.state.rotate_deg_input}
+                                  style={{ width: "100%" }}
+                                  onChange={this.onUpdateRotateDegInput}
+                                  onKeyDown={this.onKeyRotateDegInput}
+                                />
+                              </Label>
+                            }
 
                           </Column>
                           <Column>
@@ -1338,9 +1364,9 @@ class Nepi_IF_ImageViewer extends Component {
                       </Label>
 
                           </Column>
-                        </Columns>         
+                        </Columns>
 
-               </div>           
+               </div>
 
 
 
@@ -1461,6 +1487,30 @@ class Nepi_IF_ImageViewer extends Component {
       const namespace = this.state.image_topic
       sendStringMsg(namespace + '/add_overlay_text', value)
       this.setState({custom_overlay_input: ''})
+    }
+  }
+
+  onUpdateRotateDegInput(event) {
+    const el = document.getElementById("free_cam_rotate_deg")
+    setElementStyleModified(el)
+    this.setState({ rotate_deg_input: event.target.value })
+  }
+
+  onKeyRotateDegInput(event) {
+    const { sendIntMsg } = this.props.ros
+    if (event.key === 'Enter') {
+      const el = document.getElementById("free_cam_rotate_deg")
+      clearElementStyleModified(el)
+      const namespace = this.state.image_topic
+      let deg = parseInt(this.state.rotate_deg_input, 10)
+      if (isNaN(deg)) {
+        this.setState({ rotate_deg_input: '' })
+        return
+      }
+      // Constrain to an integer and normalize to 0-359 (backend also normalizes)
+      deg = ((deg % 360) + 360) % 360
+      sendIntMsg(namespace + '/set_rotate_2d_deg', deg)
+      this.setState({ rotate_deg_input: String(deg) })
     }
   }
 
