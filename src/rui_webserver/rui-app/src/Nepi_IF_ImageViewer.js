@@ -1890,7 +1890,7 @@ class Nepi_IF_ImageViewer extends Component {
                             : null }
                         </div>
 
-                      </div>
+
 
                         <div style={{ width: '5%' }}>
                         </div>
@@ -1907,7 +1907,7 @@ class Nepi_IF_ImageViewer extends Component {
                             : null }
                         </div>
 
-
+                      </div>
 
 
 
