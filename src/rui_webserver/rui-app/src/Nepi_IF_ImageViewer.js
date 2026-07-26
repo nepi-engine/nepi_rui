@@ -111,7 +111,9 @@ class Nepi_IF_ImageViewer extends Component {
       currentStreamingImageRate: MAX_STREAM_RATE,
       status_listenter: null,
 
+
       click_count: 0,
+      crosshair_name: null,
 
       free_cam: false,
       rotate_deg_input: '',
@@ -620,17 +622,19 @@ class Nepi_IF_ImageViewer extends Component {
             if (this.state.status_msg != null){
                 this.setState({click_count: click_count})
                 if (click_count === 1){
-                  setTimeout(() => {
-                      this.sendImageMouseEventMsg(click_namespace  ,
-                                                          this.state.image_topic,
-                                                          this.state.image_index,
-                                                          mouse_click,
-                                                          null, 
-                                                          null, 
-                                                          null,
-                                                          this.state.status_msg
-                                                          );
-                  }, 500);
+
+
+                    setTimeout(() => {
+                        this.sendImageMouseEventMsg(click_namespace  ,
+                                                            this.state.image_topic,
+                                                            this.state.image_index,
+                                                            mouse_click,
+                                                            null, 
+                                                            null, 
+                                                            null,
+                                                            this.state.status_msg
+                                                            );
+                    }, 500);
                   
                 }
 
@@ -695,8 +699,29 @@ class Nepi_IF_ImageViewer extends Component {
 
   sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag_start, mouse_drag_stop , mouse_window, status_msg, mouse_scroll = null, scroll_amount = 0 ) {
     if (mouse_click !== null){
-      this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )
-      this.setState({click_count: 0})
+        const status_msg = this.state.status_msg
+        const num_crosshairs = status_msg.num_crosshairs
+        const click_crosshair_enabled = status_msg.click_crosshair_enabled
+        if (click_crosshair_enabled === true && status_msg != null){
+            const name = (this.state.crosshair_name != null && this.state.crosshair_name === '') ? this.state.crosshair_name : num_crosshairs
+            const width_px = status_msg.width_px
+            const height_px = status_msg.height_px
+            const width_deg = status_msg.width_deg
+            const height_deg = status_msg.height_deg
+            const x_pixel = mouse_click.x
+            const y_pixel = mouse_click.y
+            const x_offset_ratio = (x_pixel - width_px/5)/width_px + 0.5
+            const y_offset_ratio = (y_pixel - height_px/5)/height_px + 0.5
+            const x_offset_pixel = (x_offset_ratio - 0.5) * width_px
+            const y_offset_pixel = (y_offset_ratio - 0.5) * height_px
+            const x_offset_deg = (x_offset_ratio - 0.5) * width_deg
+            const y_offset_deg = (y_offset_ratio - 0.5) * height_deg
+            this.props.ros.sendImageCrosshairMsg(namespace + '/add_crosshair_degrees', name, x_pixel, y_pixel, x_offset_ratio, y_offset_ratio, x_offset_deg, y_offset_deg, y_offset_pixel )
+        }
+        else {
+          this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )
+        }
+        this.setState({click_count: 0})
     }
     else if (mouse_drag_start !== null){
       this.props.ros.sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag_start, mouse_drag_stop, status_msg )
@@ -1067,6 +1092,15 @@ class Nepi_IF_ImageViewer extends Component {
       const rotate_3d_ratio = message.rotate_3d_ratio
       const tilt_3d_ratio = message.tilt_3d_ratio
 
+      const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
+      const live_adjust_rotate_deg = message.live_adjust_rotate_deg
+      const live_adjust_x_ratio = message.live_adjust_x_ratio
+      const live_adjust_x_pixels = message.live_adjust_x_pixels
+      const live_adjust_x_deg = message.live_adjust_x_deg
+      const live_adjust_y_ratio = message.live_adjust_y_ratio
+      const live_adjust_y_pixels = message.live_adjust_y_pixels
+      const live_adjust_y_deg = message.live_adjust_y_deg
+
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
       const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
       const hide_window = (!has_window || auto_controls.indexOf('window') !== -1)
@@ -1253,6 +1287,47 @@ class Nepi_IF_ImageViewer extends Component {
                             noTextBox={true}
                         />
           </div>
+
+
+          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                      <Label title={"Live Adjustments"} />
+                      <SliderAdjustment
+                            title={"Rotate"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={live_adjust_rotate_ratio}
+                            topic={namespace + "/set_live_adjust_rotate_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Live Rotate control"}
+                            noTextBox={true}
+                        />
+                      <SliderAdjustment
+                            title={"Translate X"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={live_adjust_x_ratio}
+                            topic={namespace + "/set_live_adjust_x_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Live Translate X control"}
+                            noTextBox={true}
+                        />
+                      <SliderAdjustment
+                            title={"Translate Y"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={live_adjust_y_ratio}
+                            topic={namespace + "/set_live_adjust_y_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Live Translate Y control"}
+                            noTextBox={true}
+                        />
 
 
           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -1539,6 +1614,11 @@ class Nepi_IF_ImageViewer extends Component {
       const date = message.overlay_date_time
       const nav = message.overlay_nav
       const pose = message.overlay_pose
+      const crosshairs = message.overlay_crosshairs
+      const crosshair_names = message.overlay_crosshairs_names
+      const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs === true
+      const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs === true
+      const click_crosshair = message.click_crosshair_enabled && crosshairs === true
 
 
       return (
@@ -1615,6 +1695,58 @@ class Nepi_IF_ImageViewer extends Component {
                     <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_list")}>{"Clear"}</Button>
                   </ButtonMenu>
 
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
+
+            <Columns>
+            <Column>
+                    <Label title={"Show Crosshairs"}>
+                      <Toggle
+                        checked={crosshairs}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
+                      /> 
+                    </Label>
+
+
+                    <Label title={"Show Names"}>
+                      <Toggle
+                        disabled={crosshairs === false}
+                        checked={crosshair_names}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
+                      /> 
+                    </Label>
+
+                    <Label title={"Show Pixels"}>
+                      <Toggle
+                        disabled={crosshairs === false}
+                        checked={crosshair_pixels}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
+                      /> 
+                    </Label>
+
+                    <Label title={"Show Degs"}>
+                      <Toggle
+                        disabled={crosshairs === false}
+                        checked={crosshair_degrees}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
+                      /> 
+                    </Label>
+
+                    <Label title={"Enable Click Crosshair"}>
+                      <Toggle
+                        checked={click_crosshair}
+                        onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
+                      /> 
+                    </Label>
+
+                <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
+                  </ButtonMenu>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
 
@@ -1953,7 +2085,7 @@ class Nepi_IF_ImageViewer extends Component {
                             : null }
                         </div>
 
-                      </div>
+
 
                         <div style={{ width: '5%' }}>
                         </div>
@@ -1970,7 +2102,7 @@ class Nepi_IF_ImageViewer extends Component {
                             : null }
                         </div>
 
-
+                      </div>
 
 
 

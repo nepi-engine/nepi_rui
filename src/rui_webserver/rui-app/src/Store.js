@@ -2968,7 +2968,25 @@ sendSaveConfigTrigger(namespace) {
     })
   }
 
+  sendImageCrosshairMsg(namespace, name, x_pixel, y_pixel, x_offset_ratio, y_offset_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel ) {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/ImageCrosshair",
+      data: { 
+          name: name,
+          x_pixel: x_pixel,
+          y_pixel: y_pixel, 
+          x_offset_ratio: x_offset_ratio,
+          y_offset_ratio: y_offset_ratio,
+          x_offset_deg: x_offset_deg,
+          y_offset_deg: y_offset_deg,
+          x_offset_pixel: x_offset_pixel,
+          y_offset_pixel: y_offset_pixel
+      },
+      noPrefix: true
 
+    })
+  }
 
 ///// System IF Calls
 
