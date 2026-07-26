@@ -2944,7 +2944,7 @@ sendSaveConfigTrigger(namespace) {
 
     })
   }
-  
+
 @action.bound
   sendMouseScrollEventMsg(namespace, image_topic, image_index, mouse_scroll, scroll_amount, status_msg ) {
     this.publishMessage({
@@ -2977,15 +2977,16 @@ sendSaveConfigTrigger(namespace) {
       name: namespace,
       messageType: "nepi_interfaces/ImageCrosshair",
       data: { 
-          name: name,
-          x_pixel: x_pixel,
-          y_pixel: y_pixel, 
-          x_offset_ratio: x_offset_ratio,
-          y_offset_ratio: y_offset_ratio,
-          x_offset_deg: x_offset_deg,
-          y_offset_deg: y_offset_deg,
-          x_offset_pixel: x_offset_pixel,
-          y_offset_pixel: y_offset_pixel
+          name: String(name),
+          x_pixel: Math.round(x_pixel),
+          y_pixel: Math.round(y_pixel), 
+          x_offset_pixel: Math.round(x_offset_pixel),
+          y_offset_pixel: Math.round(y_offset_pixel),
+          x_offset_ratio: Math.round(x_offset_ratio * 100)/100,
+          y_offset_ratio: Math.round(y_offset_ratio * 100)/100,
+          x_offset_deg: Math.round(x_offset_deg * 100)/100,
+          y_offset_deg: Math.round(y_offset_deg * 100)/100
+
       },
       noPrefix: true
 
