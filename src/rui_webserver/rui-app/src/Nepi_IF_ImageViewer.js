@@ -115,6 +115,7 @@ class Nepi_IF_ImageViewer extends Component {
 
       free_cam: false,
       rotate_deg_input: '',
+      swap_box: false,
 
       connected: false
     }
@@ -1340,15 +1341,27 @@ class Nepi_IF_ImageViewer extends Component {
                             }
 
                             {this.state.free_cam === true &&
-                              <Label title={"Set Angle (0-359)"}>
-                                <Input
-                                  id="free_cam_rotate_deg"
-                                  value={this.state.rotate_deg_input}
-                                  style={{ width: "100%" }}
-                                  onChange={this.onUpdateRotateDegInput}
-                                  onKeyDown={this.onKeyRotateDegInput}
-                                />
-                              </Label>
+                              <div>
+                                <Label title={"Set Angle (0-359)"}>
+                                  <Input
+                                    id="free_cam_rotate_deg"
+                                    value={this.state.rotate_deg_input}
+                                    style={{ width: "100%" }}
+                                    onChange={this.onUpdateRotateDegInput}
+                                    onKeyDown={this.onKeyRotateDegInput}
+                                  />
+                                </Label>
+                                <Label title={"Swap Box W/H"}>
+                                  <Toggle
+                                    checked={this.state.swap_box}
+                                    onClick={() => {
+                                      const new_swap = !this.state.swap_box
+                                      this.setState({ swap_box: new_swap })
+                                      sendBoolMsg(namespace + '/set_rotate_2d_swap_box', new_swap)
+                                    }}
+                                  />
+                                </Label>
+                              </div>
                             }
 
                           </Column>
