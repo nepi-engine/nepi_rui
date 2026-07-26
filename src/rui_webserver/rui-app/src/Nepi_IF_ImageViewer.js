@@ -622,7 +622,6 @@ class Nepi_IF_ImageViewer extends Component {
                 this.setState({click_count: click_count})
                 if (click_count === 1){
 
-
                     setTimeout(() => {
                         this.sendImageMouseEventMsg(click_namespace  ,
                                                             this.state.image_topic,
@@ -715,7 +714,7 @@ class Nepi_IF_ImageViewer extends Component {
             const y_offset_pixel = (y_offset_ratio - 0.5) * height_px
             const x_offset_deg = (x_offset_ratio - 0.5) * width_deg
             const y_offset_deg = (y_offset_ratio - 0.5) * height_deg
-            this.props.ros.sendImageCrosshairMsg(namespace + '/add_crosshair_degrees', name, x_pixel, y_pixel, x_offset_ratio, y_offset_ratio, x_offset_deg, y_offset_deg, y_offset_pixel )
+            this.props.ros.sendImageCrosshairMsg(namespace + '/add_crosshair_degrees', name, x_pixel, y_pixel, x_offset_ratio, y_offset_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel )
         }
         else {
           this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )

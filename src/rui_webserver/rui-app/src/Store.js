@@ -2874,7 +2874,7 @@ sendSaveConfigTrigger(namespace) {
 
 
 
-
+@action.bound
   sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, click_count, status_msg ) {
     this.publishMessage({
       name: namespace,
@@ -2898,6 +2898,7 @@ sendSaveConfigTrigger(namespace) {
     })
   }
 
+  @action.bound
   sendMouseDragEventMsg(namespace, image_topic, image_index, mouse_drag_start, mouse_drag_stop, status_msg ) {
     this.publishMessage({
       name: namespace,
@@ -2920,6 +2921,7 @@ sendSaveConfigTrigger(namespace) {
     })
   }
 
+  @action.bound
   sendMouseWindowEventMsg(namespace, image_topic, image_index, mouse_window, status_msg ) {
     this.publishMessage({
       name: namespace,
@@ -2942,7 +2944,8 @@ sendSaveConfigTrigger(namespace) {
 
     })
   }
-
+  
+@action.bound
   sendMouseScrollEventMsg(namespace, image_topic, image_index, mouse_scroll, scroll_amount, status_msg ) {
     this.publishMessage({
       name: namespace,
@@ -2968,6 +2971,7 @@ sendSaveConfigTrigger(namespace) {
     })
   }
 
+  @action.bound
   sendImageCrosshairMsg(namespace, name, x_pixel, y_pixel, x_offset_ratio, y_offset_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel ) {
     this.publishMessage({
       name: namespace,
