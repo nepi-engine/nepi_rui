@@ -612,7 +612,13 @@ class Nepi_IF_ImageViewer extends Component {
 
           const pt = 5
           if (dx < pt && dy < pt){
-            const click_namespace = (this.props.mouse_click_topic !== undefined && this.props.mouse_click_topic != null) ? this.props.mouse_click_topic : namespace
+            var click_namespace = (this.props.mouse_click_topic !== undefined && this.props.mouse_click_topic != null) ? this.props.mouse_click_topic : namespace
+            const status_msg = this.state.status_msg
+            const num_crosshairs = status_msg.num_crosshairs
+            const click_crosshair_enabled = status_msg.click_crosshair_enabled
+            if (click_crosshair_enabled === true && status_msg != null){
+              click_namespace = namespace
+            }
             const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
             //const cur_ms = Date.now()
             //const last_click_ms = this.state.last_click_ms
@@ -1825,7 +1831,6 @@ class Nepi_IF_ImageViewer extends Component {
                     </Label>
 
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
 
 
                 <ButtonMenu>
