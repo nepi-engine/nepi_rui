@@ -1776,7 +1776,21 @@ class Nepi_IF_ImageViewer extends Component {
             <Column>
 
 
-                        <SliderAdjustment
+
+
+                 
+                      <Label title={"Show Crosshairs"}>
+                      <Toggle
+                        checked={crosshairs}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
+                      /> 
+                    </Label>
+
+
+
+                <div hidden={crosshairs === false}>
+
+                       <SliderAdjustment
                             title={"Crosshair Size"}
                             msgType={"std_msgs/Float32"}
                             adjustment={crosshairs_size_ratio}
@@ -1788,54 +1802,51 @@ class Nepi_IF_ImageViewer extends Component {
                             tooltip={"Overlay crosshair size controls"}
                             noTextBox={true}
                         />
-
-                 
-                      <Label title={"Show Crosshairs"}>
-                      <Toggle
-                        checked={crosshairs}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
-                      /> 
-                    </Label>
-
-{/* 
-                    <Label title={"   Show Names"}>
-                      <Toggle
-                        disabled={crosshairs === false}
-                        checked={crosshair_names}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
-                      /> 
-                    </Label>
+                        
+                        {/* 
+                            <Label title={"   Show Names"}>
+                              <Toggle
+                                disabled={crosshairs === false}
+                                checked={crosshair_names}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
+                              /> 
+                            </Label>
 
 
-                    <Label title={"   Show Pixels"}>
-                      <Toggle
-                        disabled={crosshairs === false}
-                        checked={crosshair_pixels}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
-                      /> 
-                    </Label>
+                            <Label title={"   Show Pixels"}>
+                              <Toggle
+                                disabled={crosshairs === false}
+                                checked={crosshair_pixels}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
+                              /> 
+                            </Label>
 
-                    <Label title={"   Show Degs"}>
-                      <Toggle
-                        disabled={crosshairs === false}
-                        checked={crosshair_degrees}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
-                      /> 
-                    </Label> */}
+                            <Label title={"   Show Degs"}>
+                              <Toggle
+                                disabled={crosshairs === false}
+                                checked={crosshair_degrees}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
+                              /> 
+                            </Label> */}
 
-                    <Label title={"Enable Click Crosshair"}>
-                      <Toggle
-                        checked={click_crosshair}
-                        onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
-                      /> 
-                    </Label>
+
+        
+
+                            <Label title={"Enable Click Crosshair"}>
+                              <Toggle
+                                checked={click_crosshair}
+                                onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
+                              /> 
+                            </Label>
 
 
 
 
-                <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
-                  </ButtonMenu>
+                        <ButtonMenu>
+                            <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
+                          </ButtonMenu>
+
+                </div>
 
 
                 </Column>
