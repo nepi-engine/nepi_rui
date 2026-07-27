@@ -135,6 +135,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.renderRenderControls = this.renderRenderControls.bind(this)
     this.renderConfigControls = this.renderConfigControls.bind(this)
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
+    this.renderCrosshairsControls = this.renderCrosshairsControls.bind(this)
 
     this.renderStats = this.renderStats.bind(this)
     this.getImgStatsText = this.getImgStatsText.bind(this)
@@ -1608,46 +1609,54 @@ class Nepi_IF_ImageViewer extends Component {
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
-      const size_ratio = message.overlay_size_ratio
+      const text_size_ratio = message.overlay_size_ratio
       const name = message.overlay_img_name
       const date = message.overlay_date_time
       const nav = message.overlay_nav
       const pose = message.overlay_pose
+
+
+      const crosshairs_size_ratio = message.crosshairs_size_ratio
       const crosshairs = message.overlay_crosshairs
-      const crosshair_names = message.overlay_crosshairs_names
+      const crosshair_names = message.overlay_crosshairs_names && crosshairs === true
       const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs === true
       const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs === true
       const click_crosshair = message.click_crosshair_enabled && crosshairs === true
-
+      const crosshairs_color_r = message.crosshairs_color_r
+      const crosshairs_color_g = message.crosshairs_color_g
+      const crosshairs_color_b = message.crosshairs_color_b
 
       return (
 
         <Columns>
         <Column>
 
-
+      <Label title={"TEXT OVERLAYS"} />
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
 
 
-                        <SliderAdjustment
-                            title={"Overlay Size"}
-                            msgType={"std_msgs/Float32"}
-                            adjustment={size_ratio}
-                            topic={namespace + "/set_overlay_size_ratio"}
-                            scaled={0.01}
-                            min={0}
-                            max={100}
-                            disabled={false}
-                            tooltip={"Overlay size controls"}
-                            noTextBox={true}
-                        />
-
 
 
             <Columns>
             <Column>
+
+
+
+                  <SliderAdjustment
+                      title={"Text Size"}
+                      msgType={"std_msgs/Float32"}
+                      adjustment={text_size_ratio}
+                      topic={namespace + "/set_overlay_size_ratio"}
+                      scaled={0.01}
+                      min={0}
+                      max={100}
+                      disabled={false}
+                      tooltip={"Overlay text size controls"}
+                      noTextBox={true}
+                  />
+
                   <Label title={"Source Name"}>
                       <Toggle
                         checked={name}
@@ -1688,56 +1697,18 @@ class Nepi_IF_ImageViewer extends Component {
                     <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_list")}>{"Clear"}</Button>
                   </ButtonMenu>
 
+
+
                 </Column>
                 <Column>
-
-
-                      <Label title={"Show Crosshairs"}>
-                      <Toggle
-                        checked={crosshairs}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
-                      /> 
-                    </Label>
-
-
-                    <Label title={"Show Names"}>
-                      <Toggle
-                        disabled={crosshairs === false}
-                        checked={crosshair_names}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
-                      /> 
-                    </Label>
-
-                    {/* <Label title={"Show Pixels"}>
-                      <Toggle
-                        disabled={crosshairs === false}
-                        checked={crosshair_pixels}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
-                      /> 
-                    </Label>
-
-                    <Label title={"Show Degs"}>
-                      <Toggle
-                        disabled={crosshairs === false}
-                        checked={crosshair_degrees}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
-                      /> 
-                    </Label>
-
-                    <Label title={"Enable Click Crosshair"}>
-                      <Toggle
-                        checked={click_crosshair}
-                        onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
-                      /> 
-                    </Label> */}
-
-                <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
-                  </ButtonMenu>
 
                 </Column>
               </Columns>
 
+
+
+
+                
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
 
@@ -1761,6 +1732,141 @@ class Nepi_IF_ImageViewer extends Component {
     }
 
   }
+
+  renderCrosshairsControls() {
+    const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const namespace = this.state.image_topic
+    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+   
+    if (this.state.status_msg !== null && namespace !== null){
+      const message = this.state.status_msg
+      const text_size_ratio = message.overlay_size_ratio
+      const name = message.overlay_img_name
+      const date = message.overlay_date_time
+      const nav = message.overlay_nav
+      const pose = message.overlay_pose
+
+
+      const crosshairs_size_ratio = message.crosshairs_size_ratio
+      const crosshairs = message.overlay_crosshairs
+      const crosshair_names = message.overlay_crosshairs_names && crosshairs === true
+      const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs === true
+      const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs === true
+      const click_crosshair = message.click_crosshair_enabled && crosshairs === true
+      const crosshairs_color_r = message.crosshairs_color_r
+      const crosshairs_color_g = message.crosshairs_color_g
+      const crosshairs_color_b = message.crosshairs_color_b
+
+      return (
+
+        <Columns>
+        <Column>
+
+      <Label title={"CROSSHAIR OVERLAYS"} />
+        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+            <Columns>
+            <Column>
+
+
+                        <SliderAdjustment
+                            title={"Crosshair Size"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={crosshairs_size_ratio}
+                            topic={namespace + "/set_crosshairs_size_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay crosshair size controls"}
+                            noTextBox={true}
+                        />
+
+                 
+                      <Label title={"Show Crosshairs"}>
+                      <Toggle
+                        checked={crosshairs}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
+                      /> 
+                    </Label>
+
+{/* 
+                    <Label title={"   Show Names"}>
+                      <Toggle
+                        disabled={crosshairs === false}
+                        checked={crosshair_names}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
+                      /> 
+                    </Label>
+
+
+                    <Label title={"   Show Pixels"}>
+                      <Toggle
+                        disabled={crosshairs === false}
+                        checked={crosshair_pixels}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
+                      /> 
+                    </Label>
+
+                    <Label title={"   Show Degs"}>
+                      <Toggle
+                        disabled={crosshairs === false}
+                        checked={crosshair_degrees}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
+                      /> 
+                    </Label> */}
+
+                    <Label title={"Enable Click Crosshair"}>
+                      <Toggle
+                        checked={click_crosshair}
+                        onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
+                      /> 
+                    </Label>
+
+
+                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
+
+
+                <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
+                  </ButtonMenu>
+
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+
+
+
+
+                
+
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
+
+          <ButtonMenu>
+            <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
+          </ButtonMenu>
+
+      </Column>
+      </Columns>
+      )
+    }
+    else {
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+
+    }
+
+  }
+
 
   // renderCompression(){
   //   const currentStreamingImageQuality = this.state.currentStreamingImageQuality
@@ -2143,8 +2249,6 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ display: 'flex' }}>
                                 <div style={{ width: '40%' }}>
 
-
-                                    <Label title={"OVERLAYS"} />
                                       {this.renderOverlayControls()}
 
 
@@ -2155,7 +2259,7 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '40%' }}>
-                                  {}
+                                  {this.renderCrosshairsControls()}
 
                                 </div>
                 
