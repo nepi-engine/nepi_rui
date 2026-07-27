@@ -1676,29 +1676,23 @@ class Nepi_IF_ImageViewer extends Component {
                       /> 
                     </Label>
 
+                      <Label title={'Add'}>
+                        <Input id="input_overlay" 
+                          value={this.state.custom_overlay_input} 
+                          onChange={this.onUpdateInputOverlayValue} 
+                          onKeyDown= {this.onKeySaveInputOverlayValue} />
+                      </Label>
+
+
+                    <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_list")}>{"Clear"}</Button>
+                  </ButtonMenu>
 
                 </Column>
                 <Column>
 
-                </Column>
-              </Columns>
 
-              <Label title={'Add'}>
-                <Input id="input_overlay" 
-                  value={this.state.custom_overlay_input} 
-                  onChange={this.onUpdateInputOverlayValue} 
-                  onKeyDown= {this.onKeySaveInputOverlayValue} />
-              </Label>
-
-                <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_list")}>{"Clear"}</Button>
-                  </ButtonMenu>
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
-
-            <Columns>
-            <Column>
-                    <Label title={"Show Crosshairs"}>
+                      <Label title={"Show Crosshairs"}>
                       <Toggle
                         checked={crosshairs}
                         onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
@@ -1714,7 +1708,7 @@ class Nepi_IF_ImageViewer extends Component {
                       /> 
                     </Label>
 
-                    <Label title={"Show Pixels"}>
+                    {/* <Label title={"Show Pixels"}>
                       <Toggle
                         disabled={crosshairs === false}
                         checked={crosshair_pixels}
@@ -1735,17 +1729,15 @@ class Nepi_IF_ImageViewer extends Component {
                         checked={click_crosshair}
                         onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
                       /> 
-                    </Label>
+                    </Label> */}
 
                 <ButtonMenu>
                     <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
                   </ButtonMenu>
 
                 </Column>
-                <Column>
-
-                </Column>
               </Columns>
+
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
 
