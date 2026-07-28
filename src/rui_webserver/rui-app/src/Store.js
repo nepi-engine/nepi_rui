@@ -1792,7 +1792,7 @@ class ROSConnectionStore {
       for (var i = 0; i < topics.length; i++) {
         if (types[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
           newImageTopics.push(topics[i])
-          if (topics[i].indexOf('detection_image') !== -1){
+          if (topics[i].indexOf('detections_image') !== -1){
             newImageDetectionTopics.push(topics[i])
           }
         }
