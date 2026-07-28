@@ -256,7 +256,7 @@ class NepiDeviceIDXControls extends Component {
                   <Label title={"Framerate"}>
                 <Input
                   value={pub_framerate}
-                  disabled
+                  disabled={true}
                   style={{ width: "100%" }}
                 />
               </Label>
@@ -632,7 +632,7 @@ class NepiDeviceIDXControls extends Component {
 
     }
     else if (make_section === false){
-      const disabled = status_msg.disabled
+      const device_disabled = status_msg.disabled
       return (
 
           <React.Fragment>
@@ -644,8 +644,8 @@ class NepiDeviceIDXControls extends Component {
                         
                       <Label title="Disabled">
                             <Toggle
-                              checked={disabled === true}
-                              onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!disabled)}>
+                              checked={device_disabled === true}
+                              onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!device_disabled)}>
                             </Toggle>
                       </Label>
 
@@ -655,8 +655,8 @@ class NepiDeviceIDXControls extends Component {
                       </Column>
                     </Columns>
 
-                    { disabled === false ? this.renderControlData() : null}
-                    { disabled === false ? this.renderControlPanel() : null}
+                    { device_disabled === false ? this.renderControlData() : null}
+                    { disdevice_disabledabled === false ? this.renderControlPanel() : null}
 
 
 
@@ -666,7 +666,7 @@ class NepiDeviceIDXControls extends Component {
       )
     }
     else {
-      const disabled = status_msg.disabled
+      const device_disabled = status_msg.disabled
       return (
 
           <Section title={(this.props.title !== undefined) ? this.props.title : null}>
@@ -677,8 +677,8 @@ class NepiDeviceIDXControls extends Component {
                   
                 <Label title="Disabled">
                       <Toggle
-                        checked={disabled === true}
-                        onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!disabled)}>
+                        checked={device_disabled === true}
+                        onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!device_disabled)}>
                       </Toggle>
                 </Label>
 
@@ -688,8 +688,8 @@ class NepiDeviceIDXControls extends Component {
                 </Column>
               </Columns>
 
-              { disabled === false ? this.renderControlData() : null}
-              { disabled === false ? this.renderControlPanel() : null}
+              { device_disabled === false ? this.renderControlData() : null}
+              { device_disabled === false ? this.renderControlPanel() : null}
 
 
         </Section>
