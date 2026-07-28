@@ -656,7 +656,7 @@ class NepiDeviceIDXControls extends Component {
                     </Columns>
 
                     { device_disabled === false ? this.renderControlData() : null}
-                    { disdevice_disabledabled === false ? this.renderControlPanel() : null}
+                    { device_disabled === false ? this.renderControlPanel() : null}
 
 
 
