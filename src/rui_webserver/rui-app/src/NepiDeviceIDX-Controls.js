@@ -619,7 +619,7 @@ class NepiDeviceIDXControls extends Component {
     const namespace = this.state.namespace
     const status_msg = this.state.status_msg
     const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
-    const device_disabled = false
+    var device_disabled = false
     if (status_msg == null || data_product === 'None' || data_product === "None"){
       return (
         <Columns>
