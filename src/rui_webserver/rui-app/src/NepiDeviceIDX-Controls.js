@@ -619,7 +619,7 @@ class NepiDeviceIDXControls extends Component {
     const namespace = this.state.namespace
     const status_msg = this.state.status_msg
     const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
-
+    const device_disabled = false
     if (status_msg == null || data_product === 'None' || data_product === "None"){
       return (
         <Columns>
@@ -632,7 +632,7 @@ class NepiDeviceIDXControls extends Component {
 
     }
     else if (make_section === false){
-      const device_disabled = status_msg.disabled
+      device_disabled = status_msg.device_disabled
       return (
 
           <React.Fragment>
@@ -666,7 +666,7 @@ class NepiDeviceIDXControls extends Component {
       )
     }
     else {
-      const device_disabled = status_msg.disabled
+      device_disabled = status_msg.device_disabled
       return (
 
           <Section title={(this.props.title !== undefined) ? this.props.title : null}>
