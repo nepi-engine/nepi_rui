@@ -117,6 +117,8 @@ class Nepi_IF_ImageViewer extends Component {
 
       free_cam: false,
       rotate_deg_input: '',
+      image_width_input: '',
+      image_height_input: '',
       swap_box: false,
 
       connected: false
@@ -152,6 +154,10 @@ class Nepi_IF_ImageViewer extends Component {
 
     this.onUpdateRotateDegInput = this.onUpdateRotateDegInput.bind(this)
     this.onKeyRotateDegInput = this.onKeyRotateDegInput.bind(this)
+
+    this.onUpdateImageWidthInput = this.onUpdateImageWidthInput.bind(this)
+    this.onUpdateImageHeightInput = this.onUpdateImageHeightInput.bind(this)
+    this.onKeyImageSizeInput = this.onKeyImageSizeInput.bind(this)
 
     //this.ZoomViewer = this.ZoomViewer.bind(this)
 
@@ -330,6 +336,19 @@ class Nepi_IF_ImageViewer extends Component {
       this.updateImageSource()
       this.updateStatusListener()
 
+    }
+
+    // Reset the render image-size inputs when the published render size changes
+    // externally (new value on the wire, reset, or a different image topic).
+    const cur_w = (this.state.status_msg != null) ? this.state.status_msg.width_px : null
+    const prev_w = (prevState.status_msg != null) ? prevState.status_msg.width_px : null
+    const cur_h = (this.state.status_msg != null) ? this.state.status_msg.height_px : null
+    const prev_h = (prevState.status_msg != null) ? prevState.status_msg.height_px : null
+    if (cur_w !== prev_w || prevProps.image_topic !== image_topic) {
+      this.setState({ image_width_input: (cur_w != null) ? String(cur_w) : '' })
+    }
+    if (cur_h !== prev_h || prevProps.image_topic !== image_topic) {
+      this.setState({ image_height_input: (cur_h != null) ? String(cur_h) : '' })
     }
   }
 
@@ -1114,14 +1133,48 @@ class Nepi_IF_ImageViewer extends Component {
       const min_range_m_adj = round( message.min_range_m_adj,1)
       const max_range_m_adj = round(message.max_range_m_adj,1)
 
+      // The render image-size control applies only to the pointcloud render
+      // (fewer pixels = faster render). For 2D image products width_px/height_px
+      // are the source dimensions, so hide it there.
+      const is_pointcloud = (message.data_source_description !== undefined
+          && message.data_source_description !== null
+          && String(message.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
+
       return (
 
         <Columns>
         <Column>
- 
+
 
              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
             <Label title={"RENDER  CONTROLS"} />
+
+          <div hidden={(is_pointcloud !== true)}>
+            <Columns>
+            <Column>
+                <Label title={"Render Width (px)"}>
+                <Input
+                  id={"render_image_width"}
+                  value={this.state.image_width_input}
+                  onChange={this.onUpdateImageWidthInput}
+                  onKeyDown={this.onKeyImageSizeInput}
+                  style={{ width: "80%" }}
+                />
+                </Label>
+            </Column>
+            <Column>
+                <Label title={"Render Height (px)"}>
+                <Input
+                  id={"render_image_height"}
+                  value={this.state.image_height_input}
+                  onChange={this.onUpdateImageHeightInput}
+                  onKeyDown={this.onKeyImageSizeInput}
+                  style={{ width: "80%" }}
+                />
+                </Label>
+            </Column>
+            </Columns>
+          </div>
  
     
 
@@ -1605,6 +1658,39 @@ class Nepi_IF_ImageViewer extends Component {
       deg = ((deg % 360) + 360) % 360
       sendIntMsg(namespace + '/set_rotate_2d_deg', deg)
       this.setState({ rotate_deg_input: String(deg) })
+    }
+  }
+
+  onUpdateImageWidthInput(event) {
+    const el = document.getElementById("render_image_width")
+    setElementStyleModified(el)
+    this.setState({ image_width_input: event.target.value })
+  }
+
+  onUpdateImageHeightInput(event) {
+    const el = document.getElementById("render_image_height")
+    setElementStyleModified(el)
+    this.setState({ image_height_input: event.target.value })
+  }
+
+  // Enter in either the width or height box sends both dimensions in one
+  // ImageSize message to the pointcloud render's set_image_size topic. The
+  // backend clamps to 100 < size < 5000, so ignore out-of-range entries here.
+  onKeyImageSizeInput(event) {
+    const { sendImageSizeMsg } = this.props.ros
+    if (event.key === 'Enter') {
+      const w_el = document.getElementById("render_image_width")
+      const h_el = document.getElementById("render_image_height")
+      let width = parseInt(this.state.image_width_input, 10)
+      let height = parseInt(this.state.image_height_input, 10)
+      if (isNaN(width) || isNaN(height) || width <= 100 || width >= 5000 || height <= 100 || height >= 5000) {
+        return
+      }
+      clearElementStyleModified(w_el)
+      clearElementStyleModified(h_el)
+      const namespace = this.state.image_topic
+      sendImageSizeMsg(namespace + '/set_image_size', width, height)
+      this.setState({ image_width_input: String(width), image_height_input: String(height) })
     }
   }
 

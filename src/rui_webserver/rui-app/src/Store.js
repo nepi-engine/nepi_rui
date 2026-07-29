@@ -2566,6 +2566,20 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  sendImageSizeMsg(namespace, width_str, height_str) {
+    let widthVal = parseInt(width_str, 10)
+    let heightVal = parseInt(height_str, 10)
+    if (!isNaN(widthVal) && !isNaN(heightVal)) {
+      this.publishMessage({
+        name: namespace,
+        messageType: "nepi_interfaces/ImageSize",
+        data: {image_width: widthVal, image_height: heightVal},
+        noPrefix: true
+      })
+    }
+  }
+
+  @action.bound
   sendUpdateIntMsg(namespace, name, value, name2 = '', name3 = '') {
     this.publishMessage({
       name: namespace,
