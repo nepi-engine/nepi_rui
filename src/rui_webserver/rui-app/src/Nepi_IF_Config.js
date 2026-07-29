@@ -71,12 +71,15 @@ class NepiIFConfig extends Component {
 
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
+    const check_topic = namespace + '/save_config'
+    const active_topics = this.props.ros.systemStatusTopics
+    const has_topic = true //(active_topics.indexOf(check_topic) !== -1)
     const { userRestricted} = this.props.ros
     const config_controls_restricted = (this.props.restricted !== undefined) ? this.props.restricted : 
           (userRestricted.indexOf('SYSTEM-CONFIG-VIEW') !== -1 ||
           userRestricted.indexOf('SYSTEM-CONFIG-CONTROL') !== -1)
 
-    if (namespace === 'None' || config_controls_restricted === true){
+    if (namespace === 'None' || config_controls_restricted === true || has_topic === false){
       return (
   
         <Columns>
