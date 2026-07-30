@@ -2986,12 +2986,13 @@ sendSaveConfigTrigger(namespace) {
   }
 
   @action.bound
-  sendImageCrosshairMsg(namespace, name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel ) {
+  sendImageCrosshairMsg(namespace, name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel, r = 0, g = 255, b = 0, msg_str = '') {
     this.publishMessage({
       name: namespace,
       messageType: "nepi_interfaces/ImageCrosshair",
       data: { 
           name: String(name),
+          msg_str: String(msg_str),
           x_pixel: Math.round(x_pixel),
           y_pixel: Math.round(y_pixel),
           x_ratio: Math.round(x_ratio * 100)/100,
@@ -2999,8 +3000,10 @@ sendSaveConfigTrigger(namespace) {
           x_offset_pixel: Math.round(x_offset_pixel),
           y_offset_pixel: Math.round(y_offset_pixel),
           x_offset_deg: Math.round(x_offset_deg * 100)/100,
-          y_offset_deg: Math.round(y_offset_deg * 100)/100
-
+          y_offset_deg: Math.round(y_offset_deg * 100)/100,
+          r: Math.round(r),
+          g: Math.round(g),
+          b: Math.round(b)
       },
       noPrefix: true
 

@@ -741,7 +741,10 @@ class Nepi_IF_ImageViewer extends Component {
             const y_offset_pixel = height_px/2 + (y_ratio - 0.5) * height_px
             const x_offset_deg = width_deg/2 + (x_ratio - 0.5) * width_deg
             const y_offset_deg = height_deg/2 + (y_ratio - 0.5) * height_deg
-            this.props.ros.sendImageCrosshairMsg(namespace.replace('/mouse_event','') + '/add_crosshair_ratios', name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel )
+            const r = status_msg.crosshairs_color_r
+            const g = status_msg.crosshairs_color_g
+            const b = status_msg.crosshairs_color_b
+            this.props.ros.sendImageCrosshairMsg(namespace.replace('/mouse_event','') + '/add_crosshair_ratios', name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel, r, g, b, '' )
         }
         else {
           this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )
@@ -1708,16 +1711,6 @@ class Nepi_IF_ImageViewer extends Component {
       const pose = message.overlay_pose
 
 
-      const crosshairs_size_ratio = message.crosshairs_size_ratio
-      const crosshairs = message.overlay_crosshairs
-      const crosshair_names = message.overlay_crosshairs_names && crosshairs === true
-      const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs === true
-      const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs === true
-      const click_crosshair = message.click_crosshair_enabled && crosshairs === true
-      const crosshairs_color_r = message.crosshairs_color_r
-      const crosshairs_color_g = message.crosshairs_color_g
-      const crosshairs_color_b = message.crosshairs_color_b
-
       return (
 
         <Columns>
@@ -1832,22 +1825,21 @@ class Nepi_IF_ImageViewer extends Component {
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
-      const text_size_ratio = message.overlay_size_ratio
-      const name = message.overlay_img_name
-      const date = message.overlay_date_time
-      const nav = message.overlay_nav
-      const pose = message.overlay_pose
 
-
+      const show_crosshairs = message.overlay_crosshairs
       const crosshairs_size_ratio = message.crosshairs_size_ratio
-      const crosshairs = message.overlay_crosshairs
-      const crosshair_names = message.overlay_crosshairs_names && crosshairs === true
-      const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs === true
-      const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs === true
-      const click_crosshair = message.click_crosshair_enabled && crosshairs === true
+      const crosshairs_thickness_ratio = message.crosshairs_thickness_ratio
+      const crosshairs_text_ratio = message.crosshairs_text_ratio
+      const crosshair_names = message.overlay_crosshair_names && show_crosshairs === true
+      const crosshair_pixels = message.overlay_crosshair_pixels && show_crosshairs === true
+      const crosshair_degrees = message.overlay_crosshair_degrees && show_crosshairs === true
+      const crosshair_msgs = message.overlay_crosshair_messages && show_crosshairs === true
+      const click_crosshair = message.click_crosshair_enabled && show_crosshairs === true
       const crosshairs_color_r = message.crosshairs_color_r
       const crosshairs_color_g = message.crosshairs_color_g
       const crosshairs_color_b = message.crosshairs_color_b
+
+      
 
       return (
 
@@ -1860,21 +1852,24 @@ class Nepi_IF_ImageViewer extends Component {
 
             <Columns>
             <Column>
-
-
-
-
-                 
+                
                       <Label title={"Show Crosshairs"}>
                       <Toggle
-                        checked={crosshairs}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!crosshairs)}
+                        checked={show_crosshairs}
+                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!show_crosshairs)}
                       /> 
                     </Label>
 
+                </Column>
+                <Column>
 
+                </Column>
+              </Columns>
 
-                <div hidden={crosshairs === false}>
+              <div hidden={show_crosshairs === false}>
+
+                <Columns>
+                <Column>
 
                        <SliderAdjustment
                             title={"Crosshair Size"}
@@ -1888,37 +1883,34 @@ class Nepi_IF_ImageViewer extends Component {
                             tooltip={"Overlay crosshair size controls"}
                             noTextBox={true}
                         />
+
+                       <SliderAdjustment
+                            title={"Crosshair Thickness"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={crosshairs_thickness_ratio}
+                            topic={namespace + "/set_crosshairs_thickness_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay crosshair thickness controls"}
+                            noTextBox={true}
+                        />
+
+                       <SliderAdjustment
+                            title={"Crosshair Text"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={crosshairs_text_ratio}
+                            topic={namespace + "/set_crosshairs_text_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay crosshair text controls"}
+                            noTextBox={true}
+                        />
                         
-                        {/* 
-                            <Label title={"   Show Names"}>
-                              <Toggle
-                                disabled={crosshairs === false}
-                                checked={crosshair_names}
-                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
-                              /> 
-                            </Label>
-
-
-                            <Label title={"   Show Pixels"}>
-                              <Toggle
-                                disabled={crosshairs === false}
-                                checked={crosshair_pixels}
-                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
-                              /> 
-                            </Label>
-
-                            <Label title={"   Show Degs"}>
-                              <Toggle
-                                disabled={crosshairs === false}
-                                checked={crosshair_degrees}
-                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
-                              /> 
-                            </Label> */}
-
-
-        
-
-                            <Label title={"Enable Click Crosshair"}>
+                        <Label title={"Enable Click Crosshair"}>
                               <Toggle
                                 checked={click_crosshair}
                                 onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
@@ -1928,29 +1920,71 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 
-                        <ButtonMenu>
-                            <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear"}</Button>
-                          </ButtonMenu>
-
-                </div>
-
 
                 </Column>
                 <Column>
+
+                            <Label title={"   Show Names"}>
+                              <Toggle
+                                disabled={show_crosshairs === false}
+                                checked={crosshair_names}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
+                              /> 
+                            </Label>
+
+                          <Label title={"   Show Pixels"}>
+                              <Toggle
+                                disabled={show_crosshairs === false}
+                                checked={crosshair_pixels}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
+                              /> 
+                            </Label>
+
+                            <Label title={"   Show Degs"}>
+                              <Toggle
+                                disabled={show_crosshairs === false}
+                                checked={crosshair_degrees}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
+                              /> 
+                            </Label>
+
+        
+                            <Label title={"   Show Msgs"}>
+                              <Toggle
+                                disabled={show_crosshairs === false}
+                                checked={crosshair_msgs}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_messages',!crosshair_msgs)}
+                              /> 
+                            </Label>
 
                 </Column>
               </Columns>
 
 
-
+                </div>
 
                 
 
               <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
 
-          <ButtonMenu>
-            <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
-          </ButtonMenu>
+
+            <Columns>
+            <Column>
+                
+                      <ButtonMenu>
+                          <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear Crosshairs"}</Button>
+                        </ButtonMenu>   
+
+              </Column>
+              <Column>
+
+                    
+                  {/* <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
+                  </ButtonMenu> */}
+
+                </Column>
+              </Columns>
 
       </Column>
       </Columns>
