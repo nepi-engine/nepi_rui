@@ -30,8 +30,9 @@ const TRIGGER_MASKS = {
   OUTPUT_ENABLED: 0xffffffff,
   DEFAULT: 0x7fffffff
 }
-
+const NEPI_RETRY_MSEC = 500
 const NEPI_TIMEOUT_MSEC = 3000
+const NEPI_CONNECT_RETRIES = 1
 
 
 // TODO: Would be better to query the display_name property of all nodes to generate
@@ -149,6 +150,7 @@ class ROSConnectionStore {
       this.rosCheckStarted = false
       this.rosAutoReconnect = false
       this.connectedToRos = false
+      this.connectRetries = 0
 
       this.connectedToNepi = false
 
@@ -390,10 +392,19 @@ class ROSConnectionStore {
       }
 
       if (this.ros != null ) {
-        update_time = (this.connectedToNepi === false) ? 500 : NEPI_TIMEOUT_MSEC
+        update_time = (this.connectedToNepi === false) ? NEPI_RETRY_MSEC : NEPI_TIMEOUT_MSEC
         if (this.connectedToNepi === true && this.watchdogNepiCounter >= this.watchdogNepiMax ) {
             this.connectedToNepi = false
-            this.destroyROSConnection()
+            //this.connectedToRos = false
+            this.connectRetries = this.connectRetries + 1
+            if (this.connectRetries > NEPI_CONNECT_RETRIES){
+                this.destroyROSConnection()
+            }
+            else {
+              this.checkTopicsServices = true
+              this.topicQueryLock = false
+            }
+            
         }
         this.watchdogNepiCounter++
       }
