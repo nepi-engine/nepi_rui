@@ -68,9 +68,9 @@ class DetectorMgr extends Component {
       detector_ind: 0,
       last_selected_process: "None",
 
+      sources_list_viewable: true,
       source_list_detector_viewable: false,
       source_filter_str_list: ['detections_image','targeting_image','alert_image','tracking_image'],
-
 
       selected_display_topic: "None",
       selected_display_text: "None",
@@ -358,8 +358,8 @@ class DetectorMgr extends Component {
   }
 
   toggleImagesListViewable() {
-    const set = !this.state.img_list_viewable
-    this.setState({img_list_viewable: set})
+    const set = true //!this.state.sources_list_viewable
+    this.setState({sources_list_viewable: set})
   }
 
 
@@ -492,6 +492,9 @@ renderDetectorSettings() {
       const imaging_enabled = process_status_msg.imaging_enabled
       const use_last_image = process_status_msg.use_last_image
 
+      const auto_select_enabled = process_status_msg.auto_select_enabled
+      const auto_select_active = process_status_msg.auto_select_active
+
       const selected_sources = process_status_msg.selected_sources
 
       const img_selected = process_status_msg.source_selected
@@ -526,6 +529,13 @@ renderDetectorSettings() {
           <Columns>
         <Column>
 
+             <Label title="Auto Select Image">
+                    <Toggle
+                    checked={auto_select_active===true}
+                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_auto_select_enable", !auto_select_active)}>
+                    </Toggle>
+                    </Label>
+
           <Label title={"Select Images"}/>
 
             </Column>
@@ -536,7 +546,7 @@ renderDetectorSettings() {
         <div onClick={this.toggleImagesListViewable} style={{backgroundColor: Styles.vars.colors.grey0}}>
           <Select style={{width: "10px"}}/>
         </div>
-        <div hidden={this.state.img_list_viewable === false}>
+        <div hidden={this.state.sources_list_viewable === false}>
         {img_options.map((image) =>
         <div onClick={this.onImagesTopicSelected}
           style={{
@@ -784,34 +794,6 @@ renderDetectorSettings() {
                     </Toggle>
                     </Label>
 
-                  {/* <Label title="Overlay Labels">
-                    <Toggle
-                    checked={overlay_labels===true}
-                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_labels", overlay_labels===false)}>
-                    </Toggle>
-                  </Label>
-
-                  <Label title="Overlay Range Bearing">
-                    <Toggle
-                    checked={overlay_range_bearing===true}
-                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_range_bearing", overlay_range_bearing===false)}>
-                    </Toggle>
-                  </Label>
-
-                  <Label title="Overlay Image Name">
-                    <Toggle
-                    checked={overlay_img_name===true}
-                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_img_name", overlay_img_name===false)}>
-                    </Toggle>
-                    </Label>
-
-
-                    <Label title="Overlay Classifier">
-                    <Toggle
-                    checked={overlay_detector_name===true}
-                    onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_overlay_clf_name", overlay_detector_name===false)}>
-                    </Toggle>
-                    </Label> */}
                 </div>
 
               </Column>
@@ -819,17 +801,7 @@ renderDetectorSettings() {
 
                  
 
-          {/*
-            <div hidden={has_tiling === false}>           
-                <Label title="Enable Image Tiling">
-                  <Toggle
-                  checked={is_tiling===true}
-                  onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_img_tiling", is_tiling===false)}>
-                  </Toggle>
-                  </Label>
-
-                  </div>
-          */}
+     
 
 
             </Column>
@@ -945,6 +917,8 @@ renderDetectorSettings() {
     const img_options = this.getDisplayImgOptions()
     const selected_image_topic_topic = this.state.selected_display_topic
     const img_publishning = imageTopics.indexOf(selected_image_topic_topic) !== -1
+
+  
     const selected_image_topic = (img_publishning === true && this.state.connected === true) ? selected_image_topic_topic : "None"
     const selected_image_topic_text = (selected_image_topic_topic === 'None') ? 'No Image Selected' : img_publishning?  this.state.selected_display_text : 'Waiting for image to publish'
 
@@ -962,8 +936,7 @@ renderDetectorSettings() {
           <Columns>
           <Column>
 
-
-              
+                 
 
                   <Label title="Select Image">
                       <Select id="ImgSelect" onChange={this.onDisplayImgSelected} 
