@@ -529,7 +529,7 @@ renderDetectorSettings() {
           <Columns>
         <Column>
 
-             <Label title="Overlay Image Name">
+             <Label title="Auto Select Image">
                     <Toggle
                     checked={auto_select_active===true}
                     onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_auto_select_enable", !auto_select_active)}>
