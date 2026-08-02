@@ -2553,6 +2553,21 @@ class ROSConnectionStore {
   }
 
   @action.bound
+  sendUpdateStringArrayMsg(namespace, name, values, name2 = '', name3 = '') {
+    this.publishMessage({
+      name: namespace,
+      messageType: "nepi_interfaces/UpdateStringArray",
+      data: {
+        name: name,
+        name2: name2,
+        name3: name3,
+        value: values
+      },
+      noPrefix: true
+    })
+  }
+
+  @action.bound
   sendStringArrayMsg(namespace,strArray) {
     this.publishMessage({
       name: namespace,
