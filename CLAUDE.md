@@ -155,3 +155,4 @@ if (prevState.someSource !== this.state.someSource) {
 
 - 2026-03 — CLAUDE.md created — Initial developer reference, Claude Code authoring pass.
 - 2026-05 — Editable input pattern documented — PTX controls are the canonical reference; all editable inputs must follow this pattern.
+- 2026-08 — IDX connect components split into data + controls children — `Nepi_IF_ConnectIDX.js` now owns only the ConnectIFStatus subscription, the device selector, and composition; `Nepi_IF_IDX-Data.js` (`NepiIFIDXData`) renders read-only telemetry and `Nepi_IF_IDX-Controls.js` (`NepiIFIDXControls`) renders command widgets, each owning its own `setupIDXStatusListener` on the `namespace` prop. Section visibility resolves prop-overrides-ConnectIFStatus, and the child device namespace comes from `ConnectIFStatus.selected_topic` (there is no `selected_namespace` field on the wire). IDX is the pilot; PTX and the other device types are not yet converted.
