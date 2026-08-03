@@ -25,29 +25,20 @@ import Select, { Option } from "./Select"
 import { Columns, Column } from "./Columns"
 import BooleanIndicator from "./BooleanIndicator"
 import Label from "./Label"
-import Input from "./Input"
-import Styles from "./Styles"
-import Button, { ButtonMenu } from "./Button"
 
-import { round, setElementStyleModified, clearElementStyleModified } from "./Utilities"
-
-import NepiIFConfig from "./Nepi_IF_Config"
+import NepiIFRBXData from "./Nepi_IF_RBX-Data"
+import NepiIFRBXControls from "./Nepi_IF_RBX-Controls"
 
 @inject("ros")
 @observer
 
-// Reusable component that renders the selector, data, and controls for an RBX
-// robot device connected through the ConnectRBXDeviceIF interface. It
-// subscribes to the connect namespace ConnectIFStatus (selector/connection
-// state and section-visibility flags) and to the selected device's
-// DeviceRBXStatus (telemetry and state fields), talking to ROS directly
-// through this.props.ros the same way the neighboring Nepi_IF_Connect*
-// components do.
-//
-// The command controls publish the ConnectRBXDeviceIF command topics on the
-// selected device namespace. State, mode, and action are enumerated indices on
-// the wire (std_msgs/Int32) -- ConnectRBXDeviceIF exposes no capabilities query
-// for their display names, so they are entered as indices here.
+// Reusable component that renders the device selector for an RBX robot device
+// connected through the ConnectRBXDeviceIF interface, and composes the data and
+// controls children for the selected device. It subscribes to the connect
+// namespace ConnectIFStatus (selector/connection state and section-visibility
+// flags) only -- the two children each own their own DeviceRBXStatus
+// subscription -- talking to ROS directly through this.props.ros the same way
+// the neighboring Nepi_IF_ components do.
 class NepiIFConnectRBX extends Component {
   constructor(props) {
     super(props)
@@ -57,28 +48,12 @@ class NepiIFConnectRBX extends Component {
       // Connect namespace (node_name/rbx_connect)
       namespace: null,
 
-      // Two status sources
-      connect_status_msg: null,   // ConnectIFStatus
-      device_status_msg: null,    // DeviceRBXStatus
+      // ConnectIFStatus from the connect namespace -- the only status this
+      // component subscribes to.
+      connect_status_msg: null,
 
-      // The device status topic the device listener is currently pointed at
-      selected_topic: 'None',
-
-      // Status listener handles
+      // Status listener handle
       connectStatusListener: null,
-      deviceStatusListener: null,
-
-      // Edit buffers for the editable command inputs. Kept separate from the
-      // device status so typing is not clobbered by incoming status messages.
-      stateIndex: '',
-      modeIndex: '',
-      setupAction: '',
-      goAction: '',
-      gotoTimeout: '',
-
-      // Ids of inputs edited but not yet committed (per the RUI dirty-input
-      // convention), styled via setElementStyleModified/clearElementStyleModified.
-      dirtyFields: new Set(),
 
     }
 
@@ -86,16 +61,10 @@ class NepiIFConnectRBX extends Component {
 
     this.updateConnectStatusListener = this.updateConnectStatusListener.bind(this)
     this.connectStatusListener = this.connectStatusListener.bind(this)
-    this.updateDeviceStatusListener = this.updateDeviceStatusListener.bind(this)
-    this.deviceStatusListener = this.deviceStatusListener.bind(this)
 
     this.onDeviceSelected = this.onDeviceSelected.bind(this)
-    this.onUpdateInput = this.onUpdateInput.bind(this)
-    this.onKeyInput = this.onKeyInput.bind(this)
 
     this.renderSelector = this.renderSelector.bind(this)
-    this.renderData = this.renderData.bind(this)
-    this.renderControls = this.renderControls.bind(this)
   }
 
   // Resolve the connect namespace from the namespace prop
@@ -117,15 +86,12 @@ class NepiIFConnectRBX extends Component {
   }
 
   // Lifecycle method called just before the component unmounts.
-  // Used to tear down both status listeners.
+  // Used to tear down the connect status listener.
   componentWillUnmount() {
     if (this.state.connectStatusListener) {
       this.state.connectStatusListener.unsubscribe()
     }
-    if (this.state.deviceStatusListener) {
-      this.state.deviceStatusListener.unsubscribe()
-    }
-    this.setState({ connectStatusListener: null, deviceStatusListener: null })
+    this.setState({ connectStatusListener: null })
   }
 
   // Function for configuring and subscribing to the connect namespace status
@@ -148,35 +114,9 @@ class NepiIFConnectRBX extends Component {
     this.setState({ namespace: namespace })
   }
 
-  // Callback for ConnectIFStatus messages. Stores the message and re-points the
-  // device status listener whenever selected_topic changes.
+  // Callback for ConnectIFStatus messages.
   connectStatusListener(message) {
     this.setState({ connect_status_msg: message })
-    if (message.selected_topic !== this.state.selected_topic) {
-      this.updateDeviceStatusListener(message.selected_topic)
-    }
-  }
-
-  // Function for configuring and subscribing to the selected device's status
-  // topic (selected_topic/status), message type DeviceRBXStatus.
-  updateDeviceStatusListener(selected_topic) {
-    if (this.state.deviceStatusListener != null) {
-      this.state.deviceStatusListener.unsubscribe()
-      this.setState({ deviceStatusListener: null, device_status_msg: null })
-    }
-    if (selected_topic != null && selected_topic !== 'None') {
-      var deviceStatusListener = this.props.ros.setupRBXStatusListener(
-        selected_topic,
-        this.deviceStatusListener
-      )
-      this.setState({ deviceStatusListener: deviceStatusListener })
-    }
-    this.setState({ selected_topic: selected_topic })
-  }
-
-  // Callback for DeviceRBXStatus messages.
-  deviceStatusListener(message) {
-    this.setState({ device_status_msg: message })
   }
 
   // Handler for the device Select. Changes the connected topic by publishing a
@@ -189,84 +129,10 @@ class NepiIFConnectRBX extends Component {
     }
   }
 
-  // Editable-input change handler: mark the box modified (red + bold) and record
-  // it as dirty. stateKey is the edit-buffer field to store the typed value in.
-  onUpdateInput(e, stateKey) {
-    const id = e.target.id
-    const el = document.getElementById(id)
-    if (el) {
-      setElementStyleModified(el)
-    }
-    const dirtyFields = new Set(this.state.dirtyFields)
-    dirtyFields.add(id)
-    this.setState({ [stateKey]: e.target.value, dirtyFields: dirtyFields })
-  }
-
-  // Editable-input commit handler: on Enter, publish the command to the selected
-  // device topic and clear the modified style / dirty flag.
-  onKeyInput(e) {
-    if (e.key !== 'Enter') {
-      return
-    }
-    const { sendIntMsg } = this.props.ros
-    const connect_status_msg = this.state.connect_status_msg
-    if (connect_status_msg == null) {
-      return
-    }
-    const namespace = connect_status_msg.selected_topic
-    if (namespace == null || namespace === 'None') {
-      return
-    }
-
-    const dirtyFields = new Set(this.state.dirtyFields)
-    const clearDirty = (fid) => {
-      const fel = document.getElementById(fid)
-      if (fel) {
-        clearElementStyleModified(fel)
-      }
-      dirtyFields.delete(fid)
-    }
-
-    const id = e.target.id
-
-    if (id === "ConnectRBXState") {
-      sendIntMsg(namespace + "/set_state", e.target.value)
-      clearDirty(id)
-    }
-    else if (id === "ConnectRBXMode") {
-      sendIntMsg(namespace + "/set_mode", e.target.value)
-      clearDirty(id)
-    }
-    else if (id === "ConnectRBXSetupAction") {
-      sendIntMsg(namespace + "/setup_action", e.target.value)
-      clearDirty(id)
-    }
-    else if (id === "ConnectRBXGoAction") {
-      sendIntMsg(namespace + "/go_action", e.target.value)
-      clearDirty(id)
-    }
-    else if (id === "ConnectRBXGotoTimeout") {
-      // set_goto_timeout is a std_msgs/UInt32 topic, so it is published
-      // directly rather than through the Int32-typed sendIntMsg helper.
-      const timeout = parseInt(e.target.value, 10)
-      if (!isNaN(timeout) && timeout >= 0) {
-        this.props.ros.publishMessage({
-          name: namespace + "/set_goto_timeout",
-          messageType: "std_msgs/UInt32",
-          data: { data: timeout },
-          noPrefix: true
-        })
-        clearDirty(id)
-      }
-    }
-
-    this.setState({ dirtyFields: dirtyFields })
-  }
-
   // Device selector, backed by ConnectIFStatus. Populated from
-  // available_topics/available_names, shows a connected BooleanIndicator, and
-  // changes the connection by publishing a std_msgs/String to the connect
-  // namespace select_topic topic.
+  // available_topics/available_names, shows the selected_name and a connected
+  // BooleanIndicator, and changes the connection by publishing a
+  // std_msgs/String to the connect namespace select_topic topic.
   renderSelector() {
     const connect_status_msg = this.state.connect_status_msg
     if (connect_status_msg == null) {
@@ -316,253 +182,63 @@ class NepiIFConnectRBX extends Component {
     )
   }
 
-  // Read-only device telemetry, backed by DeviceRBXStatus. No command
-  // publishers here.
-  renderData() {
-    const status_msg = this.state.device_status_msg
-    if (status_msg == null) {
-      return (
-        <Columns>
-          <Column>
-
-          </Column>
-        </Columns>
-      )
-    }
-
-    const deviceName = status_msg.device_name
-    const deviceNodeName = status_msg.device_node_name
-    const swVersion = status_msg.sw_version
-
-    const ready = status_msg.ready
-    const battery = round(status_msg.battery + .001, 2)
-
-    const manualReady = status_msg.manual_control_mode_ready
-    const autonomousReady = status_msg.autonomous_control_mode_ready
-
-    const processCurrent = status_msg.process_current
-    const processLast = status_msg.process_last
-    const cmdSuccess = status_msg.cmd_success
-
-    const lastCmdString = status_msg.last_cmd_string
-    const lastErrorMessage = status_msg.last_error_message
-
-    const errors = status_msg.errors_current
-
-    return (
-      <React.Fragment>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-        <Label title={"Device Name"}>
-          <Input disabled value={deviceName} />
-        </Label>
-
-        <Label title={"Node Name"}>
-          <Input disabled value={deviceNodeName} />
-        </Label>
-
-        <Label title={"SW Version"}>
-          <Input disabled value={swVersion} />
-        </Label>
-
-        <Label title={"Ready"}>
-          <BooleanIndicator value={ready} />
-        </Label>
-
-        <Label title={"Battery (0-1)"}>
-          <Input disabled value={battery} />
-        </Label>
-
-        <Label title={"Manual Control Ready"}>
-          <BooleanIndicator value={manualReady} />
-        </Label>
-
-        <Label title={"Autonomous Control Ready"}>
-          <BooleanIndicator value={autonomousReady} />
-        </Label>
-
-        <Label title={"Current Process"}>
-          <Input disabled value={processCurrent} />
-        </Label>
-
-        <Label title={"Last Process"}>
-          <Input disabled value={processLast} />
-        </Label>
-
-        <Label title={"Last Cmd Success"}>
-          <BooleanIndicator value={cmdSuccess} />
-        </Label>
-
-        { (errors != null) ? (
-          <React.Fragment>
-
-            <Label title={"Error Heading (deg)"}>
-              <Input disabled value={round(errors.heading_deg + .001, 2)} />
-            </Label>
-
-            <Label title={"Error X (m)"}>
-              <Input disabled value={round(errors.x_m + .001, 2)} />
-            </Label>
-
-            <Label title={"Error Y (m)"}>
-              <Input disabled value={round(errors.y_m + .001, 2)} />
-            </Label>
-
-            <Label title={"Error Z (m)"}>
-              <Input disabled value={round(errors.z_m + .001, 2)} />
-            </Label>
-
-          </React.Fragment>
-        ) : null }
-
-        <Label title={"Last Command"}>
-          <Input disabled value={lastCmdString} />
-        </Label>
-
-        <Label title={"Last Error"}>
-          <Input disabled value={lastErrorMessage} />
-        </Label>
-
-      </React.Fragment>
-    )
-  }
-
-  // Command controls, backed by ConnectIFStatus. Publishes through
-  // this.props.ros to the device topic names the ConnectRBXDeviceIF publishers
-  // use: set_state, set_mode, setup_action, go_action, set_goto_timeout,
-  // go_home, go_stop, publish_status, and save/reset config.
-  renderControls() {
-    const { sendTriggerMsg } = this.props.ros
-
-    const connect_status_msg = this.state.connect_status_msg
-    if (connect_status_msg == null) {
-      return (
-        <Columns>
-          <Column>
-
-          </Column>
-        </Columns>
-      )
-    }
-
-    // Device command namespace is the selected device topic.
-    const namespace = connect_status_msg.selected_topic
-    if (namespace == null || namespace === 'None') {
-      return (
-        <Columns>
-          <Column>
-
-          </Column>
-        </Columns>
-      )
-    }
-
-    // Edit buffers for the editable command inputs.
-    const stateIndex = this.state.stateIndex
-    const modeIndex = this.state.modeIndex
-    const setupAction = this.state.setupAction
-    const goAction = this.state.goAction
-    const gotoTimeout = this.state.gotoTimeout
-
-    return (
-      <React.Fragment>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-        <Label title={"State Index"}>
-          <Input
-            id={"ConnectRBXState"}
-            value={stateIndex}
-            onChange={(e) => this.onUpdateInput(e, "stateIndex")}
-            onKeyDown={this.onKeyInput}
-          />
-        </Label>
-
-        <Label title={"Mode Index"}>
-          <Input
-            id={"ConnectRBXMode"}
-            value={modeIndex}
-            onChange={(e) => this.onUpdateInput(e, "modeIndex")}
-            onKeyDown={this.onKeyInput}
-          />
-        </Label>
-
-        <Label title={"Setup Action Index"}>
-          <Input
-            id={"ConnectRBXSetupAction"}
-            value={setupAction}
-            onChange={(e) => this.onUpdateInput(e, "setupAction")}
-            onKeyDown={this.onKeyInput}
-          />
-        </Label>
-
-        <Label title={"Go Action Index"}>
-          <Input
-            id={"ConnectRBXGoAction"}
-            value={goAction}
-            onChange={(e) => this.onUpdateInput(e, "goAction")}
-            onKeyDown={this.onKeyInput}
-          />
-        </Label>
-
-        <Label title={"Goto Timeout (s)"}>
-          <Input
-            id={"ConnectRBXGotoTimeout"}
-            value={gotoTimeout}
-            onChange={(e) => this.onUpdateInput(e, "gotoTimeout")}
-            onKeyDown={this.onKeyInput}
-          />
-        </Label>
-
-        <ButtonMenu>
-          <Button onClick={() => sendTriggerMsg(namespace + "/go_home")}>{"Go Home"}</Button>
-          <Button onClick={() => sendTriggerMsg(namespace + "/go_stop")}>{"Stop"}</Button>
-          <Button onClick={() => sendTriggerMsg(namespace + "/publish_status")}>{"Publish Status"}</Button>
-        </ButtonMenu>
-
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-        <NepiIFConfig
-          namespace={namespace}
-          title={"Nepi_IF_Config"}
-        />
-
-      </React.Fragment>
-    )
-  }
-
   render() {
-    const connect_status_msg = this.state.connect_status_msg
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const title = (this.props.title !== undefined) ? this.props.title : "RBX Connect"
+    const connect_status_msg = this.state.connect_status_msg
+    var show_selector = false
+    var show_data = false
+    var show_controls = false
+    var selected_namespace = null
 
     // No connect status yet: render nothing (empty Columns/Column), matching
-    // the Nepi_IF_ConnectMotor "not ready" branch.
+    // the Nepi_IF_ConnectIDX "not ready" branch.
     if (connect_status_msg == null) {
       return (
         <Columns>
-          <Column>
+        <Column>
 
-          </Column>
+        </Column>
         </Columns>
       )
     }
 
     // Resolve the three section-visibility flags by combining the props with
-    // the ConnectIFStatus flags the same defaulting way Nepi_IF_ConnectMotor
+    // the ConnectIFStatus flags the same defaulting way Nepi_IF_ConnectIDX
     // resolves its show_* props: a prop overrides, otherwise fall back to the
-    // backend flag from ConnectIFStatus.
-    const show_selector = (this.props.show_selector !== undefined) ? this.props.show_selector : connect_status_msg.show_selector
-    const show_controls = (this.props.show_controls !== undefined) ? this.props.show_controls : connect_status_msg.show_controls
-    const show_data = (this.props.show_data !== undefined) ? this.props.show_data : connect_status_msg.show_data
+    // backend flag from ConnectIFStatus. The child device namespace is the
+    // ConnectIFStatus selected_topic, with a selected_namespace prop override
+    // for callers that drive the children manually.
+    show_selector = this.props.show_selector !== undefined ? this.props.show_selector : connect_status_msg.show_selector
+    show_data = this.props.show_data !== undefined ? this.props.show_data : connect_status_msg.show_data
+    show_controls = this.props.show_controls !== undefined ? this.props.show_controls : connect_status_msg.show_controls
+    selected_namespace = this.props.selected_namespace !== undefined ? this.props.selected_namespace : connect_status_msg.selected_topic
+
+    const has_device = (selected_namespace != null && selected_namespace !== 'None')
 
     const content = (
       <React.Fragment>
 
-        { (show_selector === true) ? this.renderSelector() : null }
-        { (show_data === true) ? this.renderData() : null }
-        { (show_controls === true) ? this.renderControls() : null }
+          { (show_selector === true) ?
+            this.renderSelector()
+          : null }
+
+          { (show_data === true && has_device === true) ?
+            <NepiIFRBXData
+              namespace={selected_namespace}
+              make_section={false}
+            />
+          : null }
+
+          { (show_controls === true && has_device === true) ?
+            <NepiIFRBXControls
+              namespace={selected_namespace}
+              make_section={false}
+              show_controls_option={this.props.show_controls_option}
+              show_settings={this.props.show_settings}
+              show_admin={this.props.show_admin}
+            />
+          : null }
 
       </React.Fragment>
     )
@@ -576,7 +252,7 @@ class NepiIFConnectRBX extends Component {
     }
     else {
       return (
-        <Section title={(this.props.title !== undefined) ? this.props.title : title}>
+        <Section title={title}>
           {content}
         </Section>
       )
