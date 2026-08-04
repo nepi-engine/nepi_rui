@@ -70,7 +70,7 @@ class DetectorMgr extends Component {
 
       sources_list_viewable: true,
       source_list_detector_viewable: false,
-      source_filter_str_list: ['detections_image','targeting_image','alert_image','tracking_image'],
+      source_filter_str_list: ['detections_image','targets_image','alert_image','track_image'],
 
       selected_display_topic: "None",
       selected_display_text: "None",
