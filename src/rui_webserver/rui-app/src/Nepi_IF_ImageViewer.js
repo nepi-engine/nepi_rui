@@ -135,6 +135,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.renderImageViewer = this.renderImageViewer.bind(this)
     this.renderFilterControls = this.renderFilterControls.bind(this)
     this.renderRenderControls = this.renderRenderControls.bind(this)
+    this.renderLiveControls = this.renderLiveControls.bind(this)
     this.renderConfigControls = this.renderConfigControls.bind(this)
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
     this.renderCrosshairsControls = this.renderCrosshairsControls.bind(this)
@@ -222,6 +223,8 @@ class Nepi_IF_ImageViewer extends Component {
     return (
       <React.Fragment>
 
+      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
         {(nav_frames.length > 0) ?
         <Label title={"Reference Frame"}>
           <Select value={sel_frame} onChange={this.onChangeNavposeFrame}>
@@ -233,6 +236,7 @@ class Nepi_IF_ImageViewer extends Component {
         <NepiIFNavPose
           navposeNamespace={navpose_display_ns}
           title={"NavPose Data"}
+          show_line={false}
           read_only={true}
           make_section={false}
         />
@@ -242,7 +246,8 @@ class Nepi_IF_ImageViewer extends Component {
           transformNamespace={transform_topic}
           title={"Camera Frame Transform"}
           device_transform={true}
-          show_config={true}
+          show_line={false}
+          show_config={false}
           make_section={false}
         />
         : null }
@@ -967,7 +972,6 @@ class Nepi_IF_ImageViewer extends Component {
         <Column>
  
 
-             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
             <Label title={"FILTERS"} />
  
         
@@ -1061,8 +1065,6 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
-
 
           <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( namespace + "/reset_filters")}>{"Reset Controls"}</Button>
@@ -1149,7 +1151,6 @@ class Nepi_IF_ImageViewer extends Component {
         <Column>
 
 
-             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
             <Label title={"RENDER  CONTROLS"} />
 
           <div hidden={(is_pointcloud !== true)}>
@@ -1351,9 +1352,95 @@ class Nepi_IF_ImageViewer extends Component {
           </div>
 
 
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-                      <Label title={"Live Adjustments"} />
+                        <ButtonMenu>
+                            <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
+                          </ButtonMenu>
+
+
+      </Column>
+      </Columns>
+      )
+    }
+    else {
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+
+    }
+
+  }
+
+
+
+  renderLiveControls() {
+
+    const namespace = this.state.image_topic
+    const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
+
+    const { imageCaps, sendTriggerMsg } = this.props.ros
+    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+
+
+    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+      const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
+      const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
+      const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
+      const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
+      const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
+      const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
+
+
+      const message = this.state.status_msg
+      const auto_adjust_enabled = message.auto_adjust_enabled
+      const auto_adjust_controls = message.auto_adjust_controls
+      const range_start_ratio = message.range_ratios.start_range
+      const range_stop_ratio = message.range_ratios.stop_range
+      const zoom_ratio = message.zoom_ratio
+      const pan_x_ratio = message.pan_x_ratio
+      const pan_y_ratio = message.pan_y_ratio
+      const x_min_ratio = message.window_x_ratios.start_range
+      const x_max_ratio = message.window_x_ratios.stop_range
+      const y_min_ratio = message.window_y_ratios.start_range
+      const y_max_ratio = message.window_y_ratios.stop_range
+      const rotate_3d_ratio = message.rotate_3d_ratio
+      const tilt_3d_ratio = message.tilt_3d_ratio
+
+      const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
+      const live_adjust_rotate_deg = message.live_adjust_rotate_deg
+      const live_adjust_x_ratio = message.live_adjust_x_ratio
+      const live_adjust_x_pixels = message.live_adjust_x_pixels
+      const live_adjust_x_deg = message.live_adjust_x_deg
+      const live_adjust_y_ratio = message.live_adjust_y_ratio
+      const live_adjust_y_pixels = message.live_adjust_y_pixels
+      const live_adjust_y_deg = message.live_adjust_y_deg
+
+      const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
+      const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
+      const hide_window = (!has_window || auto_controls.indexOf('window') !== -1)
+
+      const min_range_m_adj = round( message.min_range_m_adj,1)
+      const max_range_m_adj = round(message.max_range_m_adj,1)
+
+      // The render image-size control applies only to the pointcloud render
+      // (fewer pixels = faster render). For 2D image products width_px/height_px
+      // are the source dimensions, so hide it there.
+      const is_pointcloud = (message.data_source_description !== undefined
+          && message.data_source_description !== null
+          && String(message.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
+
+      return (
+
+        <Columns>
+        <Column>
+
+
+            <Label title={"LIVE ADUSTMENTS"} />
+
                       <SliderAdjustment
                             title={"Rotate"}
                             msgType={"std_msgs/Float32"}
@@ -1392,12 +1479,9 @@ class Nepi_IF_ImageViewer extends Component {
                         />
 
 
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-          <ButtonMenu>
-            <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
-          </ButtonMenu>
+                        <ButtonMenu>
+                            <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
+                          </ButtonMenu>
 
 
       </Column>
@@ -1456,7 +1540,7 @@ class Nepi_IF_ImageViewer extends Component {
         <Columns>
         <Column>
  
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
         <Label title={"ORIENTATION & SIZE"} />
 
               <div hidden={(hide_rotate_2d)}>
@@ -1594,13 +1678,6 @@ class Nepi_IF_ImageViewer extends Component {
                         </Columns>             
 
 
-
-
-
-
-          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
-
-
           <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( namespace + "/reset_settings")}>{"Reset Controls"}</Button>
           </ButtonMenu>
@@ -1717,12 +1794,7 @@ class Nepi_IF_ImageViewer extends Component {
         <Column>
 
       <Label title={"TEXT OVERLAYS"} />
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-
-
-
-
+      
 
             <Columns>
             <Column>
@@ -1791,12 +1863,6 @@ class Nepi_IF_ImageViewer extends Component {
               </Columns>
 
 
-
-
-                
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
-
           <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
           </ButtonMenu>
@@ -1847,7 +1913,6 @@ class Nepi_IF_ImageViewer extends Component {
         <Column>
 
       <Label title={"CROSSHAIR OVERLAYS"} />
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
             <Columns>
@@ -1963,28 +2028,13 @@ class Nepi_IF_ImageViewer extends Component {
 
                 </div>
 
-                
-
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/> 
-
-
-            <Columns>
-            <Column>
+            
                 
                       <ButtonMenu>
                           <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear Crosshairs"}</Button>
                         </ButtonMenu>   
 
-              </Column>
-              <Column>
-
-                    
-                  {/* <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
-                  </ButtonMenu> */}
-
-                </Column>
-              </Columns>
+                
 
       </Column>
       </Columns>
@@ -2244,20 +2294,6 @@ class Nepi_IF_ImageViewer extends Component {
                           : null }
 
 
-                            {(show_save_controls === true && namespace !== 'None') ?
-                              <NepiIFSaveData
-                              saveNamespace={save_data_topic}
-                              make_section={false}
-                              show_all_save_options={false}
-                              show_topic_selector={show_topic_selector}
-                            />
-                          : null }
-
-
-                          {((show_save_controls === true)  && namespace !== 'None') ?
-                            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-                          : null }
-
 
       <div align={"left"} textAlign={"left"} hidden={( namespace === 'None')}>
 
@@ -2387,7 +2423,6 @@ class Nepi_IF_ImageViewer extends Component {
 
                                       {this.renderOverlayControls()}
 
-
                                 </div>
 
                                 <div style={{ width: '20%' }}>
@@ -2401,14 +2436,13 @@ class Nepi_IF_ImageViewer extends Component {
                 
                           </div>
 
-                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
-
-
+                            {(show_save_controls === true && namespace !== 'None') ?
                             <NepiIFConfig
                                 namespace={namespace}
-                                show_all_config_options={show_all_config_options}
                                 title={"Nepi_IF_Config"}
                             />
+                            : null }
+
 
                     </div>
 
@@ -2420,7 +2454,7 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ display: 'flex' }}>
                                 <div style={{ width: '40%' }}>
 
-                                  <Label title={"FILTERS"} />
+                          
                                   {this.renderFilterControls()}
 
 
@@ -2431,13 +2465,13 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '40%' }}>
-                                <Label title={"CONFIG"} />
+  
                                   {this.renderConfigControls()}
                                 </div>
                 
                           </div>
 
-                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
+
 
                             {(show_save_controls === true && namespace !== 'None') ?
                             <NepiIFConfig
@@ -2446,11 +2480,20 @@ class Nepi_IF_ImageViewer extends Component {
                             />
                             : null }
 
+
                     </div>
 
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>
 
                       {this.renderNavPoseSection()}
+
+
+                            {(show_save_controls === true && namespace !== 'None') ?
+                            <NepiIFConfig
+                                namespace={namespace}
+                                title={"Nepi_IF_Config"}
+                            />
+                            : null }
 
                     </div>
 
@@ -2463,7 +2506,6 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ display: 'flex' }}>
                                 <div style={{ width: '40%' }}>
 
-                                  <Label title={"ZOOM PAN ROTATE"} />
                                   {this.renderRenderControls()}
 
 
@@ -2474,23 +2516,47 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '40%' }}>
-                                  {}
+                                  {this.renderLiveControls()}
                 
                                 </div>
                               </div>
 
+          
+
+                            {(show_save_controls === true && namespace !== 'None') ?
+                            <NepiIFConfig
+                                namespace={namespace}
+                                title={"Nepi_IF_Config"}
+                            />
+                            : null }
+
                       </div>
 
+                          {(show_save_controls === true && namespace !== 'None') ?
+                          <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                          : null }
+                            {(show_save_controls === true && namespace !== 'None') ?
+                              <NepiIFSaveData
+                              saveNamespace={save_data_topic}
+                              make_section={false}
+                              show_all_save_options={false}
+                              show_topic_selector={show_topic_selector}
+                            />
+                          : null }
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>      
 
+
+
+
+{/* 
                     {(show_save_controls === true && namespace !== 'None') ?
                     <NepiIFConfig
                         namespace={namespace}
                         show_all_config_options={false}
                         title={"Nepi_IF_Config"}
                     />
-                    : null }
+                    : null } 
+*/}
 
 
 

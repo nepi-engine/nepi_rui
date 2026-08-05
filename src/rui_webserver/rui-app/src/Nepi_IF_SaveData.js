@@ -69,6 +69,7 @@ class NepiIFSaveData extends Component {
       saveNamesList: [],
       saveRatesList: [],
       selectedDataProducts: [],
+      selectedNamespace: null,
 
       saveAll: false,
 
@@ -202,11 +203,16 @@ class NepiIFSaveData extends Component {
     const saveNamespace =  (this.state.updatedNamespace != null) ? this.state.updatedNamespace :
                                   (this.props.saveNamespace !== undefined) ? 
                                     (this.props.saveNamespace !== '' && this.props.saveNamespace !== 'None' && this.props.saveNamespace !== null) ?
-                                        this.props.saveNamespace : allSaveNamespace : allSaveNamespace 
+                                        this.props.saveNamespace : allSaveNamespace : allSaveNamespace
+    const show_all_data_options = (this.props.show_all_data_options !== undefined) ? this.props.show_all_data_options : true
+
+    const selectedNamespace = (this.state.selectedNamespace != null) ? this.state.selectedNamespace :
+                                    (show_all_data_options === false) ? saveNamespace : allSaveNamespace
     const needs_update = ((this.state.saveNamespace !== saveNamespace || this.state.needs_update === true))
   
     if (needs_update) {
       this.setState({saveNamespace: saveNamespace,
+                    selectedNamespace: selectedNamespace,
                     needs_update: false
       })
       this.updateSaveStatusListener(saveNamespace)
@@ -790,13 +796,14 @@ class NepiIFSaveData extends Component {
     this.setState({lastSaveNamespace: this.saveNamespace})
     const selNamespace = event.target.value
     this.setState({updatedNamespace: selNamespace,
+                   selectedNamespace: selNamespace,
                    needs_update: true
     })
   }
 
   renderTopicSelector() {
     const saveTopics = this.createTopicOptions()
-
+    const selectedNamespace = (this.state.selectedNamespace != null) ? this.state.selectedNamespace : this.state.saveNamespace
     return (
       <React.Fragment>
 
@@ -807,7 +814,7 @@ class NepiIFSaveData extends Component {
           <Label title={"Save Select"}>
                 <Select onChange={this.onChangeTopicSelection}
                 id="topicSelecor"
-                value={this.state.saveNamespace}>
+                value={selectedNamespace}>
                   {saveTopics}
                 </Select>
             </Label>
@@ -998,7 +1005,8 @@ class NepiIFSaveData extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const showControls = (allways_show_controls === true) ? true : this.state.showControls
     const allSaveNamespace = (allNamespace != null) ? allNamespace: 'None'
-    const is_all_namespace = (saveNamespace === allSaveNamespace)
+    const selectedNamespace = (this.state.selectedNamespace != null) ? this.state.selectedNamespace : this.state.saveNamespace
+    const is_all_namespace = (saveNamespace === allSaveNamespace) || (selectedNamespace === allSaveNamespace)
     const { userRestricted} = this.props.ros
     const save_controls_restricted = userRestricted.indexOf('SYSTEM-SAVE-CONTROL') !== -1
 

@@ -29,7 +29,7 @@ import Select, { Option } from "./Select"
 
 import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFAdmin from "./Nepi_IF_Admin"
+
 
 
 @inject("ros")
@@ -202,15 +202,6 @@ class NepiDeviceNPX extends Component {
                         : null}
 
 
-                        {(device_selected === true) ?
-                          <NepiIFAdmin
-                              title={"Advanced Settings"}
-                              show_advanced_option={true}
-                              show_admin_device_names={true}
-                              node_name={node_name}
-                              make_section={true}
-                        />
-                        : null}
 
 
               </div>
