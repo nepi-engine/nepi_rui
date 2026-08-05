@@ -203,25 +203,70 @@ class NepiIFConnectNavPose extends Component {
       items.push(<Option value={available_topics[i]}>{source_name}</Option>)
     }
 
+    // Optional header row. Pages that draw one bordered panel around several
+    // connect rows (make_section={false}) pass show_connect_header={true}: the
+    // row's title and its connected BooleanIndicator then share a line ABOVE
+    // the selector, and the Select spans the panel width. Default false keeps
+    // the original one-line layout with the indicator beside the Select.
+    const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
+    const header_title = (this.props.title !== undefined) ? this.props.title : "NavPose Connect"
+
+    const selector = (
+      <Label title={"NavPose Source"}>
+        <Select
+          onChange={this.onSourceSelected}
+          value={selected_topic}
+        >
+          {items}
+        </Select>
+      </Label>
+    )
+
+    const connected_indicator = (
+      <Label title={"Connected"}>
+        <BooleanIndicator value={connected} />
+      </Label>
+    )
+
+    if (show_connect_header === true) {
+      return (
+        <React.Fragment>
+
+          <Columns>
+            <Column>
+
+              <Label title={header_title} labelStyle={{fontWeight: 'bold'}}/>
+
+            </Column>
+            <Column>
+
+              {connected_indicator}
+
+            </Column>
+          </Columns>
+
+          <Columns>
+            <Column>
+
+              {selector}
+
+            </Column>
+          </Columns>
+
+        </React.Fragment>
+      )
+    }
+
     return (
       <Columns>
         <Column>
 
-          <Label title={"NavPose Source"}>
-            <Select
-              onChange={this.onSourceSelected}
-              value={selected_topic}
-            >
-              {items}
-            </Select>
-          </Label>
+          {selector}
 
         </Column>
         <Column>
 
-          <Label title={"Connected"}>
-            <BooleanIndicator value={connected} />
-          </Label>
+          {connected_indicator}
 
         </Column>
       </Columns>
