@@ -38,6 +38,13 @@ import "./AsyncToggle.css"
 // followed", and the color change *is* the success signal. If no confirming
 // status arrives within confirmTimeoutMs the thumb animates back on its own.
 //
+// Pressing again while a request is outstanding RESENDS it -- same value, fresh
+// timeout. A message dropped by a flaky link is the common reason color never
+// follows, and pressing the control again is what an operator does about it, so
+// the repeat press is treated as a retry rather than swallowed. The resend is
+// necessarily the same value because the caller's onClick computes it from the
+// same unconfirmed "checked" prop this component is still waiting on.
+//
 // This component knows nothing about ROS. It calls the onClick prop exactly as
 // react-toggle would; all namespaces, topics and message types stay in the
 // caller.
