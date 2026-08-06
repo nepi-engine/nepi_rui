@@ -137,9 +137,11 @@ class Nepi_IF_ImageViewer extends Component {
     this.renderFilterControls = this.renderFilterControls.bind(this)
     this.renderRenderControls = this.renderRenderControls.bind(this)
     this.renderLiveControls = this.renderLiveControls.bind(this)
+    this.renderStreamControls = this.renderStreamControls.bind(this)
     this.renderConfigControls = this.renderConfigControls.bind(this)
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
     this.renderCrosshairsControls = this.renderCrosshairsControls.bind(this)
+    this.renderTargetsControls = this.renderTargetsControls.bind(this)
 
     this.renderStats = this.renderStats.bind(this)
     this.getImgStatsText = this.getImgStatsText.bind(this)
@@ -319,7 +321,8 @@ class Nepi_IF_ImageViewer extends Component {
     }
     if (this.image) {
       //const { streamingImageQuality } = this.props.ros
-      const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : COMPRESSION_HIGH_QUALITY
+      const stream_compression_ratio = (this.state.status_msg != null) ? this.state.status_msg.stream_compression_ratio : COMPRESSION_HIGH_QUALITY
+      const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : stream_compression_ratio
       const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
       this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&type=mjpeg' + '&framerate=' + stream_rate + '&quality=' + stream_quality 
     }
@@ -334,7 +337,8 @@ class Nepi_IF_ImageViewer extends Component {
     const height = (this.image) ? this.image.height : 0
     const got_size = width * height
     const size_changed = (size !== got_size)
-    const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : COMPRESSION_HIGH_QUALITY
+    const stream_compression_ratio = (this.state.status_msg != null) ? this.state.status_msg.stream_compression_ratio : COMPRESSION_HIGH_QUALITY
+    const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : stream_compression_ratio
     const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
     if (prevProps.image_topic !== image_topic || size_changed === true || prevState.currentStreamingImageQuality !== stream_quality){
       this.setState({streamSize: got_size, currentStreamingImageQuality: stream_quality, currentStreamingImageRate: stream_rate})
@@ -732,29 +736,69 @@ class Nepi_IF_ImageViewer extends Component {
     if (mouse_click !== null){
         const status_msg = this.state.status_msg
         const num_crosshairs = status_msg.num_crosshairs
-        const click_crosshair_enabled = status_msg.click_crosshair_enabled
-        if (click_crosshair_enabled === true && status_msg != null){
-            const name = (this.state.crosshair_name != null && this.state.crosshair_name === '') ? this.state.crosshair_name : num_crosshairs
-            const width_px = status_msg.width_px
-            const height_px = status_msg.height_px
-            const width_deg = status_msg.width_deg
-            const height_deg = status_msg.height_deg
-            const x_pixel = mouse_click.x
-            const y_pixel = mouse_click.y
-            const x_ratio = x_pixel / (width_px)
-            const y_ratio = y_pixel / (height_px)
-            const x_offset_pixel = width_px/2 + (x_ratio - 0.5) * width_px
-            const y_offset_pixel = height_px/2 + (y_ratio - 0.5) * height_px
-            const x_offset_deg = width_deg/2 + (x_ratio - 0.5) * width_deg
-            const y_offset_deg = height_deg/2 + (y_ratio - 0.5) * height_deg
-            const r = status_msg.crosshairs_color_r
-            const g = status_msg.crosshairs_color_g
-            const b = status_msg.crosshairs_color_b
-            this.props.ros.sendImageCrosshairMsg(namespace.replace('/mouse_event','') + '/add_crosshair_ratios', name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel, r, g, b, '' )
-        }
-        else {
+        // const click_text_enabled = status_msg.click_text_enabled
+        // const click_crosshair_enabled = status_msg.click_crosshair_enabled
+        // const click_target_enabled = status_msg.click_target_enabled
+        // if (click_text_enabled === true && status_msg != null){
+        //     const name = 'click'
+        //     const width_px = status_msg.width_px
+        //     const height_px = status_msg.height_px
+        //     const width_deg = status_msg.width_deg
+        //     const height_deg = status_msg.height_deg
+        //     const x_pixel = mouse_click.x
+        //     const y_pixel = mouse_click.y
+        //     const x_ratio = x_pixel / (width_px)
+        //     const y_ratio = y_pixel / (height_px)
+        //     const x_offset_pixel = width_px/2 + (x_ratio - 0.5) * width_px
+        //     const y_offset_pixel = height_px/2 + (y_ratio - 0.5) * height_px
+        //     const x_offset_deg = width_deg/2 + (x_ratio - 0.5) * width_deg
+        //     const y_offset_deg = height_deg/2 + (y_ratio - 0.5) * height_deg
+        //     const r = status_msg.crosshairs_color_r
+        //     const g = status_msg.crosshairs_color_g
+        //     const b = status_msg.crosshairs_color_b
+        //     this.props.ros.sendImageCrosshairMsg(namespace.replace('/mouse_event','') + '/add_crosshair_ratios', name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel, r, g, b, '' )
+        // }
+        // if (click_crosshair_enabled === true && status_msg != null){
+        //     const name = 'click'
+        //     const width_px = status_msg.width_px
+        //     const height_px = status_msg.height_px
+        //     const width_deg = status_msg.width_deg
+        //     const height_deg = status_msg.height_deg
+        //     const x_pixel = mouse_click.x
+        //     const y_pixel = mouse_click.y
+        //     const x_ratio = x_pixel / (width_px)
+        //     const y_ratio = y_pixel / (height_px)
+        //     const x_offset_pixel = width_px/2 + (x_ratio - 0.5) * width_px
+        //     const y_offset_pixel = height_px/2 + (y_ratio - 0.5) * height_px
+        //     const x_offset_deg = width_deg/2 + (x_ratio - 0.5) * width_deg
+        //     const y_offset_deg = height_deg/2 + (y_ratio - 0.5) * height_deg
+        //     const r = status_msg.crosshairs_color_r
+        //     const g = status_msg.crosshairs_color_g
+        //     const b = status_msg.crosshairs_color_b
+        //     this.props.ros.sendImageCrosshairMsg(namespace.replace('/mouse_event','') + '/add_crosshair_ratios', name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel, r, g, b, '' )
+        // }
+        // else if (click_target_enabled === true && status_msg != null) {
+        //     const name = 'click'
+        //     const width_px = status_msg.width_px
+        //     const height_px = status_msg.height_px
+        //     const width_deg = status_msg.width_deg
+        //     const height_deg = status_msg.height_deg
+        //     const x_pixel = mouse_click.x
+        //     const y_pixel = mouse_click.y
+        //     const x_ratio = x_pixel / (width_px)
+        //     const y_ratio = y_pixel / (height_px)
+        //     const x_offset_pixel = width_px/2 + (x_ratio - 0.5) * width_px
+        //     const y_offset_pixel = height_px/2 + (y_ratio - 0.5) * height_px
+        //     const x_offset_deg = width_deg/2 + (x_ratio - 0.5) * width_deg
+        //     const y_offset_deg = height_deg/2 + (y_ratio - 0.5) * height_deg
+        //     const r = status_msg.crosshairs_color_r
+        //     const g = status_msg.crosshairs_color_g
+        //     const b = status_msg.crosshairs_color_b
+        //     this.props.ros.sendImageTargetMsg(namespace.replace('/mouse_event','') + '/add_target_ratios', name, x_pixel, y_pixel, x_ratio, y_ratio, x_offset_deg, y_offset_deg, x_offset_pixel, y_offset_pixel, r, g, b, '' )
+        // }
+        
           this.props.ros.sendMouseClickEventMsg(namespace, image_topic, image_index, mouse_click, this.state.click_count, status_msg )
-        }
+        
         this.setState({click_count: 0})
     }
     else if (mouse_drag_start !== null){
@@ -1123,6 +1167,8 @@ class Nepi_IF_ImageViewer extends Component {
       const rotate_3d_ratio = message.rotate_3d_ratio
       const tilt_3d_ratio = message.tilt_3d_ratio
 
+      const live_adjustments_disabled = message.live_adjustments_disabled
+      const live_adjust_enabled = message.live_adjust_enabled
       const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
       const live_adjust_rotate_deg = message.live_adjust_rotate_deg
       const live_adjust_x_ratio = message.live_adjust_x_ratio
@@ -1411,6 +1457,8 @@ class Nepi_IF_ImageViewer extends Component {
       const rotate_3d_ratio = message.rotate_3d_ratio
       const tilt_3d_ratio = message.tilt_3d_ratio
 
+      const live_adjustments_disabled = message.live_adjustments_disabled
+      const live_adjust_enabled = message.live_adjust_enabled
       const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
       const live_adjust_rotate_deg = message.live_adjust_rotate_deg
       const live_adjust_x_ratio = message.live_adjust_x_ratio
@@ -1439,7 +1487,7 @@ class Nepi_IF_ImageViewer extends Component {
         <Columns>
         <Column>
 
-
+          <div hidden={live_adjustments_disabled === true}>
             <Label title={"LIVE ADUSTMENTS"} />
 
                       <SliderAdjustment
@@ -1483,6 +1531,80 @@ class Nepi_IF_ImageViewer extends Component {
                         <ButtonMenu>
                             <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
                           </ButtonMenu>
+
+                </div>
+
+      </Column>
+      </Columns>
+      )
+    }
+    else {
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+
+    }
+
+  }
+
+
+  renderStreamControls() {
+
+    const namespace = this.state.image_topic
+    const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
+
+    const { imageCaps, sendTriggerMsg } = this.props.ros
+    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+
+
+    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+      
+      const message = this.state.status_msg
+      const stream_compression_enabled = message.stream_compression_enabled
+      const stream_compression_ratio = message.stream_compression_ratio
+     
+      return (
+
+        <Columns>
+        <Column>
+
+            <Label title={"STREAM COMPRESSION"} />
+
+
+                    <Columns>
+                    <Column>
+
+                            <Label title={"Enabled"}>
+                              <AsyncToggle
+                                checked={stream_compression_enabled===true}
+                                onClick={() => sendBoolMsg(namespace + "/stream_compression_enabled",!stream_compression_enabled)}>
+                              </AsyncToggle>
+                            </Label>
+
+
+                        </Column>
+                        <Column>
+
+                        </Column>
+                      </Columns>
+
+                      <SliderAdjustment
+                            title={"Compression Level"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={stream_compression_ratio}
+                            topic={namespace + "/set_stream_compression_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Steam Compression Level control"}
+                            noTextBox={true}
+                        />
+                   
 
 
       </Column>
@@ -1534,6 +1656,10 @@ class Nepi_IF_ImageViewer extends Component {
       const hide_flip_vert = (!has_flip_vert || auto_controls.indexOf('flip_vert') !== -1)
 
 
+      // const aspect_adjustment_disabled = message.aspect_adjustment_disabled
+      // const aspect_adjust_enabled = message.aspect_adjust_enabled
+      // const aspect_adjust_options = message.aspect_adjust_options
+      // const aspect_adjust_selection = message.aspect_adjust_selection
 
 
       return (
@@ -1782,11 +1908,20 @@ class Nepi_IF_ImageViewer extends Component {
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
-      const text_size_ratio = message.overlay_size_ratio
-      const name = message.overlay_img_name
-      const date = message.overlay_date_time
-      const nav = message.overlay_nav
-      const pose = message.overlay_pose
+      const overlay_text_enabled = message.overlay_text_enabled
+      const click_text_enabled = message.click_text_enabled
+      const overlay_text_size_ratio = message.overlay_text_size_ratio
+      const overlay_text_horz_ratio = message.overlay_text_horz_ratio
+      const overlay_text_vert_ratio = message.overlay_text_vert_ratio
+      const overlay_text_transparency_ratio = message.overlay_text_transparency_ratio
+      const overlay_text_color_r = message.overlay_text_color_r
+      const overlay_text_color_g = message.overlay_text_color_g
+      const overlay_text_color_b = message.overlay_text_color_b
+      const overlay_text_source_name = message.overlay_text_source_name
+      const overlay_text_date_time = message.overlay_text_date_time
+      const overlay_text_nav = message.overlay_text_nav
+      const overlay_text_pose = message.overlay_text_pose
+      
 
 
       return (
@@ -1799,14 +1934,32 @@ class Nepi_IF_ImageViewer extends Component {
 
             <Columns>
             <Column>
+                
+                      <Label title={"Show Text"}>
+                      <AsyncToggle
+                        checked={overlay_text_enabled}
+                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_enable',!overlay_text_enabled)}
+                      /> 
+                    </Label>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+
+              <div hidden={overlay_text_enabled === false}>
+
+            <Columns>
+            <Column>
 
 
 
                   <SliderAdjustment
                       title={"Text Size"}
                       msgType={"std_msgs/Float32"}
-                      adjustment={text_size_ratio}
-                      topic={namespace + "/set_overlay_size_ratio"}
+                      adjustment={overlay_text_size_ratio}
+                      topic={namespace + "/set_overlay_text_size_ratio"}
                       scaled={0.01}
                       min={0}
                       max={100}
@@ -1815,31 +1968,67 @@ class Nepi_IF_ImageViewer extends Component {
                       noTextBox={true}
                   />
 
+                  <SliderAdjustment
+                      title={"Text Vert Position"}
+                      msgType={"std_msgs/Float32"}
+                      adjustment={overlay_text_vert_ratio}
+                      topic={namespace + "/set_overlay_text_vert_ratio"}
+                      scaled={0.01}
+                      min={0}
+                      max={100}
+                      disabled={false}
+                      tooltip={"Overlay text vert position controls"}
+                      noTextBox={true}
+                  />
+
+                  <SliderAdjustment
+                      title={"Text Horz Position"}
+                      msgType={"std_msgs/Float32"}
+                      adjustment={overlay_text_horz_ratio}
+                      topic={namespace + "/set_overlay_text_horz_ratio"}
+                      scaled={0.01}
+                      min={0}
+                      max={100}
+                      disabled={false}
+                      tooltip={"Overlay text horz position controls"}
+                      noTextBox={true}
+                  />
+
+                        <Label title={"Enable Click Text Position"}>
+                              <AsyncToggle
+                                checked={click_text_enabled}
+                                onClick={() => sendBoolMsg(namespace + '/set_click_text_enable',!click_text_enabled)}
+                              /> 
+                            </Label>
+
+
+            
+
                   <Label title={"Source Name"}>
                       <AsyncToggle
-                        checked={name}
-                        onClick={() => sendBoolMsg(namespace + '/set_overlay_source_name',!name)}
+                        checked={overlay_text_source_name}
+                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_source_name',!name)}
                       /> 
                     </Label>
 
                     <Label title={"Date Time"}>
                       <AsyncToggle
-                        checked={date}
-                        onClick={() => sendBoolMsg(namespace + '/set_overlay_date_time',!date)}
+                        checked={overlay_text_date_time}
+                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_date_time',!overlay_text_date_time)}
                       /> 
                     </Label>
 
                     <Label title={"Location"}>
                       <AsyncToggle
-                        checked={nav}
-                        onClick={() => sendBoolMsg(namespace + '/set_overlay_nav',!nav)}
+                        checked={overlay_text_nav}
+                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_nav',!overlay_text_nav)}
                       /> 
                     </Label>
 
                     <Label title={"Pose"}>
                       <AsyncToggle
-                        checked={pose}
-                        onClick={() => sendBoolMsg(namespace + '/set_overlay_pose',!pose)}
+                        checked={overlay_text_pose}
+                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_pose',!overlay_text_pose)}
                       /> 
                     </Label>
 
@@ -1852,7 +2041,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
                     <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_list")}>{"Clear"}</Button>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_text_list")}>{"Clear"}</Button>
                   </ButtonMenu>
 
 
@@ -1867,6 +2056,8 @@ class Nepi_IF_ImageViewer extends Component {
           <ButtonMenu>
             <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
           </ButtonMenu>
+
+          </div>
 
       </Column>
       </Columns>
@@ -1893,15 +2084,16 @@ class Nepi_IF_ImageViewer extends Component {
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
 
-      const show_crosshairs = message.overlay_crosshairs
+      const crosshairs_enabled = message.overlay_crosshairs_enabled
+      const click_crosshair = message.click_crosshair_enabled && crosshairs_enabled === true
       const crosshairs_size_ratio = message.crosshairs_size_ratio
       const crosshairs_thickness_ratio = message.crosshairs_thickness_ratio
       const crosshairs_text_ratio = message.crosshairs_text_ratio
-      const crosshair_names = message.overlay_crosshair_names && show_crosshairs === true
-      const crosshair_pixels = message.overlay_crosshair_pixels && show_crosshairs === true
-      const crosshair_degrees = message.overlay_crosshair_degrees && show_crosshairs === true
-      const crosshair_msgs = message.overlay_crosshair_messages && show_crosshairs === true
-      const click_crosshair = message.click_crosshair_enabled && show_crosshairs === true
+      const crosshair_names = message.overlay_crosshair_names && crosshairs_enabled === true
+      const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs_enabled === true
+      const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs_enabled === true
+      const crosshair_msgs = message.overlay_crosshair_messages && crosshairs_enabled === true
+      
       const crosshairs_color_r = message.crosshairs_color_r
       const crosshairs_color_g = message.crosshairs_color_g
       const crosshairs_color_b = message.crosshairs_color_b
@@ -1921,8 +2113,8 @@ class Nepi_IF_ImageViewer extends Component {
                 
                       <Label title={"Show Crosshairs"}>
                       <AsyncToggle
-                        checked={show_crosshairs}
-                        onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!show_crosshairs)}
+                        checked={crosshairs_enabled}
+                        onClick={() => sendBoolMsg(namespace + '/crosshairs_enable',!crosshairs_enabled)}
                       /> 
                     </Label>
 
@@ -1932,7 +2124,7 @@ class Nepi_IF_ImageViewer extends Component {
                 </Column>
               </Columns>
 
-              <div hidden={show_crosshairs === false}>
+              <div hidden={crosshairs_enabled === false}>
 
                 <Columns>
                 <Column>
@@ -1992,7 +2184,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                             <Label title={"   Show Names"}>
                               <AsyncToggle
-                                disabled={show_crosshairs === false}
+                                disabled={crosshairs_enabled === false}
                                 checked={crosshair_names}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
                               /> 
@@ -2000,7 +2192,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                           <Label title={"   Show Pixels"}>
                               <AsyncToggle
-                                disabled={show_crosshairs === false}
+                                disabled={crosshairs_enabled === false}
                                 checked={crosshair_pixels}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
                               /> 
@@ -2008,7 +2200,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                             <Label title={"   Show Degs"}>
                               <AsyncToggle
-                                disabled={show_crosshairs === false}
+                                disabled={crosshairs_enabled === false}
                                 checked={crosshair_degrees}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
                               /> 
@@ -2017,7 +2209,7 @@ class Nepi_IF_ImageViewer extends Component {
         
                             <Label title={"   Show Msgs"}>
                               <AsyncToggle
-                                disabled={show_crosshairs === false}
+                                disabled={crosshairs_enabled === false}
                                 checked={crosshair_msgs}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_messages',!crosshair_msgs)}
                               /> 
@@ -2054,6 +2246,175 @@ class Nepi_IF_ImageViewer extends Component {
 
   }
 
+  renderTargetsControls() {
+    const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const namespace = this.state.image_topic
+    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+   
+    if (this.state.status_msg !== null && namespace !== null){
+      const message = this.state.status_msg
+
+      const targets_enabled = message.overlay_targets_enabled
+      const click_target = message.click_target_enabled && targets_enabled === true
+      const targets_size_ratio = message.targets_size_ratio
+      const targets_thickness_ratio = message.targets_thickness_ratio
+      const targets_text_ratio = message.targets_text_ratio
+      const target_names = message.overlay_target_names && targets_enabled === true
+      const target_pixels = message.overlay_target_pixels && targets_enabled === true
+      const target_degrees = message.overlay_target_degrees && targets_enabled === true
+      const target_msgs = message.overlay_target_messages && targets_enabled === true
+      
+      const targets_color_r = message.targets_color_r
+      const targets_color_g = message.targets_color_g
+      const targets_color_b = message.targets_color_b
+
+      
+
+      return (
+
+        <Columns>
+        <Column>
+
+      <Label title={"TARGET OVERLAYS"} />
+
+
+            <Columns>
+            <Column>
+                
+                      <Label title={"Show Targets"}>
+                      <AsyncToggle
+                        checked={targets_enabled}
+                        onClick={() => sendBoolMsg(namespace + '/targets_enable',!targets_enabled)}
+                      /> 
+                    </Label>
+
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+
+              <div hidden={targets_enabled === false}>
+
+                <Columns>
+                <Column>
+
+                       <SliderAdjustment
+                            title={"Target Size"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={targets_size_ratio}
+                            topic={namespace + "/set_targets_size_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay target size controls"}
+                            noTextBox={true}
+                        />
+
+                       <SliderAdjustment
+                            title={"Target Thickness"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={targets_thickness_ratio}
+                            topic={namespace + "/set_targets_thickness_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay target thickness controls"}
+                            noTextBox={true}
+                        />
+
+                       <SliderAdjustment
+                            title={"Target Text"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={targets_text_ratio}
+                            topic={namespace + "/set_targets_text_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Overlay target text controls"}
+                            noTextBox={true}
+                        />
+                        
+                        <Label title={"Enable Click Target"}>
+                              <AsyncToggle
+                                checked={click_target}
+                                onClick={() => sendBoolMsg(namespace + '/click_target_enable',!click_target)}
+                              /> 
+                            </Label>
+
+
+
+
+
+                </Column>
+                <Column>
+
+                            <Label title={"   Show Names"}>
+                              <AsyncToggle
+                                disabled={targets_enabled === false}
+                                checked={target_names}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_target_names',!target_names)}
+                              /> 
+                            </Label>
+
+                          <Label title={"   Show Pixels"}>
+                              <AsyncToggle
+                                disabled={targets_enabled === false}
+                                checked={target_pixels}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_target_pixels',!target_pixels)}
+                              /> 
+                            </Label>
+
+                            <Label title={"   Show Degs"}>
+                              <AsyncToggle
+                                disabled={targets_enabled === false}
+                                checked={target_degrees}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_target_degrees',!target_degrees)}
+                              /> 
+                            </Label>
+
+        
+                            <Label title={"   Show Msgs"}>
+                              <AsyncToggle
+                                disabled={targets_enabled === false}
+                                checked={target_msgs}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_target_messages',!target_msgs)}
+                              /> 
+                            </Label>
+
+                </Column>
+              </Columns>
+
+
+                </div>
+
+            
+                
+                      <ButtonMenu>
+                          <Button onClick={() => sendTriggerMsg( namespace + "/clear_targets")}>{"Clear Targets"}</Button>
+                        </ButtonMenu>   
+
+                
+
+      </Column>
+      </Columns>
+      )
+    }
+    else {
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+
+    }
+
+  }
 
   // renderCompression(){
   //   const currentStreamingImageQuality = this.state.currentStreamingImageQuality
@@ -2420,18 +2781,18 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                           <div style={{ display: 'flex' }}>
-                                <div style={{ width: '40%' }}>
+                                <div style={{ width: '33%' }}>
 
                                       {this.renderOverlayControls()}
 
                                 </div>
 
-                                <div style={{ width: '20%' }}>
-                                  {}
+                                <div style={{ width: '33%' }}>
+                                  {this.renderCrosshairsControls()}
                                 </div>
 
-                                <div style={{ width: '40%' }}>
-                                  {this.renderCrosshairsControls()}
+                                <div style={{ width: '33%' }}>
+                                  {this.renderTargetsControls()}
 
                                 </div>
                 
