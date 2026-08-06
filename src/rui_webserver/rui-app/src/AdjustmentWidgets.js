@@ -22,7 +22,7 @@ import { inject } from "mobx-react"
 import Slider from "rc-slider"
 import Tooltip from "rc-tooltip"
 import PropTypes from "prop-types"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 
 import Styles from "./Styles"
 import Input from "./Input"
@@ -451,7 +451,7 @@ class RadioButtonAdjustment extends Component {
       <Column>
       <div align={"left"} textAlign={"left"}>
         <Label title={this.props.entries[i]}/>
-        <Toggle checked={this.props.adjustment === i} disabled={this.props.disabled} onClick={() => {sendUpdate(this.props, i, false)}}/>
+        <AsyncToggle checked={this.props.adjustment === i} disabled={this.props.disabled} onClick={() => {sendUpdate(this.props, i, false)}}/>
       </div>
       </Column>      
     )

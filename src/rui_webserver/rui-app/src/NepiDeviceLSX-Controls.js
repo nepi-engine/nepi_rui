@@ -29,6 +29,7 @@ import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
 import Input from "./Input"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import BooleanIndicator from "./BooleanIndicator"
 
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -346,6 +347,7 @@ class NepiControlsLightsControls extends Component {
 
                     {(show_controls_option === true) ?
                     <Label title="Show Controls">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -365,20 +367,20 @@ class NepiControlsLightsControls extends Component {
 
             <div hidden={!has_on_off_control}>    
           <Label title="Set On_Off State">
-                  <Toggle
+                  <AsyncToggle
                     checked={this.state.lsxOnOffState===true}
                     onClick={() => this.props.ros.sendBoolMsg(namespace + "/turn_on_off",!this.state.lsxOnOffState)}>
-                  </Toggle>
+                  </AsyncToggle>
             </Label>
             </div>
 
  
             <div hidden={!has_standby_mode}>      
           <Label title="Set Standby State">
-                  <Toggle
+                  <AsyncToggle
                     checked={this.state.lsxStandbyState===true}
                     onClick={() => this.props.ros.sendBoolMsg(namespace + "/set_standby",!this.state.lsxStandbyState)}>
-                  </Toggle>
+                  </AsyncToggle>
             </Label>
             </div>
 
@@ -448,10 +450,10 @@ class NepiControlsLightsControls extends Component {
 
           <div hidden={!has_hw_strobe}>    
             <Label title="Set Strobe State">
-                  <Toggle
+                  <AsyncToggle
                     checked={this.state.lsxStrobeState===true}
                     onClick={() => this.props.ros.sendBoolMsg(namespace + "/set_strobe_enable",!this.state.lsxStrobeState)}>
-                  </Toggle>
+                  </AsyncToggle>
             </Label>
             </div>
 

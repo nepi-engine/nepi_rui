@@ -20,7 +20,7 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import {Link} from "react-router-dom"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -653,7 +653,7 @@ updateMgrTimeStatusListener() {
 
 
                       <Label title={"Auto Sync Clocks"}>
-                          <Toggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_clocks",!auto_sync_clocks)} />
+                          <AsyncToggle checked={auto_sync_clocks} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_clocks",!auto_sync_clocks)} />
                         </Label>
 
 
@@ -673,7 +673,7 @@ updateMgrTimeStatusListener() {
 
 
                         <Label title={"Auto Sync Timezone"}>
-                          <Toggle checked={auto_sync_timezones} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_timezones",!auto_sync_timezones)} />
+                          <AsyncToggle checked={auto_sync_timezones} onClick={() => sendBoolMsg.bind(this)(baseNamespace + "/auto_sync_timezones",!auto_sync_timezones)} />
                         </Label>
 
                         <div hidden={auto_sync_timezones === false}>
@@ -908,7 +908,7 @@ updateMgrTimeStatusListener() {
                         <div hidden={dhcp_enabled === true}> 
 
                                   <Label title={"DHCP Enable"}>
-                                        <Toggle
+                                        <AsyncToggle
                                           checked={dhcp_enabled}
                                           onClick= {onToggleDHCPEnabled}
                                         />
@@ -1171,7 +1171,7 @@ updateMgrTimeStatusListener() {
                   <Columns>
                     <Column>
                       <Label title={"WiFi Enable"}>
-                        <Toggle
+                        <AsyncToggle
                           checked={wifi_enabled}
                           onClick= {onToggleWifiClientEnabled}
                         />
@@ -1243,7 +1243,7 @@ updateMgrTimeStatusListener() {
                 <Columns>
                   <Column>
                     <Label title={"Access Point Enable"} >
-                      <Toggle
+                      <AsyncToggle
                         checked={(netStatus !== null)? netStatus.wifi_ap_enabled : false}
                         onClick= {onToggleWifiAPEnabled}
                       />

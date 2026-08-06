@@ -25,7 +25,7 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Input from "./Input"
 import Styles from "./Styles"
 
@@ -352,10 +352,10 @@ class NepiDeviceRBX extends Component {
               <Column>
                 <div hidden={(has_fake_gps === false)}>
                   <Label title="Enable Fake GPS">
-                    <Toggle
+                    <AsyncToggle
                       checked={this.state.fake_gps_enabled === true}
                       onClick={() => sendBoolMsg(namespace + "/enable_fake_gps", this.state.fake_gps_enabled === false)}>
-                    </Toggle>
+                    </AsyncToggle>
                   </Label>
                 </div>
 
@@ -375,10 +375,10 @@ class NepiDeviceRBX extends Component {
               <Column>
 
                 <Label title="Image Status Overlay">
-                  <Toggle
+                  <AsyncToggle
                     checked={this.state.image_status_overlay === true}
                     onClick={() => sendBoolMsg(namespace + "/enable_image_overlay", this.state.image_status_overlay === false)}>
-                  </Toggle>
+                  </AsyncToggle>
                 </Label>
 
                 <Label title="">

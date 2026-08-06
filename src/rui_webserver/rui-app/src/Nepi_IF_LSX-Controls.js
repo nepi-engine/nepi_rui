@@ -19,7 +19,7 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 
 import Section from "./Section"
 import { SliderAdjustment } from "./AdjustmentWidgets"
@@ -234,15 +234,15 @@ class NepiIFLSXControls extends Component {
 
         <Label title={"On"}>
           {/* device_if_lsx subscribes standby on the 'set_empty' topic, mirrored here */}
-          <Toggle checked={onOffState} onClick={() => sendBoolMsg.bind(this)(namespace + "/turn_on_off", !onOffState)} />
+          <AsyncToggle checked={onOffState} onClick={() => sendBoolMsg.bind(this)(namespace + "/turn_on_off", !onOffState)} />
         </Label>
 
         <Label title={"Standby"}>
-          <Toggle checked={standbyState} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_empty", !standbyState)} />
+          <AsyncToggle checked={standbyState} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_empty", !standbyState)} />
         </Label>
 
         <Label title={"Strobe"}>
-          <Toggle checked={strobeState} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_strobe_enable", !strobeState)} />
+          <AsyncToggle checked={strobeState} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_strobe_enable", !strobeState)} />
         </Label>
 
         <SliderAdjustment

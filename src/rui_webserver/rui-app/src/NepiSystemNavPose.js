@@ -25,6 +25,7 @@ import Section from "./Section"
 import Button from "./Button"
 import Select, { Option } from "./Select"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
@@ -268,6 +269,7 @@ class NavPoseMgr extends Component {
       <React.Fragment>
 
         <Label title={"Edit Frames"}>
+          {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
           <Toggle
             checked={show_edit_frames}
             onClick={() => this.setState({ show_edit_frames: !show_edit_frames })}
@@ -349,7 +351,7 @@ class NavPoseMgr extends Component {
           <Column>
 
                 <Label title={"Sync Transforms"}>
-                    <Toggle
+                    <AsyncToggle
                       checked={navpose_sync_transforms}
                       onClick={() => sendBoolMsg(mgrNamespace + '/set_sync_tranforms' ,!navpose_sync_transforms)}
                     /> 
@@ -416,6 +418,7 @@ class NavPoseMgr extends Component {
                   <div style={{ display: 'flex' }}>
                           <div style={{ width: '13%' }} hidden={false}>
                                 <Label title="Fixed">
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={this.state.show_fixed===true}
                                     onClick={() => onChangeSwitchStateValue.bind(this)("show_fixed",this.state.show_fixed)}>
@@ -427,6 +430,7 @@ class NavPoseMgr extends Component {
 
                           <div style={{ width: '13%' }} hidden={false}>
                                 <Label title="Init">
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={this.state.show_init===true}
                                     onClick={() => onChangeSwitchStateValue.bind(this)("show_init",this.state.show_init)}>
@@ -438,6 +442,7 @@ class NavPoseMgr extends Component {
 
                           <div style={{ width: '13%' }} hidden={false}>
                               <Label title="Update">
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={this.state.show_update===true}
                                     onClick={() => onChangeSwitchStateValue.bind(this)("show_update",this.state.show_update)}>
@@ -449,6 +454,7 @@ class NavPoseMgr extends Component {
 
                           <div style={{ width: '13%' }} hidden={false}>
                               <Label title="Reset">
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={this.state.show_replace===true}
                                     onClick={() => onChangeSwitchStateValue.bind(this)("show_replace",this.state.show_replace)}>
@@ -460,6 +466,7 @@ class NavPoseMgr extends Component {
 
                           <div style={{ width: '13%' }} hidden={false}>
                               <Label title="Offset">
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={this.state.show_offset===true}
                                     onClick={() => onChangeSwitchStateValue.bind(this)("show_offset",this.state.show_offset)}>
@@ -691,7 +698,7 @@ class NavPoseMgr extends Component {
                       <label style={{ fontSize: '0.85em', color: Styles.vars.colors.grey0, whiteSpace: 'nowrap' }}>
                         {'Reset on Crossing'}
                       </label>
-                      <Toggle
+                      <AsyncToggle
                         checked={!!comp.reset_resets_on_crossing}
                         onClick={() => {
                           this.props.ros.sendUpdateBoolMsg(
@@ -784,7 +791,7 @@ class NavPoseMgr extends Component {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                           <label style={{ fontSize: '0.7em', width: '46px', flexShrink: 0, color: Styles.vars.colors.grey1 }}>{'Invert'}</label>
                           <div style={{ width: '70px', display: 'flex', justifyContent: 'center' }}>
-                            <Toggle
+                            <AsyncToggle
                               checked={invertChecked}
                               onClick={() => sendTransform({ [invertField]: !invertChecked })}
                             />
@@ -942,7 +949,7 @@ class NavPoseMgr extends Component {
 
 
                               <Label title={"Apply Transforms"}>
-                                  <Toggle
+                                  <AsyncToggle
                                     checked={apply_transforms}
                                     onClick={() => sendUpdateBoolMsg(mgrNamespace + '/set_frame_apply_transforms', frame_name, !apply_transforms)}
                                   /> 

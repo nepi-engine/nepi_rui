@@ -26,6 +26,7 @@ import Button, { ButtonMenu } from "./Button"
 import RangeAdjustment from "./RangeAdjustment"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import Styles from "./Styles"
 //Unused import Select from "./Select"
@@ -410,6 +411,7 @@ class NepiDeviceIDXControls extends Component {
 
                     {(show_controls_option === true) ?
                     <Label title="Show Image Controls">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -463,7 +465,7 @@ class NepiDeviceIDXControls extends Component {
                           <Column>
 
                                 <Label title={"Auto Adjust"}>
-                                    <Toggle
+                                    <AsyncToggle
                                       checked={this.state.autoAdjust}
                                       onClick={() => sendBoolMsg(namespace + '/set_auto_adjust_enable' ,!this.state.autoAdjust)}
                                     /> 
@@ -643,10 +645,10 @@ class NepiDeviceIDXControls extends Component {
 
                         
                       <Label title="Disabled">
-                            <Toggle
+                            <AsyncToggle
                               checked={device_disabled === true}
                               onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!device_disabled)}>
-                            </Toggle>
+                            </AsyncToggle>
                       </Label>
 
                       </Column>
@@ -676,10 +678,10 @@ class NepiDeviceIDXControls extends Component {
 
                   
                 <Label title="Disabled">
-                      <Toggle
+                      <AsyncToggle
                         checked={device_disabled === true}
                         onClick={() => this.props.ros.sendBoolMsg(namespace + "/disable",!device_disabled)}>
-                      </Toggle>
+                      </AsyncToggle>
                 </Label>
 
                 </Column>

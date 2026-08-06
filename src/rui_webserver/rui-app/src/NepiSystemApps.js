@@ -23,7 +23,7 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
@@ -278,11 +278,11 @@ class AppsMgr extends Component {
 
 
               <Label title="Enable/Disable App"> 
-                <Toggle
+                <AsyncToggle
                   checked={enabled===true}
                   onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_state", selected_app, !enabled)}
                   disabled={disable_enable}>
-                </Toggle>
+                </AsyncToggle>
             </Label>
 
 
@@ -504,10 +504,10 @@ class AppsMgr extends Component {
 
 
       <Label title="Allow Restart on Crash">
-          <Toggle
+          <AsyncToggle
             checked={this.state.restart_enabled}
             onClick={() => this.props.ros.sendBoolMsg(mgrNamespace + "/enable_restart", !this.state.restart_enabled)}>
-          </Toggle>
+          </AsyncToggle>
           </Label>
 
         </Column>

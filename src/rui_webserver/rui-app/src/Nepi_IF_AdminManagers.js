@@ -23,7 +23,7 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
@@ -170,11 +170,11 @@ class NepiIFAdminManagers extends Component {
             <Column>
 
                 <Label title="Enable/Disable Manager">
-                  <Toggle
+                  <AsyncToggle
                     checked={enabled}
                     onClick={() => sendUpdateBoolMsg(namespace + "/update_manager_state", selected_manager, !enabled)}
                     disabled={disable_enable}>
-                  </Toggle>
+                  </AsyncToggle>
                   </Label>
 
 

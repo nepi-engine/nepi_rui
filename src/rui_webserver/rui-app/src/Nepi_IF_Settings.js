@@ -22,6 +22,7 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
@@ -373,6 +374,7 @@ class Nepi_IF_Settings extends Component {
                 <Column>
 
                     <Label title="Show Settings">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -396,6 +398,7 @@ class Nepi_IF_Settings extends Component {
 
                     {(allways_show_controls === false) ?
                     <Label title="Show Settings">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -469,7 +472,7 @@ class Nepi_IF_Settings extends Component {
 
           <div align={"left"} textAlign={"right"} hidden={selSetType !== "Bool" }>
             <Label title={selSetName}>
-              <Toggle
+              <AsyncToggle
                 checked={ (selValue === "True")}
                 onClick={() => {this.onChangeBoolSettingValue()}}
               />
