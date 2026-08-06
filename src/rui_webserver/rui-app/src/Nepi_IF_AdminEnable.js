@@ -21,7 +21,7 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Input from "./Input"
 import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
@@ -115,10 +115,10 @@ class NepiIFAdminEnable extends Component {
               <Column>
 
                   <Label title="Enable Admin Mode">
-                        <Toggle
+                        <AsyncToggle
                         checked={admin_mode}
                         onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/admin_mode_enable", !admin_mode)}>
-                      </Toggle>
+                      </AsyncToggle>
                   </Label>
 
  

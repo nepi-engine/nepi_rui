@@ -28,6 +28,7 @@ import Section from "./Section"
 //import EnableAdjustment from "./EnableAdjustment"
 import Button, { ButtonMenu } from "./Button"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import RangeAdjustment from "./RangeAdjustment"
 import { SliderAdjustment} from "./AdjustmentWidgets"
@@ -899,10 +900,10 @@ class Nepi_IF_ImageViewer extends Component {
 
                         <Label title={filter_display_name}>
 
-                            <Toggle
+                            <AsyncToggle
                               checked={filter_enabled === true}
                               onClick={makeFilterClickHandler(namespace, filter_name, filter_enabled)}>
-                            </Toggle>
+                            </AsyncToggle>
 
                       </Label>
 
@@ -986,10 +987,10 @@ class Nepi_IF_ImageViewer extends Component {
                     <Column>
 
                             <Label title={"Auto Adjust"}>
-                              <Toggle
+                              <AsyncToggle
                                 checked={auto_adjust_enabled===true}
                                 onClick={() => sendBoolMsg(namespace + "/set_auto_adjust_enable",!auto_adjust_enabled)}>
-                              </Toggle>
+                              </AsyncToggle>
                             </Label>
 
 
@@ -1613,7 +1614,7 @@ class Nepi_IF_ImageViewer extends Component {
 
   
                             <Label title={"Flip Horz"}>
-                                <Toggle
+                                <AsyncToggle
                                   checked={flip_horz}
                                   onClick={() => sendBoolMsg(namespace + '/set_flip_horz',!flip_horz)}
                                 /> 
@@ -1628,7 +1629,7 @@ class Nepi_IF_ImageViewer extends Component {
 
   
                             <Label title={"Flip Vert"}>
-                                <Toggle
+                                <AsyncToggle
                                   checked={flip_vert}
                                   onClick={() => sendBoolMsg(namespace + '/set_flip_vert',!flip_vert)}
                                 /> 
@@ -1815,28 +1816,28 @@ class Nepi_IF_ImageViewer extends Component {
                   />
 
                   <Label title={"Source Name"}>
-                      <Toggle
+                      <AsyncToggle
                         checked={name}
                         onClick={() => sendBoolMsg(namespace + '/set_overlay_source_name',!name)}
                       /> 
                     </Label>
 
                     <Label title={"Date Time"}>
-                      <Toggle
+                      <AsyncToggle
                         checked={date}
                         onClick={() => sendBoolMsg(namespace + '/set_overlay_date_time',!date)}
                       /> 
                     </Label>
 
                     <Label title={"Location"}>
-                      <Toggle
+                      <AsyncToggle
                         checked={nav}
                         onClick={() => sendBoolMsg(namespace + '/set_overlay_nav',!nav)}
                       /> 
                     </Label>
 
                     <Label title={"Pose"}>
-                      <Toggle
+                      <AsyncToggle
                         checked={pose}
                         onClick={() => sendBoolMsg(namespace + '/set_overlay_pose',!pose)}
                       /> 
@@ -1919,7 +1920,7 @@ class Nepi_IF_ImageViewer extends Component {
             <Column>
                 
                       <Label title={"Show Crosshairs"}>
-                      <Toggle
+                      <AsyncToggle
                         checked={show_crosshairs}
                         onClick={() => sendBoolMsg(namespace + '/overlay_crosshairs',!show_crosshairs)}
                       /> 
@@ -1976,7 +1977,7 @@ class Nepi_IF_ImageViewer extends Component {
                         />
                         
                         <Label title={"Enable Click Crosshair"}>
-                              <Toggle
+                              <AsyncToggle
                                 checked={click_crosshair}
                                 onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
                               /> 
@@ -1990,7 +1991,7 @@ class Nepi_IF_ImageViewer extends Component {
                 <Column>
 
                             <Label title={"   Show Names"}>
-                              <Toggle
+                              <AsyncToggle
                                 disabled={show_crosshairs === false}
                                 checked={crosshair_names}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_names',!crosshair_names)}
@@ -1998,7 +1999,7 @@ class Nepi_IF_ImageViewer extends Component {
                             </Label>
 
                           <Label title={"   Show Pixels"}>
-                              <Toggle
+                              <AsyncToggle
                                 disabled={show_crosshairs === false}
                                 checked={crosshair_pixels}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_pixels',!crosshair_pixels)}
@@ -2006,7 +2007,7 @@ class Nepi_IF_ImageViewer extends Component {
                             </Label>
 
                             <Label title={"   Show Degs"}>
-                              <Toggle
+                              <AsyncToggle
                                 disabled={show_crosshairs === false}
                                 checked={crosshair_degrees}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_degrees',!crosshair_degrees)}
@@ -2015,7 +2016,7 @@ class Nepi_IF_ImageViewer extends Component {
 
         
                             <Label title={"   Show Msgs"}>
-                              <Toggle
+                              <AsyncToggle
                                 disabled={show_crosshairs === false}
                                 checked={crosshair_msgs}
                                 onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_messages',!crosshair_msgs)}
@@ -2203,10 +2204,10 @@ class Nepi_IF_ImageViewer extends Component {
                         <div style={{ display: 'flex', alignItems: 'center', marginLeft: Styles.vars.spacing.regular }}>
 
                                 <Label title={"3D Controls"}>
-                                  <Toggle
+                                  <AsyncToggle
                                     checked={render_3d_controls_enabled===true}
                                     onClick={() => sendBoolMsg(render_ns + "/render_3d_controls",!render_3d_controls_enabled)}>
-                                  </Toggle>
+                                  </AsyncToggle>
                                 </Label>
 
                                 {(render_3d_controls_enabled === true) ?

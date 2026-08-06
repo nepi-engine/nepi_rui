@@ -1,0 +1,86 @@
+/*
+#
+# Copyright (c) 2024 Numurus <https://www.numurus.com>.
+#
+# This file is part of nepi rui (nepi_rui) repo
+# (see https://github.com/nepi-engine/nepi_rui)
+#
+# License: NEPI RUI repo source-code and NEPI Images that use this source-code
+# are licensed under the "Numurus Software License",
+# which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
+#
+# Redistributions in source code must retain this top-level comment block.
+# Plagiarizing this software to sidestep the license obligations is illegal.
+#
+# Contact Information:
+# ====================
+# - mailto:nepi@numurus.com
+#
+ */
+
+/*
+  Pending-state overrides for AsyncToggle.
+
+  AsyncToggle hands react-toggle the *requested* value so the thumb moves the
+  instant the operator clicks. That also moves the track color, which we do not
+  want -- color must keep reporting what the backend has actually confirmed.
+  These rules put the color back.
+
+  react-toggle drives color and position off one root class
+  (.react-toggle--checked) but through separate descendant selectors, so the
+  color can be pinned without touching the thumb's "left".
+
+  Colors are react-toggle 4.0.2's own literals, NOT the NEPI palette in
+  Styles.js, so a confirmed toggle looks exactly as it does today:
+    track  off #4D4D4D (hover #000000)   on #19AB27 (hover #128D15)
+    thumb border  off #4D4D4D            on #19AB27
+
+  Every rule below outranks the react-toggle rule it overrides on specificity
+  alone, so bundle order does not matter. None of them mention "left".
+*/
+
+.nepi-async-toggle {
+  display: inline-block;
+}
+
+/* Requested ON, backend still says OFF -- show the OFF colors. */
+.nepi-async-toggle--pending-on .react-toggle.react-toggle--checked .react-toggle-track {
+  background-color: #4D4D4D;
+}
+
+.nepi-async-toggle--pending-on .react-toggle.react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
+  background-color: #000000;
+}
+
+.nepi-async-toggle--pending-on .react-toggle.react-toggle--checked .react-toggle-thumb {
+  border-color: #4D4D4D;
+}
+
+.nepi-async-toggle--pending-on .react-toggle.react-toggle--checked .react-toggle-track-check {
+  opacity: 0;
+}
+
+.nepi-async-toggle--pending-on .react-toggle.react-toggle--checked .react-toggle-track-x {
+  opacity: 1;
+}
+
+/* Requested OFF, backend still says ON -- show the ON colors. */
+.nepi-async-toggle--pending-off .react-toggle .react-toggle-track {
+  background-color: #19AB27;
+}
+
+.nepi-async-toggle--pending-off .react-toggle:hover:not(.react-toggle--disabled) .react-toggle-track {
+  background-color: #128D15;
+}
+
+.nepi-async-toggle--pending-off .react-toggle .react-toggle-thumb {
+  border-color: #19AB27;
+}
+
+.nepi-async-toggle--pending-off .react-toggle .react-toggle-track-check {
+  opacity: 1;
+}
+
+.nepi-async-toggle--pending-off .react-toggle .react-toggle-track-x {
+  opacity: 0;
+}

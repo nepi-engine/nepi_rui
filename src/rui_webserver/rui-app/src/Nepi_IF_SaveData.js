@@ -25,6 +25,7 @@ import Section from "./Section"
 import Button, { ButtonMenu } from "./Button"
 import BooleanIndicator from "./BooleanIndicator"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
@@ -686,7 +687,7 @@ class NepiIFSaveData extends Component {
 
                         <div style={{ width: '10%' }}>
                           <Label title={"Enable Save"}>
-                            <Toggle
+                            <AsyncToggle
                               checked={ (save_enabled === true) }
                               onClick={() => {this.onChangeBoolSaveDataValue()}}
                             />
@@ -882,7 +883,7 @@ class NepiIFSaveData extends Component {
 
                        { ((show_all_data_options === true) && (is_all_namespace === true)) ?
                         <Label title={"Use UTC Time " + all_str}>
-                            <Toggle
+                            <AsyncToggle
                               checked={ (saveUtcTz) }
                               onClick={this.onChangeBoolUtcTzValue}
                             />
@@ -1036,7 +1037,7 @@ class NepiIFSaveData extends Component {
           <div style={{ width: '30%' }}>
             { ((is_all_namespace === false) ) ?
             <Label title={"Enabled"}>
-                <Toggle
+                <AsyncToggle
                   disable={allow_enable === false}
                   checked={ (disabled === false) }
                   onClick={() => sendBoolMsg(saveNamespace + disable_topic,!disabled)}

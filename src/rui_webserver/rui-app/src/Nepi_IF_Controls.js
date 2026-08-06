@@ -21,6 +21,7 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
@@ -320,7 +321,7 @@ class Nepi_IF_Controls extends Component {
       const checked = (control_msg.set_bool === true)
       return (
         <Label title={display_name} key={name}>
-          <Toggle
+          <AsyncToggle
             checked={checked}
             onClick={() => sendUpdateBoolMsg(namespace + "/set_bool_control_value", name, !checked)}
           />

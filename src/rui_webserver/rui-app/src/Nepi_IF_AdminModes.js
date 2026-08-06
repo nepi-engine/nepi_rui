@@ -21,7 +21,7 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
@@ -79,11 +79,11 @@ class NepiIFAdminModes extends Component {
                         <div style={{ width: '25%' }} >
  
                                 <Label title="Develop Mode">
-                                      <Toggle
+                                      <AsyncToggle
                                       checked={develop_mode === true}
                                       disbled={develop_mode === true}
                                       onClick={() => this.sendModeSelection('develop')}>
-                                    </Toggle>
+                                    </AsyncToggle>
                                 </Label>
 
                         </div>
@@ -96,11 +96,11 @@ class NepiIFAdminModes extends Component {
                         <div style={{ width: '25%' }}>
 
                               <Label title="Deploy Mode">
-                                    <Toggle
+                                    <AsyncToggle
                                     checked={deploy_mode === true}
                                     disbled={deploy_mode === true}
                                     onClick={() => this.sendModeSelection('deploy')}>
-                                  </Toggle>
+                                  </AsyncToggle>
                               </Label>
 
                         </div>
@@ -112,10 +112,10 @@ class NepiIFAdminModes extends Component {
                         <div style={{ width: '25%' }} >
 
                               <Label title="Debug Mode">
-                                    <Toggle
+                                    <AsyncToggle
                                     checked={debug_mode === true}
                                     onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/enable_debug_mode", !debug_mode)}>
-                                  </Toggle>
+                                  </AsyncToggle>
                               </Label>
 
                         </div>
