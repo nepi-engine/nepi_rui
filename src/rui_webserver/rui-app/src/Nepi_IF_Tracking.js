@@ -29,7 +29,7 @@ import { Column, Columns } from "./Columns"
 //import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import BooleanIndicator from "./BooleanIndicator"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 
@@ -349,10 +349,10 @@ renderTrackingIF() {
           <Column>
 
           <Label title="Manage Targeting">
-                <Toggle
+                <AsyncToggle
                 checked={manages_targeting===true}
                 onClick={() => sendBoolMsg(namespace + "/set_manages_targeting",!manages_targeting)}>
-                </Toggle>
+                </AsyncToggle>
           </Label>
 
           </Column>

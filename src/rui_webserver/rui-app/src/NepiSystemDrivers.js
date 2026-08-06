@@ -23,7 +23,7 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
@@ -271,11 +271,11 @@ import NepiIFSettings from "./Nepi_IF_Settings"
             <Column>
 
                 <Label title="Enable/Disable Driver">
-                  <Toggle
+                  <AsyncToggle
                     checked={enabled}
                     onClick={() => sendUpdateBoolMsg(mgrNamespace + "/update_driver_state", selected_driver, !enabled)}
                     disabled={disable_enable}>
-                  </Toggle>
+                  </AsyncToggle>
                   </Label>
 
 
@@ -484,10 +484,10 @@ import NepiIFSettings from "./Nepi_IF_Settings"
                     </ButtonMenu>
 
                     <Label title="Allow Retry">
-                        <Toggle
+                        <AsyncToggle
                           checked={this.props.ros.drivers_retry_enabled}
                           onClick={() => this.props.ros.sendBoolMsg(mgrNamespace + "/enable_retry", !this.props.ros.drivers_retry_enabled)}>
-                        </Toggle>
+                        </AsyncToggle>
                         </Label>
 
                         <Label title="Filter Driver List">

@@ -23,7 +23,7 @@ import { observer, inject } from "mobx-react"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
@@ -237,10 +237,10 @@ class AiModelsMgr extends Component {
           <div hidden={(this.state.selected_framework === "None")}>
 
         <Label title="Enable AI Framework"> 
-          <Toggle
+          <AsyncToggle
             checked={framework_state }
             onClick={() => this.props.ros.sendUpdateBoolMsg(mgrNamespace + "/update_framework_state", this.state.selected_framework, !framework_state)}>
-        </Toggle>
+        </AsyncToggle>
         </Label>
 
           </div>
@@ -508,11 +508,11 @@ class AiModelsMgr extends Component {
 
 
                             <Label title="Enable/Disable Model"> 
-                              <Toggle
+                              <AsyncToggle
                                 checked={enabled===true}
                                 onClick={() => this.props.ros.sendUpdateBoolMsg(mgrNamespace + "/update_model_state", selected_model, !enabled)}
                                 disabled={disable_enable}>
-                              </Toggle>
+                              </AsyncToggle>
                           </Label>
 
 

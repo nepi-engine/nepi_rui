@@ -1673,6 +1673,7 @@ class Nepi_IF_ImageViewer extends Component {
               <div hidden={(hide_rotate_2d)}>
 
                           <Label title={"Free Cam"}>
+                              {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                               <Toggle
                                 checked={this.state.free_cam}
                                 onClick={() => this.setState({ free_cam: !this.state.free_cam })}
@@ -1700,6 +1701,7 @@ class Nepi_IF_ImageViewer extends Component {
                                   />
                                 </Label>
                                 <Label title={"Swap Box W/H"}>
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={this.state.swap_box}
                                     onClick={() => {
@@ -2666,6 +2668,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                               { (show_config_controls === true ) ?
                               <Label title="Image Config">
+                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
                                   checked={this.state.show_config===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_config",this.state.show_config)}>
@@ -2681,6 +2684,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                            { (show_info_controls === true ) ?
                             <Label title="Image Info">
+                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
                                   checked={this.state.show_info===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_info",this.state.show_info)}>
@@ -2694,6 +2698,7 @@ class Nepi_IF_ImageViewer extends Component {
                         <div style={{ width: '15%' }} >
                             { (show_navpose_controls === true ) ?
                             <Label title="NavPose">
+                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
                                   checked={this.state.show_navpose===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
@@ -2708,6 +2713,7 @@ class Nepi_IF_ImageViewer extends Component {
                        <div style={{ width: '15%' }} >
                               { (show_render_controls === true ) ?
                               <Label title="Render">
+                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
                                   checked={this.state.show_render===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_render",this.state.show_render)}>
@@ -2725,6 +2731,7 @@ class Nepi_IF_ImageViewer extends Component {
                        <div style={{ width: '15%' }} >
                               { (show_overlay_controls === true ) ?
                               <Label title="Overlays">
+                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
                                   checked={this.state.show_overlay===true}
                                   onClick={() => onChangeSwitchStateValue.bind(this)("show_overlay",this.state.show_overlay)}>

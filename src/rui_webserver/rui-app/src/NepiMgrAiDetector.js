@@ -29,7 +29,7 @@ import { Column, Columns } from "./Columns"
 //import Input from "./Input"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import BooleanIndicator from "./BooleanIndicator"
 import {SliderAdjustment} from "./AdjustmentWidgets"
 
@@ -530,10 +530,10 @@ renderDetectorSettings() {
         <Column>
 
              <Label title="Auto Select Image">
-                    <Toggle
+                    <AsyncToggle
                     checked={auto_select_active===true}
                     onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_auto_select_enable", !auto_select_active)}>
-                    </Toggle>
+                    </AsyncToggle>
                     </Label>
 
           <Label title={"Select Images"}/>
@@ -607,10 +607,10 @@ renderDetectorSettings() {
         <Column>
 
         <Label title="Enable">
-              <Toggle
+              <AsyncToggle
               checked={enabled===true}
               onClick={() => sendBoolMsg(process_namespace + "/enable",!enabled)}>
-              </Toggle>
+              </AsyncToggle>
         </Label>
 
         </Column>
@@ -779,19 +779,19 @@ renderDetectorSettings() {
             <Column>
 
                   <Label title="Publish Image">
-                  <Toggle
+                  <AsyncToggle
                   checked={imaging_enabled===true}
                   onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_image_pub", imaging_enabled===false)}>
-                  </Toggle>
+                  </AsyncToggle>
                   </Label>
 
 
                 <div hidden={imaging_enabled === false}>
                   <Label title="Use Last Image">
-                    <Toggle
+                    <AsyncToggle
                     checked={use_last_image===true}
                     onClick={() => this.props.ros.sendBoolMsg(process_namespace + "/set_use_last_image", use_last_image===false)}>
-                    </Toggle>
+                    </AsyncToggle>
                     </Label>
 
                 </div>

@@ -286,7 +286,7 @@ class Nepi_IF_Controls extends Component {
             {options.map((opt, i) => (
               <div key={name + '_' + i} style={{ display: "inline-block", marginRight: Styles.vars.spacing.regular, textAlign: "center" }}>
                 <div style={{ fontSize: Styles.vars.fontSize.small, marginBottom: Styles.vars.spacing.xs }}>{opt}</div>
-                <Toggle
+                <AsyncToggle
                   checked={set_strings.indexOf(opt) !== -1}
                   onClick={() => {
                     // Send the complete desired selection (declarative), not a toggle.
@@ -416,6 +416,7 @@ class Nepi_IF_Controls extends Component {
       <Columns>
         <Column>
           <Label title="Show Controls">
+            {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
             <Toggle
               checked={show_controls === true}
               onClick={() => onChangeSwitchStateValue.bind(this)("show_controls", show_controls)}>

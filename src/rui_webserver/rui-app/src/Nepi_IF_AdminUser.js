@@ -21,7 +21,7 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 //import Button, { ButtonMenu } from "./Button"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
@@ -85,16 +85,16 @@ class NepiIFAdminUser extends Component {
 
                         <Label title={name}>
 
-                            <Toggle
+                            <AsyncToggle
                             checked={view_restricted}
                             onClick={() => this.sendUserRestriction(name,!view_restricted,'VIEW')}>
-                          </Toggle>
+                          </AsyncToggle>
 
 
-                            <Toggle
+                            <AsyncToggle
                             checked={control_restricted}
                             onClick={() => this.sendUserRestriction(name,!control_restricted,'CONTROL')}>
-                          </Toggle>
+                          </AsyncToggle>
 
                         </Label>
 
@@ -136,10 +136,10 @@ class NepiIFAdminUser extends Component {
 
                         <Label title={'Enable Login Screen'}>
 
-                            <Toggle
+                            <AsyncToggle
                             checked={user_login_enabled}
                             onClick={() => this.props.ros.sendBoolMsg(base_namespace + '/user_login_mode_enable',!user_login_enabled)}>
-                          </Toggle>
+                          </AsyncToggle>
 
                         </Label>
 

@@ -20,7 +20,7 @@
 import React, { Component } from 'react';
 import { observer, inject } from "mobx-react"
 import { toJS } from 'mobx';
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Label from "./Label"
@@ -272,7 +272,7 @@ class ScriptsMgr extends Component {
             {(selectedScript !== '')?
               <ButtonMenu>
                 <Label title={"Auto Start"} marginTop={Styles.vars.spacing.medium}>
-                <Toggle
+                <AsyncToggle
                   checked={systemStats && typeof systemStats.auto_start_enabled !== 'undefined'?
                     systemStats.auto_start_enabled
                     : false}

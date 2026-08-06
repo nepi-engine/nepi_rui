@@ -151,10 +151,45 @@ if (prevState.someSource !== this.state.someSource) {
 
 **Reference implementations:** `NepiDevicePTX-Controls.js` (`onUpdateText`/`onKeyText` methods), `NepiSystemNavPose.js` (frame rename box).
 
+## Toggle Pattern
+
+`AsyncToggle` is the default toggle for all new RUI code. Any new toggle — in `nepi_rui` or in a `nepi_apps/*/rui/` component — uses `AsyncToggle`, not `react-toggle`. This is the authoritative pattern; do not reach for `react-toggle` in new code.
+
+**Import:**
+```jsx
+import AsyncToggle from "./AsyncToggle"
+```
+The path is `./AsyncToggle` from both the `nepi_rui` src directory and from an app's `rui/` directory. `build_nepi_rui.sh` copies every `nepi_apps/*/rui/*.js` flat into the `nepi_rui` src directory, so at build time app components sit beside `AsyncToggle.js`. Never use a relative path that reaches across repos, and never copy `AsyncToggle.js` into an app package.
+
+**Props** are identical to `react-toggle`, plus the optional `confirmTimeoutMs` (default 3000 ms). `checked`, `onClick`, `disabled`, `style`, and `id` all behave exactly as before.
+
+**Behavior:** position is optimistic and color is authoritative. The thumb moves the instant the operator clicks, showing the request even when the confirming status message is slow. The track color only follows a confirmed `checked` value from the backend — so **the color change is the success signal**, and an unconfirmed request reads as "thumb has moved, color has not yet followed." If no confirming status arrives inside `confirmTimeoutMs`, the thumb reverts on its own.
+
+**Template:**
+```jsx
+<Label title={"Enable Thing"}>
+  <AsyncToggle
+    checked={thing_enabled === true}
+    onClick={() => sendBoolMsg(namespace + "/set_thing_enable", !thing_enabled)}
+  />
+</Label>
+```
+
+**The one exception where plain `react-toggle` is still correct:** a toggle whose `checked` value is local component state with no backend round trip — a view preference such as a show/hide panel switch, or a staged edit committed later by a separate Save button. These values are already immediate, so optimistic position adds a revert timer with nothing to confirm it and the thumb can bounce back after 3000 ms even though nothing was wrong. Comment the reason at any such call site so the next reader does not take it for an oversight:
+```jsx
+{/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+```
+
+`index.js` keeps `import "react-toggle/style.css"`. That is the base stylesheet `AsyncToggle.css` layers its pending-state overrides on top of — removing it breaks every toggle in the RUI.
+
+**Reference implementations:** `Nepi_IF_AdminEnable.js`, `Nepi_IF_AdminModes.js` (whole-file conversions), `Nepi_IF_Controls.js`, `Nepi_IF_SaveData.js`, `NepiSystemNavPose.js` (mixed files carrying both imports).
+
 ## Decision Log
 
 - 2026-03 — CLAUDE.md created — Initial developer reference, Claude Code authoring pass.
 - 2026-05 — Editable input pattern documented — PTX controls are the canonical reference; all editable inputs must follow this pattern.
 - 2026-08 — IDX connect components split into data + controls children — `Nepi_IF_ConnectIDX.js` now owns only the ConnectIFStatus subscription, the device selector, and composition; `Nepi_IF_IDX-Data.js` (`NepiIFIDXData`) renders read-only telemetry and `Nepi_IF_IDX-Controls.js` (`NepiIFIDXControls`) renders command widgets, each owning its own `setupIDXStatusListener` on the `namespace` prop. Section visibility resolves prop-overrides-ConnectIFStatus, and the child device namespace comes from `ConnectIFStatus.selected_topic` (there is no `selected_namespace` field on the wire). IDX is the pilot; PTX and the other device types are not yet converted.
 - 2026-08 — Three-file connect pattern rolled out to every device type — PTX, LSX, NPX, RBX, and Motor now follow the IDX split: `Nepi_IF_Connect<T>.js` holds only the ConnectIFStatus subscription, `getConnectNamespace`, `onDeviceSelected`, `renderSelector`, and composition, with `Nepi_IF_<T>-Data.js` (`NepiIF<T>Data`) and `Nepi_IF_<T>-Controls.js` (`NepiIF<T>Controls`) each owning its own device status subscription on the `namespace` prop. The Controls child of every type also renders the Device Settings and Advanced Settings panels via `renderSettingsAndAdmin`, as siblings of its own Section because those panels build their own. The selector is never gated on a device being selected — gating it deadlocks the page, since with no selector no device can be chosen. Per-type deviations: Motor subscribes through the generic `setupStatusListener` on `<namespace>/motor_status` (there is no `setupMotorStatusListener` and no `motorDevices` capabilities dict, so its Advanced Settings panel takes an optional `node_name` prop instead of resolving one); splitting Motor also turned `renderMotorRow`'s side-by-side status/command columns into two stacked per-motor blocks. `show_controls_option` is IDX-only — the other four Controls children accept and ignore it to keep the prop contract uniform. The five `NepiDevice*` device pages and their monolithic `NepiDevice*-Controls.js` components are untouched; the new files are purely additive, as with IDX.
+- 2026-08 — AsyncToggle is the default toggle; react-toggle swept out of backend-backed call sites — `AsyncToggle.js` renders thumb position optimistically from the operator click and track color authoritatively from the confirmed backend value, so a click shows immediately even when the confirming status message is slow; the thumb self-reverts after `confirmTimeoutMs` (default 3000 ms) if nothing confirms. A full sweep converted 63 of the 116 `<Toggle>` call sites across the RUI — 53 in `nepi_rui` (25 files), 10 in `nepi_apps` (5 files). The CONVERT test is whether `checked` reads a value that only updates on the next status message (a status field, or a mobx `ros` store value populated by a subscriber or service response). The 53 sites left on plain `react-toggle` read local component state the click itself sets synchronously — view preferences (`show_*` via `onChangeSwitchStateValue`, which is a bare `setState`), staged edits committed by a separate Save button (`nepi_app_onvif_mgr`), or handlers that `setState` before publishing (`Nepi_IF_Transform.js`, `Nepi_IF_Motor-Controls.js`, `EnableAdjustment.js`); optimistic position there would add a revert timer with nothing to confirm it. Going forward every new toggle is an `AsyncToggle` — see the Toggle Pattern section. Mixed files keep both imports with a comment at each surviving `react-toggle` site. `index.js` keeps `import "react-toggle/style.css"`, the base stylesheet `AsyncToggle.css` layers on. Note `Nepi_IF_Selector.js:193` renders a `<Toggle>` with neither `Toggle` nor `Label` imported — a pre-existing break, left alone by this sweep because it is not a react-toggle call site and needs a real fix, not a rename.
+
 - 2026-08 — RBX connect controls now require DeviceRBXStatus — pre-split, `Nepi_IF_ConnectRBX.renderControls` read only ConnectIFStatus and so rendered as soon as a device was selected. `Nepi_IF_RBX-Controls.js` gates its `render` on `status_msg` like every other Controls child, so RBX command widgets no longer appear for a selected device that is not publishing status. Deliberate, for uniformity with the IDX shape.

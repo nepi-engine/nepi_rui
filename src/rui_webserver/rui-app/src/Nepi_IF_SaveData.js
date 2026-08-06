@@ -628,6 +628,7 @@ class NepiIFSaveData extends Component {
 
                             <div hidden={(allways_show_controls === true || save_controls_restricted === true)}>
                                 <Label title="Show Save Controls">
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
                                     checked={showControls===true}
                                     onClick={() => {this.onClickToggleShowControls()}}>
@@ -665,6 +666,7 @@ class NepiIFSaveData extends Component {
 
                                   { ((show_all_data_options === true) && (is_all_namespace === false)) ?
                                       <Label title="Enable All">
+                                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                         <Toggle
                                           checked={ (saveAll === true) }
                                           onClick={() => {this.onChangeBoolSaveAllValue()}}
@@ -933,6 +935,7 @@ class NepiIFSaveData extends Component {
                       <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                         <Label title="Filter Active">
+                            {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                             <Toggle
                               checked={show_active_settings===true}
                               onClick={() => onChangeSwitchStateValue.bind(this)("show_active_settings",show_active_settings)}>

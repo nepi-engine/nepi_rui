@@ -19,7 +19,7 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
-import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 
 import Section from "./Section"
 import { SliderAdjustment } from "./AdjustmentWidgets"
@@ -443,10 +443,10 @@ class NepiIFPTXControls extends Component {
 
         <Label title={"Reverse Control"}>
           <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-            <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
+            <AsyncToggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
           </div>
           <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-            <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
+            <AsyncToggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
           </div>
         </Label>
 

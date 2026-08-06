@@ -20,6 +20,7 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 
 import Section from "./Section"
 import Select, { Option } from "./Select"
@@ -504,6 +505,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
                     <Label title="Show Controls">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_controls===true}
                           onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
@@ -537,10 +539,10 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
                           <Label title={"Reverse Control"}>
                             <div style={{ display: "inline-block", width: "45%", float: "left" }}>
-                              <Toggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
+                              <AsyncToggle style={{justifyContent: "flex-left"}} checked={reversePanEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_pan_enable",!reversePanEnabled)} />
                             </div>
                             <div style={{ display: "inline-block", width: "45%", float: "right" }}>
-                              <Toggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
+                              <AsyncToggle style={{justifyContent: "flex-right"}} checked={reverseTiltEnabled} onClick={() => sendBoolMsg.bind(this)(namespace + "/set_reverse_tilt_enable",!reverseTiltEnabled)} />
                             </div>
                           </Label>
 
@@ -879,6 +881,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               <Column></Column>
               <Column>
                 <Label title="Link Speeds">
+                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                   <Toggle
                     checked={this.state.linkSpeeds === true}
                     onClick={() => onChangeSwitchStateValue.bind(this)("linkSpeeds", this.state.linkSpeeds)}>

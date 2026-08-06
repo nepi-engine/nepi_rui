@@ -20,6 +20,7 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Input from "./Input"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
@@ -140,6 +141,7 @@ class NepiSystemConnect extends Component {
           />
         </Label>
         <Label title={"Show Public SSH Key"}>
+          {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
           <Toggle
             checked={this.state.showPublicSSHKey}
             onClick={() => this.setState({showPublicSSHKey: !(this.state.showPublicSSHKey)})}
@@ -152,7 +154,7 @@ class NepiSystemConnect extends Component {
           </pre>
         </div>
         <Label title="Save Connection Logs">
-          <Toggle
+          <AsyncToggle
             checked={log_storage_enabled}
             onClick= {onToggleLogStorage}
           />
@@ -260,23 +262,23 @@ class NepiSystemConnect extends Component {
           />
         </Label>
         <Label title="Enable Messaging">
-          <Toggle
+          <AsyncToggle
             checked={lb_enabled}
             onClick={onToggleLB}>
-          </Toggle>
+          </AsyncToggle>
         </Label>
         <Label title="Enable File Transfer">
-          <Toggle
+          <AsyncToggle
             checked={hb_enabled}
             onClick={onToggleHB}>
-          </Toggle>
+          </AsyncToggle>
         </Label>
         <div hidden={!nepiHbLinkAutoDataOffloadingCheckboxVisible}>
           <Label title="Enable Stored Data Auto Offloading">
-            <Toggle
+            <AsyncToggle
               checked={hb_auto_data_offloading_enabled}
               onClick={onToggleAutoOffloading}>
-            </Toggle>
+            </AsyncToggle>
           </Label>
         </div>
       </Section>
@@ -379,10 +381,10 @@ class NepiSystemConnect extends Component {
           <Column equalWidth={false}/>
           <Column>
             <Label title={"Enable NEPI CONNECT Communications"} alignRight={true}>
-              <Toggle
+              <AsyncToggle
                 checked={NEPIConnectenabled}
                 onClick={onToggleNEPIConnectComms}>
-              </Toggle>
+              </AsyncToggle>
             </Label>
           </Column>
         </Columns>
