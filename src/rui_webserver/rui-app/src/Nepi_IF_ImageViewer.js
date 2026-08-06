@@ -1557,7 +1557,7 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
-    const { imageCaps, sendTriggerMsg } = this.props.ros
+    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
 
@@ -2009,7 +2009,7 @@ class Nepi_IF_ImageViewer extends Component {
                   <Label title={"Source Name"}>
                       <AsyncToggle
                         checked={overlay_text_source_name}
-                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_source_name',!name)}
+                        onClick={() => sendBoolMsg(namespace + '/set_overlay_text_source_name',!overlay_text_source_name)}
                       /> 
                     </Label>
 
