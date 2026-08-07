@@ -111,6 +111,10 @@ class Nepi_IF_ImageViewer extends Component {
       currentStreamingImageQuality: COMPRESSION_HIGH_QUALITY,
       currentStreamingImageRate: MAX_STREAM_RATE,
       status_listenter: null,
+      // Status topic the live listener is actually subscribed to. Compared
+      // against the requested topic in updateStatusListener() so a repeat call
+      // for the same topic is a no-op -- see the comment there.
+      subscribed_status_topic: null,
 
 
       click_count: 0,
@@ -127,6 +131,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
+    this.getStreamQuality = this.getStreamQuality.bind(this)
     this.onChangeImageQuality = this.onChangeImageQuality.bind(this)
     this.onChangeImageRate = this.onChangeImageRate.bind(this)
 
@@ -260,17 +265,36 @@ class Nepi_IF_ImageViewer extends Component {
   }
 
   // Function for configuring and subscribing to Status
+  //
+  // Idempotent by design. Re-pointing the listener tears the subscription down
+  // and clears status_msg, and componentDidUpdate's guard reads a value derived
+  // from status_msg (stream_compression_ratio, which falls back to
+  // COMPRESSION_HIGH_QUALITY when status_msg is null) -- so an unconditional
+  // re-subscribe here feeds itself. The ImageStatus publisher is latched, so a
+  // message lands the instant the new subscription is made, which flips that
+  // derived value straight back and re-enters this function. The result is a
+  // subscribe/unsubscribe churn at render speed, visible in the rosbridge log as
+  // paired "Subscribed to"/"Unsubscribed from" lines many times per second.
+  // Bailing out when neither topic has actually changed breaks the cycle no
+  // matter which caller re-enters.
   updateStatusListener() {
     const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : "None"
     const status_topic = (this.props.status_topic !== undefined) ? this.props.status_topic : image_topic
     const prev_image_topic = (this.state.image_topic != null) ? this.state.image_topic : 'None'
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
 
+    if (this.state.status_listenter != null &&
+        this.state.subscribed_status_topic === status_topic &&
+        this.state.image_topic === image_topic) {
+      return
+    }
+
     const select_updated_topic = (this.props.select_updated_topic !== undefined) ? this.props.select_updated_topic : null
     if (this.state.status_listenter != null) {
       this.state.status_listenter.unsubscribe()
       this.setState({status_msg: null,
                     status_listenter: null,
+                    subscribed_status_topic: null,
                     image_topic: 'None'
       })
 
@@ -283,6 +307,7 @@ class Nepi_IF_ImageViewer extends Component {
           )
     }
     this.setState({ status_listenter: status_listenter,
+                    subscribed_status_topic: (status_listenter != null) ? status_topic : null,
                     image_topic: image_topic,
                     prev_image_topic: prev_image_topic,
                     image_index: image_index,
@@ -321,11 +346,33 @@ class Nepi_IF_ImageViewer extends Component {
     }
     if (this.image) {
       //const { streamingImageQuality } = this.props.ros
-      const stream_compression_ratio = (this.state.status_msg != null) ? this.state.status_msg.stream_compression_ratio : COMPRESSION_HIGH_QUALITY
-      const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : stream_compression_ratio
+      const stream_quality = this.getStreamQuality()
       const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&type=mjpeg' + '&framerate=' + stream_rate + '&quality=' + stream_quality 
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&type=mjpeg' + '&framerate=' + stream_rate + '&quality=' + stream_quality
     }
+  }
+
+  // JPEG quality percent (1-100) for the web_video_server stream URL.
+  //
+  // The wire carries stream_compression_ratio, a 0.0-1.0 COMPRESSION level where
+  // higher means more compression -- the "Compression Level" slider publishes it
+  // as min 0 / max 100 scaled by 0.01, and data_if runs it through check_ratio.
+  // Passing that number through as the quality asks web_video_server for quality
+  // 0.5, or for 0 outright, since data_if reports a ratio of 0 when compression
+  // is disabled. Either clamps to the minimum and yields a macroblocked frame
+  // with its chroma stripped. Invert and scale instead, so a ratio of 0.0 (no
+  // compression, or compression disabled) means full quality.
+  getStreamQuality() {
+    if (this.props.streamingImageQuality !== undefined) {
+      return this.props.streamingImageQuality
+    }
+    const status_msg = this.state.status_msg
+    const ratio = (status_msg != null) ? status_msg.stream_compression_ratio : null
+    if (ratio == null || isNaN(ratio)) {
+      return COMPRESSION_HIGH_QUALITY
+    }
+    const quality = Math.round((1.0 - ratio) * 100)
+    return Math.min(100, Math.max(1, quality))
   }
 
   // Lifecycle method called when the props change.
@@ -337,15 +384,21 @@ class Nepi_IF_ImageViewer extends Component {
     const height = (this.image) ? this.image.height : 0
     const got_size = width * height
     const size_changed = (size !== got_size)
-    const stream_compression_ratio = (this.state.status_msg != null) ? this.state.status_msg.stream_compression_ratio : COMPRESSION_HIGH_QUALITY
-    const stream_quality = (this.props.streamingImageQuality !== undefined) ? this.props.streamingImageQuality : stream_compression_ratio
+    const stream_quality = this.getStreamQuality()
     const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
     if (prevProps.image_topic !== image_topic || size_changed === true || prevState.currentStreamingImageQuality !== stream_quality){
       this.setState({streamSize: got_size, currentStreamingImageQuality: stream_quality, currentStreamingImageRate: stream_rate})
       this.onChangeImageQuality(stream_quality)
       this.updateImageSource()
-      this.updateStatusListener()
 
+    }
+
+    // The status subscription is re-pointed only when the topic it listens to
+    // moves. It is deliberately NOT part of the guard above: stream_quality is
+    // derived from status_msg, and updateStatusListener() clears status_msg, so
+    // driving the listener from a quality change makes the two feed each other.
+    if (prevProps.image_topic !== image_topic || prevProps.status_topic !== this.props.status_topic) {
+      this.updateStatusListener()
     }
 
     // Reset the render image-size inputs when the published render size changes
@@ -366,6 +419,12 @@ class Nepi_IF_ImageViewer extends Component {
     this.setState({ shouldUpdate: false })
     if (this.image) {
       this.image.src = null
+    }
+    // Drop the ImageStatus subscription with the component. Without this the
+    // listener outlives every unmount, so navigating away and back leaves one
+    // more subscriber on the topic each time.
+    if (this.state.status_listenter != null) {
+      this.state.status_listenter.unsubscribe()
     }
   }
 
@@ -1173,10 +1232,10 @@ class Nepi_IF_ImageViewer extends Component {
       const live_adjust_rotate_deg = message.live_adjust_rotate_deg
       const live_adjust_x_ratio = message.live_adjust_x_ratio
       const live_adjust_x_pixels = message.live_adjust_x_pixels
-      const live_adjust_x_deg = message.live_adjust_x_deg
+      const live_adjust_x_deg = message.live_adjust_x_degs
       const live_adjust_y_ratio = message.live_adjust_y_ratio
       const live_adjust_y_pixels = message.live_adjust_y_pixels
-      const live_adjust_y_deg = message.live_adjust_y_deg
+      const live_adjust_y_deg = message.live_adjust_y_degs
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
       const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
@@ -1463,10 +1522,10 @@ class Nepi_IF_ImageViewer extends Component {
       const live_adjust_rotate_deg = message.live_adjust_rotate_deg
       const live_adjust_x_ratio = message.live_adjust_x_ratio
       const live_adjust_x_pixels = message.live_adjust_x_pixels
-      const live_adjust_x_deg = message.live_adjust_x_deg
+      const live_adjust_x_deg = message.live_adjust_x_degs
       const live_adjust_y_ratio = message.live_adjust_y_ratio
       const live_adjust_y_pixels = message.live_adjust_y_pixels
-      const live_adjust_y_deg = message.live_adjust_y_deg
+      const live_adjust_y_deg = message.live_adjust_y_degs
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
       const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
@@ -1581,7 +1640,7 @@ class Nepi_IF_ImageViewer extends Component {
                             <Label title={"Enabled"}>
                               <AsyncToggle
                                 checked={stream_compression_enabled===true}
-                                onClick={() => sendBoolMsg(namespace + "/stream_compression_enabled",!stream_compression_enabled)}>
+                                onClick={() => sendBoolMsg(namespace + "/set_stream_compression_enable",!stream_compression_enabled)}>
                               </AsyncToggle>
                             </Label>
 
@@ -1999,7 +2058,7 @@ class Nepi_IF_ImageViewer extends Component {
                         <Label title={"Enable Click Text Position"}>
                               <AsyncToggle
                                 checked={click_text_enabled}
-                                onClick={() => sendBoolMsg(namespace + '/set_click_text_enable',!click_text_enabled)}
+                                onClick={() => sendBoolMsg(namespace + '/click_text_enable',!click_text_enabled)}
                               /> 
                             </Label>
 
@@ -2086,7 +2145,7 @@ class Nepi_IF_ImageViewer extends Component {
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
 
-      const crosshairs_enabled = message.overlay_crosshairs_enabled
+      const crosshairs_enabled = message.crosshairs_enabled
       const click_crosshair = message.click_crosshair_enabled && crosshairs_enabled === true
       const crosshairs_size_ratio = message.crosshairs_size_ratio
       const crosshairs_thickness_ratio = message.crosshairs_thickness_ratio
@@ -2256,7 +2315,7 @@ class Nepi_IF_ImageViewer extends Component {
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
 
-      const targets_enabled = message.overlay_targets_enabled
+      const targets_enabled = message.targets_enabled
       const click_target = message.click_target_enabled && targets_enabled === true
       const targets_size_ratio = message.targets_size_ratio
       const targets_thickness_ratio = message.targets_thickness_ratio

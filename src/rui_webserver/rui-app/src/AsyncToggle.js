@@ -61,11 +61,13 @@ class AsyncToggle extends Component {
   constructor(props) {
     super(props)
 
-    // The only state is the value the operator has asked for and the backend
-    // has not confirmed yet: true, false, or null for "nothing outstanding".
-    // Everything else renders from props.
+    // The only rendered state is the value the operator has asked for and the
+    // backend has not confirmed yet: true, false, or null for "nothing
+    // outstanding". Everything else renders from props.
     this.state = {
-      pending: null
+      pending: null,
+      // Bumped on every press purely to force a render -- see onToggleClick.
+      presses: 0
     }
 
     this.confirmTimer = null
@@ -103,15 +105,24 @@ class AsyncToggle extends Component {
 
   onToggleClick(event) {
     if (this.props.disabled === true) { return }
-    // While a request is outstanding the thumb already shows the requested
-    // value, so a second press has nothing to say and would only desynchronize
-    // the pending value from the request actually in flight.
-    if (this.state.pending !== null) { return }
 
-    const desired = (this.props.checked !== true)
+    // With a request outstanding, hold the pending value already on screen and
+    // let the click fall through to onClick again: same value, sent again. The
+    // caller derives what it publishes from the same "checked" prop that has
+    // not moved, so there is nothing here to keep in sync -- the resend cannot
+    // disagree with the request in flight.
+    const outstanding = (this.state.pending !== null)
+    const desired = outstanding ? this.state.pending : (this.props.checked !== true)
     const timeout_ms = (this.props.confirmTimeoutMs !== undefined) ? this.props.confirmTimeoutMs : DEFAULT_CONFIRM_TIMEOUT_MS
 
-    this.setState({ pending: desired })
+    // setState runs on every press, including the ones that leave "pending"
+    // exactly as it was, and the re-render is load-bearing: react-toggle tracks
+    // its own checked state, flips it on each click, and only resyncs to the
+    // checked prop when it receives props. Without a render here a resend would
+    // knock the thumb to the wrong side until the caller's next status message
+    // happened to re-render us. The counter is never read -- it exists so this
+    // stays true if the component is ever made pure.
+    this.setState({ pending: desired, presses: this.state.presses + 1 })
 
     if (this.confirmTimer !== null) { clearTimeout(this.confirmTimer) }
     this.confirmTimer = setTimeout(() => {
