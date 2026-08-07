@@ -43,7 +43,7 @@ import Select, { Option } from "./Select"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
-import {  onChangeSwitchStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
+import {  onChangeSwitchStateValue, onUpdateSetStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -120,7 +120,7 @@ class Nepi_IF_ImageViewer extends Component {
       click_count: 0,
       crosshair_name: null,
 
-      free_cam: false,
+      free_rotate: false,
       rotate_deg_input: '',
       image_width_input: '',
       image_height_input: '',
@@ -128,6 +128,9 @@ class Nepi_IF_ImageViewer extends Component {
 
       connected: false
     }
+
+    
+    this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.updateFrame = this.updateFrame.bind(this)
     this.onCanvasRef = this.onCanvasRef.bind(this)
     this.updateImageSource = this.updateImageSource.bind(this)
@@ -143,7 +146,9 @@ class Nepi_IF_ImageViewer extends Component {
     this.renderRenderControls = this.renderRenderControls.bind(this)
     this.renderLiveControls = this.renderLiveControls.bind(this)
     this.renderStreamControls = this.renderStreamControls.bind(this)
-    this.renderConfigControls = this.renderConfigControls.bind(this)
+    this.applyAspectAll = this.applyAspectAll.bind(this)
+    this.renderAspectControls = this.renderAspectControls.bind(this)
+    this.renderORControls = this.renderORControls.bind(this)
     this.renderOverlayControls = this.renderOverlayControls.bind(this)
     this.renderCrosshairsControls = this.renderCrosshairsControls.bind(this)
     this.renderTargetsControls = this.renderTargetsControls.bind(this)
@@ -168,6 +173,10 @@ class Nepi_IF_ImageViewer extends Component {
     this.onUpdateImageHeightInput = this.onUpdateImageHeightInput.bind(this)
     this.onKeyImageSizeInput = this.onKeyImageSizeInput.bind(this)
 
+    this.onUpdateAspectWidthInput = this.onUpdateAspectWidthInput.bind(this)
+    this.onUpdateAspectHeightInput = this.onUpdateAspectHeightInput.bind(this)
+    this.onKeyAspectRatioInput = this.onKeyAspectRatioInput.bind(this)
+
     //this.ZoomViewer = this.ZoomViewer.bind(this)
 
     this.statusListener = this.statusListener.bind(this)
@@ -178,7 +187,14 @@ class Nepi_IF_ImageViewer extends Component {
 
   }
 
-
+  getBaseNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var baseNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      baseNamespace = "/" + namespacePrefix + "/" + deviceId
+    }
+    return baseNamespace
+  }
 
   // Callback for handling ROS Status messages
   statusListener(message) {
@@ -1683,7 +1699,7 @@ class Nepi_IF_ImageViewer extends Component {
 
   }
 
-  renderConfigControls() {
+  renderORControls() {
 
     const namespace = this.state.image_topic
     const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
@@ -1715,12 +1731,6 @@ class Nepi_IF_ImageViewer extends Component {
       const hide_flip_vert = (!has_flip_vert || auto_controls.indexOf('flip_vert') !== -1)
 
 
-      // const aspect_adjustment_disabled = message.aspect_adjustment_disabled
-      // const aspect_adjust_enabled = message.aspect_adjust_enabled
-      // const aspect_adjust_options = message.aspect_adjust_options
-      // const aspect_adjust_selection = message.aspect_adjust_selection
-
-
       return (
 
         <Columns>
@@ -1731,24 +1741,20 @@ class Nepi_IF_ImageViewer extends Component {
 
               <div hidden={(hide_rotate_2d)}>
 
-                          <Label title={"Free Cam"}>
-                              {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                              <Toggle
-                                checked={this.state.free_cam}
-                                onClick={() => this.setState({ free_cam: !this.state.free_cam })}
-                              />
-                            </Label>
+
+
 
                           <Columns>
                           <Column>
 
-                            {this.state.free_cam === false &&
+
+                            {this.state.free_rotate === false &&
                               <ButtonMenu>
                                 <Button onClick={() => sendTriggerMsg( namespace + "/rotate_2d")}>{"Rotate 90 Degs"}</Button>
                               </ButtonMenu>
                             }
 
-                            {this.state.free_cam === true &&
+                            {this.state.free_rotate === true &&
                               <div>
                                 <Label title={"Set Angle (0-359)"}>
                                   <Input
@@ -1771,12 +1777,21 @@ class Nepi_IF_ImageViewer extends Component {
                                   />
                                 </Label>
                               </div>
+
                             }
+
+                          <Label title={"Free Rotate"}>
+                              {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+                              <Toggle
+                                checked={this.state.free_rotate}
+                                onClick={() => this.setState({ free_rotate: !this.state.free_rotate })}
+                              />
+                            </Label>
 
                           </Column>
                           <Column>
 
-                          <Label title={"Current Angle"}>
+                          <Label title={"Angle"}>
                         <Input
                           value={rotate_2d_deg}
                           id="cur_rotate_deg"
@@ -1888,6 +1903,187 @@ class Nepi_IF_ImageViewer extends Component {
 
   }
 
+
+
+  applyAspectAll(aspect_ratio) {
+    const namespace = this.getBaseNamespace() + '/all/images'
+    const {sendBoolMsg,  sendFloatMsg} = this.props.ros
+    
+    if (this.state.status_msg !== null && namespace !== null){
+      sendBoolMsg(namespace + '/set_aspect_adjust_enable',true)
+      sendFloatMsg(namespace + '/set_aspect_adjust_ratio',aspect_ratio)
+    }
+
+  }
+
+
+  onUpdateAspectWidthInput(event) {
+    const el = document.getElementById("render_aspect_width")
+    setElementStyleModified(el)
+    this.setState({ aspect_width_input: event.target.value })
+  }
+
+  onUpdateAspectHeightInput(event) {
+    const el = document.getElementById("render_aspect_height")
+    setElementStyleModified(el)
+    this.setState({ aspect_height_input: event.target.value })
+  }
+
+  onKeyAspectRatioInput(event) {
+    const { sendFloatMsg } = this.props.ros
+    if (event.key === 'Enter') {
+      const w_el = document.getElementById("render_aspect_width")
+      const h_el = document.getElementById("render_aspect_height")
+      let width = parseInt(this.state.aspect_width_input, 10)
+      let height = parseInt(this.state.aspect_height_input, 10)
+      if (isNaN(width) || isNaN(height) || width <= 1 || width >= 100 || height <= 1 || height >= 20) {
+        return
+      }
+      clearElementStyleModified(w_el)
+      clearElementStyleModified(h_el)
+      const namespace = this.state.image_topic
+      const ratio =  width/height
+      sendFloatMsg(namespace + '/set_aspect_adjust_ratio',ratio)
+      this.setState({ aspect_width_input: String(width), aspect_height_input: String(height) })
+    }
+  }
+
+
+
+  renderAspectControls() {
+    const namespace = this.state.image_topic
+    const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
+
+    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+
+    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+   
+    if (this.state.status_msg !== null && namespace !== null){
+      const message = this.state.status_msg
+
+      const aspect_adjustment_disabled = message.aspect_adjustment_disabled
+      const aspect_adjust_enabled = message.aspect_adjust_enabled
+      const aspect_ratio_set = round(message.aspect_ratio_set, 2)
+      const aspect_by_ratio = aspect_ratio_set - 1
+      const aspect_ratio_str = message.aspect_ratio_str
+      const aspect_ratio = message.aspect_ratio
+    
+
+      
+      return (
+
+        <Columns>
+        <Column>
+
+          <div hidden={aspect_adjustment_disabled === true}>
+            <Label title={"ASPECT RATIO"} />
+
+            <Columns>
+              <Column>
+                  
+                      <Label title={"Enable"}>
+                      <AsyncToggle
+                        checked={aspect_adjust_enabled}
+                        onClick={() => sendBoolMsg(namespace + '/set_aspect_adjust_enable',!aspect_adjust_enabled)}
+                      /> 
+                    </Label>
+
+
+                </Column>
+                <Column>
+
+
+                </Column>
+              </Columns>
+
+              <div hidden={aspect_adjust_enabled === false}>
+
+              <Columns>
+              <Column>
+                  
+
+
+                <Label title={"Aspect Ratio"}>
+                <Input
+                  disabled={true}
+                  value={aspect_ratio_str}
+                  style={{ width: "50%" }}
+                />
+                </Label>
+
+                </Column>
+                <Column>
+
+               
+                    <ButtonMenu>
+                    <Button onClick={() => this.applyAspectAll(aspect_ratio_set)}>{"Apply All"}</Button>
+                  </ButtonMenu>
+                  
+
+                </Column>
+              </Columns>
+
+
+                      <SliderAdjustment
+                            title={"Apect Ratio"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={aspect_by_ratio}
+                            topic={namespace + "/set_aspect_adjust_by_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Aspect Ratio control"}
+                            displayValue={aspect_ratio_set}
+                        />
+
+                  <Columns>
+                    <Column>
+                        <Label title={"Set Width"}>
+                        <Input
+                          id={"render_aspect_width"}
+                          value={this.state.aspect_width_input}
+                          onChange={this.onUpdateAspectWidthInput}
+                          onKeyDown={this.onKeyAspectRatioInput}
+                          style={{ width: "80%" }}
+                        />
+                        </Label>
+                    </Column>
+                    <Column>
+                        <Label title={"Set Height"}>
+                        <Input
+                          id={"render_aspect_height"}
+                          value={this.state.aspect_height_input}
+                          onChange={this.onUpdateAspectHeightInput}
+                          onKeyDown={this.onKeyAspectRatioInput}
+                          style={{ width: "80%" }}
+                        />
+                        </Label>
+                    </Column>
+                    </Columns>
+
+
+
+
+                </div>
+          </div>
+      </Column>
+      </Columns>
+      )
+    }
+    else {
+      return (
+        <Columns>
+        <Column>
+
+        </Column>
+        </Columns>
+      )
+
+    }
+
+  }
 
   onUpdateInputOverlayValue(event) {
     this.setState({ custom_overlay_input: event.target.value })
@@ -2065,6 +2261,25 @@ class Nepi_IF_ImageViewer extends Component {
 
             
 
+                      <Label title={'Add'}>
+                        <Input id="input_overlay" 
+                          value={this.state.custom_overlay_input} 
+                          onChange={this.onUpdateInputOverlayValue} 
+                          onKeyDown= {this.onKeySaveInputOverlayValue} />
+                      </Label>
+
+
+                    <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_text_list")}>{"Clear"}</Button>
+                  </ButtonMenu>
+
+
+
+                </Column>
+                <Column>
+
+
+
                   <Label title={"Source Name"}>
                       <AsyncToggle
                         checked={overlay_text_source_name}
@@ -2093,20 +2308,15 @@ class Nepi_IF_ImageViewer extends Component {
                       /> 
                     </Label>
 
-                      <Label title={'Add'}>
-                        <Input id="input_overlay" 
-                          value={this.state.custom_overlay_input} 
-                          onChange={this.onUpdateInputOverlayValue} 
-                          onKeyDown= {this.onKeySaveInputOverlayValue} />
-                      </Label>
+                </Column>
+              </Columns>
 
-
-                    <ButtonMenu>
-                    <Button onClick={() => sendTriggerMsg( namespace + "/clear_overlay_text_list")}>{"Clear"}</Button>
+                <Columns>
+                <Column>
+                                    
+                  <ButtonMenu>
+                    <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
                   </ButtonMenu>
-
-
-
                 </Column>
                 <Column>
 
@@ -2114,9 +2324,6 @@ class Nepi_IF_ImageViewer extends Component {
               </Columns>
 
 
-          <ButtonMenu>
-            <Button onClick={() => sendTriggerMsg( namespace + "/reset_overlays")}>{"Reset Overlays"}</Button>
-          </ButtonMenu>
 
           </div>
 
@@ -2280,13 +2487,21 @@ class Nepi_IF_ImageViewer extends Component {
               </Columns>
 
 
-                </div>
 
-            
-                
-                      <ButtonMenu>
+
+                <Columns>
+                <Column>
+                                    
+                        <ButtonMenu>
                           <Button onClick={() => sendTriggerMsg( namespace + "/clear_crosshairs")}>{"Clear Crosshairs"}</Button>
-                        </ButtonMenu>   
+                        </ButtonMenu>  
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+                
+               </div>
 
                 
 
@@ -2450,13 +2665,22 @@ class Nepi_IF_ImageViewer extends Component {
               </Columns>
 
 
-                </div>
 
-            
-                
+
+                            <Columns>
+                <Column>
+                                    
                       <ButtonMenu>
                           <Button onClick={() => sendTriggerMsg( namespace + "/clear_targets")}>{"Clear Targets"}</Button>
                         </ButtonMenu>   
+                </Column>
+                <Column>
+
+                </Column>
+              </Columns>
+                
+              </div>
+
 
                 
 
@@ -2847,17 +3071,25 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                           <div style={{ display: 'flex' }}>
-                                <div style={{ width: '33%' }}>
+                                <div style={{ width: '30%' }}>
 
                                       {this.renderOverlayControls()}
 
                                 </div>
 
-                                <div style={{ width: '33%' }}>
+                                <div style={{ width: '3%' }}>
+                                  {}
+                                </div>
+
+                                <div style={{ width: '30%' }}>
                                   {this.renderCrosshairsControls()}
                                 </div>
 
-                                <div style={{ width: '33%' }}>
+                                <div style={{ width: '3%' }}>
+                                  {}
+                                </div>
+
+                                <div style={{ width: '30%' }}>
                                   {this.renderTargetsControls()}
 
                                 </div>
@@ -2880,7 +3112,7 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                           <div style={{ display: 'flex' }}>
-                                <div style={{ width: '40%' }}>
+                                <div style={{ width: '30%' }}>
 
                           
                                   {this.renderFilterControls()}
@@ -2888,13 +3120,22 @@ class Nepi_IF_ImageViewer extends Component {
 
                                 </div>
 
-                                <div style={{ width: '20%' }}>
+
+                                <div style={{ width: '3%' }}>
                                   {}
                                 </div>
 
-                                <div style={{ width: '40%' }}>
+                                <div style={{ width: '30%' }}>
+                                  {this.renderAspectControls()}
+                                </div>
+
+                                <div style={{ width: '3%' }}>
+                                  {}
+                                </div>
+
+                                <div style={{ width: '30%' }}>
   
-                                  {this.renderConfigControls()}
+                                  {this.renderORControls()}
                                 </div>
                 
                           </div>
