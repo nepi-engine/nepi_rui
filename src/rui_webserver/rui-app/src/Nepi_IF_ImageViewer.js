@@ -1909,7 +1909,7 @@ class Nepi_IF_ImageViewer extends Component {
     const all_namespace = this.getBaseNamespace() + '/all/images'
     const {sendBoolMsg,  sendFloatMsg} = this.props.ros
     
-    if (this.state.status_msg !== null && namespace !== null){
+    if (this.state.status_msg !== null && all_namespace !== null){
       sendBoolMsg(all_namespace + '/set_aspect_adjust_enable',true)
       sendFloatMsg(all_namespace + '/set_aspect_adjust_ratio',aspect_ratio)
     }
