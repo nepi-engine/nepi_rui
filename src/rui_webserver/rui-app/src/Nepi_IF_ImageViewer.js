@@ -1906,12 +1906,12 @@ class Nepi_IF_ImageViewer extends Component {
 
 
   applyAspectAll(aspect_ratio) {
-    const namespace = this.getBaseNamespace() + '/all/images'
+    const all_namespace = this.getBaseNamespace() + '/all/images'
     const {sendBoolMsg,  sendFloatMsg} = this.props.ros
     
     if (this.state.status_msg !== null && namespace !== null){
-      sendBoolMsg(namespace + '/set_aspect_adjust_enable',true)
-      sendFloatMsg(namespace + '/set_aspect_adjust_ratio',aspect_ratio)
+      sendBoolMsg(all_namespace + '/set_aspect_adjust_enable',true)
+      sendFloatMsg(all_namespace + '/set_aspect_adjust_ratio',aspect_ratio)
     }
 
   }
@@ -3186,6 +3186,7 @@ class Nepi_IF_ImageViewer extends Component {
 
                                 <div style={{ width: '40%' }}>
                                   {this.renderLiveControls()}
+                                    {this.renderStreamControls()}
                 
                                 </div>
                               </div>
