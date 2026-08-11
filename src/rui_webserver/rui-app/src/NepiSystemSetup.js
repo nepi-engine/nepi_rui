@@ -97,6 +97,30 @@ class SystemMgr extends Component {
   // Returns the "a.b.c" /24 network prefix for a valid vehicle subnet entry,
   // or null if the entry is not a valid subnet.  Accepts entries like
   // "192.168.179", "192.168.179.0", or "192.168.179.0/24".
+  getValidIP(ip){
+    if (ip === null || ip === undefined){
+      return null
+    }
+    var octets = ip.trim().split("/")[0].split('.')
+    if (octets === ""){
+      return null
+    }
+    if (octets.length < 4){
+      return null
+    }
+    for (var i = 0; i < octets.length; i++){
+      var oct = octets[i]
+      if (!/^\d{1,3}$/.test(oct)){
+        return null
+      }
+      var num = parseInt(oct, 10)
+      if (num < 0 || num > 255){
+        return null
+      }
+    }
+    return octets.join(".")
+  }
+
   getValidSubnetPrefix(subnet){
     if (subnet === null || subnet === undefined){
       return null
@@ -182,15 +206,15 @@ class SystemMgr extends Component {
     const el = document.getElementById("Gateway")
     el.style.color = "purple"
     el.style.fontWeight = "bold"
-    this.setState({ vehicle_subnet: event.target.value })
+    this.setState({ update_gateway: event.target.value })
   }
 
   onKeyGateway(event){
     if (event.key === 'Enter'){
-      const prefix = this.getValidSubnetPrefix(this.state.vehicle_subnet)
+      const ip = this.getValidIP(this.state.update_gateway)
       // Only accept the entry if it is a valid subnet.  An invalid entry is
       // rejected: it is not committed and the box stays marked (purple/bold).
-      if (prefix !== null){
+      if (ip !== null){
         const el = document.getElementById("Gateway")
         el.style.color = Styles.vars.colors.black
         el.style.fontWeight = "normal"
@@ -200,15 +224,7 @@ class SystemMgr extends Component {
         // values back from the live config.
         const base_namespace = this.getBaseNamespace()
         const settingsList = [
-          { nameStr: 'NEPI_VEHICLE_SUBNET', typeStr: 'String', valueStr: prefix },
-          { nameStr: 'NEPI_ALIAS_IP_1', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_ALIAS_IP_1'), prefix, '103/16') },
-          { nameStr: 'NEPI_NTP_IP', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_NTP_IP'), prefix, '1') },
-          { nameStr: 'NEPI_NAV_IP_HNAV', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_HNAV'), prefix, '8') },
-          { nameStr: 'NEPI_NAV_IP_NMEA', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_NMEA'), prefix, '1') }
+          { nameStr: 'NEPI_GATEWAY_IP', typeStr: 'String', valueStr: ip }
         ]
         this.props.ros.updateSettings(base_namespace + '/settings', settingsList)
       }
@@ -708,6 +724,7 @@ class SystemMgr extends Component {
 
                                   { admin_mode_set ? <NepiIFSettings
                                     settingsNamespace={base_namespace + '/settings'}
+                                    show_controls={false}
                                     make_section={false}
                                     title={"System Config"}
                                     />
