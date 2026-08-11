@@ -581,21 +581,10 @@ class SystemMgr extends Component {
           <Input disabled value={roundWithSuffix(systemStatusDiskUsageMB / 1000.0, 1, "GB")} />
         </Label>
 
-
-        <Label title={"Internet Connected"}>
-          <BooleanIndicator value={internet_connected} />
-        </Label>
-
           </div>
 
             <div style={{ width: '30%' }} >
 
-              <ButtonMenu>
-                  <Button
-                  disabled={false}
-                  onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/connect_internet")}>{"Connect Internet"}
-                </Button>
-            </ButtonMenu>
 
             </div>
 
@@ -636,10 +625,10 @@ class SystemMgr extends Component {
             </div>
         </div>               
 
-                             <Label title={"Network Connections"}></Label>
-                              <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                                {netlist}
-                              </label> 
+                <Label title={"Network Connections"}></Label>
+                <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                  {netlist}
+                </label> 
                                   
         </Section>
 
