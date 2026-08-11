@@ -31,6 +31,10 @@ import Label from "./Label"
 import NepiIFAdminEnable from "./Nepi_IF_AdminEnable"
 import NepiIFSettings from "./Nepi_IF_Settings"
 
+function roundWithSuffix(value, decimals, suffix) {
+  return value && (value.toFixed(decimals) + " " + suffix)
+}
+
 @inject("ros")
 @observer
 class SystemMgr extends Component {
