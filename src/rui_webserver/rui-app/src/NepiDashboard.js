@@ -211,6 +211,7 @@ class NepiDashboard extends Component {
   renderMgrSystemStatus() {
     const {
       hearbeatNepi,
+      systemMgrStatus,
       systemStatusDiskUsageMB,
       systemStatusTempC,
       systemDefsDiskCapacityMB,
@@ -218,7 +219,7 @@ class NepiDashboard extends Component {
     } = this.props.ros
 
     const { wifi_query_response } = this.props.ros
-    const internet_connected = (wifi_query_response !== null)? wifi_query_response.internet_connected : false
+    const internet_connected = (systemMgrStatus != null) ? systemMgrStatus.internet_connected : false
     
     return (
       <Section title={"System Status"}>

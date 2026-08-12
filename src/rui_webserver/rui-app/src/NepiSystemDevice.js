@@ -57,6 +57,10 @@ const styles = Styles.Create({
 
 const IS_LOCAL = window.location.hostname === "localhost"
 
+function roundWithSuffix(value, decimals, suffix) {
+  return value && (value.toFixed(decimals) + " " + suffix)
+}
+
 @inject("ros")
 @observer
 class NepiSystemDevice extends Component {
@@ -821,6 +825,7 @@ updateMgrTimeStatusListener() {
   renderNetworkMgr() {
     const {  onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
+    const base_namespace = this.getBaseNamespace()
     const netStatus = this.state.netStatus
     const dhcp_enabled = (netStatus !== null)? netStatus.dhcp_enabled : false
     const primary_addr = (netStatus !== null)? netStatus.primary_ip_addr : ''
@@ -864,9 +869,25 @@ updateMgrTimeStatusListener() {
           </pre>
         </Label>        
 
-        <Label title={"Internet Connected"}>
-          <BooleanIndicator value={internet_connected} />
-        </Label>
+
+          <Columns>
+            <Column>
+
+              <Label title={"Internet Connected"}>
+                <BooleanIndicator value={internet_connected} />
+              </Label>
+              </Column>
+          <Column>
+
+                  <ButtonMenu>
+                      <Button
+                      disabled={false}
+                      onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/connect_internet")}>{"Connect Internet"}
+                    </Button>
+                </ButtonMenu>
+
+              </Column>
+          </Columns>
 
           <Columns>
               <Column>
@@ -904,7 +925,7 @@ updateMgrTimeStatusListener() {
 
 
 
-
+{/* 
                         <div hidden={dhcp_enabled === true}> 
 
                                   <Label title={"DHCP Enable"}>
@@ -945,7 +966,7 @@ updateMgrTimeStatusListener() {
 
                                     </Column>
                                 </Columns>
-                              </div>
+                              </div> */}
 
 
 
