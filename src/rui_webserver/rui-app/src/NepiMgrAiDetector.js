@@ -489,7 +489,7 @@ renderDetectorSettings() {
       const max_process_rate_hz = process_status_msg.max_process_rate_hz 
       const max_image_pub_rate_hz = process_status_msg.max_image_pub_rate_hz
 
-      const imaging_enabled = process_status_msg.imaging_enabled
+      const imaging_enabled = process_status_msg.image_pub_enabled
       const use_last_image = process_status_msg.use_last_image
 
       const auto_select_enabled = process_status_msg.auto_select_enabled

@@ -359,6 +359,36 @@ class Nepi_IF_Controls extends Component {
       const bounds = control_msg.float_bounds || []
       const min = (bounds.length > 0 && bounds[0] !== -999) ? bounds[0] : 0
       const max = (bounds.length > 1 && bounds[1] !== -999) ? bounds[1] : 100
+
+      // Step size and display precision come off the control message the same
+      // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
+      // defaults step to 1, and its render rounds the value to displayDecimals
+      // before handing it to BOTH the slider handle and the (disabled) text box.
+      // Left unset, a [0.0, 1.0] control is a two-position switch, and passing
+      // only one of the two still is -- a display coarser than the step
+      // re-quantizes the handle even when the step is right.
+      //
+      // round_value is how many decimals the node rounds a SET value to
+      // (nepi_controls default -1, meaning no rounding); round_display is how
+      // many the RUI should show (default 2). Neither is trusted on its own:
+      // both are int32, so a control message that never carried them arrives
+      // with 0 rather than undefined, and round_value 0 is step 1 -- the defect
+      // again. The range check below is what actually rules that out.
+      const range = max - min
+      const round_value = (typeof control_msg.round_value === 'number') ? control_msg.round_value : -1
+      const round_display = (typeof control_msg.round_display === 'number') ? control_msg.round_display : -1
+      // No rounding authored: one hundredth of the range, the nepi_controls -1 case.
+      const fallback_step = (range > 0) ? (range / 100) : 1
+      var step = (round_value >= 0 && round_value <= 6) ? Math.pow(10, -round_value) : fallback_step
+      // Fewer than three stops between the ends is not a slider, whatever the
+      // message asked for. Also catches range <= 0 and any non-finite bound.
+      if (!(step > 0) || !((range / step) >= 2)) { step = fallback_step }
+      if (!Number.isFinite(step) || step <= 0) { step = 1 }
+      // Never display coarser than the step -- see the note above -- and never
+      // finer than the node asked for.
+      const step_decimals = Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
+      const displayDecimals = Math.max(step_decimals, (round_display >= 0 && round_display <= 6) ? round_display : 0)
+
       return (
         <SliderAdjustment
           key={name}
@@ -369,6 +399,8 @@ class Nepi_IF_Controls extends Component {
           adjustment={control_msg.set_float}
           min={min}
           max={max}
+          step={step}
+          displayDecimals={displayDecimals}
           scaled={1}
           tooltip={control_msg.description}
           unit={""}
