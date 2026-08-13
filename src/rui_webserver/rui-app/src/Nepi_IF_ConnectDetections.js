@@ -211,8 +211,19 @@ class NepiIFConnectDetections extends Component {
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
     const header_title = (this.props.title !== undefined) ? this.props.title : "Detections Connect"
 
+    // Single-line row mode. Pages that pack several connect rows into one panel
+    // pass shortened={true} and get exactly one line: the row's name (the title
+    // prop) on the left, its Select on the right, no header line and no
+    // Connected indicator. Default false leaves both layouts below untouched,
+    // so every existing consumer renders as it always has.
+    const shortened = (this.props.shortened !== undefined) ? this.props.shortened : false
+
+    // In shortened mode the row's one label IS its name, so the second word
+    // ("Detector") would just repeat the title the caller already passed.
+    const selector_label = (shortened === true) ? header_title : "Detector"
+
     const selector = (
-      <Label title={"Detector"}>
+      <Label title={selector_label}>
         <Select
           onChange={this.onSourceSelected}
           value={selected_topic}
@@ -227,6 +238,18 @@ class NepiIFConnectDetections extends Component {
         <BooleanIndicator value={connected} />
       </Label>
     )
+
+    if (shortened === true) {
+      return (
+        <Columns>
+          <Column>
+
+            {selector}
+
+          </Column>
+        </Columns>
+      )
+    }
 
     if (show_connect_header === true) {
       return (
