@@ -205,9 +205,11 @@ class Nepi_IF_Settings extends Component {
     var ind = 0 
     if (cap_settings != null){
       for ( ind = 0; ind < cap_settings.length; ind++){
-        namesList.push(cap_settings[ind].name_str)
-        typesList.push(cap_settings[ind].type_str)
-        optionsLists.push(cap_settings[ind].options_list)
+        if (cap_settings[ind].disabled === false){
+          namesList.push(cap_settings[ind].name_str)
+          typesList.push(cap_settings[ind].type_str)
+          optionsLists.push(cap_settings[ind].options_list)
+        }
       }
       this.setState({
         capSettingsNamesList:namesList,      
