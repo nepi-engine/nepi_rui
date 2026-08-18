@@ -2438,6 +2438,7 @@ class Nepi_IF_ImageViewer extends Component {
                         
                         <Label title={"Enable Click Crosshair"}>
                               <AsyncToggle
+                                disabled={message.zoom_ratio > 0.01}
                                 checked={click_crosshair}
                                 onClick={() => sendBoolMsg(namespace + '/click_crosshair_enable',!click_crosshair)}
                               /> 
@@ -2616,6 +2617,7 @@ class Nepi_IF_ImageViewer extends Component {
                         
                         <Label title={"Enable Click Target"}>
                               <AsyncToggle
+                                disabled={message.zoom_ratio > 0.01}
                                 checked={click_target}
                                 onClick={() => sendBoolMsg(namespace + '/click_target_enable',!click_target)}
                               /> 
