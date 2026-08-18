@@ -566,6 +566,33 @@ class NepiDeviceIDXControls extends Component {
                             tooltip={"Adjustable range"}
                             noTextBox={true}
                           />
+
+
+                            <Columns>
+                            <Column>
+
+                            <Label title={"Min Range (m)"}>
+                              <Input
+                                disabled={true}
+                                value={this.state.rangeLimitMinMAdj}
+                                style={{ width: "80%" }}
+                              />
+                            </Label>
+
+
+                                </Column>
+                                <Column>
+
+                                <Label title={"Max Range (m)"}>
+                              <Input
+                                disabled={true}
+                                value={this.state.rangeLimitMaxMAdj}
+                                style={{ width: "80%" }}
+                              />
+                            </Label>
+
+                                </Column>
+                              </Columns>  
                         </div>
 
                         <Columns>
