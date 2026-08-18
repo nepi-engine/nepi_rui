@@ -444,13 +444,32 @@ class NepiIFSaveData extends Component {
  
   onToggleDataProductSelection(event){
     const data_product = event.currentTarget.getAttribute("data-product")
-    if (!data_product || data_product === "None" || data_product === "All") {
+    if (!data_product) {
       return
     }
-    const selectedList = this.getSelectedDataProducts().slice()
     const saveDataRate = this.state.saveDataRate
+    // A select click means "save this", so a blank or 0 Hz rate box falls back to 1 Hz --
+    // publishing 0.0 on a select reads as a dead control (the next status drops it again).
     const parsedRate = parseFloat(saveDataRate)
-    const rate = isNaN(parsedRate) ? 1.0 : parsedRate
+    const rate = (isNaN(parsedRate) || parsedRate <= 0.0) ? 1.0 : parsedRate
+
+    // 'All' and 'None' are SaveDataRate sentinels (ALL_DATA_PRODUCTS / NONE_DATA_PRODUCTS).
+    // One publish sets every product's rate backend-side; the local list is set optimistically
+    // and corrected by the next save status message.
+    if (data_product === "All") {
+      const allProducts = this.getSaveNamesList().filter(
+        (name) => (name !== "None" && name !== "All"))
+      this.sendSaveRateUpdate("All", rate)
+      this.setState({selectedDataProducts: allProducts})
+      return
+    }
+    if (data_product === "None") {
+      this.sendSaveRateUpdate("None", 0.0)
+      this.setState({selectedDataProducts: []})
+      return
+    }
+
+    const selectedList = this.getSelectedDataProducts().slice()
     const ind = selectedList.indexOf(data_product)
     if (ind !== -1) {
       selectedList.splice(ind, 1)

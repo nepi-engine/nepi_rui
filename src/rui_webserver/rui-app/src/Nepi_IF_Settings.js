@@ -28,6 +28,7 @@ import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Select from "./Select"
 import Input from "./Input"
+import { SliderAdjustment } from "./AdjustmentWidgets"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
@@ -85,6 +86,8 @@ class Nepi_IF_Settings extends Component {
     this.onChangeDescreteSettingValue = this.onChangeDescreteSettingValue.bind(this)
     this.onUpdateInputSettingValue = this.onUpdateInputSettingValue.bind(this)
     this.onKeySaveInputSettingValue = this.onKeySaveInputSettingValue.bind(this)
+    this.onChangeSliderSettingValue = this.onChangeSliderSettingValue.bind(this)
+    this.getSelectedSettingSliderInfo = this.getSelectedSettingSliderInfo.bind(this)
 
     this.updateSettingsInfo = this.updateSettingsInfo.bind(this)
     this.updateSelectedSettingInfo = this.updateSelectedSettingInfo.bind(this)
@@ -306,6 +309,44 @@ class Nepi_IF_Settings extends Component {
     this.render()
   }
 
+  // An Int/Float setting that declares both a lower and an upper limit is
+  // dragged rather than typed. Returns null for every other setting -- no
+  // limits means no slider range, so those stay on the typed input box.
+  //
+  // The limits arrive as option strings off the capabilities message, so
+  // everything below is parsed and range-checked before it is trusted.
+  getSelectedSettingSliderInfo(type, minStr, maxStr) {
+    if (type !== "Int" && type !== "Float") { return null }
+    const min = parseFloat(minStr)
+    const max = parseFloat(maxStr)
+    if (!Number.isFinite(min) || !Number.isFinite(max)) { return null }
+    const range = max - min
+    if (!(range > 0)) { return null }
+
+    // Int steps by 1. Float steps by a hundredth of its range, and the text
+    // box must not display coarser than that step -- a display coarser than
+    // the step re-quantizes the handle, so a [0, 1] control reads as a
+    // two-position switch even when the step itself is right.
+    var step = 1
+    if (type === "Float") {
+      step = range / 100
+      if (!Number.isFinite(step) || step <= 0) { step = 1 }
+    }
+    const displayDecimals = (type === "Int") ? 0 :
+      Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
+    return { min: min, max: max, step: step, displayDecimals: displayDecimals }
+  }
+
+  onChangeSliderSettingValue(value, type) {
+    const {updateSetting}  = this.props.ros
+    // Ints go on the wire without a decimal point -- the backend parses the
+    // value string by the declared setting type.
+    const sendValue = (type === "Int") ? Math.round(value).toString() : value.toString()
+    this.setState({ selectedSettingInput: sendValue })
+    updateSetting(this.state.settingsNamespace,
+      this.state.selectedSettingName, type, sendValue)
+  }
+
   onKeySaveInputSettingValue(event) {
     const {updateSetting}  = this.props.ros
     if(event.key === 'Enter'){
@@ -465,7 +506,19 @@ class Nepi_IF_Settings extends Component {
     
     
     const selOptions = createMenuListFromStrList(selSetOptions,false,[],["Select"],[])
-    
+
+    // Numeric settings with both limits declared get a slider instead of the
+    // typed input box. slider is null for everything else.
+    const slider = this.getSelectedSettingSliderInfo(selSetType, selSetMin, selSetMax)
+    // The slider handle tracks the local edit value, not the status value, so
+    // dragging does not fight the status messages coming back from the node.
+    // updateSettingsInfo resets it whenever a different setting is selected.
+    var sliderValue = parseFloat(this.state.selectedSettingInput)
+    if (slider !== null) {
+      if (!Number.isFinite(sliderValue)) { sliderValue = slider.min }
+      sliderValue = Math.min(Math.max(sliderValue, slider.min), slider.max)
+    }
+
     //Unused const capSettingNamesOrdered = this.getSortedStrList(this.state.capSettingsNamesList)
     return (
 
@@ -513,12 +566,29 @@ class Nepi_IF_Settings extends Component {
                   </Label>
               </div>
 
-              <Label title={selSetName}>
-                <Input id="input_setting" 
-                  value={this.state.selectedSettingInput} 
-                  onChange={this.onUpdateInputSettingValue} 
-                  onKeyDown= {this.onKeySaveInputSettingValue} />
-              </Label>
+              {(slider !== null) ?
+                <SliderAdjustment
+                  key={selSetName}
+                  title={selSetName}
+                  topic={this.state.settingsNamespace + "/update_setting"}
+                  msgType={"nepi_interfaces/Setting"}
+                  adjustment={sliderValue}
+                  onSliderChangeOverride={(value) => this.onChangeSliderSettingValue(value, selSetType)}
+                  min={slider.min}
+                  max={slider.max}
+                  step={slider.step}
+                  displayDecimals={slider.displayDecimals}
+                  scaled={1}
+                  unit={""}
+                />
+                :
+                <Label title={selSetName}>
+                  <Input id="input_setting"
+                    value={this.state.selectedSettingInput}
+                    onChange={this.onUpdateInputSettingValue}
+                    onKeyDown= {this.onKeySaveInputSettingValue} />
+                </Label>
+              }
 
           </div>
 
