@@ -169,9 +169,9 @@ class Nepi_IF_ImageViewer extends Component {
     this.onUpdateRotateDegInput = this.onUpdateRotateDegInput.bind(this)
     this.onKeyRotateDegInput = this.onKeyRotateDegInput.bind(this)
 
-    this.onUpdateImageWidthInput = this.onUpdateImageWidthInput.bind(this)
-    this.onUpdateImageHeightInput = this.onUpdateImageHeightInput.bind(this)
-    this.onKeyImageSizeInput = this.onKeyImageSizeInput.bind(this)
+    // this.onUpdateImageWidthInput = this.onUpdateImageWidthInput.bind(this)
+    // this.onUpdateImageHeightInput = this.onUpdateImageHeightInput.bind(this)
+    // this.onKeyImageSizeInput = this.onKeyImageSizeInput.bind(this)
 
     this.onUpdateAspectWidthInput = this.onUpdateAspectWidthInput.bind(this)
     this.onUpdateAspectHeightInput = this.onUpdateAspectHeightInput.bind(this)
@@ -1223,6 +1223,7 @@ class Nepi_IF_ImageViewer extends Component {
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
       const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
+      const has_zoom_3d = (capabilities && capabilities.has_zoom_3d && !this.state.disabled)
       const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
       const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
 
@@ -1239,6 +1240,7 @@ class Nepi_IF_ImageViewer extends Component {
       const x_max_ratio = message.window_x_ratios.stop_range
       const y_min_ratio = message.window_y_ratios.start_range
       const y_max_ratio = message.window_y_ratios.stop_range
+      const zoom_3d_ratio = message.zoom_3d_ratio
       const rotate_3d_ratio = message.rotate_3d_ratio
       const tilt_3d_ratio = message.tilt_3d_ratio
 
@@ -1275,7 +1277,7 @@ class Nepi_IF_ImageViewer extends Component {
 
             <Label title={"RENDER  CONTROLS"} />
 
-          <div hidden={(is_pointcloud !== true)}>
+          {/* <div hidden={(is_pointcloud !== true)}>
             <Columns>
             <Column>
                 <Label title={"Render Width (px)"}>
@@ -1300,7 +1302,7 @@ class Nepi_IF_ImageViewer extends Component {
                 </Label>
             </Column>
             </Columns>
-          </div>
+          </div> */}
  
     
 
@@ -1440,6 +1442,23 @@ class Nepi_IF_ImageViewer extends Component {
                     />
           </div>
 
+          <div hidden={(has_zoom_3d !== true )}>
+
+                      <SliderAdjustment
+                            title={"Rotate"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={zoom_3d_ratio}
+                            topic={namespace + "/set_zoom_3d_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"3D Zoom controls"}
+                            noTextBox={true}
+                        />
+
+          </div>
+
           <div hidden={(has_rotate_3d !== true )}>
 
                       <SliderAdjustment
@@ -1451,7 +1470,7 @@ class Nepi_IF_ImageViewer extends Component {
                             min={0}
                             max={100}
                             disabled={false}
-                            tooltip={"Rotate controls"}
+                            tooltip={"3D Rotate controls"}
                             noTextBox={true}
                         />
 
@@ -1468,7 +1487,7 @@ class Nepi_IF_ImageViewer extends Component {
                             min={0}
                             max={100}
                             disabled={false}
-                            tooltip={"Tilt controls"}
+                            tooltip={"3D Tilt controls"}
                             noTextBox={true}
                         />
           </div>

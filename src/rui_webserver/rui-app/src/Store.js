@@ -485,6 +485,7 @@ class ROSConnectionStore {
                 var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
                 this.updateIDXDevices(this.topicNames, this.topicTypes)
                 this.updatePTXDevices(this.topicNames, this.topicTypes)
+                this.updateSVXDevices(this.topicNames, this.topicTypes)
                 this.updateLXSDevices(this.topicNames, this.topicTypes)
                 this.updateRBXDevices(this.topicNames, this.topicTypes)
                 this.updateNPXDevices(this.topicNames, this.topicTypes)        
@@ -723,6 +724,7 @@ class ROSConnectionStore {
 
   @observable idxDevices = {}
   @observable ptxDevices = {}
+  @observable svxDevices = {}
   @observable lsxDevices = {}
   @observable rbxDevices = {}
   @observable npxDevices = {}
@@ -1540,8 +1542,21 @@ class ROSConnectionStore {
     this.ptxDevices[namespace] = response
     }
 
+    
   }
 
+
+  @action.bound
+  async callSVXCapabilitiesQueryService(namespace) {
+
+    const response = await this.callService({
+      name: namespace + "/capabilities_query",
+      messageType: "nepi_interfaces/SVXCapabilitiesQuery",
+    })
+    if (response != null){
+    this.svxDevices[namespace] = response
+    }
+  }
   @action.bound
   async callLSXCapabilitiesQueryService(namespace) {
 
@@ -1918,6 +1933,39 @@ class ROSConnectionStore {
     }
     return ptx_devices_changed
   }
+
+
+  @action.bound
+  updateSVXDevices(topics,types) {
+    var svx_devices_changed = false
+    var svx_devices_detected = []
+    for (var i = 0; i < topics.length; i++) {
+      if (topics[i].endsWith("/svx/status")) {
+        const svx_device_namespace = topics[i].replace("/status","")
+        if (!(svx_devices_detected.includes(svx_device_namespace))) {
+          this.callSVXCapabilitiesQueryService(svx_device_namespace)
+          this.callSettingsCapabilitiesQueryService(svx_device_namespace + "/settings")
+          const svxUnit = this.svxDevices[svx_device_namespace]
+          if (svxUnit)
+          {
+            svx_devices_detected.push(svx_device_namespace)
+          }
+        }
+        svx_devices_changed = true
+      }
+    }
+
+    // Now clean out any units that are no longer detected
+    const previously_known = Object.keys(this.svxDevices)
+    for (i = 0; i < previously_known.length; ++i) {
+      if (!(svx_devices_detected.includes(previously_known[i]))) {
+        delete this.svxDevices[previously_known[i]]
+        svx_devices_changed = true
+      }
+    }
+    return svx_devices_changed
+  }
+  
   
   @action.bound
   updateLXSDevices(topics,types) {
@@ -2116,6 +2164,19 @@ class ROSConnectionStore {
       return this.addListener({
         name: ptxNamespace + "/status",
         messageType: "nepi_interfaces/DevicePTXStatus",
+        noPrefix: true,
+        callback: callback,
+
+      })
+    }
+  }
+
+    @action.bound
+  setupSVXStatusListener(svxNamespace, callback) {
+    if (svxNamespace) {
+      return this.addListener({
+        name: svxNamespace + "/status",
+        messageType: "nepi_interfaces/DeviceSVXStatus",
         noPrefix: true,
         callback: callback,
 
