@@ -31,6 +31,7 @@ import NepiIFSettings from "./Nepi_IF_Settings"
 
 
 import NepiDeviceIDXControls from "./NepiDeviceIDX-Controls"
+import NepiIFPointcloudControls from "./Nepi_IF_Pointcloud-Controls"
 
 @inject("ros")
 @observer
@@ -280,7 +281,9 @@ class NepiDeviceIDX extends Component {
     const data_product = this.state.data_product
     const capabilities = this.props.ros.idxDevices[namespace]
     const node_name = capabilities ? capabilities.device_node_name : 'None'
-    
+    const data_products = (capabilities && capabilities.data_products) ? capabilities.data_products : []
+    const has_pointcloud = (data_products.indexOf('pointcloud') !== -1)
+
         return (
 
           <Columns>
@@ -322,7 +325,20 @@ class NepiDeviceIDX extends Component {
                         />
                         : null}
 
-                        
+
+                          {/* PointcloudIF process controls. Two namespaces on purpose:
+                              controls publish to the node namespace, status arrives on
+                              the data product namespace. Publishing a control to the
+                              data product namespace is dropped silently. */}
+                          {(device_selected === true && has_pointcloud === true) ?
+                          <NepiIFPointcloudControls
+                              nodeNamespace={namespace}
+                              statusNamespace={namespace + '/' + 'pointcloud'}
+                              title={"Pointcloud Process Controls"}
+                        />
+                        : null}
+
+
                           {(device_selected === true) ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
