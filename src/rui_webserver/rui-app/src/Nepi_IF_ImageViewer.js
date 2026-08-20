@@ -169,9 +169,9 @@ class Nepi_IF_ImageViewer extends Component {
     this.onUpdateRotateDegInput = this.onUpdateRotateDegInput.bind(this)
     this.onKeyRotateDegInput = this.onKeyRotateDegInput.bind(this)
 
-    this.onUpdateImageWidthInput = this.onUpdateImageWidthInput.bind(this)
-    this.onUpdateImageHeightInput = this.onUpdateImageHeightInput.bind(this)
-    this.onKeyImageSizeInput = this.onKeyImageSizeInput.bind(this)
+    // this.onUpdateImageWidthInput = this.onUpdateImageWidthInput.bind(this)
+    // this.onUpdateImageHeightInput = this.onUpdateImageHeightInput.bind(this)
+    // this.onKeyImageSizeInput = this.onKeyImageSizeInput.bind(this)
 
     this.onUpdateAspectWidthInput = this.onUpdateAspectWidthInput.bind(this)
     this.onUpdateAspectHeightInput = this.onUpdateAspectHeightInput.bind(this)
@@ -1271,7 +1271,7 @@ class Nepi_IF_ImageViewer extends Component {
 
             <Label title={"RENDER  CONTROLS"} />
 
-          <div hidden={(is_pointcloud !== true)}>
+          {/* <div hidden={(is_pointcloud !== true)}>
             <Columns>
             <Column>
                 <Label title={"Render Width (px)"}>
@@ -1296,7 +1296,7 @@ class Nepi_IF_ImageViewer extends Component {
                 </Label>
             </Column>
             </Columns>
-          </div>
+          </div> */}
  
     
 
@@ -1436,11 +1436,12 @@ class Nepi_IF_ImageViewer extends Component {
                     />
           </div>
 
-          {/* The 3-D Rotate and Tilt sliders live in LIVE ADUSTMENTS (see
-              renderLiveControls) alongside Translate X/Y, since all four are
+          {/* The 3-D Zoom, Rotate and Tilt sliders live in LIVE ADUSTMENTS (see
+              renderLiveControls) alongside Translate X/Y, since all of them are
               interactive view adjustments rather than render-output settings.
               This section keeps only what defines the render itself: output
               size and range clipping. */}
+
 
                         <ButtonMenu>
                             <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
@@ -1480,6 +1481,7 @@ class Nepi_IF_ImageViewer extends Component {
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
       const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
+      const has_zoom_3d = (capabilities && capabilities.has_zoom_3d && !this.state.disabled)
       const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
       const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
 
@@ -1496,6 +1498,7 @@ class Nepi_IF_ImageViewer extends Component {
       const x_max_ratio = message.window_x_ratios.stop_range
       const y_min_ratio = message.window_y_ratios.start_range
       const y_max_ratio = message.window_y_ratios.stop_range
+      const zoom_3d_ratio = message.zoom_3d_ratio
       const rotate_3d_ratio = message.rotate_3d_ratio
       const tilt_3d_ratio = message.tilt_3d_ratio
 
@@ -1532,11 +1535,26 @@ class Nepi_IF_ImageViewer extends Component {
           <div hidden={live_adjustments_disabled === true}>
             <Label title={"LIVE ADUSTMENTS"} />
 
-                      {/* Rotate 3D / Tilt 3D orbit the render camera around the
-                          pointcloud. They are titled "3D" to separate them from the
+                      {/* Zoom 3D / Rotate 3D / Tilt 3D move the render camera around
+                          the pointcloud. They are titled "3D" to separate them from the
                           "Rotate" slider below, which rotates the flat output image
                           via live_adjust_rotate_ratio -- two different controls that
                           both used to read simply "Rotate", in two different panels. */}
+                      <div hidden={(has_zoom_3d !== true )}>
+                      <SliderAdjustment
+                            title={"Zoom 3D"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={zoom_3d_ratio}
+                            topic={namespace + "/set_zoom_3d_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Zoom the 3D render camera in and out from the pointcloud"}
+                            noTextBox={true}
+                        />
+                      </div>
+
                       <div hidden={(has_rotate_3d !== true )}>
                       <SliderAdjustment
                             title={"Rotate 3D"}

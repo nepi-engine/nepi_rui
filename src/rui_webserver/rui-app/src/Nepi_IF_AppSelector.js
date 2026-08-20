@@ -36,6 +36,7 @@ import PTX from "./NepiDevicePTX"
 import LSX from "./NepiDeviceLSX"
 import RBX from "./NepiDeviceRBX"
 import NPX from "./NepiDeviceNPX"
+import SVX from "./NepiDeviceSVX"
 
 
 // DATA Classes
@@ -254,7 +255,23 @@ class NepiIFAppSelector extends Component {
          title={"NpxDevice"}
          />
       </Column>
-      </Columns>   
+      </Columns>
+        </React.Fragment>
+      )
+    }
+    else if (sel_app === "Servos"){
+      return (
+        <React.Fragment>
+          <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {this.state.selected_app}
+          </label>
+      <Columns>
+        <Column>
+        <SVX
+         title={"SvxDevice"}
+         />
+      </Column>
+      </Columns>
         </React.Fragment>
       )
     }
@@ -573,7 +590,7 @@ class NepiIFAppSelector extends Component {
 
   // Function for creating image topic options.
   getAppOptions() {
-    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices} = this.props.ros
+    const {idxDevices,lsxDevices,ptxDevices,rbxDevices,npxDevices,svxDevices} = this.props.ros
     
     const app_id = (this.props.app_id !== undefined) ? this.props.app_id : 'None'
 
@@ -611,6 +628,9 @@ class NepiIFAppSelector extends Component {
         }
         if (Object.keys(npxDevices).length > 0 && restricted.indexOf('DEVICE-NPX-VIEW') === -1){
           items.push(<Option value={"NavPose"}>{"NavPose"}</Option>)
+        }
+        if (Object.keys(svxDevices).length > 0 && restricted.indexOf('DEVICE-SVX-VIEW') === -1){
+          items.push(<Option value={"Servos"}>{"Servos"}</Option>)
         }
   
 
