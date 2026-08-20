@@ -80,38 +80,37 @@ class NepiIFPointcloudControls extends Component {
 
   // Callback for handling ROS PointcloudStatus messages
   statusListener(message) {
-    const last_msg = this.state.status_msg
-    this.setState({ status_msg: message })
-
-    // process_status is a submessage. A status message that arrives without it
-    // must not throw and must not blank the readbacks.
-    const process_status = message.process_status
-    if (process_status == null) {
+    // PointcloudStatus is flat. The three process control values are top level
+    // fields on the status message itself - they used to arrive nested inside a
+    // process_status submessage, which the pointcloud/image message
+    // consolidation removed. Guard on the status message, not on a submessage.
+    if (message == null) {
       return
     }
-    const last_process_status = (last_msg != null) ? last_msg.process_status : null
+    const last_msg = this.state.status_msg
+    this.setState({ status_msg: message })
 
     // These three back editable Input boxes, so only overwrite state when the
     // device actually reports a different value - otherwise every status tick
     // would stomp whatever the operator is part way through typing.
-    if (last_process_status == null) {
+    if (last_msg == null) {
       this.setState({
-        voxel_downsample_size_m: process_status.voxel_downsample_size_m,
-        uniform_downsample_points: process_status.uniform_downsample_points,
-        outlier_k_points: process_status.outlier_k_points
+        voxel_downsample_size_m: message.voxel_downsample_size_m,
+        uniform_downsample_points: message.uniform_downsample_points,
+        outlier_k_points: message.outlier_k_points
       })
     }
     else {
-      if (process_status.voxel_downsample_size_m !== last_process_status.voxel_downsample_size_m){
-        this.setState({voxel_downsample_size_m: process_status.voxel_downsample_size_m})
+      if (message.voxel_downsample_size_m !== last_msg.voxel_downsample_size_m){
+        this.setState({voxel_downsample_size_m: message.voxel_downsample_size_m})
       }
 
-      if (process_status.uniform_downsample_points !== last_process_status.uniform_downsample_points){
-        this.setState({uniform_downsample_points: process_status.uniform_downsample_points})
+      if (message.uniform_downsample_points !== last_msg.uniform_downsample_points){
+        this.setState({uniform_downsample_points: message.uniform_downsample_points})
       }
 
-      if (process_status.outlier_k_points !== last_process_status.outlier_k_points){
-        this.setState({outlier_k_points: process_status.outlier_k_points})
+      if (message.outlier_k_points !== last_msg.outlier_k_points){
+        this.setState({outlier_k_points: message.outlier_k_points})
       }
     }
 
@@ -177,7 +176,7 @@ class NepiIFPointcloudControls extends Component {
               <Column>
 
                 {(show_controls_option === true) ?
-                <Label title="Show Pointcloud Process Controls">
+                <Label title="Show">
                     {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                     <Toggle
                       checked={show_controls===true}
@@ -199,44 +198,41 @@ class NepiIFPointcloudControls extends Component {
 
                   <Label title={"Process Controls"}></Label>
 
-                  <Columns>
-                    <Column>
+                  {/* No Columns wrapper here on purpose. Label splits its row
+                      flex 1 / flex 1 between title and input, so nesting these in
+                      a half-width Column left each title on ~25% of the panel and
+                      wrapped every one of them. Full panel width plus labelStyle
+                      flex 3 gives the title 3/4 of the row and parks the input
+                      box flush against the right edge. */}
+                  <Label title={"Voxel Downsample Size (m) - 0 disables"} labelStyle={{ flex: 3 }}>
+                    <Input
+                      value={this.state.voxel_downsample_size_m}
+                      id="pointcloud_voxel_downsample_size_m"
+                      onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"voxel_downsample_size_m")}
+                      onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,nodeNamespace + '/set_voxel_downsample_size')}
+                      style={{ width: "100%" }}
+                    />
+                  </Label>
 
-                    <Label title={"Voxel Downsample Size (m) - 0 disables"}>
-                      <Input
-                        value={this.state.voxel_downsample_size_m}
-                        id="pointcloud_voxel_downsample_size_m"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"voxel_downsample_size_m")}
-                        onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,nodeNamespace + '/set_voxel_downsample_size')}
-                        style={{ width: "100%" }}
-                      />
-                    </Label>
+                  <Label title={"Uniform Downsample - keep every Nth point - 0 disables"} labelStyle={{ flex: 3 }}>
+                    <Input
+                      value={this.state.uniform_downsample_points}
+                      id="pointcloud_uniform_downsample_points"
+                      onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"uniform_downsample_points")}
+                      onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,nodeNamespace + '/uniform_downsample_k_points')}
+                      style={{ width: "100%" }}
+                    />
+                  </Label>
 
-                    <Label title={"Uniform Downsample - keep every Nth point - 0 disables"}>
-                      <Input
-                        value={this.state.uniform_downsample_points}
-                        id="pointcloud_uniform_downsample_points"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"uniform_downsample_points")}
-                        onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,nodeNamespace + '/uniform_downsample_k_points')}
-                        style={{ width: "100%" }}
-                      />
-                    </Label>
-
-                    <Label title={"Outlier Removal - neighbor count - 0 disables"}>
-                      <Input
-                        value={this.state.outlier_k_points}
-                        id="pointcloud_outlier_k_points"
-                        onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"outlier_k_points")}
-                        onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,nodeNamespace + '/outlier_removal_num_neighbors')}
-                        style={{ width: "100%" }}
-                      />
-                    </Label>
-
-                        </Column>
-                        <Column>
-
-                        </Column>
-                      </Columns>
+                  <Label title={"Outlier Removal - neighbor count - 0 disables"} labelStyle={{ flex: 3 }}>
+                    <Input
+                      value={this.state.outlier_k_points}
+                      id="pointcloud_outlier_k_points"
+                      onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"outlier_k_points")}
+                      onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,nodeNamespace + '/outlier_removal_num_neighbors')}
+                      style={{ width: "100%" }}
+                    />
+                  </Label>
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 

@@ -1223,8 +1223,6 @@ class Nepi_IF_ImageViewer extends Component {
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
       const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
-      const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
-      const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
 
 
       const message = this.state.status_msg
@@ -1239,8 +1237,6 @@ class Nepi_IF_ImageViewer extends Component {
       const x_max_ratio = message.window_x_ratios.stop_range
       const y_min_ratio = message.window_y_ratios.start_range
       const y_max_ratio = message.window_y_ratios.stop_range
-      const rotate_3d_ratio = message.rotate_3d_ratio
-      const tilt_3d_ratio = message.tilt_3d_ratio
 
       const live_adjustments_disabled = message.live_adjustments_disabled
       const live_adjust_enabled = message.live_adjust_enabled
@@ -1440,40 +1436,11 @@ class Nepi_IF_ImageViewer extends Component {
                     />
           </div>
 
-          <div hidden={(has_rotate_3d !== true )}>
-
-                      <SliderAdjustment
-                            title={"Rotate"}
-                            msgType={"std_msgs/Float32"}
-                            adjustment={rotate_3d_ratio}
-                            topic={namespace + "/set_rotate_3d_ratio"}
-                            scaled={0.01}
-                            min={0}
-                            max={100}
-                            disabled={false}
-                            tooltip={"Rotate controls"}
-                            noTextBox={true}
-                        />
-
-          </div>
-
-          <div hidden={(has_tilt_3d !== true )}>
-
-                        <SliderAdjustment
-                            title={"Tilt"}
-                            msgType={"std_msgs/Float32"}
-                            adjustment={tilt_3d_ratio}
-                            topic={namespace + "/set_tilt_3d_ratio"}
-                            scaled={0.01}
-                            min={0}
-                            max={100}
-                            disabled={false}
-                            tooltip={"Tilt controls"}
-                            noTextBox={true}
-                        />
-          </div>
-
-
+          {/* The 3-D Rotate and Tilt sliders live in LIVE ADUSTMENTS (see
+              renderLiveControls) alongside Translate X/Y, since all four are
+              interactive view adjustments rather than render-output settings.
+              This section keeps only what defines the render itself: output
+              size and range clipping. */}
 
                         <ButtonMenu>
                             <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
@@ -1504,7 +1471,7 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
-    const { imageCaps, sendTriggerMsg } = this.props.ros
+    const { imageCaps, sendTriggerMsg, sendFloatMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
 
@@ -1565,6 +1532,41 @@ class Nepi_IF_ImageViewer extends Component {
           <div hidden={live_adjustments_disabled === true}>
             <Label title={"LIVE ADUSTMENTS"} />
 
+                      {/* Rotate 3D / Tilt 3D orbit the render camera around the
+                          pointcloud. They are titled "3D" to separate them from the
+                          "Rotate" slider below, which rotates the flat output image
+                          via live_adjust_rotate_ratio -- two different controls that
+                          both used to read simply "Rotate", in two different panels. */}
+                      <div hidden={(has_rotate_3d !== true )}>
+                      <SliderAdjustment
+                            title={"Rotate 3D"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={rotate_3d_ratio}
+                            topic={namespace + "/set_rotate_3d_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Rotate the 3D render camera around the pointcloud"}
+                            noTextBox={true}
+                        />
+                      </div>
+
+                      <div hidden={(has_tilt_3d !== true )}>
+                      <SliderAdjustment
+                            title={"Tilt 3D"}
+                            msgType={"std_msgs/Float32"}
+                            adjustment={tilt_3d_ratio}
+                            topic={namespace + "/set_tilt_3d_ratio"}
+                            scaled={0.01}
+                            min={0}
+                            max={100}
+                            disabled={false}
+                            tooltip={"Tilt the 3D render camera around the pointcloud"}
+                            noTextBox={true}
+                        />
+                      </div>
+
                       <SliderAdjustment
                             title={"Rotate"}
                             msgType={"std_msgs/Float32"}
@@ -1574,7 +1576,7 @@ class Nepi_IF_ImageViewer extends Component {
                             min={0}
                             max={100}
                             disabled={false}
-                            tooltip={"Live Rotate control"}
+                            tooltip={"Live Rotate control (rotates the output image)"}
                             noTextBox={true}
                         />
                       <SliderAdjustment
@@ -1603,8 +1605,19 @@ class Nepi_IF_ImageViewer extends Component {
                         />
 
 
+                        {/* Reset Orientation resets the 3-D camera orientation
+                            (Rotate 3D, Tilt 3D and zoom) through the backend.
+                            Reset Position returns Translate X and Translate Y to
+                            their 0.5 neutral -- the same value reset_renders uses
+                            for live_adjust_x_ratio / live_adjust_y_ratio. These
+                            replace a single Reset Controls button that fired
+                            reset_renders and reset far more than this section owns. */}
                         <ButtonMenu>
-                            <Button onClick={() => sendTriggerMsg( namespace + "/reset_renders")}>{"Reset Controls"}</Button>
+                            <Button onClick={() => sendTriggerMsg( namespace + "/reset_render_3d_controls")}>{"Reset Orientation"}</Button>
+                            <Button onClick={() => {
+                              sendFloatMsg( namespace + "/set_live_adjust_x_ratio", 0.5)
+                              sendFloatMsg( namespace + "/set_live_adjust_y_ratio", 0.5)
+                            }}>{"Reset Position"}</Button>
                           </ButtonMenu>
 
                 </div>
