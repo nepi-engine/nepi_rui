@@ -97,6 +97,8 @@ class NepiDeviceRBX extends Component {
 
     this.setDeviceSelection = this.setDeviceSelection.bind(this)
     this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
+    this.reconcileDeviceSelection = this.reconcileDeviceSelection.bind(this)
+    this.selectDeviceNamespace = this.selectDeviceNamespace.bind(this)
 
     this.createTopicOptions = this.createTopicOptions.bind(this)
     this.createImageOptions = this.createImageOptions.bind(this)
@@ -182,6 +184,10 @@ class NepiDeviceRBX extends Component {
   // Lifecycle method called when component updates.
   // Used to track changes in the selected device.
   componentDidUpdate(prevProps, prevState) {
+    // Reconcile first: this is the safe phase for the setState calls that used
+    // to run during render out of createTopicOptions.
+    this.reconcileDeviceSelection(Object.keys(this.props.ros.rbxDevices))
+
     const currentRBXNamespace = this.state.currentRBXNamespace
     if (prevState.currentRBXNamespace !== currentRBXNamespace && currentRBXNamespace !== null) {
       if (currentRBXNamespace.indexOf('null') === -1) {
@@ -211,16 +217,45 @@ class NepiDeviceRBX extends Component {
       device_name = topics[i].split('/rbx')[0].split('/').pop()
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
-    // Check that our current selection hasn't disappeared as an available option
-    
-    // Check that our current selection hasn't disappeard as an available option
-    if ((namespace != null && namespace !== 'None')  && (topics.includes(namespace) === false)) {    
-        this.clearDeviceSelection()
-    }
-    if ((namespace == null || namespace === 'None') && topics.length > 0) {    
-        this.setDeviceSelection(topics[0])
-    }
+    // Selection reconciliation deliberately does NOT happen here. This runs
+    // during render, and both branches call setState -- see
+    // reconcileDeviceSelection(), called from componentDidUpdate instead.
     return items
+  }
+
+  // Keep the current selection consistent with what is actually on the system:
+  // drop a selection whose device has disappeared, and adopt the first device
+  // when nothing is selected yet.
+  //
+  // Runs from componentDidUpdate, not from render. It also selects by NAMESPACE
+  // rather than by calling setDeviceSelection: that method is a DOM event
+  // handler and reads event.nativeEvent.target, so handing it a namespace
+  // string threw "Cannot read properties of undefined (reading 'target')" and
+  // took the whole page down as soon as any RBX device existed.
+  reconcileDeviceSelection(topics) {
+    const namespace = this.state.currentRBXNamespace
+    const selected = (namespace != null && namespace !== 'None')
+
+    if (selected && topics.includes(namespace) === false) {
+      this.clearDeviceSelection()
+      return
+    }
+    if (selected === false && topics.length > 0) {
+      this.selectDeviceNamespace(topics[0])
+    }
+  }
+
+  // The selection itself, independent of how it was chosen. Both the Select
+  // handler and the auto-adopt path above go through here.
+  selectDeviceNamespace(namespace) {
+    if (namespace == null || namespace === 'None') {
+      this.clearDeviceSelection()
+      return
+    }
+    this.setState({
+      currentRBXNamespace: namespace,
+      currentRBXNamespaceText: namespace.split('/rbx')[0].split('/').pop(),
+    })
   }
 
   createImageOptions(RBXDeviceNamespace) {
@@ -261,11 +296,11 @@ class NepiDeviceRBX extends Component {
     })
   }
 
-  // Handler for RBX device topic selection
+  // Handler for RBX device topic selection. Event-shaped, so it only ever
+  // receives a real DOM event from the Select below; everything else selects
+  // through selectDeviceNamespace().
   setDeviceSelection(event) {
     var rbx = event.nativeEvent.target.selectedIndex
-    var text = event.nativeEvent.target[rbx].text
-    var value = event.target.value
 
     // Handle the "None" option -- always index 0
     if (rbx === 0) {
@@ -274,8 +309,8 @@ class NepiDeviceRBX extends Component {
     }
 
     this.setState({
-      currentRBXNamespace: value,
-      currentRBXNamespaceText: text,
+      currentRBXNamespace: event.target.value,
+      currentRBXNamespaceText: event.nativeEvent.target[rbx].text,
     })
   }
 
