@@ -663,7 +663,7 @@ class NepiDeviceRBX extends Component {
           {(deviceSelected === true) ?
             <NepiIFSettings
               settingsNamespace={namespace + '/settings'}
-              allways_show_settings={true}
+              allways_show_controls={true}
               title={"Device Settings"}
             />
             : null}

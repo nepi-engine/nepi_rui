@@ -200,7 +200,7 @@ class NepiDevicePTX extends Component {
                       {(device_selected === true) ?
                       <NepiIFSettings
                         settingsNamespace={namespace + '/settings'}
-                        allways_show_settings={true}
+                        allways_show_controls={true}
                         make_section={true}
                         title={"Device Settings"}
                     />

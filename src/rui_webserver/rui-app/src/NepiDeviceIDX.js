@@ -342,6 +342,7 @@ class NepiDeviceIDX extends Component {
                           {(device_selected === true) ?
                           <NepiIFSettings
                             settingsNamespace={namespace + '/settings'}
+                            allways_show_controls={true}
                             title={"Device Settings"}
                         />
                         : null}

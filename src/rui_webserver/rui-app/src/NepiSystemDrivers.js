@@ -312,60 +312,75 @@ import NepiIFSettings from "./Nepi_IF_Settings"
             </pre>
 
 
-            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-            <Columns equalWidth={true}>
+             <Columns equalWidth={true}>
               <Column>
-                  
 
 
-                <label style={{fontWeight: 'bold'}}>
-                    {"Start Order"}
-                  </label>
+                    <div hidden={settings_namespace === ''}>
 
-                  <Input disabled value={order} />
-              
+                        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                        <label style={{fontWeight: 'bold'}}>
+                            {"Driver Options"}
+                          </label>
+
+
+                          <NepiIFSettings
+                            settingsNamespace={settings_namespace}
+                            make_section={false}
+                            allways_show_controls={true}
+                            ignore_restrictions={true}
+                            title={"Driver Discovery Options"}
+                          />
+
+                      </div>
+
+                  </Column>
+                  <Column>
+
+                       
+
+                      <Columns equalWidth={true}>
+                        <Column>
+                            
+                      
+
+
+                        </Column>
+                        <Column>
+
+                         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                          <label style={{fontWeight: 'bold'}}>
+                              {"Startup Order"}
+                            </label>
+
+                            <Input disabled value={order} />
+                        
+
+
+                          <ButtonMenu>
+                          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "top")}>{"Move to Top"}</Button>
+                          </ButtonMenu>
+
+                          <ButtonMenu>
+                          <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "up")}>{"Move    Up"}</Button>
+                          </ButtonMenu>
+
+                          <ButtonMenu>
+                            <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "down")}>{"Move Down"}</Button>
+                          </ButtonMenu>
+
+                          <ButtonMenu>
+                            <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "bottom")}>{"Move to Bottom"}</Button>
+                          </ButtonMenu>
+
+
+                      </Column>
+                      </Columns>
 
               </Column>
-              <Column>
-
-                <ButtonMenu>
-                <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "top")}>{"Move to Top"}</Button>
-                </ButtonMenu>
-
-                <ButtonMenu>
-                <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "up")}>{"Move    Up"}</Button>
-                </ButtonMenu>
-
-                <ButtonMenu>
-                  <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "down")}>{"Move Down"}</Button>
-                </ButtonMenu>
-
-                <ButtonMenu>
-                  <Button onClick={() => sendUpdateOrderMsg(mgrNamespace + "/update_driver_order", selected_driver, "bottom")}>{"Move to Bottom"}</Button>
-                </ButtonMenu>
-
-
-            </Column>
-            </Columns>
-
-
-                <div hidden={settings_namespace === ''}>
-                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                    <label style={{fontWeight: 'bold'}}>
-                        {"Discovery Options Settings"}
-                      </label>
-
-
-                      <NepiIFSettings
-                        settingsNamespace={settings_namespace}
-                        make_section={false}
-                        allways_show_settings={true}
-                        ignore_restrictions={true}
-                        title={"Driver Discovery Options"}
-                      />
-
-                  </div>
+              </Columns>
 
           </Section>
         
