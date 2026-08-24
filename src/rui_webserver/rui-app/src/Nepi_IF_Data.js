@@ -40,7 +40,7 @@ import { round, onChangeSwitchStateValue } from "./Utilities"
 // no calls into any Store.js send function. The node that owns the DataIF is
 // the only writer of record. The single Toggle below drives local component
 // state ("Show Data") and never touches ROS.
-class NepiIFData extends Component {
+class Nepi_IF_Data extends Component {
   constructor(props) {
     super(props)
 
@@ -261,4 +261,4 @@ class NepiIFData extends Component {
   }
 }
 
-export default NepiIFData
+export default Nepi_IF_Data
