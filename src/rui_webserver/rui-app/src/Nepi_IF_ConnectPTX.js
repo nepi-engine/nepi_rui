@@ -149,7 +149,7 @@ class NepiIFConnectPTX extends Component {
     const available_names = connect_status_msg.available_names
     const selected_topic = connect_status_msg.selected_topic
     const connected = connect_status_msg.connected
-
+    const title = (this.props.select_title !== undefined) ? this.props.select_title : "Select Device"
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     for (var i = 0; i < available_topics.length; i++) {
@@ -161,7 +161,7 @@ class NepiIFConnectPTX extends Component {
       <Columns>
         <Column>
 
-          <Label title={"Device"}>
+          <Label title={title}>
             <Select
               onChange={this.onDeviceSelected}
               value={selected_topic}

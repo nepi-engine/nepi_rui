@@ -164,9 +164,11 @@ class NepiIFConnectData extends Component {
     // the original one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
     const header_title = (this.props.title !== undefined) ? this.props.title : "Data Connect"
+   
+    const title = (this.props.select_title !== undefined) ? this.props.select_title : "Select Source"
 
     const selector = (
-      <Label title={"Data Source"}>
+      <Label title={title}>
         <Select
           onChange={this.onSourceSelected}
           value={selected_topic}
