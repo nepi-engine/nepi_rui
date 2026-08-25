@@ -681,7 +681,7 @@ class Nepi_IF_ImageViewer extends Component {
             const dy = Math.abs(y2 - y1) 
 
             const pt = 5
-            if (dx > pt && dy > pt){        
+            if (dx > pt || dy > pt){        
               if ( this.state.status_msg != null){
                   this.sendImageMouseEventMsg(drag_namespace,
                                                       this.state.image_topic,
@@ -720,7 +720,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
           const pt = 5
-          if (dx < pt && dy < pt){
+          if (dx <= pt && dy <= pt){
             var click_namespace = (this.props.mouse_click_topic !== undefined && this.props.mouse_click_topic != null) ? this.props.mouse_click_topic : namespace
             const status_msg = this.state.status_msg
             const num_crosshairs = status_msg.num_crosshairs
