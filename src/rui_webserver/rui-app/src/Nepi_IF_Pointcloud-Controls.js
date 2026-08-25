@@ -35,23 +35,24 @@ import { onUpdateSetStateValue, onEnterSendIntValue, onEnterSendFloatValue, onCh
 // PointcloudIF process controls (voxel downsample, uniform downsample, outlier
 // removal) and nothing else.
 //
-// TWO NAMESPACES, AND THEY ARE NOT INTERCHANGEABLE:
-//
-//   nodeNamespace       - the device node namespace, e.g. /nepi/device1/zed2_31
-//                         ALL THREE CONTROLS PUBLISH HERE. PointcloudIF
-//                         registers every one of its subscribers on the node
-//                         namespace, not on the data product namespace.
+// BOTH CONTROLS AND STATUS USE THE DATA PRODUCT NAMESPACE:
 //
 //   statusNamespace     - the data product namespace, e.g.
 //                         /nepi/device1/zed2_31/pointcloud
-//                         THE STATUS SUBSCRIPTION READS HERE. PointcloudIF
-//                         publishes PointcloudStatus on <statusNamespace>/status.
+//                         CONTROLS PUBLISH HERE AND STATUS READS HERE.
+//                         PointcloudIF registers its control subscribers on the
+//                         data product namespace and publishes PointcloudStatus
+//                         on <statusNamespace>/status.
 //
-// Publishing a control to the data product namespace produces no error and no
-// effect - nothing is subscribed there, so the message is simply dropped. The
-// failure is silent. Never build a control topic from statusNamespace.
+//   nodeNamespace       - the device node namespace, e.g. /nepi/device1/zed2_31
+//                         Passed by the parent but no longer used for controls.
 //
-// The parent passes both props. Do not derive one from the other in here.
+// This used to be split: PointcloudIF registered every subscriber on the node
+// namespace while status arrived on the data product namespace, so a control
+// published to the data product namespace was silently dropped. PointcloudIF
+// was realigned to the data product namespace, matching NavPoseIF and
+// BaseImageIF, so that split is gone. Build control topics from
+// statusNamespace.
 class NepiIFPointcloudControls extends Component {
   constructor(props) {
     super(props)
@@ -161,10 +162,9 @@ class NepiIFPointcloudControls extends Component {
 
 
   renderControlPanel() {
-    // Controls publish to the NODE namespace. Not statusNamespace - see the
-    // class comment. A control published to the data product namespace is
-    // dropped silently.
-    const nodeNamespace = this.props.nodeNamespace ? this.props.nodeNamespace : 'None'
+    // Controls publish to the data product namespace, the same one the status
+    // subscription reads from - see the class comment.
+    const statusNamespace = this.props.statusNamespace ? this.props.statusNamespace : 'None'
 
     const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : true
     const show_controls = this.state.show_controls || (show_controls_option === false)
@@ -209,7 +209,7 @@ class NepiIFPointcloudControls extends Component {
                       value={this.state.voxel_downsample_size_m}
                       id="pointcloud_voxel_downsample_size_m"
                       onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"voxel_downsample_size_m")}
-                      onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,nodeNamespace + '/set_voxel_downsample_size')}
+                      onKeyDown= {(event) => onEnterSendFloatValue.bind(this)(event,statusNamespace + '/set_voxel_downsample_size')}
                       style={{ width: "100%" }}
                     />
                   </Label>
@@ -219,7 +219,7 @@ class NepiIFPointcloudControls extends Component {
                       value={this.state.uniform_downsample_points}
                       id="pointcloud_uniform_downsample_points"
                       onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"uniform_downsample_points")}
-                      onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,nodeNamespace + '/uniform_downsample_k_points')}
+                      onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,statusNamespace + '/uniform_downsample_k_points')}
                       style={{ width: "100%" }}
                     />
                   </Label>
@@ -229,7 +229,7 @@ class NepiIFPointcloudControls extends Component {
                       value={this.state.outlier_k_points}
                       id="pointcloud_outlier_k_points"
                       onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"outlier_k_points")}
-                      onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,nodeNamespace + '/outlier_removal_num_neighbors')}
+                      onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,statusNamespace + '/outlier_removal_num_neighbors')}
                       style={{ width: "100%" }}
                     />
                   </Label>

@@ -294,8 +294,13 @@ class Nepi_IF_ImageViewer extends Component {
   // Bailing out when neither topic has actually changed breaks the cycle no
   // matter which caller re-enters.
   updateStatusListener() {
-    const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : "None"
-    const status_topic = (this.props.status_topic !== undefined) ? this.props.status_topic : image_topic
+    // Test for null as well as undefined. Parents commonly derive image_topic
+    // from a status message field and hand over an explicit null before the
+    // first status arrives -- an undefined-only test stores that null into
+    // state.image_topic, where three dozen readers then treat it as a topic
+    // string ('None' is the sentinel they all check for, not null).
+    const image_topic = (this.props.image_topic !== undefined && this.props.image_topic !== null) ? this.props.image_topic : "None"
+    const status_topic = (this.props.status_topic !== undefined && this.props.status_topic !== null) ? this.props.status_topic : image_topic
     const prev_image_topic = (this.state.image_topic != null) ? this.state.image_topic : 'None'
     const image_index = (this.props.image_index !== undefined) ? this.props.image_index : 0
 

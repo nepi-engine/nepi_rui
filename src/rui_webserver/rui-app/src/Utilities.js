@@ -156,6 +156,12 @@ export function createMenuBaseName(optionStr) {
     var menu_name = ''
     var parts = []
     var sliced_parts = []
+    // Callers pass topic names straight out of status messages, which are null
+    // until the first status arrives. Fall through to the default name instead
+    // of throwing on the split.
+    if (optionStr == null || typeof optionStr !== 'string') {
+      return menu_name
+    }
     parts = optionStr.split('/')
     if (parts.length > 3){
       sliced_parts = parts.slice(3);
@@ -174,6 +180,9 @@ export function createMenuBaseNames(optionsStrList) {
     var menu_names = []
     var menu_name = ''
     var i = 0
+    if (optionsStrList == null) {
+      return menu_names
+    }
     for (i = 0; i < optionsStrList.length; ++i) {
       menu_name = createMenuBaseName(optionsStrList[i])
       menu_names.push(menu_name)
@@ -186,6 +195,11 @@ export function createMenuFirstLastName(optionStr) {
     var menu_name = 'None'
     var parts = []
     var sliced_parts = []
+    // See createMenuBaseName. 'None' is already the declared default here, it
+    // just never got reached because the split threw first.
+    if (optionStr == null || typeof optionStr !== 'string') {
+      return menu_name
+    }
     parts = optionStr.split('/')
     if (parts.length > 3){
       sliced_parts = parts.slice(3); 
@@ -207,6 +221,9 @@ export function createMenuFirstLastNames(optionsStrList) {
     var menu_names = []
     var menu_name = ''
     var i = 0
+    if (optionsStrList == null) {
+      return menu_names
+    }
     for (i = 0; i < optionsStrList.length; ++i) {
       menu_name = createMenuFirstLastName(optionsStrList[i])
       menu_names.push(menu_name)

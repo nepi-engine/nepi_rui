@@ -326,10 +326,11 @@ class NepiDeviceIDX extends Component {
                         : null}
 
 
-                          {/* PointcloudIF process controls. Two namespaces on purpose:
-                              controls publish to the node namespace, status arrives on
-                              the data product namespace. Publishing a control to the
-                              data product namespace is dropped silently. */}
+                          {/* PointcloudIF process controls. Controls publish to and
+                              status arrives on the same data product namespace. The
+                              old split, where controls went to the node namespace,
+                              ended when PointcloudIF was realigned to the data
+                              product namespace. */}
                           {(device_selected === true && has_pointcloud === true) ?
                           <NepiIFPointcloudControls
                               nodeNamespace={namespace}
