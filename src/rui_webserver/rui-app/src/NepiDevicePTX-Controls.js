@@ -92,7 +92,6 @@ class NepiDevicePTXControls extends Component {
     })
 
 
-
     const speedMax = message.speed_max_dps
     const panHomePos = message.pan_home_pos_deg
     const tiltHomePos = message.tilt_home_pos_deg
@@ -715,6 +714,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const tiltMoveClean = tiltMove + .001
 
 
+    const set_max_dps_disabled = status_msg.set_max_dps_disabled
     const speedRatio = status_msg.speed_ratio
     const speedPanRatio = status_msg.speed_pan_ratio
     const speedTiltRatio = status_msg.speed_tilt_ratio
@@ -826,7 +826,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
             <Label title={"Max Speed (dps)"}>
                 <Input
                   id={"MaxSpeed"}
-                  disabled={true}
+                  disabled={set_max_dps_disabled === true}
                   style={{ width: "45%" }}
                   value={this.state.speedMax}
                   onChange= {this.onUpdateText}

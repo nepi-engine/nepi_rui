@@ -149,7 +149,7 @@ class Nepi_IF_ImageViewer extends Component {
     this.applyAspectAll = this.applyAspectAll.bind(this)
     this.renderAspectControls = this.renderAspectControls.bind(this)
     this.renderORControls = this.renderORControls.bind(this)
-    this.renderOverlayControls = this.renderOverlayControls.bind(this)
+    this.renderTextControls = this.renderTextControls.bind(this)
     this.renderCrosshairsControls = this.renderCrosshairsControls.bind(this)
     this.renderTargetsControls = this.renderTargetsControls.bind(this)
 
@@ -2194,10 +2194,10 @@ class Nepi_IF_ImageViewer extends Component {
     }
   }
 
-  renderOverlayControls() {
+  renderTextControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
     const namespace = this.state.image_topic
-    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+    
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
@@ -2215,7 +2215,6 @@ class Nepi_IF_ImageViewer extends Component {
       const overlay_text_nav = message.overlay_text_nav
       const overlay_text_pose = message.overlay_text_pose
       
-
 
       return (
 
@@ -2863,6 +2862,9 @@ class Nepi_IF_ImageViewer extends Component {
     const show_navpose_controls = (this.props.show_navpose_controls !== undefined) ? this.props.show_navpose_controls && show_image_controls: show_image_controls
     const show_render_controls = (this.props.show_render_controls !== undefined) ? this.props.show_render_controls && show_image_controls: show_image_controls
     const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls && show_image_controls: show_image_controls
+    const show_overlay_text = (this.props.show_overlay_text !== undefined) ? this.props.show_overlay_text  && show_overlay_controls === true: true
+    const show_overlay_crosshairs = (this.props.show_overlay_crosshairs !== undefined) ? this.props.show_overlay_crosshairs && show_overlay_controls === true : true
+    const show_overlay_targets = (this.props.show_overlay_targets !== undefined) ? this.props.show_overlay_targets   && show_overlay_controls === true : true
 
     const show_info = this.state.show_info && (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
     const show_config = this.state.show_config && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
@@ -3111,7 +3113,7 @@ class Nepi_IF_ImageViewer extends Component {
                           <div style={{ display: 'flex' }}>
                                 <div style={{ width: '30%' }}>
 
-                                      {this.renderOverlayControls()}
+                                      {(show_overlay_text === true) ? this.renderTextControls() : null}
 
                                 </div>
 
@@ -3120,7 +3122,7 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '30%' }}>
-                                  {this.renderCrosshairsControls()}
+                                   {(show_overlay_crosshairs === true) ? this.renderCrosshairsControls() : null}
                                 </div>
 
                                 <div style={{ width: '3%' }}>
@@ -3128,7 +3130,7 @@ class Nepi_IF_ImageViewer extends Component {
                                 </div>
 
                                 <div style={{ width: '30%' }}>
-                                  {this.renderTargetsControls()}
+                                   {(show_overlay_targets === true) ? this.renderTargetsControls() : null}
 
                                 </div>
                 
