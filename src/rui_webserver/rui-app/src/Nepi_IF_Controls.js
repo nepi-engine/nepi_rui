@@ -437,7 +437,7 @@ class Nepi_IF_Controls extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    const status_msg = this.state.status_msg
+    const status_msg = (this.props.make_section !== undefined) ? this.props.make_section : this.state.status_msg
 
     // Show Controls toggle (Nepi_IF_Settings pattern). allways_show_controls
     // forces the controls open and hides the toggle.

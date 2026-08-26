@@ -194,7 +194,7 @@ class Nepi_IF_Data extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    const status_msg = this.state.status_msg
+    const status_msg = (this.props.make_section !== undefined) ? this.props.make_section : this.state.status_msg
 
     // Show Data toggle (Nepi_IF_Controls pattern). The data set is shown when
     // DataStatus.show_data is true; the toggle is only offered when the node
