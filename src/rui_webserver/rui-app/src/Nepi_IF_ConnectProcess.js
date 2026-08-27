@@ -39,7 +39,7 @@ import { createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
 @observer
 
 // Component that contains the Process controls
-class Nepi_IF_Process extends Component {
+class Nepi_IF_ConnectProcess extends Component {
   constructor(props) {
     super(props)
 
@@ -221,6 +221,7 @@ class Nepi_IF_Process extends Component {
       <Nepi_IF_Data
         make_section={false}
         title={null}
+        allways_show_data={true}
         namespace={ status_msg.namespace}
         status_msg={status_msg.process_data}
         />
@@ -231,6 +232,7 @@ class Nepi_IF_Process extends Component {
       <Nepi_IF_Controls
         make_section={false}
         title={null}
+        allways_show_controls={true}
         namespace={ status_msg.namespace}
         status_msg={status_msg.process_controls}
         />
@@ -296,4 +298,4 @@ class Nepi_IF_Process extends Component {
   }
 
 }
-export default Nepi_IF_Process
+export default Nepi_IF_ConnectProcess

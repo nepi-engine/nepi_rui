@@ -94,14 +94,16 @@ class Nepi_IF_Data extends Component {
       )
       this.setState({ statusListener: statusListener })
     }
-    this.setState({ dataNamespace: namespace, needs_update: false })
+    
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getNamespace()
-    if ((namespace != null && namespace !== this.state.dataNamespace) || this.state.needs_update === true) {
+    const props_status_msg = (this.props.make_section !== undefined) ? this.props.make_section : null
+    if ((namespace != null && namespace !== this.state.controlsNamespace && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
+    this.setState({ dataNamespace: namespace, needs_update: false})
   }
 
   componentDidMount() {
@@ -194,8 +196,7 @@ class Nepi_IF_Data extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    const status_msg = (this.props.make_section !== undefined) ? this.props.make_section : this.state.status_msg
-
+    const status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : this.state.status_msg
     // Show Data toggle (Nepi_IF_Controls pattern). The data set is shown when
     // DataStatus.show_data is true; the toggle is only offered when the node
     // says it has one (DataStatus.has_show_control). allways_show_data forces

@@ -160,14 +160,16 @@ class Nepi_IF_Controls extends Component {
       )
       this.setState({ statusListener: statusListener })
     }
-    this.setState({ controlsNamespace: namespace, needs_update: false, editValues: {}, pending: {} })
+    
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getNamespace()
-    if ((namespace != null && namespace !== this.state.controlsNamespace) || this.state.needs_update === true) {
+    const props_status_msg = (this.props.make_section !== undefined) ? this.props.make_section : null
+    if ((namespace != null && namespace !== this.state.controlsNamespace && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
+    this.setState({ controlsNamespace: namespace, needs_update: false, editValues: {}, pending: {} })
   }
 
   componentDidMount() {
