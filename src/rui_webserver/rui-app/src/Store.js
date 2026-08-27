@@ -2141,6 +2141,20 @@ class ROSConnectionStore {
     }
   }
 
+
+  @action.bound
+  setupProcessListener(namespace, callback) {
+    if (namespace) {
+      return this.addListener({
+        name: namespace,
+        messageType: "nepi_interfaces/ProcessStatus",
+        noPrefix: true,
+        callback: callback,
+
+      })
+    }
+  }
+
   @action.bound
   setupDataListener(namespace, msg_type, callback) {
     if (namespace) {
