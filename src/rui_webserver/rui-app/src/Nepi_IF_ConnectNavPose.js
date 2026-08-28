@@ -210,7 +210,13 @@ class NepiIFConnectNavPose extends Component {
     // the original one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
     const title = (this.props.select_title !== undefined) ? this.props.select_title : "Select Device"
-
+    
+    // Single-line row mode. Pages that pack several connect rows into one panel
+    // pass shortened={true} and get exactly one line: the row's name (the title
+    // prop) on the left, its Select on the right, no header line and no
+    // Connected indicator. Default false leaves both layouts below untouched,
+    // so every existing consumer renders as it always has.
+    const shortened = (this.props.shortened !== undefined) ? this.props.shortened : false
 
 
     const selector = (
@@ -249,7 +255,7 @@ class NepiIFConnectNavPose extends Component {
           <Columns>
             <Column>
 
-              <Label title={header_title} labelStyle={{fontWeight: 'bold'}}/>
+              <Label title={title} labelStyle={{fontWeight: 'bold'}}/>
 
             </Column>
             <Column>
