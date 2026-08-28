@@ -209,21 +209,12 @@ class NepiIFConnectNavPose extends Component {
     // the selector, and the Select spans the panel width. Default false keeps
     // the original one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
-    const header_title = (this.props.title !== undefined) ? this.props.title : "NavPose Connect"
+    const title = (this.props.select_title !== undefined) ? this.props.select_title : "Select Device"
 
-    // Single-line row mode. Pages that pack several connect rows into one panel
-    // pass shortened={true} and get exactly one line: the row's name (the title
-    // prop) on the left, its Select on the right, no header line and no
-    // Connected indicator. Default false leaves both layouts below untouched,
-    // so every existing consumer renders as it always has.
-    const shortened = (this.props.shortened !== undefined) ? this.props.shortened : false
 
-    // In shortened mode the row's one label IS its name, so the second word
-    // ("NavPose Source") would just repeat the title the caller already passed.
-    const selector_label = (shortened === true) ? header_title : "NavPose Source"
 
     const selector = (
-      <Label title={selector_label}>
+      <Label title={title}>
         <Select
           onChange={this.onSourceSelected}
           value={selected_topic}
