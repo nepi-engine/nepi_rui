@@ -24,6 +24,7 @@ import Section from "./Section"
 import Toggle from "react-toggle"
 import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
+import BooleanIndicator from "./BooleanIndicator"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Select from "./Select"
@@ -56,46 +57,25 @@ class Nepi_IF_ConnectProcess extends Component {
       needs_update: false,
     }
 
+    this.getProcessNamespace = this.getProcessNamespace.bind(this)
     this.updateProcessListener = this.updateProcessListener.bind(this)
     this.processListener = this.processListener.bind(this)
 
+    // renderControls / renderData are not bound here: they no longer exist.
+    // renderProcess() mounts Nepi_IF_Data and Nepi_IF_Controls inline. Binding
+    // a method that does not exist throws in the constructor, which kills the
+    // whole page the moment this component mounts.
     this.renderProcess = this.renderProcess.bind(this)
-    this.renderControls = this.renderControls.bind(this)
-    this.renderData = this.renderData.bind(this)
   }
 
-  // Callback for handling ROS Process Status messages
+  // Callback for handling ROS Process Status messages.
+  //
+  // No namespace equality guard here. The node reports ProcessStatus.namespace
+  // as the fully-resolved process namespace, and this component may have been
+  // pointed at the same namespace by a different string; the listener is
+  // already scoped to one topic, so anything arriving on it belongs here.
   processListener(message) {
-    if (message.namespace === this.state.processNamespace){
-      const lastCaps = this.state.capabilities
-      const process = message.process_list
-      const capabilities = message.setting_caps_list
-      var namesList = []
-      var typesList = []
-      var valuesList = []
-      for (let ind = 0; ind < process.length; ind++){
-        namesList.push(process[ind].name_str)
-        typesList.push(process[ind].type_str)
-        valuesList.push(process[ind].value_str)
-      }
-      const count = namesList.length
-
-      
-
-      this.setState({
-                    status_msg: message,
-                    capabilities: capabilities,
-                    processNamesList:namesList,
-                    processTypesList:typesList,
-                    processValuesList:valuesList,
-                    processCount: count
-      })
-
-      if (lastCaps !== capabilities){
-        this.updateCapabilities(capabilities) 
-      }
-    }
-
+    this.setState({ status_msg: message })
   }
 
   // Function for configuring and subscribing to Process Status
@@ -122,11 +102,22 @@ class Nepi_IF_ConnectProcess extends Component {
 
   // Lifecycle method cAlled when compnent updates.
   // Used to track changes in the topic
+  // The namespace prop is what every caller passes; processNamespace is kept as
+  // an accepted alias. Reading only processNamespace is what left this component
+  // permanently unsubscribed and blank.
+  getProcessNamespace() {
+    const ns = (this.props.namespace !== undefined && this.props.namespace !== null) ?
+                  this.props.namespace : this.props.processNamespace
+    if (ns === undefined || ns === null || ns === '' || ns === 'None') {
+      return 'None'
+    }
+    return ns
+  }
+
   componentDidUpdate(prevProps, prevState, snapshot) {
-    const processNamespace =  (this.props.processNamespace !== undefined) ? (this.props.processNamespace !== '' && this.props.processNamespace !== 'None' && this.props.processNamespace !== null) ?
-                               this.props.processNamespace : 'None' : 'None'
+    const processNamespace = this.getProcessNamespace()
     const needs_update = ((this.state.processNamespace !== processNamespace))
-  
+
     if (needs_update) {
       this.setState({processNamespace: processNamespace})
       this.updateProcessListener(processNamespace)
@@ -182,15 +173,55 @@ class Nepi_IF_ConnectProcess extends Component {
 
  
 
+    const { sendBoolMsg } = this.props.ros
+    const namespace = status_msg.namespace
+    // Normalized rather than read raw: a ProcessStatus from a node built
+    // against a different nepi_interfaces can arrive missing these, and an
+    // undefined here would otherwise reach AsyncToggle as its checked prop.
+    const enabled = (status_msg.enabled === true)
+    const running = (status_msg.running === true)
+    const process_ready = (status_msg.process_ready === true)
+    const msg_str = (status_msg.msg_str !== undefined && status_msg.msg_str !== null) ? status_msg.msg_str : ''
+    const show_enable = (this.props.show_enable !== undefined) ? this.props.show_enable : true
+
       return (
         <React.Fragment>
 
+              {/* The process enable. This is the control that starts and stops
+                  the process itself; everything below it is display state.
+                  Enabled is what the operator asked for, Running is what the
+                  node reports back, and they are shown separately so an enable
+                  the node could not honour is visible rather than silent. */}
+              {(show_enable === true) ?
+              <Columns>
+                <Column>
+                    <Label title={"Enable"}>
+                      <AsyncToggle
+                        disabled={process_ready === false}
+                        checked={enabled === true}
+                        onClick={() => sendBoolMsg(namespace + "/set_enable", !enabled)}>
+                      </AsyncToggle>
+                    </Label>
+                </Column>
+                <Column>
+                    <Label title={"Running"}>
+                      <BooleanIndicator value={running === true} />
+                    </Label>
+                </Column>
+              </Columns>
+              : null }
+
+              {(show_enable === true && msg_str !== '' && msg_str !== undefined) ?
+                <pre style={{ height: "24px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
+                  {msg_str}
+                </pre>
+              : null }
 
               <Columns>
                 <Column>
 
                     {(allways_show_data === false && has_process_data === true) ?
-                    <Label title="Show Process">
+                    <Label title="Show Data">
                         {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_data===true}
@@ -204,7 +235,7 @@ class Nepi_IF_ConnectProcess extends Component {
 
 
                     {(allways_show_controls === false && has_process_controls === true) ?
-                    <Label title="Show Process">
+                    <Label title="Show Controls">
                         {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
                           checked={show_controls===true}
@@ -240,7 +271,7 @@ class Nepi_IF_ConnectProcess extends Component {
 
       { ( has_config === true ) ?
         <NepiIFConfig
-          namespace={this.getAppNamespace()}
+          namespace={namespace}
           title={"Nepi_IF_Config"}
         />
         : null}

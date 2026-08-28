@@ -165,11 +165,18 @@ class Nepi_IF_Controls extends Component {
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getNamespace()
-    const props_status_msg = (this.props.make_section !== undefined) ? this.props.make_section : null
-    if ((namespace != null && namespace !== this.state.controlsNamespace && props_status_msg == null) || this.state.needs_update === true) {
+    const props_status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : null
+    const namespace_changed = (namespace !== this.state.controlsNamespace)
+    if ((namespace != null && namespace_changed && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
-    this.setState({ controlsNamespace: namespace, needs_update: false, editValues: {}, pending: {} })
+    // Guarded: an unconditional setState here re-enters componentDidUpdate on
+    // every render (mobx-react's observer SCU re-renders on any state identity
+    // change), which is an infinite update loop, and it also cleared the
+    // operator's in-progress edits on every frame.
+    if (namespace_changed === true || this.state.needs_update === true) {
+      this.setState({ controlsNamespace: namespace, needs_update: false, editValues: {}, pending: {} })
+    }
   }
 
   componentDidMount() {
@@ -439,7 +446,7 @@ class Nepi_IF_Controls extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    const status_msg = (this.props.make_section !== undefined) ? this.props.make_section : this.state.status_msg
+    const status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : this.state.status_msg
 
     // Show Controls toggle (Nepi_IF_Settings pattern). allways_show_controls
     // forces the controls open and hides the toggle.

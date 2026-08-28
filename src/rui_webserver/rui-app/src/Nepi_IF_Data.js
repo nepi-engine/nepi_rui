@@ -99,11 +99,19 @@ class Nepi_IF_Data extends Component {
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getNamespace()
-    const props_status_msg = (this.props.make_section !== undefined) ? this.props.make_section : null
-    if ((namespace != null && namespace !== this.state.controlsNamespace && props_status_msg == null) || this.state.needs_update === true) {
+    const props_status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : null
+    // dataNamespace, not controlsNamespace: this component never sets a
+    // controlsNamespace, so comparing against it made every render look like a
+    // namespace change and resubscribe.
+    const namespace_changed = (namespace !== this.state.dataNamespace)
+    if ((namespace != null && namespace_changed && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
-    this.setState({ dataNamespace: namespace, needs_update: false})
+    // Guarded for the same reason as Nepi_IF_Controls: an unconditional
+    // setState here re-enters componentDidUpdate on every render.
+    if (namespace_changed === true || this.state.needs_update === true) {
+      this.setState({ dataNamespace: namespace, needs_update: false})
+    }
   }
 
   componentDidMount() {
