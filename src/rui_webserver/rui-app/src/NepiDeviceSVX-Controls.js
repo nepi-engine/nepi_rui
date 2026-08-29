@@ -500,6 +500,11 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
     const pwmAvail = this.pwmAvailable()
 
+    // A driver that supplies no speed max setter reports set_max_dps_disabled on status,
+    // and the max speed input must not be offered. The speed ratio slider stays live --
+    // the max is what cannot move, not the speed.
+    const setMaxDpsDisabled = (status_msg.set_max_dps_disabled === true)
+
     return (
       <React.Fragment>
 
@@ -536,7 +541,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
               <Label title={"Max Speed (dps)"}>
                 <Input
-                  disabled={!has_speed_control}
+                  disabled={!has_speed_control || setMaxDpsDisabled}
                   id={"SVXMaxSpeed"}
                   style={{ width: "45%", float: "left" }}
                   value={this.state.speedMax}
