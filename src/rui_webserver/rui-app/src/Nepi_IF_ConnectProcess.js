@@ -26,15 +26,11 @@ import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import BooleanIndicator from "./BooleanIndicator"
 import { Column, Columns } from "./Columns"
-import Styles from "./Styles"
-import Select from "./Select"
-import Input from "./Input"
-import { SliderAdjustment } from "./AdjustmentWidgets"
 
-import Nepi_IF_Controls from "./Nepi_IF_Controls"
-import Nepi_IF_Data from "./Nepi_IF_Data"
+import NepiIFControls from "./Nepi_IF_Controls"
+import NepiIFData from "./Nepi_IF_Data"
 import NepiIFConfig from "./Nepi_IF_Config"
-import { createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
+import { onChangeSwitchStateValue} from "./Utilities"
 
 @inject("ros")
 @observer
@@ -249,7 +245,7 @@ class Nepi_IF_ConnectProcess extends Component {
 
 
       { ( show_data === true ) ?
-      <Nepi_IF_Data
+      <NepiIFData
         make_section={false}
         title={null}
         allways_show_data={true}
@@ -260,7 +256,7 @@ class Nepi_IF_ConnectProcess extends Component {
 
 
       { ( show_controls === true ) ?
-      <Nepi_IF_Controls
+      <NepiIFControls
         make_section={false}
         title={null}
         allways_show_controls={true}

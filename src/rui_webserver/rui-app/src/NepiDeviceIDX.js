@@ -280,7 +280,7 @@ class NepiDeviceIDX extends Component {
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const data_product = this.state.data_product
     const capabilities = this.props.ros.idxDevices[namespace]
-    const node_name = capabilities ? capabilities.device_node_name : 'None'
+    // const node_name = capabilities ? capabilities.device_node_name : 'None'
     const data_products = (capabilities && capabilities.data_products) ? capabilities.data_products : []
     const has_pointcloud = (data_products.indexOf('pointcloud') !== -1)
 
@@ -334,7 +334,7 @@ class NepiDeviceIDX extends Component {
                           {(device_selected === true && has_pointcloud === true) ?
                           <NepiIFPointcloudControls
                               nodeNamespace={namespace}
-                              statusNamespace={namespace + '/' + 'pointcloud'}
+                              statusNamespace={namespace + '/pointcloud'}
                               title={"Pointcloud Process Controls"}
                         />
                         : null}

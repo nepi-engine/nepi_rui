@@ -43,7 +43,7 @@ import Select, { Option } from "./Select"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
-import {  onChangeSwitchStateValue, onUpdateSetStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
+import {  onChangeSwitchStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -62,8 +62,8 @@ const styles = Styles.Create({
 })
 
 const COMPRESSION_HIGH_QUALITY = 95
-const COMPRESSION_MED_QUALITY = 50
-const COMPRESSION_LOW_QUALITY = 10
+// const COMPRESSION_MED_QUALITY = 50
+// const COMPRESSION_LOW_QUALITY = 10
 
 const MAX_STREAM_RATE = 20
 
@@ -369,7 +369,7 @@ class Nepi_IF_ImageViewer extends Component {
       //const { streamingImageQuality } = this.props.ros
       const stream_quality = this.getStreamQuality()
       const stream_rate = (this.props.streamingImageRate !== undefined) ? this.props.streamingImageRate : MAX_STREAM_RATE
-      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&type=mjpeg' + '&framerate=' + stream_rate + '&quality=' + stream_quality
+      this.image.src = ROS_WEBCAM_URL_BASE + this.props.image_topic + '&type=mjpeg&framerate=' + stream_rate + '&quality=' + stream_quality
     }
   }
 
@@ -651,7 +651,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
   mouseDragEvent(canvas,event){
-      const {sendImageDragMsg} = this.props.ros
+      // const {sendImageDragMsg} = this.props.ros
       var namespace = (this.props.mouse_event_topic !== undefined && this.props.mouse_event_topic != null) ? this.props.mouse_event_topic : this.state.image_topic + '/mouse_event'
       if (namespace === 'None Available') {
           namespace = 'None'
@@ -699,7 +699,7 @@ class Nepi_IF_ImageViewer extends Component {
   }
 
   mouseUpEvent(canvas,event){
-      const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
+      // const {sendImagePixelMsg, sendImageWindowMsg} = this.props.ros
       var namespace = (this.props.mouse_event_topic !== undefined && this.props.mouse_event_topic != null) ? this.props.mouse_event_topic : this.state.image_topic + '/mouse_event'
       if (namespace === 'None Available') {
           namespace = 'None'
@@ -723,12 +723,12 @@ class Nepi_IF_ImageViewer extends Component {
           if (dx <= pt && dy <= pt){
             var click_namespace = (this.props.mouse_click_topic !== undefined && this.props.mouse_click_topic != null) ? this.props.mouse_click_topic : namespace
             const status_msg = this.state.status_msg
-            const num_crosshairs = status_msg.num_crosshairs
+            // const num_crosshairs = status_msg.num_crosshairs
             const click_crosshair_enabled = status_msg.click_crosshair_enabled
             if (click_crosshair_enabled === true && status_msg != null){
               click_namespace = namespace
             }
-            const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
+            // const [r,g,b,a] = this.getPixelColor(canvas,x1, y1)
             //const cur_ms = Date.now()
             //const last_click_ms = this.state.last_click_ms
 
@@ -815,7 +815,7 @@ class Nepi_IF_ImageViewer extends Component {
   sendImageMouseEventMsg(namespace, image_topic, image_index, mouse_click, mouse_drag_start, mouse_drag_stop , mouse_window, status_msg, mouse_scroll = null, scroll_amount = 0 ) {
     if (mouse_click !== null){
         const status_msg = this.state.status_msg
-        const num_crosshairs = status_msg.num_crosshairs
+        // const num_crosshairs = status_msg.num_crosshairs
         // const click_text_enabled = status_msg.click_text_enabled
         // const click_crosshair_enabled = status_msg.click_crosshair_enabled
         // const click_target_enabled = status_msg.click_target_enabled
@@ -1243,16 +1243,16 @@ class Nepi_IF_ImageViewer extends Component {
       const y_min_ratio = message.window_y_ratios.start_range
       const y_max_ratio = message.window_y_ratios.stop_range
 
-      const live_adjustments_disabled = message.live_adjustments_disabled
-      const live_adjust_enabled = message.live_adjust_enabled
-      const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
-      const live_adjust_rotate_deg = message.live_adjust_rotate_deg
-      const live_adjust_x_ratio = message.live_adjust_x_ratio
-      const live_adjust_x_pixels = message.live_adjust_x_pixels
-      const live_adjust_x_deg = message.live_adjust_x_degs
-      const live_adjust_y_ratio = message.live_adjust_y_ratio
-      const live_adjust_y_pixels = message.live_adjust_y_pixels
-      const live_adjust_y_deg = message.live_adjust_y_degs
+      // const live_adjustments_disabled = message.live_adjustments_disabled
+      // const live_adjust_enabled = message.live_adjust_enabled
+      // const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
+      // const live_adjust_rotate_deg = message.live_adjust_rotate_deg
+      // const live_adjust_x_ratio = message.live_adjust_x_ratio
+      // const live_adjust_x_pixels = message.live_adjust_x_pixels
+      // const live_adjust_x_deg = message.live_adjust_x_degs
+      // const live_adjust_y_ratio = message.live_adjust_y_ratio
+      // const live_adjust_y_pixels = message.live_adjust_y_pixels
+      // const live_adjust_y_deg = message.live_adjust_y_degs
 
       const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
       const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
@@ -1264,9 +1264,9 @@ class Nepi_IF_ImageViewer extends Component {
       // The render image-size control applies only to the pointcloud render
       // (fewer pixels = faster render). For 2D image products width_px/height_px
       // are the source dimensions, so hide it there.
-      const is_pointcloud = (message.data_source_description !== undefined
-          && message.data_source_description !== null
-          && String(message.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
+      // const is_pointcloud = (message.data_source_description !== undefined
+          // && message.data_source_description !== null
+          // && String(message.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
 
       return (
 
@@ -1482,55 +1482,55 @@ class Nepi_IF_ImageViewer extends Component {
 
 
     if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
-      const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
-      const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
-      const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
-      const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
+      // const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
+      // const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
+      // const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
+      // const has_window = (capabilities && capabilities.has_window && !this.state.disabled)
       const has_zoom_3d = (capabilities && capabilities.has_zoom_3d && !this.state.disabled)
       const has_rotate_3d = (capabilities && capabilities.has_rotate_3d && !this.state.disabled)
       const has_tilt_3d = (capabilities && capabilities.has_tilt_3d && !this.state.disabled)
 
 
       const message = this.state.status_msg
-      const auto_adjust_enabled = message.auto_adjust_enabled
-      const auto_adjust_controls = message.auto_adjust_controls
-      const range_start_ratio = message.range_ratios.start_range
-      const range_stop_ratio = message.range_ratios.stop_range
-      const zoom_ratio = message.zoom_ratio
-      const pan_x_ratio = message.pan_x_ratio
-      const pan_y_ratio = message.pan_y_ratio
-      const x_min_ratio = message.window_x_ratios.start_range
-      const x_max_ratio = message.window_x_ratios.stop_range
-      const y_min_ratio = message.window_y_ratios.start_range
-      const y_max_ratio = message.window_y_ratios.stop_range
+      // const auto_adjust_enabled = message.auto_adjust_enabled
+      // const auto_adjust_controls = message.auto_adjust_controls
+      // const range_start_ratio = message.range_ratios.start_range
+      // const range_stop_ratio = message.range_ratios.stop_range
+      // const zoom_ratio = message.zoom_ratio
+      // const pan_x_ratio = message.pan_x_ratio
+      // const pan_y_ratio = message.pan_y_ratio
+      // const x_min_ratio = message.window_x_ratios.start_range
+      // const x_max_ratio = message.window_x_ratios.stop_range
+      // const y_min_ratio = message.window_y_ratios.start_range
+      // const y_max_ratio = message.window_y_ratios.stop_range
       const zoom_3d_ratio = message.zoom_3d_ratio
       const rotate_3d_ratio = message.rotate_3d_ratio
       const tilt_3d_ratio = message.tilt_3d_ratio
 
       const live_adjustments_disabled = message.live_adjustments_disabled
-      const live_adjust_enabled = message.live_adjust_enabled
+      // const live_adjust_enabled = message.live_adjust_enabled
       const live_adjust_rotate_ratio = message.live_adjust_rotate_ratio
-      const live_adjust_rotate_deg = message.live_adjust_rotate_deg
+      // const live_adjust_rotate_deg = message.live_adjust_rotate_deg
       const live_adjust_x_ratio = message.live_adjust_x_ratio
-      const live_adjust_x_pixels = message.live_adjust_x_pixels
-      const live_adjust_x_deg = message.live_adjust_x_degs
+      // const live_adjust_x_pixels = message.live_adjust_x_pixels
+      // const live_adjust_x_deg = message.live_adjust_x_degs
       const live_adjust_y_ratio = message.live_adjust_y_ratio
-      const live_adjust_y_pixels = message.live_adjust_y_pixels
-      const live_adjust_y_deg = message.live_adjust_y_degs
+      // const live_adjust_y_pixels = message.live_adjust_y_pixels
+      // const live_adjust_y_deg = message.live_adjust_y_degs
 
-      const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
-      const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
-      const hide_window = (!has_window || auto_controls.indexOf('window') !== -1)
+      // const auto_controls = auto_adjust_enabled ? auto_adjust_controls : []
+      // const hide_range = (!has_range || auto_controls.indexOf('range') !== -1)
+      // const hide_window = (!has_window || auto_controls.indexOf('window') !== -1)
 
-      const min_range_m_adj = round( message.min_range_m_adj,1)
-      const max_range_m_adj = round(message.max_range_m_adj,1)
+      // const min_range_m_adj = round( message.min_range_m_adj,1)
+      // const max_range_m_adj = round(message.max_range_m_adj,1)
 
       // The render image-size control applies only to the pointcloud render
       // (fewer pixels = faster render). For 2D image products width_px/height_px
       // are the source dimensions, so hide it there.
-      const is_pointcloud = (message.data_source_description !== undefined
-          && message.data_source_description !== null
-          && String(message.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
+      // const is_pointcloud = (message.data_source_description !== undefined
+          // && message.data_source_description !== null
+          // && String(message.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
 
       return (
 
@@ -1668,7 +1668,10 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const {
+      imageCaps,
+      // sendTriggerMsg,
+      sendBoolMsg } = this.props.ros
     const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
 
@@ -1988,12 +1991,15 @@ class Nepi_IF_ImageViewer extends Component {
 
   renderAspectControls() {
     const namespace = this.state.image_topic
-    const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
+    // const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
-    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+    const {
+      // imageCaps,
+      // sendTriggerMsg,
+      sendBoolMsg } = this.props.ros
+    // const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
-    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+    // const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
@@ -2003,7 +2009,7 @@ class Nepi_IF_ImageViewer extends Component {
       const aspect_ratio_set = round(message.aspect_ratio_set, 2)
       const aspect_by_ratio = aspect_ratio_set - 1
       const aspect_ratio_str = message.aspect_ratio_str
-      const aspect_ratio = message.aspect_ratio
+      // const aspect_ratio = message.aspect_ratio
     
 
       
@@ -2206,10 +2212,10 @@ class Nepi_IF_ImageViewer extends Component {
       const overlay_text_size_ratio = message.overlay_text_size_ratio
       const overlay_text_horz_ratio = message.overlay_text_horz_ratio
       const overlay_text_vert_ratio = message.overlay_text_vert_ratio
-      const overlay_text_transparency_ratio = message.overlay_text_transparency_ratio
-      const overlay_text_color_r = message.overlay_text_color_r
-      const overlay_text_color_g = message.overlay_text_color_g
-      const overlay_text_color_b = message.overlay_text_color_b
+      // const overlay_text_transparency_ratio = message.overlay_text_transparency_ratio
+      // const overlay_text_color_r = message.overlay_text_color_r
+      // const overlay_text_color_g = message.overlay_text_color_g
+      // const overlay_text_color_b = message.overlay_text_color_b
       const overlay_text_source_name = message.overlay_text_source_name
       const overlay_text_date_time = message.overlay_text_date_time
       const overlay_text_nav = message.overlay_text_nav
@@ -2382,7 +2388,7 @@ class Nepi_IF_ImageViewer extends Component {
   renderCrosshairsControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
     const namespace = this.state.image_topic
-    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+    // const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
@@ -2397,9 +2403,9 @@ class Nepi_IF_ImageViewer extends Component {
       const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs_enabled === true
       const crosshair_msgs = message.overlay_crosshair_messages && crosshairs_enabled === true
       
-      const crosshairs_color_r = message.crosshairs_color_r
-      const crosshairs_color_g = message.crosshairs_color_g
-      const crosshairs_color_b = message.crosshairs_color_b
+      // const crosshairs_color_r = message.crosshairs_color_r
+      // const crosshairs_color_g = message.crosshairs_color_g
+      // const crosshairs_color_b = message.crosshairs_color_b
 
       
 
@@ -2561,7 +2567,7 @@ class Nepi_IF_ImageViewer extends Component {
   renderTargetsControls() {
     const { sendTriggerMsg, sendBoolMsg } = this.props.ros
     const namespace = this.state.image_topic
-    const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
+    // const show_overlay_controls = this.props.show_overlay_controls ? this.props.show_overlay_controls : true
    
     if (this.state.status_msg !== null && namespace !== null){
       const message = this.state.status_msg
@@ -2576,9 +2582,9 @@ class Nepi_IF_ImageViewer extends Component {
       const target_degrees = message.overlay_target_degrees && targets_enabled === true
       const target_msgs = message.overlay_target_messages && targets_enabled === true
       
-      const targets_color_r = message.targets_color_r
-      const targets_color_g = message.targets_color_g
-      const targets_color_b = message.targets_color_b
+      // const targets_color_r = message.targets_color_r
+      // const targets_color_g = message.targets_color_g
+      // const targets_color_b = message.targets_color_b
 
       
 
@@ -2837,7 +2843,7 @@ class Nepi_IF_ImageViewer extends Component {
     const render_3d_controls_enabled = (render_status !== null && render_status !== undefined && render_status.render_3d_controls_enabled !== undefined) ? render_status.render_3d_controls_enabled : false
 
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
-    const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
+    // const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
@@ -2870,7 +2876,7 @@ class Nepi_IF_ImageViewer extends Component {
     const show_config = this.state.show_config && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
     const show_navpose = this.state.show_navpose  && (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
     const show_render = this.state.show_render  && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
-    const show_overlay = this.state.show_overlay  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
+    // const show_overlay = this.state.show_overlay  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
 
     return (
       

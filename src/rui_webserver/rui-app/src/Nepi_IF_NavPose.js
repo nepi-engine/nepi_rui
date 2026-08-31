@@ -375,7 +375,7 @@ class NepiIFNavPose extends Component {
     const transform_topic = (status_msg != null && status_msg.transform_topic) ? status_msg.transform_topic : ''
 
     const { userRestricted } = this.props.ros
-    const navpose_view_restricted = userRestricted.indexOf('DATA-NAVPOSE-VIEW') !== -1
+    // const navpose_view_restricted = userRestricted.indexOf('DATA-NAVPOSE-VIEW') !== -1
     const navpose_control_restricted = userRestricted.indexOf('DATA-NAVPOSE-CONTROL') !== -1
 
     return (
@@ -518,10 +518,10 @@ class NepiIFNavPose extends Component {
           const pitch_deg = (force_enable || has_orientation === true) && navpose_data.pitch_deg !== -999 ? navpose_data.pitch_deg : null
           const yaw_deg = (force_enable || has_orientation === true) && navpose_data.yaw_deg !== -999 ? navpose_data.yaw_deg : null
 
-          const has_altitude = navpose_data.has_altitude
+          // const has_altitude = navpose_data.has_altitude
           const altitude_m = navpose_data.altitude_m !== -999 ? navpose_data.altitude_m : null
 
-          const has_depth = navpose_data.has_depth
+          // const has_depth = navpose_data.has_depth
           const depth_m = navpose_data.depth_m !== -999 ? navpose_data.depth_m : null
 
           const has_pan_tilt = navpose_data.has_pan_tilt

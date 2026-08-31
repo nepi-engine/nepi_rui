@@ -57,9 +57,9 @@ const styles = Styles.Create({
 
 const IS_LOCAL = window.location.hostname === "localhost"
 
-function roundWithSuffix(value, decimals, suffix) {
-  return value && (value.toFixed(decimals) + " " + suffix)
-}
+// function roundWithSuffix(value, decimals, suffix) {
+  // return value && (value.toFixed(decimals) + " " + suffix)
+// }
 
 @inject("ros")
 @observer
@@ -823,14 +823,16 @@ updateMgrTimeStatusListener() {
 
 
   renderNetworkMgr() {
-    const {  onToggleDHCPEnabled, bandwidth_usage_query_response } = this.props.ros
+    const {
+      // onToggleDHCPEnabled,
+      bandwidth_usage_query_response } = this.props.ros
     const { ipAddrVal } = this.state
     const base_namespace = this.getBaseNamespace()
     const netStatus = this.state.netStatus
-    const dhcp_enabled = (netStatus !== null)? netStatus.dhcp_enabled : false
+    // const dhcp_enabled = (netStatus !== null)? netStatus.dhcp_enabled : false
     const primary_addr = (netStatus !== null)? netStatus.primary_ip_addr : ''
     const managed_addrs = (netStatus !== null)? netStatus.managed_ip_addrs : []
-    const dhcp_addr = (netStatus !== null)? netStatus.dhcp_ip_addr : ''
+    // const dhcp_addr = (netStatus !== null)? netStatus.dhcp_ip_addr : ''
     const internet_connected = (netStatus !== null)? netStatus.internet_connected : false
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false
     const message = clock_skewed === false ? "" : "Clock out of date. Sync Clock for Internet Connectivity"
@@ -1084,17 +1086,20 @@ updateMgrTimeStatusListener() {
 
 
   renderWifiInfo() {
-    const { onToggleWifiAPEnabled, onToggleWifiClientEnabled, onRefreshWifiNetworks } = this.props.ros
+    const {
+      // onToggleWifiAPEnabled,
+      onToggleWifiClientEnabled, onRefreshWifiNetworks } = this.props.ros
     const { wifiClientSSID, wifiClientPassphrase,
-            wifiAPSSIDEdited, wifiAPSSID, wifiAPPassphrase } = this.state
+            // wifiAPSSIDEdited, wifiAPSSID, wifiAPPassphrase,
+            } = this.state
 
     const netStatus = this.state.netStatus
     const has_wifi = netStatus? netStatus.has_wifi : false
     const wifi_enabled = (netStatus !== null)? netStatus.wifi_client_enabled : false
     const wifi_client_ssid = (netStatus !== null)? netStatus.wifi_client_ssid : ""
     const wifi_client_passphrase = (netStatus !== null)? netStatus.wifi_client_passphrase : ""
-    const ap_ssid = (netStatus !== null)? netStatus.wifi_ap_ssid : ""
-    const ap_passphrase = (netStatus !== null)? netStatus.wifi_ap_passphrase : ""
+    // const ap_ssid = (netStatus !== null)? netStatus.wifi_ap_ssid : ""
+    // const ap_passphrase = (netStatus !== null)? netStatus.wifi_ap_passphrase : ""
     const available_networks = (netStatus !== null)? netStatus.available_networks : []
 
     const clock_skewed = (netStatus !== null)? netStatus.clock_skewed : false

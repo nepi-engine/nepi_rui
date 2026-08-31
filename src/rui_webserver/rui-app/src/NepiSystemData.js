@@ -23,7 +23,6 @@ import { observer, inject } from "mobx-react"
 
 import Input from "./Input"
 import Section from "./Section"
-import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Button, { ButtonMenu } from "./Button"
 import Styles from "./Styles"

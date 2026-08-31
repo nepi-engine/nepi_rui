@@ -251,7 +251,7 @@ class NepiIFImageViewerSelector extends Component {
     const active_list = []
 
 
-    const image_topics = this.state.image_topics
+    // const image_topics = this.state.image_topics
     //const image_topic = (this.props.image_topic !== undefined) ? this.props.image_topic : this.state.selected_image
     const show_selector = (this.props.show_selector !== undefined ? this.props.show_selector : menu_options.length > 0)
 

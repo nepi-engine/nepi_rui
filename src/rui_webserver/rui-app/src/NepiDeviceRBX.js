@@ -209,7 +209,7 @@ class NepiDeviceRBX extends Component {
 
   // Function for creating topic options for Select input
   createTopicOptions(topics) {
-    const namespace = this.state.currentRBXNamespace
+    // const namespace = this.state.currentRBXNamespace
     var items = []
     items.push(<Option>{"None"}</Option>)
     var device_name = ""

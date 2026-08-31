@@ -23,7 +23,6 @@ import Toggle from "react-toggle"
 import AsyncToggle from "./AsyncToggle"
 
 import Section from "./Section"
-import Select, { Option } from "./Select"
 import { Columns, Column } from "./Columns"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
@@ -446,24 +445,24 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
     const devices = this.props.ros.ptxDevices
     var has_abs_pos = false
-    var has_speed_control = false
+    // var has_speed_control = false
     var has_homing = false
-    var has_sep_speed = false
+    // var has_sep_speed = false
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
       has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
-      has_speed_control = capabilities && (capabilities.has_adjustable_speed)
+      // has_speed_control = capabilities && (capabilities.has_adjustable_speed)
       has_homing = capabilities && (capabilities.has_homing)
-      has_sep_speed = capabilities && (capabilities.has_seperate_pan_tilt_speed === true)
+      // has_sep_speed = capabilities && (capabilities.has_seperate_pan_tilt_speed === true)
     }
 
     const reversePanEnabled = status_msg.reverse_pan_enabled
     const reverseTiltEnabled = status_msg.reverse_tilt_enabled
 
-    const speedRatio = status_msg.speed_ratio
-    const speedPanRatio = status_msg.speed_pan_ratio
-    const speedTiltRatio = status_msg.speed_tilt_ratio
+    // const speedRatio = status_msg.speed_ratio
+    // const speedPanRatio = status_msg.speed_pan_ratio
+    // const speedTiltRatio = status_msg.speed_tilt_ratio
 
     const panHomePos = this.state.panHomePos
     const tiltHomePos = this.state.tiltHomePos
@@ -486,12 +485,13 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
     if ( device_controls_restricted === true){
+      return (
               <Columns>
                 <Column>
 
                 </Column>
               </Columns>
-
+      )
     }
 
     else {

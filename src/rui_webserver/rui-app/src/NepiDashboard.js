@@ -218,7 +218,7 @@ class NepiDashboard extends Component {
       //Unused diskUsagePercent
     } = this.props.ros
 
-    const { wifi_query_response } = this.props.ros
+    // const { wifi_query_response } = this.props.ros
     const internet_connected = (systemMgrStatus != null) ? systemMgrStatus.internet_connected : false
     
     return (
