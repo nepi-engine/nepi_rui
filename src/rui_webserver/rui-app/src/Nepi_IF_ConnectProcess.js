@@ -198,7 +198,7 @@ class Nepi_IF_ConnectProcess extends Component {
 
 
               { ( show_results === true ) ?
-              <Nepi_IF_Data
+              <NepiIFData
                 make_section={false}
                 title={null}
                 allways_show_data={true}
