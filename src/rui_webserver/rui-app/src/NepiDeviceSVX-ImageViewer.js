@@ -126,7 +126,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   render() {
     const { svxDevices, sendTriggerMsg } = this.props.ros
     const namespace = (this.props.namespace !== null) ? this.props.namespace : 'None'
-    const status_msg = this.state.status_msg
+    // const status_msg = this.state.status_msg
 
     const use_images_selector = (this.props.use_images_selector !== undefined) ? this.props.use_images_selector : false
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : false

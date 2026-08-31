@@ -15,10 +15,10 @@ import { Columns, Column } from "./Columns"
 //import Select, { Option } from "./Select"
 import Button, { ButtonMenu } from "./Button"
 import Styles from "./Styles"
-import Label from "./Label"
-import Toggle from "react-toggle"
+// import Label from "./Label"
+// import Toggle from "react-toggle"
 
-import {onChangeSwitchStateValue} from "./Utilities"
+// import {onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
@@ -126,16 +126,18 @@ class NepiIFImageViewersSelector extends Component {
     if (this.state.needs_update === true){
       this.setState({needs_update: false})
     }
-    const {imageTopics, sendStringMsg} = this.props.ros
-    const images_available = imageTopics.length > 0
+    const {
+      // imageTopics,
+      sendStringMsg} = this.props.ros
+    // const images_available = imageTopics.length > 0
     const show_controls_bar = (this.props.show_controls_bar !== undefined) ? this.props.show_controls_bar : true
-    const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
-    const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls === true && (num_windows === 1) : (num_windows === 1)
+    // const num_windows = (this.props.num_windows !== undefined) ? this.props.num_windows : this.state.num_windows
+    // const show_image_controls = (this.props.show_image_controls !== undefined) ? this.props.show_image_controls === true && (num_windows === 1) : (num_windows === 1)
     
-    const show_selectors_option =  images_available === true
+    // const show_selectors_option =  images_available === true
     const custom_selection_options = (this.props.custom_selection_options !== undefined) ? this.props.custom_selection_options : []
     const custom_selection_callback = (this.props.custom_selection_callback !== undefined) ? this.props.custom_selection_callback : null
-    const show_selectors = this.state.show_selectors
+    // const show_selectors = this.state.show_selectors
     return (
       <React.Fragment>
 

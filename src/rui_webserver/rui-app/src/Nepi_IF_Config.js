@@ -71,8 +71,8 @@ class NepiIFConfig extends Component {
 
   render() {
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
-    const check_topic = namespace + '/save_config'
-    const active_topics = this.props.ros.systemStatusTopics
+    // const check_topic = namespace + '/save_config'
+    // const active_topics = this.props.ros.systemStatusTopics
     const has_topic = true //(active_topics.indexOf(check_topic) !== -1)
     const { userRestricted} = this.props.ros
     const config_controls_restricted = (this.props.restricted !== undefined) ? this.props.restricted : 

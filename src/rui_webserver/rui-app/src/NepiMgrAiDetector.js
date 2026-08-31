@@ -479,7 +479,7 @@ renderDetectorSettings() {
       const enabled = process_status_msg.enabled
       const running = process_status_msg.running
       const processing = process_status_msg.state
-      const msg_str = process_status_msg.msg_str
+      // const msg_str = process_status_msg.msg_str
 
 
 
@@ -492,7 +492,7 @@ renderDetectorSettings() {
       const imaging_enabled = process_status_msg.image_pub_enabled
       const use_last_image = process_status_msg.use_last_image
 
-      const auto_select_enabled = process_status_msg.auto_select_enabled
+      // const auto_select_enabled = process_status_msg.auto_select_enabled
       const auto_select_active = process_status_msg.auto_select_active
 
       const selected_sources = process_status_msg.selected_sources
@@ -500,16 +500,16 @@ renderDetectorSettings() {
       const img_selected = process_status_msg.source_selected
       const img_connected = process_status_msg.source_connected
 
-      const avg_source_latency = round(process_status_msg.avg_source_latency, 3)
-      const avg_source_rate = round(process_status_msg.avg_source_rate, 3)
+      // const avg_source_latency = round(process_status_msg.avg_source_latency, 3)
+      // const avg_source_rate = round(process_status_msg.avg_source_rate, 3)
 
-      const avg_preprocess_latency = round(process_status_msg.avg_preprocess_latency, 3)
-      const avg_preprocess_rate = round(process_status_msg.avg_preprocess_rate, 3)
+      // const avg_preprocess_latency = round(process_status_msg.avg_preprocess_latency, 3)
+      // const avg_preprocess_rate = round(process_status_msg.avg_preprocess_rate, 3)
 
       const avg_process_latency = round(process_status_msg.avg_process_latency, 3)
       const avg_process_rate = round(process_status_msg.avg_process_rate, 3)
 
-      const max_process_rate = round(process_status_msg.max_process_rate, 3)
+      // const max_process_rate = round(process_status_msg.max_process_rate, 3)
 
 
       const img_options = this.createImageTopicsOptions()

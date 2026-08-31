@@ -378,7 +378,7 @@ class SystemMgr extends Component {
 
       // Disable the expand button while a config update is running or while
       // the status text shows an expansion is requested or in progress.
-      const status_msg_str = (systemMgrStatus.nepi_update_msg ? systemMgrStatus.nepi_update_msg : "")
+      // const status_msg_str = (systemMgrStatus.nepi_update_msg ? systemMgrStatus.nepi_update_msg : "")
 
       const vehicle_subnet = this.state.vehicle_subnet
       // Live values read from the system config.
@@ -476,16 +476,16 @@ class SystemMgr extends Component {
       const systemMgrStatus = this.props.ros.systemMgrStatus
       const nepi_update_requested = systemMgrStatus.nepi_update_requested
       const nepi_updating_config = systemMgrStatus.nepi_updating_config
-      const nepi_service_running = systemMgrStatus.nepi_service_running
-      const hide_update_config = (nepi_update_requested === true || nepi_updating_config === true)
-      var update_message = systemMgrStatus.nepi_update_msg
+      // const nepi_service_running = systemMgrStatus.nepi_service_running
+      // const hide_update_config = (nepi_update_requested === true || nepi_updating_config === true)
+      // var update_message = systemMgrStatus.nepi_update_msg
 
-      if (nepi_updating_config === true ){
-        update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
-      }
-      else if (nepi_update_requested === true){
-        update_message = 'UPDATE REQUEST SENT.  WAITING FOR RESPONSE'
-      }
+      // if (nepi_updating_config === true ){
+        // update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
+      // }
+      // else if (nepi_update_requested === true){
+        // update_message = 'UPDATE REQUEST SENT.  WAITING FOR RESPONSE'
+      // }
 
       // Disable the expand button while a config update is running or while
       // the status text shows an expansion is requested or in progress.
@@ -562,7 +562,7 @@ class SystemMgr extends Component {
         //Unused diskUsagePercent
       } = this.props.ros
       const netlist = systemMgrStatus.netlist_str
-      const { wifi_query_response } = this.props.ros
+      // const { wifi_query_response } = this.props.ros
       const internet_connected = (systemMgrStatus != null) ? systemMgrStatus.internet_connected : false
       const date_time_str = (systemMgrStatus != null) ? systemMgrStatus.date_time_str : ''
       return (

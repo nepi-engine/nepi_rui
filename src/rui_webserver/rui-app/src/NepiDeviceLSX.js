@@ -146,8 +146,8 @@ class NepiControlsLights extends Component {
  render() {
     const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    const capabilities = this.props.ros.lsxDevices[namespace]
-    const node_name = capabilities ? capabilities.device_node_name : 'None'
+    // const capabilities = this.props.ros.lsxDevices[namespace]
+    // const node_name = capabilities ? capabilities.device_node_name : 'None'
     
         return (
 

@@ -548,9 +548,17 @@ class NavPoseMgr extends Component {
 
 
   renderFrameConfig() {
-    const { sendUpdateBoolMsg } = this.props.ros
-    const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
-    const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
+    // const { sendUpdateBoolMsg } = this.props.ros
+    const {
+      // navpose_frames,
+      // navpose_frames_topics,
+      navpose_frames_solutions } = this.props.ros
+    const {
+      selected_frame,
+      selected_frame_ind,
+      // selected_frame_rate,
+      // edit_frame_rate,
+      } = this.state
 
     const mgrNamespace = this.getMgrNamespace()
 
@@ -876,8 +884,15 @@ class NavPoseMgr extends Component {
 
   renderNavPoseMgr() {
    const { sendUpdateBoolMsg } = this.props.ros
-    const { navpose_frames, navpose_frames_topics, navpose_frames_solutions } = this.props.ros
-    const { selected_frame, selected_frame_ind, selected_frame_rate, edit_frame_rate } = this.state
+    const {
+      // navpose_frames,
+      // navpose_frames_topics,
+      navpose_frames_solutions } = this.props.ros
+    const {
+      // selected_frame,
+      selected_frame_ind,
+      // selected_frame_rate,
+      edit_frame_rate } = this.state
 
     const mgrNamespace = this.getMgrNamespace()
 
