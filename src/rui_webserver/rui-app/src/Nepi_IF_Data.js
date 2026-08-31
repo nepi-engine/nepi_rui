@@ -192,7 +192,7 @@ class Nepi_IF_Data extends Component {
               disabled
               title={description}
               style={{ width: boxWidth, float: "left" }}
-              value={v}
+              value={(v !== '-999' && v !== -999) ? v : 'UNSET'}
             />
           ))}
         </Label>
