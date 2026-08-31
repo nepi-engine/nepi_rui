@@ -186,16 +186,19 @@ class SystemMgr extends Component {
         // values back from the live config.
         const base_namespace = this.getBaseNamespace()
         const settingsList = [
-          { nameStr: 'NEPI_VEHICLE_SUBNET', typeStr: 'String', valueStr: prefix },
+          { nameStr: 'NEPI_VEHICLE_SUBNET', typeStr: 'String', value: prefix },
           { nameStr: 'NEPI_ALIAS_IP_1', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_ALIAS_IP_1'), prefix, '103/16') },
+            value: this.getDerivedIp(this.getSettingValue('NEPI_ALIAS_IP_1'), prefix, '103/16') },
           { nameStr: 'NEPI_NTP_IP', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_NTP_IP'), prefix, '1') },
+            value: this.getDerivedIp(this.getSettingValue('NEPI_NTP_IP'), prefix, '1') },
           { nameStr: 'NEPI_NAV_IP_HNAV', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_HNAV'), prefix, '8') },
+            value: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_HNAV'), prefix, '8') },
           { nameStr: 'NEPI_NAV_IP_NMEA', typeStr: 'String',
-            valueStr: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_NMEA'), prefix, '1') }
+            value: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_NMEA'), prefix, '1') }
         ]
+        // updateSettings now publishes one update_setting message per entry:
+        // the batch 'update_settings' topic is retired, and the node applied
+        // its entries in a sequential loop anyway.
         this.props.ros.updateSettings(base_namespace + '/settings', settingsList)
       }
     }
@@ -224,7 +227,7 @@ class SystemMgr extends Component {
         // values back from the live config.
         const base_namespace = this.getBaseNamespace()
         const settingsList = [
-          { nameStr: 'NEPI_GATEWAY_IP', typeStr: 'String', valueStr: ip }
+          { nameStr: 'NEPI_GATEWAY_IP', typeStr: 'String', value: ip }
         ]
         this.props.ros.updateSettings(base_namespace + '/settings', settingsList)
       }
@@ -234,33 +237,42 @@ class SystemMgr extends Component {
 
   // Callback for the system-config Settings status message.  Caches the
   // setting name/value pairs so the disabled boxes can show live values.
+  //
+  // Settings are a nepi_controls controls set, so the status is a
+  // nepi_interfaces/ControlsStatus: parallel name/type lists plus one Control
+  // message per setting.  Every system-config setting is a String or an Int
+  // (system_mgr derives the type from the config value), so the displayed
+  // value comes off set_string or set_int.  There is no settings_topic field
+  // to gate on -- this listener is already scoped to one namespace.
   settingsListener(message){
-    if (message.settings_topic === this.state.settingsNamespace){
-      const settings = message.settings_list
-      var namesList = []
-      var valuesList = []
-      for (let ind = 0; ind < settings.length; ind++){
-        namesList.push(settings[ind].name_str)
-        valuesList.push(settings[ind].value_str)
-      }
-      var newState = {
-        settingsNamesList: namesList,
-        settingsValuesList: valuesList
-      }
-      // Initialize the Vehicle Subnet box from the config once, when the box
-      // is still empty and the config holds a real (non-NONE) subnet.
-      if (this.state.subnet_initialized === false && this.state.vehicle_subnet === ""){
-        const subnetInd = namesList.indexOf('NEPI_VEHICLE_SUBNET')
-        if (subnetInd !== -1){
-          const subnetVal = valuesList[subnetInd]
-          if (subnetVal !== "" && subnetVal !== "NONE"){
-            newState.vehicle_subnet = subnetVal
-            newState.subnet_initialized = true
-          }
+    const names = message.controls_name_list ? message.controls_name_list : []
+    const types = message.controls_type_list ? message.controls_type_list : []
+    const msgs = message.controls_msg_list ? message.controls_msg_list : []
+    var namesList = []
+    var valuesList = []
+    for (let ind = 0; ind < names.length; ind++){
+      const control_msg = msgs[ind]
+      if (control_msg == null){ continue }
+      namesList.push(names[ind])
+      valuesList.push((types[ind] === "Int") ? String(control_msg.set_int) : control_msg.set_string)
+    }
+    var newState = {
+      settingsNamesList: namesList,
+      settingsValuesList: valuesList
+    }
+    // Initialize the Vehicle Subnet box from the config once, when the box
+    // is still empty and the config holds a real (non-NONE) subnet.
+    if (this.state.subnet_initialized === false && this.state.vehicle_subnet === ""){
+      const subnetInd = namesList.indexOf('NEPI_VEHICLE_SUBNET')
+      if (subnetInd !== -1){
+        const subnetVal = valuesList[subnetInd]
+        if (subnetVal !== "" && subnetVal !== "NONE"){
+          newState.vehicle_subnet = subnetVal
+          newState.subnet_initialized = true
         }
       }
-      this.setState(newState)
     }
+    this.setState(newState)
   }
 
   // Subscribe to the system-config Settings status once the base namespace

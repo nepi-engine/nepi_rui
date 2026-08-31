@@ -183,18 +183,30 @@ class NepiDeviceSVXControls extends Component {
     this.setState({ settingsTopic: settings_topic })
   }
 
+  // Settings are a nepi_controls controls set, so the status is a
+  // nepi_interfaces/ControlsStatus: parallel name/type lists plus one Control
+  // message per setting. These four are numeric settings, so the value is
+  // set_int or set_float rather than a string that needs parsing.
   settingsListener(message) {
-    const list = (message && message.settings_list) ? message.settings_list : []
+    const names = (message && message.controls_name_list) ? message.controls_name_list : []
+    const types = (message && message.controls_type_list) ? message.controls_type_list : []
+    const msgs = (message && message.controls_msg_list) ? message.controls_msg_list : []
+    const numValue = (i) => {
+      const m = msgs[i]
+      if (m == null) { return null }
+      if (types[i] === "Int") { return Number(m.set_int) }
+      if (types[i] === "Float" || types[i] === "FloatSlider") { return Number(m.set_float) }
+      return Number(m.set_string)
+    }
     var pmin = null
     var pmax = null
     var dmin = null
     var dmax = null
-    for (let i = 0; i < list.length; i++) {
-      const s = list[i]
-      if (s.name_str === "pulse_min_us") { pmin = Number(s.value_str) }
-      else if (s.name_str === "pulse_max_us") { pmax = Number(s.value_str) }
-      else if (s.name_str === "min_deg") { dmin = Number(s.value_str) }
-      else if (s.name_str === "max_deg") { dmax = Number(s.value_str) }
+    for (let i = 0; i < names.length; i++) {
+      if (names[i] === "pulse_min_us") { pmin = numValue(i) }
+      else if (names[i] === "pulse_max_us") { pmax = numValue(i) }
+      else if (names[i] === "min_deg") { dmin = numValue(i) }
+      else if (names[i] === "max_deg") { dmax = numValue(i) }
     }
     if (pmin !== this.state.pulseMin || pmax !== this.state.pulseMax ||
         dmin !== this.state.degMin || dmax !== this.state.degMax) {
