@@ -22,6 +22,7 @@ import { observer, inject } from "mobx-react"
 
 import Section from "./Section"
 import Toggle from "react-toggle"
+import Button, { ButtonMenu } from "./Button"
 import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import BooleanIndicator from "./BooleanIndicator"
@@ -50,7 +51,7 @@ class Nepi_IF_ConnectProcess extends Component {
       processNamespace: 'None',
       status_msg: null,
 
-      show_data: (this.props.show_data !== undefined) ? this.props.show_data : true,
+      show_results: (this.props.show_results !== undefined) ? this.props.show_results : true,
       show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : true,
 
       processListener: null,
@@ -146,24 +147,25 @@ class Nepi_IF_ConnectProcess extends Component {
     const { userRestricted} = this.props.ros
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
     
-    const has_process_data = status_msg.has_process_data
-    const process_data_restricted = userRestricted.indexOf('SYSTEM-PROCESS-DATA') !== -1 && (ignore_restrictions === false)
-    var allways_show_data = (this.props.allways_show_data !== undefined) ? (this.props.allways_show_data && has_process_data) : false
-    var show_data = (allways_show_data === true) ? true : this.state.show_data
-    if (status_msg.show_data === false || process_data_restricted === true || has_process_data === false) {
-      allways_show_data = false
-      show_data = false
+
+    
+    const controls_restricted = userRestricted.indexOf('SYSTEM-PROCESS-CONTROL') !== -1 && (ignore_restrictions === false)
+
+    var allways_show_process = (this.props.allways_show_process !== undefined) ? (this.props.allways_show_process): false
+    var show_process = (allways_show_process === true) ? true : this.state.show_process
+    if (status_msg.show_process === false || controls_restricted === true) {
+      allways_show_process = false
+      show_process = false
     }
     else {
-      show_data = (show_data === true || allways_show_data === true)
+      show_process = (show_process === true || allways_show_process === true)
     }
 
 
-    const has_process_controls = status_msg.has_process_controls
-    const process_controls_restricted = userRestricted.indexOf('SYSTEM-PROCESS-CONTROL') !== -1 && (ignore_restrictions === false)
-    var allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_process_controls): false
+    const has_controls = status_msg.has_controls
+    var allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_controls): false
     var show_controls = (allways_show_controls === true) ? true : this.state.show_controls
-    if (status_msg.show_controls === false || process_controls_restricted === true || has_process_controls === false) {
+    if (status_msg.show_controls === false || controls_restricted === true || has_controls === false) {
       allways_show_controls = false
       show_controls = false
     }
@@ -171,9 +173,11 @@ class Nepi_IF_ConnectProcess extends Component {
       show_controls = (show_controls === true || allways_show_controls === true)
     }
 
- 
+    const has_results = status_msg.has_results
+    const show_results = (this.props.show_results !== undefined) ? (this.props.show_results  && has_results): has_results
+    
 
-    const { sendBoolMsg } = this.props.ros
+    const { sendBoolMsg, sendTriggerMsg } = this.props.ros
     const namespace = status_msg.namespace
     // Normalized rather than read raw: a ProcessStatus from a node built
     // against a different nepi_interfaces can arrive missing these, and an
@@ -186,6 +190,26 @@ class Nepi_IF_ConnectProcess extends Component {
 
       return (
         <React.Fragment>
+
+              { ( show_results === true ) ?
+                      <ButtonMenu>
+                      <Button onClick={() => sendTriggerMsg(namespace + '/reload_process')}>{"RELOAD"}</Button>
+                    </ButtonMenu>
+                : null}
+
+
+
+
+
+              { ( show_results === true ) ?
+              <Nepi_IF_Data
+                make_section={false}
+                title={null}
+                allways_show_data={true}
+                namespace={ status_msg.namespace}
+                status_msg={status_msg.results}
+                />
+                : null}
 
               {/* The process enable. This is the control that starts and stops
                   the process itself; everything below it is display state.
@@ -220,21 +244,8 @@ class Nepi_IF_ConnectProcess extends Component {
               <Columns>
                 <Column>
 
-                    {(allways_show_data === false && has_process_data === true) ?
-                    <Label title="Show Data">
-                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                        <Toggle
-                          checked={show_data===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_data",show_data)}>
-                        </Toggle>
-                    </Label>
-                    : null }
 
-                  </Column>
-                  <Column>
-
-
-                    {(allways_show_controls === false && has_process_controls === true) ?
+                    {(allways_show_controls === false && has_controls === true) ?
                     <Label title="Show Controls">
                         {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
@@ -245,18 +256,15 @@ class Nepi_IF_ConnectProcess extends Component {
                     : null }
 
                   </Column>
+                  <Column>
+
+
+
+                  </Column>
                 </Columns>
 
 
-      { ( show_data === true ) ?
-      <Nepi_IF_Data
-        make_section={false}
-        title={null}
-        allways_show_data={true}
-        namespace={ status_msg.namespace}
-        status_msg={status_msg.process_data}
-        />
-        : null}
+
 
 
       { ( show_controls === true ) ?
@@ -265,7 +273,7 @@ class Nepi_IF_ConnectProcess extends Component {
         title={null}
         allways_show_controls={true}
         namespace={ status_msg.namespace}
-        status_msg={status_msg.process_controls}
+        status_msg={status_msg.controls}
         />
         : null}
 
