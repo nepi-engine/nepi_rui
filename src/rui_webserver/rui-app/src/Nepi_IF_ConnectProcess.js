@@ -26,10 +26,11 @@ import Button, { ButtonMenu } from "./Button"
 import AsyncToggle from "./AsyncToggle"
 import Label from "./Label"
 import BooleanIndicator from "./BooleanIndicator"
+import Select, { Option } from "./Select"
 import { Column, Columns } from "./Columns"
 
 import NepiIFControls from "./Nepi_IF_Controls"
-import NepiIFData from "./Nepi_IF_Data"
+import Nepi_IF_Data from "./Nepi_IF_Data"
 import NepiIFConfig from "./Nepi_IF_Config"
 import { onChangeSwitchStateValue} from "./Utilities"
 
@@ -62,6 +63,8 @@ class Nepi_IF_ConnectProcess extends Component {
     // renderProcess() mounts Nepi_IF_Data and Nepi_IF_Controls inline. Binding
     // a method that does not exist throws in the constructor, which kills the
     // whole page the moment this component mounts.
+    this.renderProcessSelector = this.renderProcessSelector.bind(this)
+    this.onProcessSelected = this.onProcessSelected.bind(this)
     this.renderProcess = this.renderProcess.bind(this)
   }
 
@@ -133,6 +136,67 @@ class Nepi_IF_ConnectProcess extends Component {
 
 
 
+  // Handler for the device Select. Changes the connected topic by publishing a
+  // std_msgs/String to the connect namespace select_topic topic.
+  onProcessSelected(event) {
+    const namespace = this.getProcessNamespace()
+    const value = event.target.value
+    if (namespace != null && namespace !== 'None') {
+      this.props.ros.sendStringMsg(namespace + '/set_process', value)
+    }
+  }
+
+  // Device selector, backed by ConnectIFStatus. Populated from
+  // available_processes/available_names, shows the selected_name and a connected
+  // BooleanIndicator, and changes the connection by publishing a
+  // std_msgs/String to the connect namespace select_topic topic.
+  renderProcessSelector() {
+    const status_msg = this.state.status_msg
+    if (status_msg == null) {
+      return (
+        <Columns>
+          <Column>
+
+          </Column>
+        </Columns>
+      )
+    }
+
+    const available_processes = status_msg.available_processes
+    const available_names = status_msg.available_processes
+    const selected_process = status_msg.selected_process
+
+    var items = []
+
+    for (var i = 0; i < available_processes.length; i++) {
+      const device_name = (available_names[i] !== undefined) ? available_names[i] : available_processes[i]
+      items.push(<Option value={available_processes[i]}>{device_name}</Option>)
+    }
+    if (items.length == 0 ) {
+      items.push(<Option value={'None'}>{'None'}</Option>)
+    }
+
+    return (
+      <Columns>
+        <Column>
+
+         
+            <Select
+              onChange={this.onProcessSelected}
+              value={selected_process}
+            >
+              {items}
+            </Select>
+
+
+        </Column>
+        <Column>
+
+        </Column>
+      </Columns>
+    )
+  }
+
 
 
   renderProcess() {
@@ -147,15 +211,7 @@ class Nepi_IF_ConnectProcess extends Component {
     
     const controls_restricted = userRestricted.indexOf('SYSTEM-PROCESS-CONTROL') !== -1 && (ignore_restrictions === false)
 
-    var allways_show_process = (this.props.allways_show_process !== undefined) ? (this.props.allways_show_process): false
-    var show_process = (allways_show_process === true) ? true : this.state.show_process
-    if (status_msg.show_process === false || controls_restricted === true) {
-      allways_show_process = false
-      show_process = false
-    }
-    else {
-      show_process = (show_process === true || allways_show_process === true)
-    }
+    const show_process = (this.props.show_process !== undefined) ? this.props.show_process: status_msg.show_process
 
 
     const has_controls = status_msg.has_controls
@@ -179,40 +235,33 @@ class Nepi_IF_ConnectProcess extends Component {
     // against a different nepi_interfaces can arrive missing these, and an
     // undefined here would otherwise reach AsyncToggle as its checked prop.
     const enabled = (status_msg.enabled === true)
+    const show_enable = (this.props.show_enable !== undefined) ? this.props.show_enable: status_msg.show_enable
     const running = (status_msg.running === true)
     const process_ready = (status_msg.process_ready === true)
     const msg_str = (status_msg.msg_str !== undefined && status_msg.msg_str !== null) ? status_msg.msg_str : ''
-    const show_enable = (this.props.show_enable !== undefined) ? this.props.show_enable : true
+
 
       return (
         <React.Fragment>
 
-              { ( show_results === true ) ?
+              { ( show_process === true ) ?
+
+                <Columns>
+                <Column>
+                    <Label title={"Select Process"}>
+                      {this.renderProcessSelector()}
+                    </Label>
+                </Column>
+                <Column>
                       <ButtonMenu>
                       <Button onClick={() => sendTriggerMsg(namespace + '/reload_process')}>{"RELOAD"}</Button>
                     </ButtonMenu>
+                </Column>
+              </Columns>
                 : null}
 
 
-
-
-
-              { ( show_results === true ) ?
-              <Nepi_IF_Data
-                make_section={false}
-                title={null}
-                allways_show_data={true}
-                namespace={ status_msg.namespace}
-                status_msg={status_msg.results}
-                />
-                : null}
-
-              {/* The process enable. This is the control that starts and stops
-                  the process itself; everything below it is display state.
-                  Enabled is what the operator asked for, Running is what the
-                  node reports back, and they are shown separately so an enable
-                  the node could not honour is visible rather than silent. */}
-              {(show_enable === true) ?
+             {(show_enable === true) ?
               <Columns>
                 <Column>
                     <Label title={"Enable"}>
@@ -231,11 +280,29 @@ class Nepi_IF_ConnectProcess extends Component {
               </Columns>
               : null }
 
-              {(show_enable === true && msg_str !== '' && msg_str !== undefined) ?
+              {/* {(show_enable === true && msg_str !== '' && msg_str !== undefined) ?
                 <pre style={{ height: "24px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
                   {msg_str}
                 </pre>
-              : null }
+              : null } */}
+
+
+              { ( show_results === true ) ?
+              <Nepi_IF_Data
+                make_section={false}
+                title={null}
+                allways_show_data={true}
+                namespace={ status_msg.namespace}
+                status_msg={status_msg.results}
+                />
+                : null}
+
+              {/* The process enable. This is the control that starts and stops
+                  the process itself; everything below it is display state.
+                  Enabled is what the operator asked for, Running is what the
+                  node reports back, and they are shown separately so an enable
+                  the node could not honour is visible rather than silent. */}
+ 
 
               <Columns>
                 <Column>
