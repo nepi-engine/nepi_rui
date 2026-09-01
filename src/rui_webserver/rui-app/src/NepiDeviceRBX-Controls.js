@@ -335,21 +335,27 @@ class NepiDeviceControls extends Component {
     this.setState({ settingsStatusListener: settingsStatusListener })
   }
 
-  // Callback for handling ROS SettingsStatus messages. Only syncs the
+  // Callback for handling the settings ControlsStatus message. Only syncs the
   // editable input when the confirmed backend value actually changes, so it
   // doesn't stomp on text the user is actively typing.
+  //
+  // Settings are a nepi_controls controls set: parallel name/type lists plus
+  // one Control message per setting. motor_test_timeout_s is a Float, so its
+  // value is set_float; it is stringified here because the input box and the
+  // change comparison below are both text.
   settingsStatusListener(message) {
-    const settings = message.settings_list ? message.settings_list : []
-    var timeout_setting = null
-    for (var i = 0; i < settings.length; i++) {
-      if (settings[i].name_str === "motor_test_timeout_s") {
-        timeout_setting = settings[i]
+    const names = message.controls_name_list ? message.controls_name_list : []
+    const msgs = message.controls_msg_list ? message.controls_msg_list : []
+    var timeout_value = null
+    for (var i = 0; i < names.length; i++) {
+      if (names[i] === "motor_test_timeout_s" && msgs[i] != null) {
+        timeout_value = String(msgs[i].set_float)
       }
     }
-    if (timeout_setting !== null && timeout_setting.value_str !== this.state.motor_test_timeout_value) {
+    if (timeout_value !== null && timeout_value !== this.state.motor_test_timeout_value) {
       this.setState({
-        motor_test_timeout_value: timeout_setting.value_str,
-        motor_test_timeout_input: timeout_setting.value_str
+        motor_test_timeout_value: timeout_value,
+        motor_test_timeout_input: timeout_value
       })
     }
   }
@@ -558,7 +564,9 @@ class NepiDeviceControls extends Component {
     const { updateSetting } = this.props.ros
     const value = parseFloat(text)
     if (!isNaN(value)) {
-      updateSetting(this.props.rbxNamespace + "/settings", "motor_test_timeout_s", "Float", String(value))
+      // The update message is typed now, so the float goes on the wire as a
+      // float instead of a string the node has to reparse.
+      updateSetting(this.props.rbxNamespace + "/settings", "motor_test_timeout_s", "Float", value)
     }
   }
 

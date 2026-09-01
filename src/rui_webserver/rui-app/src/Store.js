@@ -739,7 +739,6 @@ class ROSConnectionStore {
   @observable depthMapCaps = {}
   @observable pointcloudTopics = []
   @observable pointcloudCaps = {}
-  @observable settingCaps = {}
   @observable saveDataNamespaces = []
   @observable saveDataCaps = {}
 
@@ -1521,18 +1520,6 @@ class ROSConnectionStore {
 
 
   @action.bound
-  async callSettingsCapabilitiesQueryService(namespace) {
-    this.settingCaps[namespace] = []
-    const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/SettingsCapabilitiesQuery",  
-    })
-    if (response != null){
-      this.settingCaps[namespace] = response
-    }
-  }
-
-  @action.bound
   async callImageCapabilitiesQueryService(namespace) {
     const response = await this.callService({
       name: namespace + "/capabilities_query",
@@ -1921,7 +1908,6 @@ class ROSConnectionStore {
         const idx_device_namespace = topics[i].replace("/status","")
         if (!(devices_detected.includes(idx_device_namespace))) {
           this.callIDXCapabilitiesQueryService(idx_device_namespace) // Testing
-          this.callSettingsCapabilitiesQueryService(idx_device_namespace + "/settings")
           const idxDevices = this.idxDevices[idx_device_namespace]
           if (idxDevices) { // Testing
             devices_detected.push(idx_device_namespace)
@@ -1951,7 +1937,6 @@ class ROSConnectionStore {
         const ptx_device_namespace = topics[i].replace("/status","")
         if (!(ptx_devices_detected.includes(ptx_device_namespace))) {
           this.callPTXCapabilitiesQueryService(ptx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(ptx_device_namespace + "/settings")
           const ptxUnit = this.ptxDevices[ptx_device_namespace]
           if (ptxUnit)
           {
@@ -1983,7 +1968,6 @@ class ROSConnectionStore {
         const svx_device_namespace = topics[i].replace("/status","")
         if (!(svx_devices_detected.includes(svx_device_namespace))) {
           this.callSVXCapabilitiesQueryService(svx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(svx_device_namespace + "/settings")
           const svxUnit = this.svxDevices[svx_device_namespace]
           if (svxUnit)
           {
@@ -2015,7 +1999,6 @@ class ROSConnectionStore {
         const lsx_device_namespace = topics[i].replace("/status","")
         if (!(lsx_devices_detected.includes(lsx_device_namespace))) {
           this.callLSXCapabilitiesQueryService(lsx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(lsx_device_namespace + "/settings")
           const lsxDevices = this.lsxDevices[lsx_device_namespace]
           if (lsxDevices)
           {
@@ -2046,7 +2029,6 @@ class ROSConnectionStore {
         const rbx_device_namespace = topics[i].replace("/status","")
         if (!(devices_detected.includes(rbx_device_namespace))) {
           this.callRBXCapabilitiesQueryService(rbx_device_namespace)
-          this.callSettingsCapabilitiesQueryService(rbx_device_namespace + "/settings")
           const rbxDevice = this.rbxDevices[rbx_device_namespace]
           if (rbxDevice) {
             devices_detected.push(rbx_device_namespace)
@@ -2076,7 +2058,6 @@ class ROSConnectionStore {
         const npx_device_namespace = topics[i].replace("/status","")
         if (!(devices_detected.includes(npx_device_namespace))) {
           this.callNPXCapabilitiesQueryService(npx_device_namespace) // Testing
-          this.callSettingsCapabilitiesQueryService(npx_device_namespace + "/settings")
           const npxSensor = this.npxDevices[npx_device_namespace]
           if (npxSensor) { // Testing
             devices_detected.push(npx_device_namespace)
@@ -2331,12 +2312,15 @@ class ROSConnectionStore {
     }
   }
 
+  // A node's settings are a nepi_controls controls set, so the status message
+  // carries the current values AND their capabilities (type, options, bounds,
+  // default) together.  There is no capabilities_query service to call.
   @action.bound
   setupSettingsStatusListener(namespace, callback) {
     if (namespace) {
       return this.addListener({
         name: namespace,
-        messageType: "nepi_interfaces/SettingsStatus",
+        messageType: "nepi_interfaces/ControlsStatus",
         noPrefix: true,
         callback: callback,
 
@@ -3152,49 +3136,51 @@ sendSaveConfigTrigger(namespace) {
 
 ///// System IF Calls
 
-@action.bound
-updateCapSetting(namespace,nameStr,typeStr,optionsStrList,default_value_str) {
-  this.publishMessage({
-    name: namespace + "/update_setting",
-    messageType: "nepi_interfaces/SettingCap",
-    data: {type_str:typeStr,
-      name_str:nameStr,
-      options_list:optionsStrList,
-      default_value_str:default_value_str
-    },
-    noPrefix: true
-  })
-}
-
-@action.bound
-updateSetting(namespace,nameStr,typeStr,valueStr) {
+  // A setting update is a typed nepi_interfaces/UpdateControl on
+  // "<settings_ns>/update_setting".  typeStr is the CONTROL type the status
+  // message reports ("Menu", "Selection", "Bool", "String", "Int", "Float"),
+  // and the value goes in the one set_* field that type selects -- the rest
+  // stay at their message defaults.  Values arrive here already typed, so
+  // nothing is parsed out of a string on the wire any more.
+  @action.bound
+  updateSetting(namespace,nameStr,typeStr,value) {
+    const data = {
+      name: nameStr,
+      display_name: "",
+      description: "",
+      type: typeStr,
+      set_index: 0,
+      set_string: "",
+      set_strings: [],
+      set_int: 0,
+      set_float: 0.0,
+      set_floats: [],
+      set_bool: false
+    }
+    if (typeStr === "Menu") { data.set_index = parseInt(value, 10) || 0 }
+    else if (typeStr === "Selection" || typeStr === "String") { data.set_string = String(value) }
+    else if (typeStr === "Selections") { data.set_strings = value }
+    else if (typeStr === "Bool") { data.set_bool = (value === true || value === "True") }
+    else if (typeStr === "Int") { data.set_int = parseInt(value, 10) || 0 }
+    else if (typeStr === "Float" || typeStr === "FloatSlider") { data.set_float = parseFloat(value) || 0.0 }
+    else { data.set_string = String(value) }
     this.publishMessage({
       name: namespace + "/update_setting",
-      messageType: "nepi_interfaces/Setting",
-      data: {type_str:typeStr,
-        name_str:nameStr,
-        value_str:valueStr
-      },
+      messageType: "nepi_interfaces/UpdateControl",
+      data: data,
       noPrefix: true
     })
   }
 
-  // Update several settings with a single message.  settingsList is an array
-  // of {nameStr, typeStr, valueStr} entries.  The backend applies each entry
-  // in order.
+  // Update several settings.  settingsList is an array of
+  // {nameStr, typeStr, value} entries, published as one update_setting message
+  // each.  The batch "update_settings" topic is retired: the node applied its
+  // entries in a sequential loop anyway, so this is the same behavior without
+  // a second message type to maintain.
   @action.bound
   updateSettings(namespace,settingsList) {
-    this.publishMessage({
-      name: namespace + "/update_settings",
-      messageType: "nepi_interfaces/Settings",
-      data: {
-        settings: settingsList.map(s => ({
-          type_str: s.typeStr,
-          name_str: s.nameStr,
-          value_str: s.valueStr
-        }))
-      },
-      noPrefix: true
+    settingsList.forEach((s) => {
+      this.updateSetting(namespace, s.nameStr, s.typeStr, s.value)
     })
   }
 

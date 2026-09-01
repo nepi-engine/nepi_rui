@@ -201,16 +201,22 @@ class NepiDeviceSVX extends Component {
                       {(device_selected === true) ?
                       <NepiIFSettings
                         settingsNamespace={
-                          // SettingsIF now honors the device namespace it is handed, so the
+                          // SettingsIF honors the device namespace it is handed, so the
                           // servo's settings live under this device's svx namespace at
                           // <node>/svx/settings (confirmed on-device: settings_topic =
-                          // /nepi/.../maestro_..._ch0/svx/settings). Prefer the exact path
-                          // the node reports in its status; fall back to deriving it.
-                          (capabilities && capabilities.settings_topic)
-                            ? capabilities.settings_topic
-                            : namespace + '/settings'
+                          // /nepi/.../maestro_..._ch0/svx/settings).
+                          //
+                          // This used to prefer capabilities.settings_topic, but
+                          // `capabilities` here is the SVXCapabilitiesQuery response, which
+                          // has no settings_topic field (that field is on DeviceSVXStatus).
+                          // The lookup was always undefined and always fell through, so the
+                          // derived path is the only one that has ever been used.
+                          namespace + '/settings'
                         }
-                        allways_show_settings={true}
+                        // Was allways_show_settings, a prop Nepi_IF_Settings does not read
+                        // -- so the intent (settings always open, no Show toggle) never
+                        // took effect. The prop is allways_show_controls.
+                        allways_show_controls={true}
                         make_section={true}
                         title={"Device Settings"}
                     />
