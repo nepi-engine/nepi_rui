@@ -261,29 +261,7 @@ class Nepi_IF_ConnectProcess extends Component {
                 : null}
 
 
-<<<<<<< HEAD
              {(show_enable === true) ?
-=======
-
-
-
-              { ( show_results === true ) ?
-              <NepiIFData
-                make_section={false}
-                title={null}
-                allways_show_data={true}
-                namespace={ status_msg.namespace}
-                status_msg={status_msg.results}
-                />
-                : null}
-
-              {/* The process enable. This is the control that starts and stops
-                  the process itself; everything below it is display state.
-                  Enabled is what the operator asked for, Running is what the
-                  node reports back, and they are shown separately so an enable
-                  the node could not honour is visible rather than silent. */}
-              {(show_enable === true) ?
->>>>>>> 879d52f17aab53561b67e1519e2416c75ec45b86
               <Columns>
                 <Column>
                     <Label title={"Enable"}>

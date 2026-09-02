@@ -286,22 +286,27 @@ class Nepi_IF_Controls extends Component {
     // is the full array of currently-selected option strings. On every toggle
     // we send the complete desired selection (declarative), not a single delta.
     if (type === "Selections") {
-      const options = control_msg.string_options
+      const na_options = ['NONE','ALL']
+      const sel_options = control_msg.string_options
+      const show_options =  [...na_options, sel_options]
       const set_strings = control_msg.set_strings || []
       const { sendUpdateStringArrayMsg } = this.props.ros
       return (
         <Label title={display_name} key={name}>
           <div>
-            {options.map((opt, i) => (
+            {show_options.map((opt, i) => (
               <div key={name + '_' + i} style={{ display: "inline-block", marginRight: Styles.vars.spacing.regular, textAlign: "center" }}>
                 <div style={{ fontSize: Styles.vars.fontSize.small, marginBottom: Styles.vars.spacing.xs }}>{opt}</div>
                 <AsyncToggle
                   checked={set_strings.indexOf(opt) !== -1}
                   onClick={() => {
                     // Send the complete desired selection (declarative), not a toggle.
-                    const next = set_strings.indexOf(opt) !== -1
-                      ? set_strings.filter((s) => s !== opt)
-                      : [...set_strings, opt]
+                    const next = (opt === 'ALL') ? sel_options : 
+                                    (opt === 'NONE') ? [] :
+                                        set_strings.indexOf(opt) !== -1
+                                          ? set_strings.filter((s) => s !== opt)
+                                          : [...set_strings, opt]
+                  
                     sendUpdateStringArrayMsg(namespace + "/set_selections_control_value", name, next)
                   }}
                 />
