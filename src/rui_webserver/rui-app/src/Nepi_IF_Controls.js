@@ -288,7 +288,7 @@ class Nepi_IF_Controls extends Component {
     if (type === "Selections") {
       const na_options = ['NONE','ALL']
       const sel_options = control_msg.string_options
-      const show_options =  [...na_options, sel_options]
+      const show_options =  [...na_options, ...sel_options]
       const set_strings = control_msg.set_strings || []
       const { sendUpdateStringArrayMsg } = this.props.ros
       return (
