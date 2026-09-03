@@ -864,6 +864,11 @@ class NepiIFSaveData extends Component {
     const show_active_settings = this.state.show_active_settings
     const all_str = (isAllNamespace === true) ? 'ALL '  : ''
 
+    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const status_msg = this.state.status_msg
+    const config_topic = (status_msg != null) ? status_msg.config_topic : 
+            (is_all_namespace === true) ? allSaveNamespace : ''
+
       return (
 
       <React.Fragment>
@@ -995,10 +1000,14 @@ class NepiIFSaveData extends Component {
 
                 <div align={"left"} textAlign={"left"} hidden={saveNamespace === 'None' || isAllNamespace === true}>
 
+
+                {(show_save_controls === true && config_topic !== '') ?
                 <NepiIFConfig
-                      namespace={saveNamespace}
-                      title={"Nepi_IF_Config"}
+                    namespace={config_topic}
+                    title={"Nepi_IF_Config"}
                 />
+                : null }
+
 
                 </div>
 

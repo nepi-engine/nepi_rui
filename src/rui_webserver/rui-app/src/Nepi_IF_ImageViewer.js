@@ -2832,15 +2832,16 @@ class Nepi_IF_ImageViewer extends Component {
     // prop (the selected Data Product) when provided; otherwise fall back to the live
     // ImageStatus.data_source_description ('pointcloud' for the pointcloud image node).
     const render_ns = this.state.image_topic
-    const render_status = this.state.status_msg
+    const status_msg = this.state.status_msg
+    const config_topic = (status_msg !== null && status_msg !== undefined) ? status_msg.config_topic : ''
     const data_product = (this.props.data_product !== undefined && this.props.data_product !== null) ? String(this.props.data_product).toLowerCase() : null
     const is_pointcloud = (data_product !== null)
         ? (data_product.indexOf('pointcloud') !== -1)
-        : (render_status !== null && render_status !== undefined
-            && render_status.data_source_description !== undefined
-            && String(render_status.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
+        : (status_msg !== null && status_msg !== undefined
+            && status_msg.data_source_description !== undefined
+            && String(status_msg.data_source_description).toLowerCase().indexOf('pointcloud') !== -1)
     const show_3d_controls = (is_pointcloud === true && this.state.status_msg !== null && render_ns !== 'None' && render_ns !== null)
-    const render_3d_controls_enabled = (render_status !== null && render_status !== undefined && render_status.render_3d_controls_enabled !== undefined) ? render_status.render_3d_controls_enabled : false
+    const render_3d_controls_enabled = (status_msg !== null && status_msg !== undefined && status_msg.render_3d_controls_enabled !== undefined) ? status_msg.render_3d_controls_enabled : false
 
     const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
     // const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
@@ -3142,9 +3143,9 @@ class Nepi_IF_ImageViewer extends Component {
                 
                           </div>
 
-                            {(show_save_controls === true && namespace !== 'None') ?
+                            {(show_save_controls === true && config_topic !== '') ?
                             <NepiIFConfig
-                                namespace={namespace}
+                                namespace={config_topic}
                                 title={"Nepi_IF_Config"}
                             />
                             : null }
@@ -3188,9 +3189,9 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 
-                            {(show_save_controls === true && namespace !== 'None') ?
+                            {(show_save_controls === true && config_topic !== '') ?
                             <NepiIFConfig
-                                namespace={namespace}
+                                namespace={config_topic}
                                 title={"Nepi_IF_Config"}
                             />
                             : null }
@@ -3239,9 +3240,9 @@ class Nepi_IF_ImageViewer extends Component {
 
           
 
-                            {(show_save_controls === true && namespace !== 'None') ?
+                            {(show_save_controls === true && config_topic !== '') ?
                             <NepiIFConfig
-                                namespace={namespace}
+                                namespace={config_topic}
                                 title={"Nepi_IF_Config"}
                             />
                             : null }
@@ -3265,13 +3266,12 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 {/* 
-                    {(show_save_controls === true && namespace !== 'None') ?
-                    <NepiIFConfig
-                        namespace={namespace}
-                        show_all_config_options={false}
-                        title={"Nepi_IF_Config"}
-                    />
-                    : null } 
+                            {(show_save_controls === true && config_topic !== '') ?
+                            <NepiIFConfig
+                                namespace={config_topic}
+                                title={"Nepi_IF_Config"}
+                            />
+                            : null }
 */}
 
 

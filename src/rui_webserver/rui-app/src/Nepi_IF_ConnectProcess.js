@@ -202,7 +202,7 @@ class Nepi_IF_ConnectProcess extends Component {
   renderProcess() {
    
     const status_msg = this.state.status_msg
-    const has_config = status_msg.has_config
+    const config_topic = status_msg.config_topic
 
     const { userRestricted} = this.props.ros
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
@@ -339,9 +339,9 @@ class Nepi_IF_ConnectProcess extends Component {
         />
         : null}
 
-      { ( has_config === true ) ?
+      { ( config_topic !== '' ) ?
         <NepiIFConfig
-          namespace={namespace}
+          namespace={config_topic}
           title={"Nepi_IF_Config"}
         />
         : null}

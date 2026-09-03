@@ -31,6 +31,7 @@ import Input from "./Input"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 
 import NepiIFConfig from "./Nepi_IF_Config"
+import Nepi_IF_Control from "./Nepi_IF_Control"
 
 import { createMenuListFromStrList, onChangeSwitchStateValue,
          setElementStyleModified, clearElementStyleModified } from "./Utilities"
@@ -74,30 +75,22 @@ class Nepi_IF_Settings extends Component {
     this.settingsListener = this.settingsListener.bind(this)
 
     this.getStatusMsg = this.getStatusMsg.bind(this)
+    this.getSelectedSettingName = this.getSelectedSettingName.bind(this)
+
     this.getSettingNames = this.getSettingNames.bind(this)
     this.getSettingIndex = this.getSettingIndex.bind(this)
     this.getSettingType = this.getSettingType.bind(this)
     this.getSettingMsg = this.getSettingMsg.bind(this)
     this.getSettingValue = this.getSettingValue.bind(this)
     this.getSettingValueString = this.getSettingValueString.bind(this)
-    this.getSettingBounds = this.getSettingBounds.bind(this)
     this.getSelectedSettingName = this.getSelectedSettingName.bind(this)
 
-    this.sendSettingValue = this.sendSettingValue.bind(this)
     this.onSelectSetting = this.onSelectSetting.bind(this)
-    this.onChangeBoolSettingValue = this.onChangeBoolSettingValue.bind(this)
-    this.onChangeDescreteSettingValue = this.onChangeDescreteSettingValue.bind(this)
-    this.onUpdateInputSettingValue = this.onUpdateInputSettingValue.bind(this)
-    this.onKeySaveInputSettingValue = this.onKeySaveInputSettingValue.bind(this)
-    this.onChangeSliderSettingValue = this.onChangeSliderSettingValue.bind(this)
-    this.getSelectedSettingSliderInfo = this.getSelectedSettingSliderInfo.bind(this)
-
-    this.getSettingsAsString = this.getSettingsAsString.bind(this)
-    this.getSortedStrList = this.getSortedStrList.bind(this)
 
     this.renderSettings = this.renderSettings.bind(this)
     this.renderSetting = this.renderSetting.bind(this)
     this.renderConfigs = this.renderConfigs.bind(this)
+    this.renderControl = this.renderControl.bind(this)
   }
 
   getNamespace() {
@@ -166,6 +159,28 @@ class Nepi_IF_Settings extends Component {
   }
 
 
+
+
+  // Render a single control given its type and Control message.
+  // Each block below maps one nepi_controls control type to its RUI widget and
+  // the nepi_controls "set_*_control_value" topic it publishes to on change.
+  renderControl(control_msg) {
+    const namespace = this.state.settingsNamespace
+    const control_hidden = control_msg.hidden
+      return (
+
+         <Nepi_IF_Control
+              namespace={namespace}
+              topic={'update_setting'}
+              control_msg={control_msg}
+              control_hidden={control_hidden}
+              show_bounds={true}
+            />
+
+      )
+
+  }
+
   ////////////////////////////////////////////////////////////
   // Status message readers.  A settings status is a ControlsStatus: parallel
   // name/type lists plus one Control message per setting carrying its options,
@@ -176,7 +191,23 @@ class Nepi_IF_Settings extends Component {
       this.props.status_msg : this.state.status_msg
   }
 
-  getSettingNames() {
+  getSettingMsg(name) {
+    const status_msg = this.getStatusMsg()
+    const ind = this.getSettingIndex(name)
+    if (status_msg == null || ind === -1) { return null }
+    const msgs = status_msg.controls_msg_list || []
+    return msgs[ind]
+  }
+
+
+  getSettingIndex(name) {
+    const status_msg = this.getStatusMsg()
+    if (status_msg == null) { return -1 }
+    const names = status_msg.controls_name_list || []
+    return names.indexOf(name)
+  }
+
+    getSettingNames() {
     const status_msg = this.getStatusMsg()
     if (status_msg == null) { return [] }
     const names = status_msg.controls_name_list || []
@@ -191,12 +222,6 @@ class Nepi_IF_Settings extends Component {
     return shown
   }
 
-  getSettingIndex(name) {
-    const status_msg = this.getStatusMsg()
-    if (status_msg == null) { return -1 }
-    const names = status_msg.controls_name_list || []
-    return names.indexOf(name)
-  }
 
   getSettingType(name) {
     const status_msg = this.getStatusMsg()
@@ -206,22 +231,15 @@ class Nepi_IF_Settings extends Component {
     return types[ind]
   }
 
-  getSettingMsg(name) {
-    const status_msg = this.getStatusMsg()
-    const ind = this.getSettingIndex(name)
-    if (status_msg == null || ind === -1) { return null }
-    const msgs = status_msg.controls_msg_list || []
-    return msgs[ind]
-  }
-
   // The value in its own natural form: an index for Menu, a bool for Bool, a
   // number for Int/Float, a string for Selection/String.
   getSettingValue(name) {
-    const type = this.getSettingType(name)
     const msg = this.getSettingMsg(name)
+    const type = msg.type
     if (msg == null) { return null }
     if (type === "Menu") { return msg.set_index }
-    if (type === "Selection" || type === "String") { return msg.set_string }
+    if (type === "Selection" || type === "Selections" || type === "String") { return msg.set_string }
+    if (type === "Trigger") { return msg.set_float }
     if (type === "Bool") { return msg.set_bool }
     if (type === "Int") { return msg.set_int }
     if (type === "Float" || type === "FloatSlider") { return msg.set_float }
@@ -231,8 +249,9 @@ class Nepi_IF_Settings extends Component {
   // The value as displayed text.  A Menu reads back as its selected option
   // string so the selector and the summary list agree.
   getSettingValueString(name) {
-    const type = this.getSettingType(name)
+    
     const msg = this.getSettingMsg(name)
+    const type = msg.type
     if (msg == null) { return "" }
     if (type === "Menu") {
       const options = msg.string_options || []
@@ -242,21 +261,6 @@ class Nepi_IF_Settings extends Component {
     if (type === "Bool") { return (msg.set_bool === true) ? "True" : "False" }
     const value = this.getSettingValue(name)
     return (value === null || value === undefined) ? "" : String(value)
-  }
-
-  // [minStr, maxStr] for a numeric setting, or ["", ""] when it declares no
-  // bounds.  -999 in either slot is the nepi_controls "no limit" sentinel.
-  getSettingBounds(name) {
-    const type = this.getSettingType(name)
-    const msg = this.getSettingMsg(name)
-    if (msg == null) { return ["", ""] }
-    var bounds = null
-    if (type === "Int") { bounds = msg.int_bounds }
-    else if (type === "Float" || type === "FloatSlider") { bounds = msg.float_bounds }
-    if (bounds == null || bounds.length < 2) { return ["", ""] }
-    const lo = (bounds[0] !== -999) ? String(bounds[0]) : ""
-    const hi = (bounds[1] !== -999) ? String(bounds[1]) : ""
-    return [lo, hi]
   }
 
   // The selected setting, defaulting to the first one present so the box shows
@@ -284,78 +288,6 @@ class Nepi_IF_Settings extends Component {
     // setting's value rather than the previous setting's edit.
     this.setState({ selectedSettingName: name,
                     selectedSettingInput: this.getSettingValueString(name) })
-  }
-
-  onChangeBoolSettingValue() {
-    const name = this.getSelectedSettingName()
-    const current = (this.getSettingValue(name) === true)
-    this.sendSettingValue(name, "Bool", !current)
-  }
-
-  onChangeDescreteSettingValue(event) {
-    const name = this.getSelectedSettingName()
-    const type = this.getSettingType(name)
-    const ind = event.nativeEvent.target.selectedIndex
-    const text = event.nativeEvent.target[ind].text
-    if (type === "Menu") {
-      // A Menu's value is the index of its option, not the option text.
-      const msg = this.getSettingMsg(name)
-      const options = (msg != null) ? (msg.string_options || []) : []
-      const option_ind = options.indexOf(text)
-      if (option_ind === -1) { return }
-      this.sendSettingValue(name, "Menu", option_ind)
-    } else {
-      this.sendSettingValue(name, type, text)
-    }
-  }
-
-  onUpdateInputSettingValue(event) {
-    const el = document.getElementById("input_setting")
-    if (el) { setElementStyleModified(el) }
-    this.setState({ selectedSettingInput: event.target.value })
-  }
-
-  onKeySaveInputSettingValue(event) {
-    if (event.key !== 'Enter') { return }
-    const name = this.getSelectedSettingName()
-    const type = this.getSettingType(name)
-    const el = document.getElementById("input_setting")
-    if (el) { clearElementStyleModified(el) }
-    this.sendSettingValue(name, type, event.target.value)
-  }
-
-  // An Int/Float setting that declares both a lower and an upper bound is
-  // dragged rather than typed. Returns null for every other setting -- no
-  // bounds means no slider range, so those stay on the typed input box.
-  getSelectedSettingSliderInfo(type, minStr, maxStr) {
-    if (type !== "Int" && type !== "Float" && type !== "FloatSlider") { return null }
-    const min = parseFloat(minStr)
-    const max = parseFloat(maxStr)
-    if (!Number.isFinite(min) || !Number.isFinite(max)) { return null }
-    const range = max - min
-    if (!(range > 0)) { return null }
-
-    // Int steps by 1. Float steps by a hundredth of its range, and the text
-    // box must not display coarser than that step -- a display coarser than
-    // the step re-quantizes the handle, so a [0, 1] control reads as a
-    // two-position switch even when the step itself is right.
-    var step = 1
-    if (type !== "Int") {
-      step = range / 100
-      if (!Number.isFinite(step) || step <= 0) { step = 1 }
-    }
-    const displayDecimals = (type === "Int") ? 0 :
-      Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
-    return { min: min, max: max, step: step, displayDecimals: displayDecimals }
-  }
-
-  onChangeSliderSettingValue(value, type) {
-    const name = this.getSelectedSettingName()
-    // Ints go on the wire as integers -- the value is typed now, so there is
-    // no string for the backend to reparse.
-    const sendValue = (type === "Int") ? Math.round(value) : value
-    this.setState({ selectedSettingInput: String(sendValue) })
-    this.sendSettingValue(name, type, sendValue)
   }
 
 
@@ -491,114 +423,14 @@ class Nepi_IF_Settings extends Component {
   renderSetting(){
     const selSetName = this.getSelectedSettingName()
     if (selSetName === "") { return null }
-    const selSetType = this.getSettingType(selSetName)
     const selSetMsg = this.getSettingMsg(selSetName)
     if (selSetMsg == null) { return null }
 
-    const bounds = this.getSettingBounds(selSetName)
-    const selSetMin = bounds[0]
-    const selSetMax = bounds[1]
-    const selSetOptions = selSetMsg.string_options || []
-    const selValueStr = this.getSettingValueString(selSetName)
-
-    const selOptions = createMenuListFromStrList(selSetOptions,false,[],["Select"],[])
-
-    // Numeric settings with both bounds declared get a slider instead of the
-    // typed input box. slider is null for everything else.
-    const slider = this.getSelectedSettingSliderInfo(selSetType, selSetMin, selSetMax)
-    // The slider handle tracks the local edit value, not the status value, so
-    // dragging does not fight the status messages coming back from the node.
-    // onSelectSetting resets it whenever a different setting is selected.
-    var sliderValue = parseFloat(this.state.selectedSettingInput)
-    if (slider !== null) {
-      if (!Number.isFinite(sliderValue)) { sliderValue = parseFloat(selValueStr) }
-      if (!Number.isFinite(sliderValue)) { sliderValue = slider.min }
-      sliderValue = Math.min(Math.max(sliderValue, slider.min), slider.max)
-    }
-
-    // The typed box shows the operator's in-progress edit if there is one, and
-    // the reported value otherwise.
-    const inputValue = (this.state.selectedSettingInput !== "") ?
-      this.state.selectedSettingInput : selValueStr
-
     return (
 
-        <Columns>
-        <Column>
-
-          <div align={"left"} textAlign={"right"} hidden={selSetType !== "Bool" }>
-            <Label title={selSetName}>
-              <AsyncToggle
-                checked={ (selValueStr === "True")}
-                onClick={() => {this.onChangeBoolSettingValue()}}
-              />
-            </Label>
-          </div>
-
-            
-
-            <div align={"left"} textAlign={"right"} hidden={selSetType !== "Menu" && selSetType !== "Selection" }>
-            <Label title={selSetName}>
-              <Select
-                id="descreteSetting"
-                onChange={this.onChangeDescreteSettingValue}
-                value={selValueStr}
-              >
-                {selOptions}
-              </Select>
-            </Label>
-            </div>
-
-          <div align={"left"} textAlign={"right"} 
-            hidden={!(selSetType === "String" ||
-            selSetType === "Int" ||
-            selSetType === "Float" ||
-            selSetType === "FloatSlider")}
-          >
-
-              <div align={"left"} textAlign={"right"} hidden={selSetMin === ""}>
-                  <Label title={"Lower Input Limit"}>
-                    <Input disabled value={selSetMin} />
-                  </Label>
-              </div>
-
-              <div align={"left"} textAlign={"right"} hidden={selSetMax === ""}>
-                  <Label title={"Upper Input Limit"}>
-                    <Input disabled value={selSetMax} />
-                  </Label>
-              </div>
-
-              {(slider !== null) ?
-                <SliderAdjustment
-                  key={selSetName}
-                  title={selSetName}
-                  topic={this.state.settingsNamespace + "/update_setting"}
-                  msgType={"nepi_interfaces/UpdateControl"}
-                  adjustment={sliderValue}
-                  onSliderChangeOverride={(value) => this.onChangeSliderSettingValue(value, selSetType)}
-                  min={slider.min}
-                  max={slider.max}
-                  step={slider.step}
-                  displayDecimals={slider.displayDecimals}
-                  scaled={1}
-                  tooltip={selSetMsg.description}
-                  unit={""}
-                />
-                :
-                <Label title={selSetName}>
-                  <Input id="input_setting"
-                    value={inputValue}
-                    onChange={this.onUpdateInputSettingValue}
-                    onKeyDown= {this.onKeySaveInputSettingValue} />
-                </Label>
-              }
-
-          </div>
-
-
-        </Column>
-      </Columns>
-
+      <React.Fragment>
+        {this.renderControl(selSetMsg)}
+      </React.Fragment>
 
 
     )

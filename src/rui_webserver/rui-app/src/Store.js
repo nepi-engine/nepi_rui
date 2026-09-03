@@ -2320,7 +2320,7 @@ class ROSConnectionStore {
     if (namespace) {
       return this.addListener({
         name: namespace,
-        messageType: "nepi_interfaces/ControlsStatus",
+        messageType: "nepi_interfaces/SettingsStatus",
         noPrefix: true,
         callback: callback,
 
@@ -3136,53 +3136,97 @@ sendSaveConfigTrigger(namespace) {
 
 ///// System IF Calls
 
-  // A setting update is a typed nepi_interfaces/UpdateControl on
-  // "<settings_ns>/update_setting".  typeStr is the CONTROL type the status
-  // message reports ("Menu", "Selection", "Bool", "String", "Int", "Float"),
-  // and the value goes in the one set_* field that type selects -- the rest
-  // stay at their message defaults.  Values arrive here already typed, so
-  // nothing is parsed out of a string on the wire any more.
+
   @action.bound
-  updateSetting(namespace,nameStr,typeStr,value) {
+  sendUpdateControlValue(namespace, nameStr, value, throttle = false) {
+    if (throttle){
+      if (throttle && this.isThrottled()) {
+        return
+      }
+    }
+    var valueStr = ''
+    var valueStrs = ['']
+    if (Array.isArray(value)) {
+      valueStrs = value.map(val => String(val))
+    }
+    else {
+       valueStr = String(value)
+    }
     const data = {
       name: nameStr,
-      display_name: "",
-      description: "",
-      type: typeStr,
-      set_index: 0,
-      set_string: "",
-      set_strings: [],
-      set_int: 0,
-      set_float: 0.0,
-      set_floats: [],
-      set_bool: false
+      value: valueStr,
+      values: valueStrs
     }
-    if (typeStr === "Menu") { data.set_index = parseInt(value, 10) || 0 }
-    else if (typeStr === "Selection" || typeStr === "String") { data.set_string = String(value) }
-    else if (typeStr === "Selections") { data.set_strings = value }
-    else if (typeStr === "Bool") { data.set_bool = (value === true || value === "True") }
-    else if (typeStr === "Int") { data.set_int = parseInt(value, 10) || 0 }
-    else if (typeStr === "Float" || typeStr === "FloatSlider") { data.set_float = parseFloat(value) || 0.0 }
-    else { data.set_string = String(value) }
+  
     this.publishMessage({
-      name: namespace + "/update_setting",
+      name: namespace,
       messageType: "nepi_interfaces/UpdateControl",
       data: data,
       noPrefix: true
     })
   }
 
-  // Update several settings.  settingsList is an array of
-  // {nameStr, typeStr, value} entries, published as one update_setting message
-  // each.  The batch "update_settings" topic is retired: the node applied its
+
+  // Update several controls.  controlsList is an array of
+  // {nameStr, typeStr, value} entries, published as one update_control message
+  // each.  The batch "update_controls" topic is retired: the node applied its
   // entries in a sequential loop anyway, so this is the same behavior without
   // a second message type to maintain.
   @action.bound
-  updateSettings(namespace,settingsList) {
-    settingsList.forEach((s) => {
-      this.updateSetting(namespace, s.nameStr, s.typeStr, s.value)
+  sendUpdateControls(namespace,controlsList) {
+    controlsList.forEach((c) => {
+      this.sendUpdateControlValue(namespace, c.nameStr, c.value)
     })
   }
+
+
+  // // A setting update is a typed nepi_interfaces/UpdateControl on
+  // // "<settings_ns>/update_setting".  typeStr is the CONTROL type the status
+  // // message reports ("Menu", "Selection", "Bool", "String", "Int", "Float"),
+  // // and the value goes in the one set_* field that type selects -- the rest
+  // // stay at their message defaults.  Values arrive here already typed, so
+  // // nothing is parsed out of a string on the wire any more.
+  // @action.bound
+  // updateSetting(namespace,nameStr,typeStr,value) {
+  //   const data = {
+  //     name: nameStr,
+  //     display_name: "",
+  //     description: "",
+  //     type: typeStr,
+  //     set_index: 0,
+  //     set_string: "",
+  //     set_strings: [],
+  //     set_int: 0,
+  //     set_float: 0.0,
+  //     set_floats: [],
+  //     set_bool: false
+  //   }
+  //   if (typeStr === "Menu") { data.set_index = parseInt(value, 10) || 0 }
+  //   else if (typeStr === "Selection" || typeStr === "String") { data.set_string = String(value) }
+  //   else if (typeStr === "Selections") { data.set_strings = value }
+  //   else if (typeStr === "Bool") { data.set_bool = (value === true || value === "True") }
+  //   else if (typeStr === "Int") { data.set_int = parseInt(value, 10) || 0 }
+  //   else if (typeStr === "Float" || typeStr === "FloatSlider") { data.set_float = parseFloat(value) || 0.0 }
+  //   else { data.set_string = String(value) }
+  //   this.publishMessage({
+  //     name: namespace + "/update_setting",
+  //     messageType: "nepi_interfaces/UpdateControl",
+  //     data: data,
+  //     noPrefix: true
+  //   })
+  // }
+
+  // // Update several settings.  settingsList is an array of
+  // // {nameStr, typeStr, value} entries, published as one update_setting message
+  // // each.  The batch "update_settings" topic is retired: the node applied its
+  // // entries in a sequential loop anyway, so this is the same behavior without
+  // // a second message type to maintain.
+  // @action.bound
+  // updateSettings(namespace,settingsList) {
+  //   settingsList.forEach((s) => {
+  //     this.updateSetting(namespace, s.nameStr, s.typeStr, s.value)
+  //   })
+  // }
 
  
   @action.bound

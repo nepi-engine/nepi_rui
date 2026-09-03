@@ -205,7 +205,12 @@ class RangeAdjustment extends Component {
   // Function for publishing values through rosbridge
   sendUpdate(min, max, throttle = false) {
     const comp_name = this.props.comp_name ? this.props.comp_name : null
-    if (comp_name != null) {
+    const is_control = this.props.is_control ? this.props.is_control : false
+  if (comp_name != null && is_control === true) {
+    const new_values = [min, max]
+    this.props.ros.sendUpdateControlValue(this.props.topic, comp_name, new_values, throttle)
+  }
+  else if (comp_name != null) {
       this.props.ros.sendUpdateRangeWindowMsg(this.props.topic, comp_name, min, max, throttle)
     }
     else {

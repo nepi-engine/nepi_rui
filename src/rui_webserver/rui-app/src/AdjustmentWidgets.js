@@ -120,8 +120,12 @@ const styles = Styles.Create({
 function sendUpdate(props, new_value, throttle) {
   const noPrefix = (props.topic.startsWith('/'))
   const comp_name = props.comp_name ? props.comp_name : null
-  if (comp_name != null) {
-    props.ros.sendUpdateFloatMsg(props.topic,props.comp_name,new_value)
+  const is_control = props.is_control ? props.is_control : false
+  if (comp_name != null && is_control === true) {
+    props.ros.sendUpdateControlValue(props.topic, comp_name,new_value)
+  }
+  else if (comp_name != null) {
+    props.ros.sendUpdateFloatMsg(props.topic, comp_name,new_value)
   }
   else {
     props.ros.publishValue(
@@ -131,7 +135,7 @@ function sendUpdate(props, new_value, throttle) {
       throttle,
       noPrefix
     )
-}
+  }
 }
 
 // Following constants control the SliderAdjustment acceleration. The logic is

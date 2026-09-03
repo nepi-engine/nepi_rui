@@ -34,6 +34,9 @@ import RangeAdjustment from "./RangeAdjustment"
 
 import { setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue } from "./Utilities"
 
+
+import Nepi_IF_Control from "./Nepi_IF_Control"
+
 @inject("ros")
 @observer
 
@@ -69,8 +72,7 @@ class Nepi_IF_Controls extends Component {
     this.statusListener = this.statusListener.bind(this)
     this.getControlValue = this.getControlValue.bind(this)
     this.renderControl = this.renderControl.bind(this)
-    this.onInputChange = this.onInputChange.bind(this)
-    this.onInputKey = this.onInputKey.bind(this)
+
   }
 
   getNamespace() {
@@ -190,263 +192,24 @@ class Nepi_IF_Controls extends Component {
     }
   }
 
-  // Editable text/number input helpers (PTX controls pattern)
-  onInputChange(name, e) {
-    const el = document.getElementById('csbx_' + name)
-    if (el) { setElementStyleModified(el) }
-    const editValues = { ...this.state.editValues }
-    editValues[name] = e.target.value
-    this.setState({ editValues: editValues })
-  }
-
-  onInputKey(name, type, e) {
-    if (e.key !== 'Enter') { return }
-    const namespace = this.getNamespace()
-    const { sendUpdateStringMsg, sendUpdateIntMsg, sendUpdateFloatMsg } = this.props.ros
-    const el = document.getElementById('csbx_' + name)
-    if (el) { clearElementStyleModified(el) }
-    const raw = e.target.value
-    // Value the control reports right now; statusListener() uses this baseline
-    // to detect when the backend has acted on our change.
-    const baseline = this.getControlValue(this.state.status_msg, name, type)
-    var sent = false
-    if (type === "String") {
-      sendUpdateStringMsg(namespace + "/set_string_control_value", name, raw)
-      sent = true
-    } else if (type === "Int") {
-      const val = parseInt(raw, 10)
-      if (!Number.isNaN(val)) { sendUpdateIntMsg(namespace + "/set_int_control_value", name, val); sent = true }
-    } else if (type === "Float") {
-      const val = parseFloat(raw)
-      if (!Number.isNaN(val)) { sendUpdateFloatMsg(namespace + "/set_float_control_value", name, val); sent = true }
-    }
-    const editValues = { ...this.state.editValues }
-    const pending = { ...this.state.pending }
-    if (sent) {
-      // Keep showing the typed text (optimistic) until a status message
-      // confirms the change; statusListener() clears these once reconciled.
-      editValues[name] = raw
-      pending[name] = { baseline: baseline, typed: raw, type: type }
-    } else {
-      // Invalid input: fall back to the last reported value (original behavior).
-      delete editValues[name]
-      delete pending[name]
-    }
-    this.setState({ editValues: editValues, pending: pending })
-  }
 
   // Render a single control given its type and Control message.
   // Each block below maps one nepi_controls control type to its RUI widget and
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
-  renderControl(name, type, control_msg, index) {
+  renderControl(control_msg) {
     const namespace = this.getNamespace()
-    const { sendUpdateIntMsg, sendUpdateStringMsg, sendUpdateBoolMsg } = this.props.ros
-    const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
-
-    // Value inputs whose value tracks either the in-progress edit or the message
-    const editing = (name in this.state.editValues)
-
-    // MENU -- drop-down of string options; the control's value is the *index*
-    // of the selected option. Sends the new index as an Int.
-    if (type === "Menu") {
-      const options = control_msg.string_options
-      const set_index = control_msg.set_index
+    const control_hidden = control_msg.hidden
       return (
-        <Label title={display_name} key={name}>
-          <Select
-            id={'csbx_' + name}
-            value={set_index}
-            onChange={(e) => sendUpdateIntMsg(namespace + "/set_menu_control_value", name, parseInt(e.target.value, 10))}
-          >
-            {options.map((opt, i) => <Option key={name + '_' + i} value={i}>{opt}</Option>)}
-          </Select>
-        </Label>
+
+
+         <Nepi_IF_Control
+              namespace={namespace}
+              control_msg={control_msg}
+              control_hidden={control_hidden}
+            />
+
       )
-    }
 
-    // SELECTION -- drop-down of string options; the control's value is the
-    // selected option *text* (not its index). Sends the new text as a String.
-    if (type === "Selection") {
-      const options = control_msg.string_options
-      const set_string = control_msg.set_string
-      return (
-        <Label title={display_name} key={name}>
-          <Select
-            id={'csbx_' + name}
-            value={set_string}
-            onChange={(e) => sendUpdateStringMsg(namespace + "/set_selection_control_value", name, e.target.value)}
-          >
-            {options.map((opt, i) => <Option key={name + '_' + i} value={opt}>{opt}</Option>)}
-          </Select>
-        </Label>
-      )
-    }
-
-    // SELECTIONS -- a multi-select: each option gets its own toggle. The value
-    // is the full array of currently-selected option strings. On every toggle
-    // we send the complete desired selection (declarative), not a single delta.
-    if (type === "Selections") {
-      const na_options = ['NONE','ALL']
-      const sel_options = control_msg.string_options
-      const show_options =  [...na_options, ...sel_options]
-      const set_strings = control_msg.set_strings || []
-      const { sendUpdateStringArrayMsg } = this.props.ros
-      return (
-        <Label title={display_name} key={name}>
-          <div>
-            {show_options.map((opt, i) => (
-              <div key={name + '_' + i} style={{ display: "inline-block", marginRight: Styles.vars.spacing.regular, textAlign: "center" }}>
-                <div style={{ fontSize: Styles.vars.fontSize.small, marginBottom: Styles.vars.spacing.xs }}>{opt}</div>
-                <AsyncToggle
-                  checked={set_strings.indexOf(opt) !== -1}
-                  onClick={() => {
-                    // Send the complete desired selection (declarative), not a toggle.
-                    const next = (opt === 'ALL') ? sel_options : 
-                                    (opt === 'NONE') ? [] :
-                                        set_strings.indexOf(opt) !== -1
-                                          ? set_strings.filter((s) => s !== opt)
-                                          : [...set_strings, opt]
-                  
-                    sendUpdateStringArrayMsg(namespace + "/set_selections_control_value", name, next)
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        </Label>
-      )
-    }
-
-    // TRIGGER -- a momentary action. There is no persistent value; pressing the
-    // button fires a one-shot trigger (an empty String payload).
-    if (type === "Trigger") {
-      return (
-        <Label title={display_name} key={name}>
-          <ButtonMenu>
-            <Button onClick={() => sendUpdateStringMsg(namespace + "/set_trigger_control_value", name, "")}>{"Trigger"}</Button>
-          </ButtonMenu>
-        </Label>
-      )
-    }
-
-    // BOOL -- a single on/off switch. Sends the *opposite* of the current
-    // value as a Bool each time it is clicked.
-    if (type === "Bool") {
-      const checked = (control_msg.set_bool === true)
-      return (
-        <Label title={display_name} key={name}>
-          <AsyncToggle
-            checked={checked}
-            onClick={() => sendUpdateBoolMsg(namespace + "/set_bool_control_value", name, !checked)}
-          />
-        </Label>
-      )
-    }
-
-    // STRING / INT / FLOAT -- free-form typed values. These follow the PTX
-    // editable-input pattern: the box shows an in-progress edit string while
-    // the user types, and the value is sent (parsed to the right type) only on
-    // Enter. See onInputChange / onInputKey above.
-    if (type === "String" || type === "Int" || type === "Float") {
-      var msgValue = ''
-      if (type === "String") { msgValue = control_msg.set_string }
-      else if (type === "Int") { msgValue = control_msg.set_int }
-      else { msgValue = control_msg.set_float }
-      const value = editing ? this.state.editValues[name] : msgValue
-      return (
-        <Label title={display_name} key={name}>
-          <Input
-            id={'csbx_' + name}
-            style={{ width: "100%" }}
-            value={value}
-            onChange={(e) => this.onInputChange(name, e)}
-            onKeyDown={(e) => this.onInputKey(name, type, e)}
-          />
-        </Label>
-      )
-    }
-
-    // FLOATSLIDER -- a single decimal value dragged between a min and max.
-    // float_bounds carries [min, max]; -999 in either slot means "no limit",
-    // in which case we fall back to a sensible default (0 / 100).
-    if (type === "FloatSlider") {
-      const bounds = control_msg.float_bounds || []
-      const min = (bounds.length > 0 && bounds[0] !== -999) ? bounds[0] : 0
-      const max = (bounds.length > 1 && bounds[1] !== -999) ? bounds[1] : 100
-
-      // Step size and display precision come off the control message the same
-      // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
-      // defaults step to 1, and its render rounds the value to displayDecimals
-      // before handing it to BOTH the slider handle and the (disabled) text box.
-      // Left unset, a [0.0, 1.0] control is a two-position switch, and passing
-      // only one of the two still is -- a display coarser than the step
-      // re-quantizes the handle even when the step is right.
-      //
-      // round_value is how many decimals the node rounds a SET value to
-      // (nepi_controls default -1, meaning no rounding); round_display is how
-      // many the RUI should show (default 2). Neither is trusted on its own:
-      // both are int32, so a control message that never carried them arrives
-      // with 0 rather than undefined, and round_value 0 is step 1 -- the defect
-      // again. The range check below is what actually rules that out.
-      const range = max - min
-      const round_value = (typeof control_msg.round_value === 'number') ? control_msg.round_value : -1
-      const round_display = (typeof control_msg.round_display === 'number') ? control_msg.round_display : -1
-      // No rounding authored: one hundredth of the range, the nepi_controls -1 case.
-      const fallback_step = (range > 0) ? (range / 100) : 1
-      var step = (round_value >= 0 && round_value <= 6) ? Math.pow(10, -round_value) : fallback_step
-      // Fewer than three stops between the ends is not a slider, whatever the
-      // message asked for. Also catches range <= 0 and any non-finite bound.
-      if (!(step > 0) || !((range / step) >= 2)) { step = fallback_step }
-      if (!Number.isFinite(step) || step <= 0) { step = 1 }
-      // Never display coarser than the step -- see the note above -- and never
-      // finer than the node asked for.
-      const step_decimals = Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
-      const displayDecimals = Math.max(step_decimals, (round_display >= 0 && round_display <= 6) ? round_display : 0)
-
-      return (
-        <SliderAdjustment
-          key={name}
-          title={display_name}
-          comp_name={name}
-          topic={namespace + "/set_floatslider_control_value"}
-          msgType={"std_msgs/Float32"}
-          adjustment={control_msg.set_float}
-          min={min}
-          max={max}
-          step={step}
-          displayDecimals={displayDecimals}
-          scaled={1}
-          tooltip={control_msg.description}
-          unit={""}
-        />
-      )
-    }
-
-    // FLOATSLIDERS -- a min/max *range* dragged between two limits. set_floats
-    // holds the current [min, max] handles; float_bounds holds the outer
-    // [min_limit, max_limit] the handles may move within.
-    if (type === "FloatSliders") {
-      const set_floats = control_msg.set_floats || [0, 1]
-      const bounds = control_msg.float_bounds || []
-      const min_limit = (bounds.length > 0 && bounds[0] !== -999) ? bounds[0] : 0
-      const max_limit = (bounds.length > 1 && bounds[1] !== -999) ? bounds[1] : 1
-      return (
-        <RangeAdjustment
-          key={name}
-          title={display_name}
-          comp_name={name}
-          topic={namespace + "/set_floatsliders_control_value"}
-          min={set_floats[0]}
-          max={set_floats[1]}
-          min_limit_m={min_limit}
-          max_limit_m={max_limit}
-          tooltip={control_msg.description}
-          unit={""}
-        />
-      )
-    }
-
-    return null
   }
 
   render() {
@@ -490,7 +253,7 @@ class Nepi_IF_Controls extends Component {
               // Hidden controls are not shown in the Controls box (they remain
               // manageable from the Controls Settings box).
               if (control_msg.hidden === true) { return null }
-              return this.renderControl(name, types[i], control_msg, i)
+              return this.renderControl(control_msg)
             })}
           </Column>
         </Columns>
