@@ -233,12 +233,14 @@ class Nepi_IF_Settings extends Component {
 
   // The value in its own natural form: an index for Menu, a bool for Bool, a
   // number for Int/Float, a string for Selection/String.
+  // "Discrete" is an alias of "Selection" -- the same named option list under an
+  // older spelling still used by driver params yaml -- so it reads the same field.
   getSettingValue(name) {
     const msg = this.getSettingMsg(name)
     const type = msg.type
     if (msg == null) { return null }
     if (type === "Menu") { return msg.set_index }
-    if (type === "Selection" || type === "Selections" || type === "String") { return msg.set_string }
+    if (type === "Selection" || type === "Discrete" || type === "Selections" || type === "String") { return msg.set_string }
     if (type === "Trigger") { return msg.set_float }
     if (type === "Bool") { return msg.set_bool }
     if (type === "Int") { return msg.set_int }

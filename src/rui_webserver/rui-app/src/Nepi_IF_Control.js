@@ -167,7 +167,11 @@ class Nepi_IF_Control extends Component {
 
       // SELECTION -- drop-down of string options; the control's value is the
       // selected option *text* (not its index). Sends the new text as a String.
-      if (type === "Selection") {
+      // "Discrete" is an alias of "Selection", not a separate type: it is the
+      // spelling driver params yaml files use for the same named option list,
+      // so it renders through this same branch. It aliases the singular; the
+      // multi-select "Selections" below is unrelated.
+      if (type === "Selection" || type === "Discrete") {
         const options = control_msg.string_options
         const set_string = control_msg.set_string
         return (
