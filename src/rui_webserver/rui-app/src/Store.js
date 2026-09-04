@@ -3144,17 +3144,15 @@ sendSaveConfigTrigger(namespace) {
         return
       }
     }
-    var valueStr = ''
     var valueStrs = ['']
     if (Array.isArray(value)) {
       valueStrs = value.map(val => String(val))
     }
     else {
-       valueStr = String(value)
+       valueStrs = [String(value)]
     }
     const data = {
       name: nameStr,
-      value: valueStr,
       values: valueStrs
     }
   

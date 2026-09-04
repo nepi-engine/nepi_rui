@@ -93,13 +93,47 @@ class Nepi_IF_Controls extends Component {
     const names = message.controls_name_list || []
     const i = names.indexOf(name)
     if (i === -1) { return null }
-    const msgs = message.controls_msg_list || []
-    const m = msgs[i]
-    if (m == null) { return null }
-    if (type === "String") { return m.set_string }
-    if (type === "Int") { return m.set_int }
-    if (type === "Float") { return m.set_float }
-    return null
+    const control_msg = message[i]
+
+    const LIST_TYPES = ["Selections","Toggles","RangeSlider"]
+
+    const STRING_TYPES = ["Selection","Selections","Toggles"]
+    const BOOL_TYPES = ["Toggle", "Toggles"]
+    const INT_TYPES = ["Int"]
+    const FLOAT_TYPES = ["Float","FloatSlider","RangeSlider"]
+    const EMPTY_TYPES = ['Trigger']
+
+    if (control_msg == null) { return null }
+    const msg_value = control_msg.value
+    var values_list = null
+    var value = null
+
+    if (STRING_TYPES.indexOf(type) !== -1){
+      values_list = msg_value
+    }
+    else if (BOOL_TYPES.indexOf(type) !== -1){
+      values_list = msg_value.map(item => item === 'true')
+    }
+    else if (FLOAT_TYPES.indexOf(type) !== -1){
+      value = msg_value.map(item => parseFloat(item))
+    }
+    else if (INT_TYPES.indexOf(type) !== -1){
+      values_list = msg_value.map(item => parseInt(item))
+    }
+    else if (EMPTY_TYPES.indexOf(type) !== -1){
+      values_list = msg_value.map(item => '')
+    }
+
+    if (values_list != null){
+      if (LIST_TYPES.indexOf(type) !== -1) { 
+        value = values_list
+      }
+      else if (values_list.length > 0){
+        value = values_list[0]
+      }
+    }
+
+    return value
   }
 
   statusListener(message) {

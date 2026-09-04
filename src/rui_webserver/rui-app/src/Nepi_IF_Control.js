@@ -38,7 +38,7 @@ import { round, setElementStyleModified, clearElementStyleModified, onChangeSwit
 @observer
 
 // Component that contains the ControlIF control. Renders one widget per
-// control from a nepi_interfaces/ControlStatus message.
+// control from a nepierfaces/ControlStatus message.
 class Nepi_IF_Control extends Component {
   constructor(props) {
     super(props)
@@ -52,7 +52,7 @@ class Nepi_IF_Control extends Component {
       // editValues alive until statusListener() reconciles it (see below).
       pending: {},
 
-      // "SelectionsDD" only: whether its option list is expanded. One
+      // "Selections" only: whether its option list is expanded. One
       // Nepi_IF_Control renders exactly one control_msg, so this is a plain
       // boolean rather than a name-keyed map. Local view state with no backend
       // round trip -- deliberately not mirrored into the control.
@@ -60,6 +60,7 @@ class Nepi_IF_Control extends Component {
 
     }
 
+    this.getControlValue = this.getControlValue.bind(this)
     this.onInputChange = this.onInputChange.bind(this)
     this.onInputKey = this.onInputKey.bind(this)
     this.toggleDD = this.toggleDD.bind(this)
@@ -71,18 +72,49 @@ class Nepi_IF_Control extends Component {
 
   // Read the current value a control reports in a status message, by name and
   // type. Returns null if the control isn't present or isn't an editable type.
-  getControlValue(message, name, type) {
-    if (message == null) { return null }
-    const names = message.control_name_list || []
-    const i = names.indexOf(name)
-    if (i === -1) { return null }
-    const msgs = message.control_msg_list || []
-    const m = msgs[i]
-    if (m == null) { return null }
-    if (type === "String") { return m.set_string }
-    if (type === "Int") { return m.set_int }
-    if (type === "Float") { return m.set_float }
-    return null
+  getControlValue() {
+    const control_msg = this.props.control_msg !== undefined ? this.props.control_msg : null
+    const type = this.props.control_msg !== undefined ? this.props.control_msg.type : null
+
+    const LIST_TYPES = ["Selections","Toggles","RangeSlider"]
+
+    const STRING_TYPES = ["Selection","Selections","Toggles"]
+    const BOOL_TYPES = ["Toggle", "Toggles"]
+    const INT_TYPES = ["Int"]
+    const FLOAT_TYPES = ["Float","FloatSlider","RangeSlider"]
+    const EMPTY_TYPES = ['Trigger']
+
+    if (control_msg == null) { return null }
+    const msg_value = control_msg.value
+    var values_list = null
+    var value = null
+
+    if (STRING_TYPES.indexOf(type) !== -1){
+      values_list = msg_value
+    }
+    else if (BOOL_TYPES.indexOf(type) !== -1){
+      values_list = msg_value.map(item => item === 'true')
+    }
+    else if (FLOAT_TYPES.indexOf(type) !== -1){
+      value = msg_value.map(item => parseFloat(item))
+    }
+    else if (INT_TYPES.indexOf(type) !== -1){
+      values_list = msg_value.map(item => parseInt(item))
+    }
+    else if (EMPTY_TYPES.indexOf(type) !== -1){
+      values_list = msg_value.map(item => 'EMPTY')
+    }
+
+    if (values_list != null){
+      if (LIST_TYPES.indexOf(type) !== -1) { 
+        value = values_list
+      }
+      else if (values_list.length > 0){
+        value = values_list[0]
+      }
+    }
+
+    return value
   }
 
   // Editable text/number input helpers (PTX control pattern)
@@ -133,14 +165,14 @@ class Nepi_IF_Control extends Component {
 
   // Render a single control given its type and Control message.
   // Each block below maps one nepi_control control type to its RUI widget and
-  // the nepi_control "set_*_control_value" topic it publishes to on change.
+  // the nepi_control "value_*_control_value" topic it publishes to on change.
   render() {
     const { sendUpdateControlValue } = this.props.ros
     const namespace = this.props.namespace !== undefined ? this.props.namespace : null
     const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
     const control_msg = this.props.control_msg !== undefined ? this.props.control_msg : null
     const control_hidden = this.props.control_hidden !== undefined ? this.props.control_hidden : false
-    const show_bounds = this.props.show_bounds !== undefined ? this.props.show_bounds : false
+    const show_bound = this.props.show_bound !== undefined ? this.props.show_bound : false
   
     if (namespace == null || control_msg == null || control_hidden === true) {
       return (
@@ -154,20 +186,23 @@ class Nepi_IF_Control extends Component {
       const name = control_msg.name
       const type =  control_msg.type
       const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
-
+      const options = control_msg.options
+      const min_bound = control_msg.min_bound
+      const max_bound = control_msg.max_bound
+      const value = control_msg.value
+      const values = (this.getControlValue() != null) ? this.getControlValue() : []
       // Value inputs whose value tracks either the in-progress edit or the message
       const editing = (name in this.state.editValues)
 
       // MENU -- drop-down of string options; the control's value is the *index*
       // of the selected option. Sends the new index as an Int.
       if (type === "Menu") {
-        const options = control_msg.string_options
-        const set_index = control_msg.set_index
+
         return (
           <Label title={display_name} key={name}>
             <Select
               id={'csbx_' + name}
-              value={set_index}
+              value={value}
               onChange={(e) => sendUpdateControlValue(namespace  + "/" + topic,  name, String(parseInt(e.target.value, 10)))}
             >
               {options.map((opt, i) => <Option key={name + '_' + i} value={i}>{opt}</Option>)}
@@ -181,15 +216,13 @@ class Nepi_IF_Control extends Component {
       // "Discrete" is an alias of "Selection", not a separate type: it is the
       // spelling driver params yaml files use for the same named option list,
       // so it renders through this same branch. It aliases the singular; the
-      // multi-select "Selections" below is unrelated.
+      // multi-select "Toggles" below is unrelated.
       if (type === "Selection" || type === "Discrete") {
-        const options = control_msg.string_options
-        const set_string = control_msg.set_string
         return (
           <Label title={display_name} key={name}>
             <Select
               id={'csbx_' + name}
-              value={set_string}
+              value={value}
               onChange={(e) => sendUpdateControlValue(namespace  + "/" + topic, name, e.target.value)}
             >
               {options.map((opt, i) => <Option key={name + '_' + i} value={opt}>{opt}</Option>)}
@@ -198,14 +231,12 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      // SELECTIONS -- a multi-select: each option gets its own toggle. The value
+      // TOGGLES -- a multi-select: each option gets its own toggle. The value
       // is the full array of currently-selected option strings. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (type === "Selections") {
+      if (type === "Toggles") {
         const na_options = ['NONE','ALL']
-        const sel_options = control_msg.string_options
-        const show_options =  [...na_options, ...sel_options]
-        const set_strings = control_msg.set_strings || []
+        const show_options =  [...na_options, ...options]
         return (
           <Label title={display_name} key={name}>
             <div>
@@ -213,14 +244,14 @@ class Nepi_IF_Control extends Component {
                 <div key={name + '_' + i} style={{ display: "inline-block", marginRight: Styles.vars.spacing.regular, textAlign: "center" }}>
                   <div style={{ fontSize: Styles.vars.fontSize.small, marginBottom: Styles.vars.spacing.xs }}>{opt}</div>
                   <AsyncToggle
-                    checked={set_strings.indexOf(opt) !== -1}
+                    checked={values.indexOf(opt) !== -1}
                     onClick={() => {
                       // Send the complete desired selection (declarative), not a toggle.
-                      const next = (opt === 'ALL') ? sel_options : 
+                      const next = (opt === 'ALL') ? options : 
                                       (opt === 'NONE') ? [] :
-                                          set_strings.indexOf(opt) !== -1
-                                            ? set_strings.filter((s) => s !== opt)
-                                            : [...set_strings, opt]
+                                          values.indexOf(opt) !== -1
+                                            ? values.filter((s) => s !== opt)
+                                            : [...values, opt]
                     
                       sendUpdateControlValue(namespace  + "/" + topic, name, next)
                     }}
@@ -232,24 +263,17 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      // SELECTIONS DD -- the same value as "Selections" above (the full array of
-      // selected option strings, carried in set_strings) drawn as a collapsible
-      // multi-select dropdown instead of a row of toggles, matching the AI
-      // detector's class selector. Preferred once the option list is long enough
-      // that a toggle row wraps. Like "Selections", every click sends the
-      // COMPLETE desired selection, never a single delta.
-      if (type === "SelectionsDD") {
-        const sel_options = control_msg.string_options || []
-        const set_strings = control_msg.set_strings || []
+    
+      if (type === "Selections") {
         // "None" and "All" are actions, not selectable options: they are never
         // highlighted and are never sent as values -- they resolve to [] and to
         // the full option list respectively. Mixed case, and the collapsed
         // affordance below is a bare narrow <Select>, because this widget is
         // deliberately the same dropdown as the AI detector's class selector
         // (NepiMgrAiDetector.js renderDetectorSettings) rather than a lookalike.
-        // Note the existing "Selections" toggle branch above spells these NONE
+        // Note the existing "Toggles" toggle branch above spells these NONE
         // and ALL; the difference is intentional, it follows its own source.
-        const rows = ['None', 'All', ...sel_options]
+        const rows = ['None', 'All', ...options]
         return (
           <Label title={display_name} key={name}>
             <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
@@ -265,18 +289,18 @@ class Nepi_IF_Control extends Component {
                 <div
                   key={name + '_dd_' + i}
                   onClick={() => {
-                    const next = (opt === 'All') ? sel_options :
+                    const next = (opt === 'All') ? options :
                                    (opt === 'None') ? [] :
-                                     set_strings.indexOf(opt) !== -1
-                                       ? set_strings.filter((s) => s !== opt)
-                                       : [...set_strings, opt]
+                                     values.indexOf(opt) !== -1
+                                       ? values.filter((s) => s !== opt)
+                                       : [...values, opt]
                     sendUpdateControlValue(namespace + "/" + topic, name, next)
                   }}
                   style={{
                     textAlign: "center",
                     padding: `${Styles.vars.spacing.xs}`,
                     color: Styles.vars.colors.black,
-                    backgroundColor: (set_strings.indexOf(opt) !== -1)
+                    backgroundColor: (values.indexOf(opt) !== -1)
                                        ? Styles.vars.colors.blue
                                        : Styles.vars.colors.grey0,
                     cursor: "pointer",
@@ -296,16 +320,16 @@ class Nepi_IF_Control extends Component {
         return (
           <Label title={display_name} key={name}>
             <ButtonMenu>
-              <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, "trigger")}>{"Trigger"}</Button>
+              <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, value)}>{"Trigger"}</Button>
             </ButtonMenu>
           </Label>
         )
       }
 
-      // BOOL -- a single on/off switch. Sends the *opposite* of the current
-      // value as a Bool each time it is clicked.
-      if (type === "Bool") {
-        const checked = (control_msg.set_bool === true)
+      // TOGGLE -- a single on/off switch. Sends the *opposite* of the current
+      // value as a Toggle each time it is clicked.
+      if (type === "Toggle") {
+        const checked = (value === true)
         return (
           <Label title={display_name} key={name}>
             <AsyncToggle
@@ -321,14 +345,13 @@ class Nepi_IF_Control extends Component {
       // the user types, and the value is sent (parsed to the right type) only on
       // Enter. See onInputChange / onInputKey above.
       if (type === "String" ) {
-        const msgValue = control_msg.set_string
-        const value = editing ? this.state.editValues[name] : msgValue
+        const show_value = editing ? this.state.editValues[name] : value
         return (
           <Label title={display_name} key={name}>
             <Input
               id={'csbx_' + name}
               style={{ width: "100%" }}
-              value={value}
+              value={show_value}
               onChange={(e) => this.onInputChange(name, e)}
               onKeyDown={(e) => this.onInputKey(name, type, e)}
             />
@@ -341,21 +364,18 @@ class Nepi_IF_Control extends Component {
       // the user types, and the value is sent (parsed to the right type) only on
       // Enter. See onInputChange / onInputKey above.
       if (type === "Int") {
-        const msgValue = control_msg.set_int
-        const value = editing ? this.state.editValues[name] : msgValue
-        const min_bounds = control_msg.int_bounds[0]
-        const max_bounds = control_msg.int_bounds[1]
+        const show_value = editing ? this.state.editValues[name] : value
         return (
           <Label title={display_name} key={name}>
 
-            <div hidden={show_bounds === false}>
+            <div hidden={show_bound === false}>
 
                 <Columns>
                 <Column>
 
                   <Input
                     disabled={true}
-                    value={min_bounds}
+                    value={min_bound}
                   />
 
                 </Column>
@@ -363,7 +383,7 @@ class Nepi_IF_Control extends Component {
 
                   <Input
                     disabled={true}
-                    value={max_bounds}
+                    value={max_bound}
                   />
                   
                 </Column>
@@ -375,7 +395,7 @@ class Nepi_IF_Control extends Component {
             <Input
               id={'csbx_' + name}
               style={{ width: "100%" }}
-              value={value}
+              value={show_value}
               onChange={(e) => this.onInputChange(name, e)}
               onKeyDown={(e) => this.onInputKey(name, type, e)}
             />
@@ -389,15 +409,12 @@ class Nepi_IF_Control extends Component {
       // the user types, and the value is sent (parsed to the right type) only on
       // Enter. See onInputChange / onInputKey above.
       if (type === "Float") {
-        const msgValue = control_msg.set_float 
-        const value = editing ? this.state.editValues[name] : msgValue
-        const min_bounds = control_msg.int_bounds[0]
-        const max_bounds = control_msg.int_bounds[1]
+        const show_value = editing ? this.state.editValues[name] : value
         const display_round = control_msg.display_round
         return (
           <Label title={display_name} key={name}>
 
-            <div hidden={show_bounds === false}>
+            <div hidden={show_bound === false}>
 
 
                 <Columns>
@@ -405,7 +422,7 @@ class Nepi_IF_Control extends Component {
 
                   <Input
                     disabled={true}
-                    value={min_bounds}
+                    value={min_bound}
                   />
 
                 </Column>
@@ -413,7 +430,7 @@ class Nepi_IF_Control extends Component {
 
                   <Input
                     disabled={true}
-                    value={max_bounds}
+                    value={max_bound}
                   />
                   
                 </Column>
@@ -423,7 +440,7 @@ class Nepi_IF_Control extends Component {
             <Input
               id={'csbx_' + name}
               style={{ width: "100%" }}
-              value={value}
+              value={show_value}
               onChange={(e) => this.onInputChange(name, e)}
               onKeyDown={(e) => this.onInputKey(name, type, e)}
             />
@@ -433,12 +450,11 @@ class Nepi_IF_Control extends Component {
 
 
       // FLOATSLIDER -- a single decimal value dragged between a min and max.
-      // float_bounds carries [min, max]; -999 in either slot means "no limit",
+      // bounds carries [min, max]; -999 in either slot means "no limit",
       // in which case we fall back to a sensible default (0 / 100).
       if (type === "FloatSlider") {
-        const bounds = control_msg.float_bounds || []
-        const min = (bounds.length > 0 && bounds[0] !== -999) ? bounds[0] : 0
-        const max = (bounds.length > 1 && bounds[1] !== -999) ? bounds[1] : 100
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 100
 
         // Step size and display precision come off the control message the same
         // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
@@ -477,7 +493,7 @@ class Nepi_IF_Control extends Component {
             is_control={true}
             topic={namespace + "/" + topic}
             msgType={"std_msgs/Float32"}
-            adjustment={control_msg.set_float}
+            adjustment={value}
             min={min}
             max={max}
             step={step}
@@ -489,14 +505,13 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      // FLOATSLIDERS -- a min/max *range* dragged between two limits. set_floats
-      // holds the current [min, max] handles; float_bounds holds the outer
+      // RANGESLIDER -- a min/max *range* dragged between two limits. values
+      // holds the current [min, max] handles; bounds holds the outer
       // [min_limit, max_limit] the handles may move within.
-      if (type === "FloatSliders") {
-        const set_floats = control_msg.set_floats || [0, 1]
-        const bounds = control_msg.float_bounds || []
-        const min_limit = (bounds.length > 0 && bounds[0] !== -999) ? bounds[0] : 0
-        const max_limit = (bounds.length > 1 && bounds[1] !== -999) ? bounds[1] : 1
+      if (type === "RangeSlider") {
+        const values = control_msg.values || [0, 1]
+        const min_limit = (min_bound !== -999) ? min_bound : 0
+        const max_limit = (max_bound !== -999) ? max_bound : 100
         return (
           <RangeAdjustment
             key={name}
@@ -504,8 +519,8 @@ class Nepi_IF_Control extends Component {
             comp_name={name}
             is_control={true}
             topic={namespace + "/" + topic}
-            min={set_floats[0]}
-            max={set_floats[1]}
+            min={values[0]}
+            max={values[1]}
             min_limit_m={min_limit}
             max_limit_m={max_limit}
             tooltip={control_msg.description}
