@@ -52,10 +52,21 @@ class Nepi_IF_Control extends Component {
       // editValues alive until statusListener() reconciles it (see below).
       pending: {},
 
+      // "SelectionsDD" only: whether its option list is expanded. One
+      // Nepi_IF_Control renders exactly one control_msg, so this is a plain
+      // boolean rather than a name-keyed map. Local view state with no backend
+      // round trip -- deliberately not mirrored into the control.
+      ddOpen: false,
+
     }
 
     this.onInputChange = this.onInputChange.bind(this)
     this.onInputKey = this.onInputKey.bind(this)
+    this.toggleDD = this.toggleDD.bind(this)
+  }
+
+  toggleDD() {
+    this.setState({ ddOpen: this.state.ddOpen === false })
   }
 
   // Read the current value a control reports in a status message, by name and
@@ -214,6 +225,64 @@ class Nepi_IF_Control extends Component {
                       sendUpdateControlValue(namespace  + "/" + topic, name, next)
                     }}
                   />
+                </div>
+              ))}
+            </div>
+          </Label>
+        )
+      }
+
+      // SELECTIONS DD -- the same value as "Selections" above (the full array of
+      // selected option strings, carried in set_strings) drawn as a collapsible
+      // multi-select dropdown instead of a row of toggles, matching the AI
+      // detector's class selector. Preferred once the option list is long enough
+      // that a toggle row wraps. Like "Selections", every click sends the
+      // COMPLETE desired selection, never a single delta.
+      if (type === "SelectionsDD") {
+        const sel_options = control_msg.string_options || []
+        const set_strings = control_msg.set_strings || []
+        // "None" and "All" are actions, not selectable options: they are never
+        // highlighted and are never sent as values -- they resolve to [] and to
+        // the full option list respectively. Mixed case, and the collapsed
+        // affordance below is a bare narrow <Select>, because this widget is
+        // deliberately the same dropdown as the AI detector's class selector
+        // (NepiMgrAiDetector.js renderDetectorSettings) rather than a lookalike.
+        // Note the existing "Selections" toggle branch above spells these NONE
+        // and ALL; the difference is intentional, it follows its own source.
+        const rows = ['None', 'All', ...sel_options]
+        return (
+          <Label title={display_name} key={name}>
+            <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+            <div
+              id={'csbx_' + name}
+              onClick={this.toggleDD}
+              style={{backgroundColor: Styles.vars.colors.grey0}}
+            >
+              <Select style={{width: "10px"}}/>
+            </div>
+            <div hidden={this.state.ddOpen === false}>
+              {rows.map((opt, i) => (
+                <div
+                  key={name + '_dd_' + i}
+                  onClick={() => {
+                    const next = (opt === 'All') ? sel_options :
+                                   (opt === 'None') ? [] :
+                                     set_strings.indexOf(opt) !== -1
+                                       ? set_strings.filter((s) => s !== opt)
+                                       : [...set_strings, opt]
+                    sendUpdateControlValue(namespace + "/" + topic, name, next)
+                  }}
+                  style={{
+                    textAlign: "center",
+                    padding: `${Styles.vars.spacing.xs}`,
+                    color: Styles.vars.colors.black,
+                    backgroundColor: (set_strings.indexOf(opt) !== -1)
+                                       ? Styles.vars.colors.blue
+                                       : Styles.vars.colors.grey0,
+                    cursor: "pointer",
+                  }}
+                >
+                  {opt}
                 </div>
               ))}
             </div>

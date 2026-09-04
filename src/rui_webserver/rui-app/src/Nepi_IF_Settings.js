@@ -240,11 +240,19 @@ class Nepi_IF_Settings extends Component {
     const type = msg.type
     if (msg == null) { return null }
     if (type === "Menu") { return msg.set_index }
-    if (type === "Selection" || type === "Discrete" || type === "Selections" || type === "String") { return msg.set_string }
+    if (type === "Selection" || type === "Discrete" || type === "String") { return msg.set_string }
+    // The multi-selects carry their value in set_strings (plural), not
+    // set_string. "Selections" was reading the singular field, which is always
+    // empty for it, so the Current Settings summary showed a blank for every
+    // multi-select. "SelectionsDD" is the same value under a dropdown widget.
+    if (type === "Selections" || type === "SelectionsDD") { return msg.set_strings || [] }
     if (type === "Trigger") { return msg.set_float }
     if (type === "Bool") { return msg.set_bool }
     if (type === "Int") { return msg.set_int }
     if (type === "Float" || type === "FloatSlider") { return msg.set_float }
+    // FloatSliders is a pair, carried in set_floats -- it was absent here and
+    // fell through to null, so it read back blank the same way.
+    if (type === "FloatSliders") { return msg.set_floats || [] }
     return null
   }
 
