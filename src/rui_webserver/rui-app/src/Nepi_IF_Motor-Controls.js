@@ -24,9 +24,11 @@ import Toggle from "react-toggle"
 import Section from "./Section"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import Label from "./Label"
+import Input from "./Input"
 import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import { Column, Columns } from "./Columns"
+import { setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFAdmin from "./Nepi_IF_Admin"
@@ -39,11 +41,16 @@ import NepiIFAdmin from "./Nepi_IF_Admin"
 // only. The companion Nepi_IF_Motor-Data component owns the read-only telemetry
 // rows for the same device.
 //
-// Command controls publish the four standard motor command topics (set_speed,
-// set_direction, go_direction, stop_motor), each carrying a
-// nepi_interfaces/MotorCommand keyed by motor_name, on the device namespace.
-// Motion is continuous-until-stop: GO starts the motor moving in its set
-// direction at its set speed, STOP halts it.
+// Command controls publish the six standard motor command topics (set_speed,
+// set_direction, go_direction, stop_motor, goto_rotation, set_rotation_speed),
+// each carrying a nepi_interfaces/MotorCommand keyed by motor_name, on the
+// device namespace. Motion is continuous-until-stop: GO starts the motor moving
+// in its set direction at its set speed, STOP halts it.
+//
+// The rotatable-wheel (steering) group renders only for a motor reporting
+// has_rotation true. Rotation is a separate axis from drive: goto_rotation
+// steers the wheel to an angle and set_rotation_speed sets how fast it steers,
+// while set_speed continues to set how fast the wheel drives.
 //
 // One row per motor, each with a divider and the bold motor_name header. The
 // pre-split Nepi_IF_ConnectMotor placed a motor's read-only cells and its
@@ -74,12 +81,19 @@ class NepiIFMotorControls extends Component {
       // set_direction on change.
       motorDirections: {},
 
+      // Local rotation-target text state keyed by motor_name, for the editable
+      // input a continuously-rotating motor gets in place of a bounded slider.
+      // Cleared when the device namespace changes.
+      rotationTargets: {},
+
     }
 
     this.publishMotorCommand = this.publishMotorCommand.bind(this)
     this.getMotorDirection = this.getMotorDirection.bind(this)
+    this.getRotationTarget = this.getRotationTarget.bind(this)
 
     this.renderMotorControlFields = this.renderMotorControlFields.bind(this)
+    this.renderMotorRotationFields = this.renderMotorRotationFields.bind(this)
     this.renderMotorRow = this.renderMotorRow.bind(this)
     this.renderControls = this.renderControls.bind(this)
     this.renderSettingsAndAdmin = this.renderSettingsAndAdmin.bind(this)
@@ -111,7 +125,9 @@ class NepiIFMotorControls extends Component {
       )
       this.setState({ statusListener: statusListener})
     }
-    this.setState({ namespace: namespace})
+    // The device changed, so any rotation target typed for the previous
+    // device's motors no longer applies.
+    this.setState({ namespace: namespace, rotationTargets: {}})
 
   }
 
@@ -138,11 +154,12 @@ class NepiIFMotorControls extends Component {
     }
   }
 
-  // Publish one of the four standard motor command topics on the device
+  // Publish one of the six standard motor command topics on the device
   // namespace, carrying a nepi_interfaces/MotorCommand keyed by motor_name.
-  // speed_ratio is only meaningful for set_speed and direction only for
-  // set_direction; the other fields are sent as 0.
-  publishMotorCommand(command_topic, motor_name, speed_ratio, direction) {
+  // speed_ratio is only meaningful for set_speed, direction only for
+  // set_direction, rotation only for goto_rotation, and rotation_speed_ratio
+  // only for set_rotation_speed; the other fields are sent as 0.
+  publishMotorCommand(command_topic, motor_name, speed_ratio, direction, rotation, rotation_speed_ratio) {
     const namespace = this.props.namespace
     if (namespace == null || namespace === 'None') {
       return
@@ -153,7 +170,9 @@ class NepiIFMotorControls extends Component {
       data: {
         motor_name: motor_name,
         speed_ratio: (speed_ratio !== undefined && speed_ratio !== null) ? Number(speed_ratio) : 0.0,
-        direction: (direction !== undefined && direction !== null) ? direction : 0
+        direction: (direction !== undefined && direction !== null) ? direction : 0,
+        rotation: (rotation !== undefined && rotation !== null) ? Number(rotation) : 0.0,
+        rotation_speed_ratio: (rotation_speed_ratio !== undefined && rotation_speed_ratio !== null) ? Number(rotation_speed_ratio) : 0.0
       },
       noPrefix: true
     })
@@ -166,10 +185,107 @@ class NepiIFMotorControls extends Component {
     return (dir === -1) ? -1 : 1
   }
 
+  // Resolve the rotation-target text currently typed for a motor, falling back
+  // to the motor's reported rotation so the box opens showing where the wheel
+  // actually is.
+  getRotationTarget(motor_name, reported_rotation) {
+    const target = this.state.rotationTargets[motor_name]
+    if (target !== undefined && target !== null) {
+      return target
+    }
+    return (reported_rotation !== undefined && reported_rotation !== null) ? String(reported_rotation) : ''
+  }
+
+  // Rotatable-wheel (steering) command fields for a single motor, rendered only
+  // where the motor reports has_rotation true.
+  //
+  // A limited motor (has_continuous_rotation false) gets a rotation target
+  // slider bounded by its reported rotation_min_limit and rotation_max_limit. A
+  // continuously-rotating motor has no bounds to draw a slider against, so it
+  // gets an editable rotation target box instead, following the RUI editable
+  // input pattern -- type a value, press Enter to publish goto_rotation.
+  //
+  // The rotation speed slider gates on rotation_max_speed > 0 exactly the way
+  // the drive speed slider gates on motor_max_speed > 0. Rotation speed is a
+  // separate axis: it sets how fast the wheel steers, not how fast it drives.
+  renderMotorRotationFields(motor, index) {
+    const motor_name = (motor.motor_name !== undefined && motor.motor_name !== '') ? motor.motor_name : ('motor_' + index)
+    const has_rotation = (motor.has_rotation === true)
+    if (has_rotation === false) {
+      return null
+    }
+
+    const has_continuous_rotation = (motor.has_continuous_rotation === true)
+    const rotation = motor.rotation
+    const rotation_min_limit = motor.rotation_min_limit
+    const rotation_max_limit = motor.rotation_max_limit
+    const has_rotation_speed = (motor.rotation_max_speed > 0)
+    const rotation_speed_ratio = motor.rotation_speed_ratio
+
+    const rotation_input_id = motor_name + '_rotation_target_input'
+
+    return (
+      <React.Fragment>
+
+        {(has_continuous_rotation === false) ?
+          <SliderAdjustment
+            title={"Rotation"}
+            msgType={"nepi_interfaces/MotorCommand"}
+            adjustment={rotation}
+            topic={this.props.namespace + "/goto_rotation"}
+            scaled={1}
+            min={rotation_min_limit}
+            max={rotation_max_limit}
+            tooltip={"Wheel rotation about the steering axis, in degrees"}
+            unit={" deg"}
+            onSliderChangeOverride={(new_value) => this.publishMotorCommand('goto_rotation', motor_name, 0.0, 0, new_value, 0.0)}
+          />
+        :
+          <Label title={"Rotation (deg)"}>
+            <Input
+              id={rotation_input_id}
+              value={this.getRotationTarget(motor_name, rotation)}
+              onChange={(e) => {
+                const el = document.getElementById(rotation_input_id)
+                setElementStyleModified(el)
+                this.setState({ rotationTargets: { ...this.state.rotationTargets, [motor_name]: e.target.value } })
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const el = document.getElementById(rotation_input_id)
+                  clearElementStyleModified(el)
+                  this.publishMotorCommand('goto_rotation', motor_name, 0.0, 0, el.value, 0.0)
+                }
+              }}
+            />
+          </Label>
+        }
+
+        <div hidden={(has_rotation_speed === false)}>
+          <SliderAdjustment
+            disabled={!has_rotation_speed}
+            title={"Rotation Speed"}
+            msgType={"nepi_interfaces/MotorCommand"}
+            adjustment={rotation_speed_ratio}
+            topic={this.props.namespace + "/set_rotation_speed"}
+            scaled={0.01}
+            min={0}
+            max={100}
+            tooltip={"Rotation speed as a percentage (0%=off, 100%=max)"}
+            unit={"%"}
+            onSliderChangeOverride={(new_value) => this.publishMotorCommand('set_rotation_speed', motor_name, 0.0, 0, 0.0, new_value * 0.01)}
+          />
+        </div>
+
+      </React.Fragment>
+    )
+  }
+
   // Command control fields for a single motor: a speed_ratio slider (enabled
   // only when the motor reports an adjustable speed, motor_max_speed > 0), a
-  // clockwise/counter-clockwise direction toggle, and GO / STOP buttons for
-  // continuous motion. No divider or motor-name header (the row supplies those).
+  // clockwise/counter-clockwise direction toggle, GO / STOP buttons for
+  // continuous motion, and the rotatable-wheel group for a motor that steers.
+  // No divider or motor-name header (the row supplies those).
   renderMotorControlFields(motor, index) {
     const motor_name = (motor.motor_name !== undefined && motor.motor_name !== '') ? motor.motor_name : ('motor_' + index)
     const has_speed = (motor.motor_max_speed > 0)
@@ -192,7 +308,7 @@ class NepiIFMotorControls extends Component {
             max={100}
             tooltip={"Speed as a percentage (0%=off, 100%=max)"}
             unit={"%"}
-            onSliderChangeOverride={(new_value) => this.publishMotorCommand('set_speed', motor_name, new_value * 0.01, 0)}
+            onSliderChangeOverride={(new_value) => this.publishMotorCommand('set_speed', motor_name, new_value * 0.01, 0, 0.0, 0.0)}
           />
         </div>
 
@@ -203,7 +319,7 @@ class NepiIFMotorControls extends Component {
               onClick={() => {
                 const new_dir = is_cw ? -1 : 1
                 this.setState({ motorDirections: { ...this.state.motorDirections, [motor_name]: new_dir } })
-                this.publishMotorCommand('set_direction', motor_name, 0.0, new_dir)
+                this.publishMotorCommand('set_direction', motor_name, 0.0, new_dir, 0.0, 0.0)
               }}
             />
           </div>
@@ -213,9 +329,11 @@ class NepiIFMotorControls extends Component {
         </Label>
 
         <ButtonMenu>
-          <Button onClick={() => this.publishMotorCommand('go_direction', motor_name, 0.0, 0)}>{"GO"}</Button>
-          <Button onClick={() => this.publishMotorCommand('stop_motor', motor_name, 0.0, 0)}>{"STOP"}</Button>
+          <Button onClick={() => this.publishMotorCommand('go_direction', motor_name, 0.0, 0, 0.0, 0.0)}>{"GO"}</Button>
+          <Button onClick={() => this.publishMotorCommand('stop_motor', motor_name, 0.0, 0, 0.0, 0.0)}>{"STOP"}</Button>
         </ButtonMenu>
+
+        {this.renderMotorRotationFields(motor, index)}
 
       </React.Fragment>
     )

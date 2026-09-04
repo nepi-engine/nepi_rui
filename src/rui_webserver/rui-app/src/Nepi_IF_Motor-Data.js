@@ -122,6 +122,11 @@ class NepiIFMotorData extends Component {
   // Read-only telemetry fields for a single motor, backed by one MotorStatus
   // element of the MotorsStatus array. No divider or motor-name header (the row
   // that hosts this supplies those); no command publishers here.
+  //
+  // The rotatable-wheel (steering) rows render only for a motor reporting
+  // has_rotation true, and the rotation limit rows only where that rotation is
+  // limited (has_continuous_rotation false). A non-steering motor's rows are
+  // unchanged.
   renderMotorStatus(motor) {
     const motor_enable = motor.motor_enable
     const motor_dir = motor.motor_dir
@@ -129,6 +134,14 @@ class NepiIFMotorData extends Component {
     const motor_speed_ratio = round(motor.motor_speed_ratio + .001, 2)
     const motor_speed = round(motor.motor_speed + .001, 2)
     const motor_position = round(motor.motor_position + .001, 2)
+
+    const has_rotation = (motor.has_rotation === true)
+    const has_continuous_rotation = (motor.has_continuous_rotation === true)
+    const rotation_min_limit = round(motor.rotation_min_limit + .001, 2)
+    const rotation_max_limit = round(motor.rotation_max_limit + .001, 2)
+    const rotation_max_speed = round(motor.rotation_max_speed + .001, 2)
+    const rotation_speed_ratio = round(motor.rotation_speed_ratio + .001, 2)
+    const rotation = round(motor.rotation + .001, 2)
 
     return (
       <React.Fragment>
@@ -156,6 +169,38 @@ class NepiIFMotorData extends Component {
         <Label title={"Position (deg)"}>
           <Input disabled value={motor_position} />
         </Label>
+
+        <div hidden={(has_rotation === false)}>
+
+          <Label title={"Continuous Rotation"}>
+            <BooleanIndicator value={has_continuous_rotation} />
+          </Label>
+
+          <div hidden={(has_continuous_rotation === true)}>
+
+            <Label title={"Rotation Min Limit (deg)"}>
+              <Input disabled value={rotation_min_limit} />
+            </Label>
+
+            <Label title={"Rotation Max Limit (deg)"}>
+              <Input disabled value={rotation_max_limit} />
+            </Label>
+
+          </div>
+
+          <Label title={"Rotation Max Speed (dps)"}>
+            <Input disabled value={rotation_max_speed} />
+          </Label>
+
+          <Label title={"Rotation Speed Ratio (0-1)"}>
+            <Input disabled value={rotation_speed_ratio} />
+          </Label>
+
+          <Label title={"Rotation (deg)"}>
+            <Input disabled value={rotation} />
+          </Label>
+
+        </div>
 
       </React.Fragment>
     )

@@ -33,6 +33,9 @@ import AsyncToggle from "./AsyncToggle"
 import BooleanIndicator from "./BooleanIndicator"
 
 import NepiIFConfig from "./Nepi_IF_Config"
+// TEMPORARY, delete with the lsx_settings_test_* fixture along with the guarded
+// block at the end of render(). No other consumer on this page.
+import NepiIFControls from "./Nepi_IF_Controls"
 
 
 import {onDropdownSelectedSendStr, createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
@@ -456,6 +459,47 @@ class NepiControlsLightsControls extends Component {
                   </AsyncToggle>
             </Label>
             </div>
+
+            {/*
+              TEMPORARY, delete with the lsx_settings_test_* fixture along with
+              the NepiIFControls import above.
+
+              Renders the fixture's driver-option data boxes as rows INSIDE this
+              controls box rather than as a box of their own -- make_section
+              ={false} is what suppresses Nepi_IF_Controls' own <Section>, so the
+              boxes land under the device's own controls with a divider above
+              them.
+
+              The namespace is the PARENT of this page's namespace, not this
+              page's namespace. ControlsIF roots itself at the node namespace
+              (create_namespace(self.node_namespace, controls_name), system_if.py
+              :153), while `namespace` here is the LSX *device* namespace, which
+              LSXDeviceIF puts one level down at <node namespace>/lsx. Appending
+              directly to `namespace` subscribes to
+              .../settings_test/lsx/driver_options/status, which nothing
+              publishes -- the box renders its heading and then stays empty,
+              because Nepi_IF_Controls only builds rows once a status arrives.
+
+              Gated on the fixture's node name because nothing on the wire says a
+              device has a controls set: DeviceLSXStatus carries settings_topic,
+              navpose_topic and save_data_topic, but no controls topic. Without
+              the gate every real light gets an extra "Show Controls" toggle from
+              the inner component and an empty gap, since Nepi_IF_Controls still
+              renders its toggle when no status has arrived. Do not generalise
+              this into a permanent mount without first adding a controls topic to
+              the device status message.
+            */}
+            {(namespace.indexOf('settings_test') !== -1) ?
+              <React.Fragment>
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <Label title={"Driver Options"}/>
+                <NepiIFControls
+                  namespace={namespace.substring(0, namespace.lastIndexOf('/')) + '/driver_options'}
+                  make_section={false}
+                  allways_show_controls={true}
+                />
+              </React.Fragment>
+            : null}
 
             <NepiIFConfig
                 namespace={namespace}
