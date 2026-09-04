@@ -34,24 +34,6 @@ const NEPI_RETRY_MSEC = 500
 const NEPI_TIMEOUT_MSEC = 3000
 const NEPI_CONNECT_RETRIES = 1
 
-
-// TODO: Would be better to query the display_name property of all nodes to generate
-// this dictionary... requires a new SDKNode service to do so
-const NODE_DISPLAY_NAMES = {
-  config_mgr: "Config Manager",
-  nav_pose_mgr: "Nav./Pose/GPS",
-  network_mgr: "Network",
-  ai_detector_mgr: "Classifier",
-  system_mgr: "System",
-  time_mgr: "Time Sync",
-  trigger_mgr: "Triggering",
-  nepi_link_ros_bridge: "NEPI Connect",
-  gpsd_ros_client: "GPSD Client",
-  illumination_mgr: "Illumination",
-  scripts_mgr: "Scripts",
-  app_image_sequencer: "Sequencer"
-}
-
 const UPDATE_PERIOD = 100 // ms between sending updates
 
 // Order-independent set equality for two string arrays. updateTopicsServices
@@ -90,54 +72,6 @@ function sameStringSet(a, b) {
 
 let _ruiCryptoKey = null
 
-function displayNameFromNodeName(node_name) {
-  var display_name = NODE_DISPLAY_NAMES[node_name]
-  if (display_name) {
-    return display_name
-  }
-  return node_name
-}
-
-function nodeNameFromDisplayName(display_name) {
-  for( var node_name in NODE_DISPLAY_NAMES ) {
-    if (NODE_DISPLAY_NAMES[node_name] === display_name) {
-      return node_name
-    }
-  }
-  // Don't return anything if we don't find the display name -- callers can check for undefined
-}
-
-export { TRIGGER_MASKS, displayNameFromNodeName, nodeNameFromDisplayName }
-
-/*
-async function apiCall(endpoint) {
-  try {
-    const r = await fetch(`${FLASK_URL}/api/${endpoint}`, {
-      method: "GET"
-    })
-    const json = await r.json()
-    return json
-  } catch (err) {
-    console.error(err)
-  }
-}
-*/
-
-/*
-// gets a file through the flask api and parses it as Json
-async function getFileJson(filename) {
-  try {
-    const r = await fetch(`${FLASK_URL}/files/${filename}`, {
-      method: "GET"
-    })
-    const json = await r.json()
-    return json
-  } catch (err) {
-    console.error(err)
-    return null
-  }
-}
-*/
 
 function getLocalTZ() {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -518,7 +452,6 @@ class ROSConnectionStore {
                 var newPrefix = this.updatePrefix(this.topicNames, this.topicTypes)
                 var newResetTopics = this.updateResetTopics(this.topicNames, this.topicTypes)
                 var newSaveDataNamespaces = this.updateSaveDataNamespaces(this.topicNames, this.topicTypes)
-                var newDetectorNamespaces = this.updateDetectorNamespaces(this.topicNames, this.topicTypes)
                 var newImageTopics = this.updateImageTopics(this.topicNames, this.topicTypes)
                 var newMessageTopics = this.updateMessageTopics(this.topicNames, this.topicTypes)
                 var newPointcloudTopics = this.updatePointcloudTopics(this.topicNames, this.topicTypes)
@@ -534,7 +467,7 @@ class ROSConnectionStore {
                   this.setupRUISettingsListener()    // services
                 }
 
-                if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newDetectorNamespaces || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
+                if ((this.connectedToNepi === true) && (newPrefix || newResetTopics || newSaveDataNamespaces || newMessageTopics || newImageTopics || newPointcloudTopics)) {
                   this.initializeSystemListeners()
                 }
 
@@ -734,7 +667,7 @@ class ROSConnectionStore {
   @observable navPoseCaps = {}
   @observable imageTopics = []
   @observable imageCaps = {}
-  @observable imageDetectionTopics = []
+  @observable imageTargetTopics = []
   @observable depthMapTopics = []
   @observable depthMapCaps = {}
   @observable pointcloudTopics = []
@@ -744,16 +677,13 @@ class ROSConnectionStore {
 
   @observable resetTopics = []
 
-  @observable detectorNamespaces = []
-  @observable detectorCaps = {}
-
 
   @observable navSatFixTopics = []
   @observable orientationTopics = []
   @observable headingTopics = []
   @observable messageTopics = []
 
-  @observable imageFilterDetection = null
+  @observable imageFilterTarget = null
   @observable imageFilterSequencer = null
   @observable imageFilterPTX = null
   @observable targLocalizerImgTopic = null
@@ -1659,17 +1589,6 @@ class ROSConnectionStore {
   }
 
 
-    @action.bound
-  async callDetectorCapabilitiesQueryService(namespace) {
-    this.detectorCaps[namespace] = []
-      const response = await this.callService({
-        name: namespace + "/detector_info_query",
-        messageType: "nepi_interfaces/DetectorCapabilitiesQuery",  
-      })
-      if (response != null ) {
-      this.detectorCaps[namespace] = response
-      }
-  }
 
   /*******************************/
   // System Data Update Functions
@@ -1744,37 +1663,6 @@ class ROSConnectionStore {
 
   }
 
-    @action.bound
-  updateDetectorNamespaces(topics,types) {
-    // Function for updating image topics list
-    var newDetectorNamespaces = []
-    if (this.connectedToNepi === true) {
-      
-      for (var i = 0; i < topics.length; i++) {
-        if (types[i] === "nepi_interfaces/DetectorStatus"){
-          newDetectorNamespaces.push(topics[i].replace('/status',''))
-        }
-      }
-
-      // sort the save topics for comparison to work
-      newDetectorNamespaces.sort()    
-    }  
-    else {
-      newDetectorNamespaces = []
-    }
-
-      if (!this.detectorNamespaces.equals(newDetectorNamespaces)) {
-        this.detectorNamespaces = newDetectorNamespaces
-        for (var i2 = 0; i2 < newDetectorNamespaces.length; i2++) {
-              this.callDetectorCapabilitiesQueryService(newDetectorNamespaces[i2])
-            }
-        return true
-      } else {
-        return false
-      }
-
-  }
-
   @action.bound
   updateMessageTopics(topics,types) {
     // Function for updating image topics list
@@ -1838,14 +1726,14 @@ class ROSConnectionStore {
   updateImageTopics(topics,types) {
     // Function for updating image topics list
     var newImageTopics = []
-    var newImageDetectionTopics = []
+    var newImageTargetTopics = []
     if (this.connectedToNepi === true) {
 
       for (var i = 0; i < topics.length; i++) {
         if (types[i] === "sensor_msgs/Image" && topics[i].indexOf("zed_node") === -1) {
           newImageTopics.push(topics[i])
-          if (topics[i].indexOf('detections_image') !== -1){
-            newImageDetectionTopics.push(topics[i])
+          if (topics[i].indexOf('targets_image') !== -1){
+            newImageTargetTopics.push(topics[i])
           }
         }
       }
@@ -1858,7 +1746,7 @@ class ROSConnectionStore {
     }
       if (!this.imageTopics.equals(newImageTopics)) {
         this.imageTopics = newImageTopics
-        this.imageDetectionTopics = newImageDetectionTopics
+        this.imageTargetTopics = newImageTargetTopics
         for (var i2 = 0; i2 < newImageTopics.length; i2++) {
               this.callImageCapabilitiesQueryService(newImageTopics[i2])
             }
@@ -3153,7 +3041,7 @@ sendSaveConfigTrigger(namespace) {
     }
     const data = {
       name: nameStr,
-      values: valueStrs
+      value: valueStrs
     }
   
     this.publishMessage({
