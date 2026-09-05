@@ -2996,6 +2996,26 @@ class Nepi_IF_ImageViewer extends Component {
        
 
                 <div style={{ display: 'flex' }}>
+
+
+
+                        <div style={{ width: '15%' }} >
+
+                           { (show_info_controls === true ) ?
+                            <Label title="Image Info">
+                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+                                <Toggle
+                                  checked={selected_control==='INFO'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'INFO') ? 'NONE' : 'INFO' )}>
+                                </Toggle>
+                              </Label>
+                              : null }
+
+
+                        <div style={{ width: '5%' }}>
+                        </div>
+                        
+
                         <div style={{ width: '15%' }}>
 
                               { (show_config_controls === true ) ?
@@ -3012,17 +3032,20 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
 
             
-                        <div style={{ width: '15%' }} >
 
-                           { (show_info_controls === true ) ?
-                            <Label title="Image Info">
+                       <div style={{ width: '15%' }} >
+                              { (show_render_controls === true ) ?
+                              <Label title="Render">
                                 {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
-                                  checked={selected_control==='INFO'}
-                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'INFO') ? 'NONE' : 'INFO' )}>
+                                  checked={selected_control==='RENDER'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'RENDER') ? 'NONE' : 'RENDER' )}>
                                 </Toggle>
-                              </Label>
-                              : null }
+                            </Label>
+                            : null }
+                        </div>
+
+
                         </div>
                         <div style={{ width: '5%' }}>
                         </div>
@@ -3038,23 +3061,6 @@ class Nepi_IF_ImageViewer extends Component {
                               </Label>
                               : null }
                         </div>
-
-                        <div style={{ width: '5%' }}>
-                        </div>
-
-                       <div style={{ width: '15%' }} >
-                              { (show_render_controls === true ) ?
-                              <Label title="Render">
-                                {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                                <Toggle
-                                  checked={selected_control==='RENDER'}
-                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'RENDER') ? 'NONE' : 'RENDER' )}>
-                                </Toggle>
-                            </Label>
-                            : null }
-                        </div>
-
-
 
                         <div style={{ width: '5%' }}>
                         </div>
