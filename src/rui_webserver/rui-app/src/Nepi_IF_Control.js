@@ -411,7 +411,13 @@ class Nepi_IF_Control extends Component {
         const show_value = (editing === true) ? this.state.editValues[name] : value
         const display_round = control_msg.display_round
         return (
+
+
+
+        <React.Fragment>
           <Label title={display_name} key={name}>
+          </Label>
+
 
             <div hidden={show_bound === false}>
 
@@ -436,6 +442,7 @@ class Nepi_IF_Control extends Component {
               </Columns>
 
             </div>
+            
             <Input
               id={'csbx_' + name}
               style={{ width: "100%" }}
@@ -443,7 +450,8 @@ class Nepi_IF_Control extends Component {
               onChange={(e) => this.onInputChange(name, e)}
               onKeyDown={(e) => this.onInputKey(name, control_type, e)}
             />
-          </Label>
+
+</React.Fragment> 
         )
       }
 
