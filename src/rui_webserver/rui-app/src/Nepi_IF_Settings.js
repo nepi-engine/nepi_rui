@@ -244,7 +244,8 @@ class Nepi_IF_Settings extends Component {
       const ind = msg.value
       return (ind >= 0 && ind < options.length) ? options[ind] : ""
     }
-    return (value === null || value === undefined) ? "" : String(value)
+    
+    return msg.value
   }
 
   // The selected setting, defaulting to the first one present so the box shows

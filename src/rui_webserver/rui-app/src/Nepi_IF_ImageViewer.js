@@ -43,7 +43,7 @@ import Select, { Option } from "./Select"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
-import {  onChangeSwitchStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
+import { onChangeChangeStateValue, onChangeSwitchStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -103,6 +103,7 @@ class Nepi_IF_ImageViewer extends Component {
       has_overlay: false,
       has_navpose: false,
       show_navpose: false,
+      selected_control: 'NONE',
       hasInitialized: false,
       shouldUpdate: true,
       streamWidth: null,
@@ -2873,11 +2874,12 @@ class Nepi_IF_ImageViewer extends Component {
     const show_overlay_crosshairs = (this.props.show_overlay_crosshairs !== undefined) ? this.props.show_overlay_crosshairs && show_overlay_controls === true : true
     const show_overlay_targets = (this.props.show_overlay_targets !== undefined) ? this.props.show_overlay_targets   && show_overlay_controls === true : true
 
-    const show_info = this.state.show_info && (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
-    const show_config = this.state.show_config && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
-    const show_navpose = this.state.show_navpose  && (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
-    const show_render = this.state.show_render  && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
-    // const show_overlay = this.state.show_overlay  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
+    const selected_control = this.state.selected_control
+    const show_info = selected_control === 'INFO' && (userRestricted.indexOf('DATA-IMAGE-INFO-VIEW') === -1)
+    const show_config = selected_control === 'CONFIG' && (userRestricted.indexOf('DATA-IMAGE-CONFIG-VIEW') === -1)
+    const show_navpose = selected_control === 'NAVPOSE'  && (userRestricted.indexOf('DATA-IMAGE-NAVPOSE-VIEW') === -1)
+    const show_render = selected_control === 'RENDER'  && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
+    const show_overlay = selected_control === 'OVERLAY'  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
 
     return (
       
@@ -3000,8 +3002,8 @@ class Nepi_IF_ImageViewer extends Component {
                               <Label title="Image Config">
                                 {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
-                                  checked={this.state.show_config===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_config",this.state.show_config)}>
+                                  checked={selected_control==='CONFIG'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'CONFIG') ? 'NONE' : 'CONFIG' )}>
                                 </Toggle>
                             </Label>
                             : null }
@@ -3016,8 +3018,8 @@ class Nepi_IF_ImageViewer extends Component {
                             <Label title="Image Info">
                                 {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
-                                  checked={this.state.show_info===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_info",this.state.show_info)}>
+                                  checked={selected_control==='INFO'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'INFO') ? 'NONE' : 'INFO' )}>
                                 </Toggle>
                               </Label>
                               : null }
@@ -3030,8 +3032,8 @@ class Nepi_IF_ImageViewer extends Component {
                             <Label title="NavPose">
                                 {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
-                                  checked={this.state.show_navpose===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_navpose",this.state.show_navpose)}>
+                                  checked={selected_control==='NAVPOSE'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'NAVPOSE') ? 'NONE' : 'NAVPOSE' )}>
                                 </Toggle>
                               </Label>
                               : null }
@@ -3045,8 +3047,8 @@ class Nepi_IF_ImageViewer extends Component {
                               <Label title="Render">
                                 {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
-                                  checked={this.state.show_render===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_render",this.state.show_render)}>
+                                  checked={selected_control==='RENDER'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'RENDER') ? 'NONE' : 'RENDER' )}>
                                 </Toggle>
                             </Label>
                             : null }
@@ -3063,8 +3065,8 @@ class Nepi_IF_ImageViewer extends Component {
                               <Label title="Overlays">
                                 {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                 <Toggle
-                                  checked={this.state.show_overlay===true}
-                                  onClick={() => onChangeSwitchStateValue.bind(this)("show_overlay",this.state.show_overlay)}>
+                                  checked={selected_control==='OVERLAY'}
+                                  onClick={() => onChangeChangeStateValue.bind(this)("selected_control",(selected_control === 'OVERLAY') ? 'NONE' : 'OVERLAY' )}>
                                 </Toggle>
                             </Label>
                             : null }
@@ -3113,7 +3115,7 @@ class Nepi_IF_ImageViewer extends Component {
        
 
 
-                  <div align={"left"} textAlign={"left"} hidden={(show_overlay_controls === false || this.state.show_overlay === false)}>
+                  <div align={"left"} textAlign={"left"} hidden={show_overlay !== true || namespace === 'None'}>
 
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
