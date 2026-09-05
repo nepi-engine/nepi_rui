@@ -240,9 +240,10 @@ class Nepi_IF_Settings extends Component {
     const type = msg.type
     if (msg == null) { return "" }
     if (type === "Menu") {
-      const options = msg.string_options || []
-      const ind = msg.value
-      return (ind >= 0 && ind < options.length) ? options[ind] : ""
+      const options = msg.options || []
+      const index = parseInt(msg.value)
+      const display_value = (options.length >= index) ? options[index] : 'Option_' + String(index)
+      return display_value
     }
     
     return msg.value

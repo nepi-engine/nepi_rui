@@ -3010,7 +3010,7 @@ class Nepi_IF_ImageViewer extends Component {
                                 </Toggle>
                               </Label>
                               : null }
-
+                        </div>
 
                         <div style={{ width: '5%' }}>
                         </div>
@@ -3028,6 +3028,7 @@ class Nepi_IF_ImageViewer extends Component {
                             </Label>
                             : null }
                         </div>
+
                         <div style={{ width: '5%' }}>
                         </div>
 
@@ -3045,10 +3046,10 @@ class Nepi_IF_ImageViewer extends Component {
                             : null }
                         </div>
 
-
-                        </div>
                         <div style={{ width: '5%' }}>
                         </div>
+
+
 
                         <div style={{ width: '15%' }} >
                             { (show_navpose_controls === true ) ?
