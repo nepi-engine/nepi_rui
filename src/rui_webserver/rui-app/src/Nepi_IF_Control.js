@@ -329,7 +329,7 @@ class Nepi_IF_Control extends Component {
       // TOGGLE -- a single on/off switch. Sends the *opposite* of the current
       // value as a Toggle each time it is clicked.
       if (type === "Toggle") {
-        const checked = (value === true)
+        const checked = (value === 'True')
         return (
           <Label title={display_name} key={name}>
             <AsyncToggle

@@ -81,7 +81,6 @@ class Nepi_IF_Settings extends Component {
     this.getSettingIndex = this.getSettingIndex.bind(this)
     this.getSettingType = this.getSettingType.bind(this)
     this.getSettingMsg = this.getSettingMsg.bind(this)
-    this.getSettingValue = this.getSettingValue.bind(this)
     this.getSettingValueString = this.getSettingValueString.bind(this)
     this.getSelectedSettingName = this.getSelectedSettingName.bind(this)
 
@@ -232,30 +231,6 @@ class Nepi_IF_Settings extends Component {
     return types[ind]
   }
 
-  // The value in its own natural form: an index for Menu, a bool for Toogle, a
-  // number for Int/Float, a string for Selection/String.
-  // "Discrete" is an alias of "Selection" -- the same named option list under an
-  // older spelling still used by driver params yaml -- so it reads the same field.
-  getSettingValue(name) {
-    const msg = this.getSettingMsg(name)
-    const type = msg.type
-    if (msg == null) { return null }
-    if (type === "Menu") { return msg.value }
-    if (type === "Selection" || type === "Discrete" || type === "String") { return msg.value }
-    // The multi-selects carry their value in value_strings (plural), not
-    // value_string. "Selections" was reading the singular field, which is always
-    // empty for it, so the Current Settings summary showed a blank for every
-    // multi-select. "Toogles" is the same value under a dropdown widget.
-    if (type === "Selections" || type === "Toogles") { return msg.values || [] }
-    if (type === "Trigger") { return msg.value }
-    if (type === "Toogle") { return msg.value }
-    if (type === "Int") { return msg.value }
-    if (type === "Float" || type === "FloatSlider") { return msg.value }
-    // FloatSliders is a pair, carried in values -- it was absent here and
-    // fell through to null, so it read back blank the same way.
-    if (type === "FloatSliders") { return msg.values || [] }
-    return null
-  }
 
   // The value as displayed text.  A Menu reads back as its selected option
   // string so the selector and the summary list agree.
@@ -269,8 +244,6 @@ class Nepi_IF_Settings extends Component {
       const ind = msg.value
       return (ind >= 0 && ind < options.length) ? options[ind] : ""
     }
-    if (type === "Toogle") { return (msg.value === true) ? "True" : "False" }
-    const value = this.getSettingValue(name)
     return (value === null || value === undefined) ? "" : String(value)
   }
 
