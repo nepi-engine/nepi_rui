@@ -42,7 +42,7 @@ import { createMenuListFromStrList, onChangeSwitchStateValue,
 // Component that contains the Settings controls.
 //
 // A node's settings are a nepi_controls controls set, so this renders from a
-// nepi_interfaces/ControlsStatus message published at
+// nepierfaces/ControlsStatus message published at
 // "<settings_namespace>/status".  That one message carries both the current
 // values and their capabilities -- type, options, bounds, and the factory and
 // default tiers -- so there is no capabilities_query service to call.
@@ -89,6 +89,7 @@ class Nepi_IF_Settings extends Component {
 
     this.renderSettings = this.renderSettings.bind(this)
     this.renderSetting = this.renderSetting.bind(this)
+    this.renderSettingValues = this.renderSettingValues.bind(this)
     this.renderConfigs = this.renderConfigs.bind(this)
     this.renderControl = this.renderControl.bind(this)
   }
@@ -163,7 +164,7 @@ class Nepi_IF_Settings extends Component {
 
   // Render a single control given its type and Control message.
   // Each block below maps one nepi_controls control type to its RUI widget and
-  // the nepi_controls "set_*_control_value" topic it publishes to on change.
+  // the nepi_controls "control_value" topic it publishes to on change.
   renderControl(control_msg) {
     const namespace = this.state.settingsNamespace
     const control_hidden = control_msg.hidden
@@ -239,20 +240,20 @@ class Nepi_IF_Settings extends Component {
     const msg = this.getSettingMsg(name)
     const type = msg.type
     if (msg == null) { return null }
-    if (type === "Menu") { return msg.set_index }
-    if (type === "Selection" || type === "Discrete" || type === "String") { return msg.set_string }
-    // The multi-selects carry their value in set_strings (plural), not
-    // set_string. "Selections" was reading the singular field, which is always
+    if (type === "Menu") { return msg.value }
+    if (type === "Selection" || type === "Discrete" || type === "String") { return msg.value }
+    // The multi-selects carry their value in value_strings (plural), not
+    // value_string. "Selections" was reading the singular field, which is always
     // empty for it, so the Current Settings summary showed a blank for every
     // multi-select. "SelectionsDD" is the same value under a dropdown widget.
-    if (type === "Selections" || type === "SelectionsDD") { return msg.set_strings || [] }
-    if (type === "Trigger") { return msg.set_float }
-    if (type === "Bool") { return msg.set_bool }
-    if (type === "Int") { return msg.set_int }
-    if (type === "Float" || type === "FloatSlider") { return msg.set_float }
-    // FloatSliders is a pair, carried in set_floats -- it was absent here and
+    if (type === "Selections" || type === "SelectionsDD") { return msg.values || [] }
+    if (type === "Trigger") { return msg.value }
+    if (type === "Bool") { return msg.value }
+    if (type === "Int") { return msg.value }
+    if (type === "Float" || type === "FloatSlider") { return msg.value }
+    // FloatSliders is a pair, carried in values -- it was absent here and
     // fell through to null, so it read back blank the same way.
-    if (type === "FloatSliders") { return msg.set_floats || [] }
+    if (type === "FloatSliders") { return msg.values || [] }
     return null
   }
 
@@ -265,10 +266,10 @@ class Nepi_IF_Settings extends Component {
     if (msg == null) { return "" }
     if (type === "Menu") {
       const options = msg.string_options || []
-      const ind = msg.set_index
+      const ind = msg.value
       return (ind >= 0 && ind < options.length) ? options[ind] : ""
     }
-    if (type === "Bool") { return (msg.set_bool === true) ? "True" : "False" }
+    if (type === "Bool") { return (msg.value === true) ? "True" : "False" }
     const value = this.getSettingValue(name)
     return (value === null || value === undefined) ? "" : String(value)
   }
@@ -338,60 +339,19 @@ class Nepi_IF_Settings extends Component {
     const settingsHeightStr = settingsHeight.toString() + 'px'
 
 
-    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
+    const show_controls = (this.props.show_controls !== undefined) ? this.props.show_controls : true
+    const show_settings = (this.props.show_settings !== undefined) ? this.props.show_settings : true
 
     const { userRestricted} = this.props.ros
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
     const settings_controls_restricted = userRestricted.indexOf('SYSTEM-SETTINGS-CONTROL') !== -1 && (ignore_restrictions === false)
 
 
-    if (show_controls === false){
-      return(
-              <Columns>
-                <Column>
-
-                    <Label title="Show Settings">
-                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                        <Toggle
-                          checked={show_controls===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
-                        </Toggle>
-                    </Label>
-
-                </Column>
-                <Column>
-
-                </Column>
-              </Columns>
-      )
-    }
-    else {
       return (
         <React.Fragment>
 
 
-              <Columns>
-                <Column>
-
-                    {(allways_show_controls === false) ?
-                    <Label title="Show Settings">
-                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                        <Toggle
-                          checked={show_controls===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
-                        </Toggle>
-                    </Label>
-                    : null }
-
-                  </Column>
-                  <Column>
-
-                  </Column>
-                </Columns>
-
-
-                  <div hidden={settings_controls_restricted === true} >
+                  <div hidden={show_controls === false} >
                       <Label title={"Select Setting"}>
                         <Select
                           id="selectedSettingName"
@@ -404,28 +364,27 @@ class Nepi_IF_Settings extends Component {
 
                   </div>
           
-              <Columns>
-                <Column>
 
-                  {this.renderSetting()}
+
+                  { (show_controls === true) ?
+                   this.renderSetting()
+                  : null }
       
-          
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-          
-                  <Label title={"Current Settings"} />
-                  <pre style={{ height: settingsHeightStr, overflowY: "auto" }}>
-                    {this.getSettingsAsString()}
-                  </pre>
+                  { (show_controls === true) ?
+                   this.renderConfigs()
+                  : null }
 
-                </Column>
-              </Columns>
+                  {(show_settings === true) ?
+                    this.renderSettingValues()
+                  : null }
 
-              {this.renderConfigs()}
+
+            
 
         </React.Fragment>
       )
 
-    }
+
   }
 
 
@@ -447,24 +406,47 @@ class Nepi_IF_Settings extends Component {
 
   }
 
+  renderSettingValues() {
+
+    const settingNamesOrdered = this.getSortedStrList(this.getSettingNames())
+    const settingsHeight = settingNamesOrdered.length * 25
+    const settingsHeightStr = settingsHeight.toString() + 'px'
+    const settingsStr = this.getSettingsAsString()
+
+      return (
+        <React.Fragment>
+       
+      
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+          
+                  <Label title={"Current Settings"} />
+                  <pre style={{ height: settingsHeightStr, overflowY: "auto" }}>
+                    {settingsStr}
+                  </pre>
+
+
+        </React.Fragment>
+      )
+  }
+
   renderConfigs(){
-    const settingsNamespace = this.state.settingsNamespace
-    return(
-      <Columns>
-      <Column>
+    const configNamespace = (this.state.status_msg != null) ? this.state.status_msg.config_topic : ''
+
+    if (configNamespace !== ''){
+      return(
+        <React.Fragment>
 
 
-          <NepiIFConfig
-                        namespace={settingsNamespace}
-                        title={"Nepi_IF_Config"}
-          />
+            <NepiIFConfig
+                          namespace={configNamespace}
+                          title={"Nepi_IF_Config"}
+            />
 
-        </Column>
-        </Columns>
+        </React.Fragment>
 
 
-    )
-
+      )
+    }
   }
   
   render() {

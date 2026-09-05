@@ -372,21 +372,8 @@ class SystemMgr extends Component {
   }
 
 
-  renderSystemConfig(){
-      const base_namespace = this.getBaseNamespace()
-      const systemMgrStatus = this.props.ros.systemMgrStatus
-      const nepi_update_requested = systemMgrStatus.nepi_update_requested
-      const nepi_updating_config = systemMgrStatus.nepi_updating_config
-      const nepi_service_running = systemMgrStatus.nepi_service_running
-      const hide_update_config = (nepi_update_requested === true || nepi_updating_config === true)
-      var update_message = systemMgrStatus.nepi_update_msg
+  renderSystemConfig(show_controls){
 
-      if (nepi_updating_config === true ){
-        update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
-      }
-      else if (nepi_update_requested === true){
-        update_message = 'UPDATE REQUEST SENT.  WAITING FOR RESPONSE'
-      }
 
       // Disable the expand button while a config update is running or while
       // the status text shows an expansion is requested or in progress.
@@ -410,6 +397,7 @@ class SystemMgr extends Component {
 
             <Label title={"Vehicle Subnet"}>
               <Input
+                disabled={show_controls === false}
                 id={"VehicleSubnet"}
                 value={vehicle_subnet}
                 onChange={this.onChangeVehicleSubnet}
@@ -449,32 +437,7 @@ class SystemMgr extends Component {
               <Input disabled value={current_gateway} />
             </Label>
 
-            <div style={{ display: 'flex' }}>
-                    <div style={{ width: '30%' }}>
-
-
-                    <div hidden={nepi_service_running === false || hide_update_config === true}>
-                        <ButtonMenu>
-                          <Button 
-                            onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/update_system_config")}>{"Apply Updates"}
-                          </Button>
-                      </ButtonMenu>
-
-                    </div>
-
-                    </div>
-
-                    <div style={{ width: '5%' }} >
-                      {}
-                    </div>
-
-                    <div style={{ width: '65%' }} >
-                        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                          {update_message}
-                        </label>
-
-                    </div>
-            </div>
+           
     
 
         </React.Fragment>
@@ -512,7 +475,7 @@ class SystemMgr extends Component {
       return (
 
 
-      <React.Fragment>
+          <Section title={("Advanced Settings")}>
 
 
 
@@ -556,7 +519,7 @@ class SystemMgr extends Component {
                       {this.state.expand_armed === true ? 'Click Confirm Expand to expand the storage drive' : ''}
                     </label>
 
-        </React.Fragment>
+        </Section>
 
       )
 
@@ -677,10 +640,24 @@ class SystemMgr extends Component {
     const nepi_service_running = systemMgrStatus.nepi_service_running
     const admin_mode_set = this.props.ros.systemAdminModeSet
 
+    const nepi_update_requested = systemMgrStatus.nepi_update_requested
+    const nepi_updating_config = systemMgrStatus.nepi_updating_config
+    const hide_update_config = (nepi_update_requested === true || nepi_updating_config === true)
+    var update_message = systemMgrStatus.nepi_update_msg
+
+    if (nepi_updating_config === true ){
+      update_message = 'NEPI CONFIG UPDATING.  DO NOT POWER OFF SYSTEM'
+    }
+    else if (nepi_update_requested === true){
+      update_message = 'UPDATE REQUEST SENT.  WAITING FOR RESPONSE'
+    }
+
+
     const { userRestricted} = this.props.ros
     const admin_view_restricted = userRestricted.indexOf('SYSTEM-ADMIN-VIEW') !== -1  
-
     const show_admin = (admin_mode_set === true || admin_view_restricted === false)
+
+    const show_controls = (admin_mode_set === true && nepi_service_running === true)
     
     if (systemMgrStatus == null || base_namespace == null || show_admin === false){
       return (
@@ -692,18 +669,6 @@ class SystemMgr extends Component {
           </Column>
         </Columns>
       )
-    }
-
-    else if (nepi_service_running === false) {
-      return (
-                <React.Fragment>
-
-                    <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                      {'NEPI SERVICE NOT RUNNING'}
-                    </label> 
-
-              </React.Fragment>
-            )
     }
 
     else {
@@ -720,6 +685,7 @@ class SystemMgr extends Component {
 
                           <Section title={("NEPI System")}>
                             
+
                                   {<NepiIFAdminEnable
                                     make_section={false}
                                     title={null}
@@ -727,28 +693,62 @@ class SystemMgr extends Component {
                                     show_line={false}
                                     />}
 
+                                  {(nepi_service_running === false) ?
+                                    <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                                      {'NEPI SERVICE NOT RUNNING'}
+                                    </label> 
+                                  : null }
 
-                                  { admin_mode_set ? 
-                                      this.renderSystemConfig()
-                                      : null}
+                                  { this.renderSystemConfig(show_controls) }
 
                                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-                                  { admin_mode_set ? <NepiIFSettings
+
+                                <div hidden={show_controls === false}>
+
+                                        <div style={{ display: 'flex' }}>
+                                                    <div style={{ width: '30%' }}>
+
+
+                                                    <div hidden={ hide_update_config === true}>
+                                                        <ButtonMenu>
+                                                          <Button 
+                                                            onClick={() => this.props.ros.sendTriggerMsg(base_namespace + "/update_system_config")}>{"Apply Updates"}
+                                                          </Button>
+                                                      </ButtonMenu>
+
+                                                    </div>
+
+                                                    </div>
+
+                                                    <div style={{ width: '5%' }} >
+                                                      {}
+                                                    </div>
+
+                                                    <div style={{ width: '65%' }} >
+                                                        <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+                                                          {update_message}
+                                                        </label>
+
+                                                    </div>
+                                            </div>
+
+                                  </div>
+
+                                  <NepiIFSettings
                                     settingsNamespace={base_namespace + '/settings'}
-                                    show_controls={false}
+                                    show_controls={show_controls}
                                     make_section={false}
                                     title={"System Config"}
                                     />
-                                      : null}
+
                                   
                             </Section>
 
-                            <Section title={("Advanced Settings")}>
-                                  { admin_mode_set ? 
+
+                                  { show_controls === true ? 
                                       this.renderSystemAdvanced()
-                                      : null}
-                            </Section>
+                                  : null}
 
                     </div>
 
