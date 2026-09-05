@@ -93,7 +93,7 @@ class Nepi_IF_Control extends Component {
       values_list = msg_value
     }
     else if (BOOL_TYPES.indexOf(type) !== -1){
-      values_list = msg_value.map(item => item === 'true')
+      values_list = msg_value.map(item => item === 'True')
     }
     else if (FLOAT_TYPES.indexOf(type) !== -1){
       value = msg_value.map(item => parseFloat(item))
