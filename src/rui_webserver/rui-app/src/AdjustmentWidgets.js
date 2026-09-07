@@ -119,10 +119,11 @@ const styles = Styles.Create({
 // Function for sending updated state through rosbridge
 function sendUpdate(props, new_value, throttle) {
   const noPrefix = (props.topic.startsWith('/'))
-  const comp_name = props.comp_name ? props.comp_name : null
-  const is_control = props.is_control ? props.is_control : false
+  const comp_name = props.comp_name !== undefined ? props.comp_name : null
+  const is_control = props.is_control !== undefined ? props.is_control : false
+  const comp_index = props.comp_index !== undefined ? props.comp_index : ''
   if (comp_name != null && is_control === true) {
-    props.ros.sendUpdateControlValue(props.topic, comp_name,new_value)
+    props.ros.sendUpdateControlValue(props.topic, comp_name,new_value, comp_index)
   }
   else if (comp_name != null) {
     props.ros.sendUpdateFloatMsg(props.topic, comp_name,new_value)

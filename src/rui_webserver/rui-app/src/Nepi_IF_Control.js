@@ -20,9 +20,9 @@
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
-import Toggle from "react-toggle"
+//import Toggle from "react-toggle"
 import AsyncToggle from "./AsyncToggle"
-import Section from "./Section"
+//import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Label from "./Label"
@@ -31,8 +31,10 @@ import Styles from "./Styles"
 import Button, { ButtonMenu } from "./Button"
 import { SliderAdjustment } from "./AdjustmentWidgets"
 import RangeAdjustment from "./RangeAdjustment"
+//import BooleanIndicator from "./BooleanIndicator"
+import ColoredIndicator from "./ColoredIndicator"
 
-import { round, setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue } from "./Utilities"
+import { round, rgbToIindicatorColor, setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue } from "./Utilities"
 
 @inject("ros")
 @observer
@@ -60,12 +62,22 @@ class Nepi_IF_Control extends Component {
     }
 
     this.getControlValue = this.getControlValue.bind(this)
+
+    this.renderBounds = this.renderBounds.bind(this)
+
+    this.renderDoubleControl = this.renderDoubleControl.bind(this)
+    this.renderTripleControl = this.renderTripleControl.bind(this)
+
+    this.renderIntSliderControl = this.renderIntSliderControl.bind(this)
+
+
+    this.renderFloatSliderControl = this.renderFloatSliderControl.bind(this)
     this.onInputChange = this.onInputChange.bind(this)
     this.onInputKey = this.onInputKey.bind(this)
-    this.toggleDD = this.toggleDD.bind(this)
+    this.toggleDropDown = this.toggleDropDown.bind(this)
   }
 
-  toggleDD() {
+  toggleDropDown() {
     this.setState({ ddOpen: this.state.ddOpen === false })
   }
 
@@ -75,12 +87,12 @@ class Nepi_IF_Control extends Component {
     const control_msg = this.props.control_msg !== undefined ? this.props.control_msg : null
     
 
-    const LIST_TYPES = ["Menu","Selections","Toggles","RangeSlider"]
+    const LIST_TYPES = ["Menu","Selections","Toggles","IntDouble","IntTriple","IntSliders","FloatDouble","FloatTriple","FloatSliders","RangeSlider","ColorRGB"]
 
     const STRING_TYPES = ["Selection","Selections","Toggles"]
     const BOOL_TYPES = ["Toggle"]
-    const INT_TYPES = ["Menu","Int"]
-    const FLOAT_TYPES = ["Float","FloatSlider","RangeSlider"]
+    const INT_TYPES = ["Menu","Int","IntDouble","IntTriple","IntSlider","IntSliders","ColorRGB"]
+    const FLOAT_TYPES = ["Float",,"FloatDouble","FloatTriple","FloatSliders","RangeSlider"]
     const EMPTY_TYPES = ['Trigger']
 
     if (control_msg == null) { return null }
@@ -162,6 +174,255 @@ class Nepi_IF_Control extends Component {
     this.setState({ editValues: editValues})
   }
 
+
+
+  // Editable text/number input helpers (PTX control pattern)
+  onInputChangeIndex(name, values, index, e) {
+    const el = document.getElementById('csbx_' + name)
+    if (el) { setElementStyleModified(el) }
+    const editValues = { ...this.state.editValues }
+    var update_values = values
+    if (update_values.length > index){
+        update_values[index] = e.target.value
+        editValues[name] = update_values
+      this.setState({ editValues: editValues })
+    }
+  }
+
+  onInputKeyIndex(name, control_type, index, e) {
+    if (e.key !== 'Enter') { return }
+    const namespace = this.props.namespace !== undefined ? this.props.namespace : null
+    const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
+    const { sendUpdateControlValue } = this.props.ros
+    const el = document.getElementById('csbx_' + name)
+    if (el) { clearElementStyleModified(el) }
+    const raw = e.target.value
+    // Value the control reports right now; statusListener() uses this baseline
+    // to detect when the backend has acted on our change.
+    const baseline = this.getControlValue()
+    var sent = false
+    if (control_type === "String") {
+      sendUpdateControlValue(namespace  + "/" + topic, name, raw, index)
+    } else if (control_type === "ColorRBG") {
+      const val = parseInt(raw, 10)
+      if (!Number.isNaN(val)) { 
+        if (val >= 0 && val <= 255){
+          sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true 
+        }
+      }
+    } else if (control_type === "Int" || control_type === "IntDouble" || control_type === "IntTriple") {
+      const val = parseInt(raw, 10)
+      if (!Number.isNaN(val)) { sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true }
+    } else if (control_type === "Float" || control_type === "FloatDouble" || control_type === "FloatTriple") {
+      const val = parseFloat(raw)
+      if (!Number.isNaN(val)) { sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true }
+    }
+    const editValues = { ...this.state.editValues }
+    delete editValues[name]
+    
+    this.setState({ editValues: editValues})
+  }
+
+
+
+  renderBounds(min,max){
+       
+        const min_bound = (min !== parseInt(-999) ) ? min : 'Nan'
+        const max_bound = (max !== parseInt(-999) ) ? max : 'Nan'
+        return (
+
+          <React.Fragment>
+
+                <Columns>
+                <Column>
+
+                  <label > {"Min"} </label>                
+                  <Input disabled={true} value={min_bound} />
+
+                </Column>
+                <Column>
+
+                  <label > {"Max"} </label>                
+                  <Input disabled={true} value={max_bound} />
+                  
+                </Column>
+              </Columns>
+
+          </React.Fragment>              
+
+        )
+      }
+
+
+
+  renderDoubleControl(name, control_type, value,options){
+
+        return (
+
+          <React.Fragment>
+
+                <Columns>
+                <Column>
+
+                  <label > {options[0]} </label>                
+                  <Input
+                    id={'csbx_' + name + '_' + options[0]}
+                    style={{ width: "100%" }}
+                    value={value}
+                    onChange={(e) => this.onInputChangeIndex(name, value, 0, e)}
+                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 0, e)}
+                  />
+
+                </Column>
+                <Column>
+
+                  <label > {options[1]} </label>                
+                  <Input
+                    id={'csbx_' + name + '_' + options[1]}
+                    style={{ width: "100%" }}
+                    value={value}
+                    onChange={(e) => this.onInputChangeIndex(name, value, 1, e)}
+                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 1, e)}
+                  />
+                  
+                </Column>
+              </Columns>
+
+          </React.Fragment>              
+
+        )
+      }
+
+
+  renderTripleControl(name, control_type, value, options){
+
+        return (
+
+          <React.Fragment>
+
+                <Columns>
+                <Column>
+
+                  <label > {options[0]} </label>                
+                  <Input
+                    id={'csbx_' + name + '_' + options[0]}
+                    style={{ width: "100%" }}
+                    value={value}
+                    onChange={(e) => this.onInputChangeIndex(name, value, 0, e)}
+                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 0, e)}
+                  />
+
+                </Column>
+                <Column>
+
+                  <label > {options[1]} </label>                
+                  <Input
+                    id={'csbx_' + name + '_' + options[1]}
+                    style={{ width: "100%" }}
+                    value={value}
+                    onChange={(e) => this.onInputChangeIndex(name, value, 1, e)}
+                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 1, e)}
+                  />
+                  
+                </Column>
+                <Column>
+
+                  <label > {options[2]} </label>                
+                  <Input
+                    id={'csbx_' + name + '_' + options[2]}
+                    style={{ width: "100%" }}
+                    value={value}
+                    onChange={(e) => this.onInputChangeIndex(name, value, 2, e)}
+                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 2, e)}
+                  />
+
+                </Column>
+              </Columns>
+
+          </React.Fragment>              
+
+        )
+      }
+
+
+  renderIntSliderControl(name,value,min,max, index){
+        const namespace = this.props.namespace !== undefined ? this.props.namespace : null
+        const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
+
+        return (
+          <SliderAdjustment
+            title={name}
+            comp_name={name}
+            comp_index={index}
+            is_control={true}
+            topic={namespace + "/" + topic}
+            msgType={"std_msgs/Float32"}
+            adjustment={value}
+            min={min}
+            max={max}
+            step={1}
+            displayDecimals={0}
+            scaled={1}
+            tooltip={name}
+            unit={""}
+          />
+        )
+      }
+
+
+
+
+
+  renderFloatSliderControl(name,value,min,max,round_value, round_display, index){
+        const namespace = this.props.namespace !== undefined ? this.props.namespace : null
+        const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
+        // Step size and display precision come off the control message the same
+        // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
+        // defaults step to 1, and its render rounds the value to displayDecimals
+        // before handing it to BOTH the slider handle and the (disabled) text box.
+        // Left unset, a [0.0, 1.0] control is a two-position switch, and passing
+        // only one of the two still is -- a display coarser than the step
+        // re-quantizes the handle even when the step is right.
+        //
+        // round_value is how many decimals the node rounds a SET value to
+        // (nepi_control default -1, meaning no rounding); round_display is how
+        // many the RUI should show (default 2). Neither is trusted on its own:
+        // both are int32, so a control message that never carried them arrives
+        // with 0 rather than undefined, and round_value 0 is step 1 -- the defect
+        // again. The range check below is what actually rules that out.
+        const range = max - min
+        const fallback_step = (range > 0) ? (range / 100) : 1
+        var step = (round_value >= 0 && round_value <= 6) ? Math.pow(10, -round_value) : fallback_step
+        // Fewer than three stops between the ends is not a slider, whatever the
+        // message asked for. Also catches range <= 0 and any non-finite bound.
+        if (!(step > 0) || !((range / step) >= 2)) { step = fallback_step }
+        if (!Number.isFinite(step) || step <= 0) { step = 1 }
+        // Never display coarser than the step -- see the note above -- and never
+        // finer than the node asked for.
+        const step_decimals = Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
+        const displayDecimals = Math.max(step_decimals, round_display)
+
+        return (
+          <SliderAdjustment
+            title={name}
+            comp_name={name}
+            comp_index={index}
+            is_control={true}
+            topic={namespace + "/" + topic}
+            msgType={"std_msgs/Float32"}
+            adjustment={value}
+            min={min}
+            max={max}
+            step={step}
+            displayDecimals={displayDecimals}
+            scaled={1}
+            tooltip={name}
+            unit={""}
+          />
+        )
+      }
+
+
   // Render a single control given its control_type and Control message.
   // Each block below maps one nepi_control control control_type to its RUI widget and
   // the nepi_control "value_*_control_value" topic it publishes to on change.
@@ -189,6 +450,8 @@ class Nepi_IF_Control extends Component {
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
       const value = this.getControlValue()
+      const round_value =  (control_msg.round_value >= 0) ? control_msg.round_value : 6
+      const round_display =  (control_msg.round_display >= 0) ? control_msg.round_display : 6
       const values = (value != null) ? value : []
       // Value inputs whose value tracks either the in-progress edit or the message
       const editing = (name in this.state.editValues)
@@ -214,8 +477,7 @@ class Nepi_IF_Control extends Component {
       // selected option *text* (not its index). Sends the new text as a String.
       // "Discrete" is an alias of "Selection", not a separate control_type: it is the
       // spelling driver params yaml files use for the same named option list,
-      // so it renders through this same branch. It aliases the singular; the
-      // multi-select "Toggles" below is unrelated.
+      // so it renders through this same branch. 
       if (control_type === "Selection" || control_type === "Discrete") {
         return (
           <Label title={display_name} key={name}>
@@ -278,7 +540,7 @@ class Nepi_IF_Control extends Component {
             <div style={{ marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
             <div
               id={'csbx_' + name}
-              onClick={this.toggleDD}
+              onClick={this.toggleDropDown}
               style={{backgroundColor: Styles.vars.colors.grey0}}
             >
               <Select style={{width: "10px"}}/>
@@ -365,42 +627,93 @@ class Nepi_IF_Control extends Component {
       if (control_type === "Int") {
         const show_value = (editing === true) ? this.state.editValues[name] : value
         return (
+
+            <React.Fragment>
+              <Label title={display_name} key={name}>
+              </Label>
+
+                <div hidden={show_bound === false}>
+                  {this.renderBounds(min_bound,max_bound)}
+                </div>
+                
+                <Input
+                  id={'csbx_' + name}
+                  style={{ width: "100%" }}
+                  value={show_value}
+                  onChange={(e) => this.onInputChange(name, e)}
+                  onKeyDown={(e) => this.onInputKey(name, control_type, e)}
+                />
+
+            </React.Fragment> 
+        )
+      }
+
+      if (control_type === "IntDouble") {
+        
+        return (
+
+        <React.Fragment>
           <Label title={display_name} key={name}>
+          </Label>
 
             <div hidden={show_bound === false}>
-
-                <Columns>
-                <Column>
-
-                  <Input
-                    disabled={true}
-                    value={min_bound}
-                  />
-
-                </Column>
-                <Column>
-
-                  <Input
-                    disabled={true}
-                    value={max_bound}
-                  />
-                  
-                </Column>
-              </Columns>
-
-
+              {this.renderBounds(min_bound,max_bound)}
             </div>
+            
+            {this.renderDoubleControl(name, control_type, value, options)}
 
-            <Input
-              id={'csbx_' + name}
-              style={{ width: "100%" }}
-              value={show_value}
-              onChange={(e) => this.onInputChange(name, e)}
-              onKeyDown={(e) => this.onInputKey(name, control_type, e)}
-            />
+        </React.Fragment> 
+        )
+      }
+
+      if (control_type === "IntTriple") {
+        
+        return (
+
+        <React.Fragment>
+          <Label title={display_name} key={name}>
+          </Label>
+
+            <div hidden={show_bound === false}>
+              {this.renderBounds(min_bound,max_bound)}
+            </div>
+            
+            {this.renderTripleControl(name, control_type, value, options)}
+
+        </React.Fragment> 
+        )
+      }
+
+
+      // INTSLIDER -- a single decimal value dragged between a min and max.
+      // bounds carries [min, max]; -999 in either slot means "no limit",
+      // in which case we fall back to a sensible default (0 / 100).
+      if (control_type === "IntSlider") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 255
+      
+        this.renderIntSliderControl(name,value,min,max,'')
+      }
+
+
+      // INTSLIDERS -- a multi-select: each option gets its own int slider. 
+      // names come from the options list. On every toggle
+      // we send the complete desired selection (declarative), not a single delta.
+      if (control_type === "IntSliders") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 255
+        return (
+          <Label title={display_name} key={name}>
+                  <div>
+                    {/* Map over the device names array */}
+                    {options.map((slider_name, index) => (
+                      this.renderIntSliderControl(slider_name, values[index], min, max, index)
+                    ))}
+                  </div>
           </Label>
         )
       }
+
 
 
       // FLOAT -- free-form typed values. These follow the PTX
@@ -408,39 +721,15 @@ class Nepi_IF_Control extends Component {
       // the user types, and the value is sent (parsed to the right control_type) only on
       // Enter. See onInputChange / onInputKey above.
       if (control_type === "Float") {
-        const show_value = (editing === true) ? this.state.editValues[name] : value
-        const display_round = control_msg.display_round
+        const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
         return (
-
-
 
         <React.Fragment>
           <Label title={display_name} key={name}>
           </Label>
 
-
             <div hidden={show_bound === false}>
-
-
-                <Columns>
-                <Column>
-
-                  <Input
-                    disabled={true}
-                    value={min_bound}
-                  />
-
-                </Column>
-                <Column>
-
-                  <Input
-                    disabled={true}
-                    value={max_bound}
-                  />
-                  
-                </Column>
-              </Columns>
-
+              {this.renderBounds(min_bound,max_bound)}
             </div>
             
             <Input
@@ -451,7 +740,43 @@ class Nepi_IF_Control extends Component {
               onKeyDown={(e) => this.onInputKey(name, control_type, e)}
             />
 
-</React.Fragment> 
+        </React.Fragment> 
+        )
+      }
+
+      if (control_type === "FloatDouble") {
+        const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
+        return (
+
+        <React.Fragment>
+          <Label title={display_name} key={name}>
+          </Label>
+
+            <div hidden={show_bound === false}>
+              {this.renderBounds(min_bound,max_bound)}
+            </div>
+            
+            {this.renderDoubleControl(name, control_type, show_value, options)}
+
+        </React.Fragment> 
+        )
+      }
+
+      if (control_type === "FloatTriple") {
+        const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
+        return (
+
+        <React.Fragment>
+          <Label title={display_name} key={name}>
+          </Label>
+
+            <div hidden={show_bound === false}>
+              {this.renderBounds(min_bound,max_bound)}
+            </div>
+            
+            {this.renderTripleControl(name, control_type, show_value, options)}
+
+        </React.Fragment> 
         )
       }
 
@@ -461,7 +786,7 @@ class Nepi_IF_Control extends Component {
       // in which case we fall back to a sensible default (0 / 100).
       if (control_type === "FloatSlider") {
         const min = (min_bound !== -999) ? min_bound : 0
-        const max = (max_bound !== -999) ? max_bound : 100
+        const max = (max_bound !== -999) ? max_bound : 1
 
         // Step size and display precision come off the control message the same
         // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
@@ -477,38 +802,25 @@ class Nepi_IF_Control extends Component {
         // both are int32, so a control message that never carried them arrives
         // with 0 rather than undefined, and round_value 0 is step 1 -- the defect
         // again. The range check below is what actually rules that out.
-        const range = max - min
-        const round_value = (typeof control_msg.round_value === 'number') ? control_msg.round_value : -1
-        const round_display = (typeof control_msg.round_display === 'number') ? control_msg.round_display : -1
-        // No rounding authored: one hundredth of the range, the nepi_control -1 case.
-        const fallback_step = (range > 0) ? (range / 100) : 1
-        var step = (round_value >= 0 && round_value <= 6) ? Math.pow(10, -round_value) : fallback_step
-        // Fewer than three stops between the ends is not a slider, whatever the
-        // message asked for. Also catches range <= 0 and any non-finite bound.
-        if (!(step > 0) || !((range / step) >= 2)) { step = fallback_step }
-        if (!Number.isFinite(step) || step <= 0) { step = 1 }
-        // Never display coarser than the step -- see the note above -- and never
-        // finer than the node asked for.
-        const step_decimals = Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
-        const displayDecimals = Math.max(step_decimals, (round_display >= 0 && round_display <= 6) ? round_display : 0)
+        this.renderFloatSliderControl(name,value,min,max,round_value,round_display,'')
+      }
 
+
+      // FLOATSLIDERS -- a multi-select: each option gets its own float slider. 
+      // names come from the options list. On every toggle
+      // we send the complete desired selection (declarative), not a single delta.
+      if (control_type === "FloatSliders") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 1
         return (
-          <SliderAdjustment
-            key={name}
-            title={display_name}
-            comp_name={name}
-            is_control={true}
-            topic={namespace + "/" + topic}
-            msgType={"std_msgs/Float32"}
-            adjustment={value}
-            min={min}
-            max={max}
-            step={step}
-            displayDecimals={displayDecimals}
-            scaled={1}
-            tooltip={control_msg.description}
-            unit={""}
-          />
+          <Label title={display_name} key={name}>
+                  <div>
+                    {/* Map over the device names array */}
+                    {options.map((slider_name, index) => (
+                      this.renderFloatSliderControl(slider_name, values[index], min, max, round_value, round_display, index)
+                    ))}
+                  </div>
+          </Label>
         )
       }
 
@@ -535,6 +847,50 @@ class Nepi_IF_Control extends Component {
           />
         )
       }
+
+
+      // ColorRGB -- an multi-select: each option (R,G,B) gets its own int slider.
+      // names come from the options list. On every toggle
+      // we send the complete desired selection (declarative), not a single delta.
+      if (control_type === "ColorRGB") {
+        const min = 0
+        const max = 255
+        const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
+        return (
+
+          <React.Fragment>
+                
+
+
+                <Columns>
+                <Column>
+
+                <Label title={display_name} key={name}> </Label>
+
+                </Column>
+                <Column>
+
+                  <ColoredIndicator indicator_color={indicator_color} />
+                  
+                </Column>
+              </Columns>
+
+                  {this.renderTripleControl(name, control_type, value, options)}
+          
+                  <div>
+                    {/* Map over the device names array */}
+                    {options.map((slider_name, index) => (
+                      this.renderIntSliderControl(slider_name, values[index], min, max, index)
+                    ))}
+                  </div>
+
+          </React.Fragment>
+
+
+         
+        )
+      }
+
 
       return null
     }

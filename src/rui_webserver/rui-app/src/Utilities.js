@@ -115,6 +115,21 @@ export function getCleanName(name, replacement = '_'){
   return name.replace(invalidChars, replacement);
 }
 
+
+export function rgbToHex(r, g, b){
+  // Ensure the inputs are clamped between 0 and 255
+  const toHex = (c) => Math.min(255, Math.max(0, c)).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+export function rgbToIindicatorColor(r, g, b){
+        const color_hex = rgbToHex(r, g, b)
+      const indicator_color = {
+        backgroundColor: color_hex,
+        color: Styles.vars.colors.black
+      }
+  return indicator_color
+}
 /////////////////////////////
 // TOGGLE FUNCTIONS
 

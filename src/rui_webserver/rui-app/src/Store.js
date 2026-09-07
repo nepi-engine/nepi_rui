@@ -3026,12 +3026,13 @@ sendSaveConfigTrigger(namespace) {
 
 
   @action.bound
-  sendUpdateControlValue(namespace, nameStr, value, throttle = false) {
-    if (throttle){
-      if (throttle && this.isThrottled()) {
-        return
-      }
+  sendUpdateControlValue(namespace, nameStr, value, index = -1) {
+       
+    var index_str = String(index)
+    if (index_str === '-1'){
+      index_str = ''
     }
+
     var valueStrs = ['']
     if (Array.isArray(value)) {
       valueStrs = value.map(val => String(val))
@@ -3041,9 +3042,11 @@ sendSaveConfigTrigger(namespace) {
     }
     const data = {
       name: nameStr,
-      value: valueStrs
+      value: valueStrs,
+      index: index_str
     }
   
+    
     this.publishMessage({
       name: namespace,
       messageType: "nepi_interfaces/UpdateControl",
