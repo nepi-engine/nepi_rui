@@ -166,14 +166,12 @@ class Nepi_IF_Settings extends Component {
   // the nepi_controls "control_value" topic it publishes to on change.
   renderControl(control_msg) {
     const namespace = this.state.settingsNamespace
-    const control_hidden = control_msg.hidden
       return (
 
          <Nepi_IF_Control
               namespace={namespace}
               topic={'update_setting'}
               control_msg={control_msg}
-              control_hidden={control_hidden}
               show_bounds={true}
             />
 

@@ -772,37 +772,37 @@ class Nepi_IF_Control extends Component {
       }
 
 
-      // // INTSLIDER -- a single decimal value dragged between a min and max.
-      // // bounds carries [min, max]; -999 in either slot means "no limit",
-      // // in which case we fall back to a sensible default (0 / 100).
-      // else if (control_type === "IntSlider") {
-      //   const min = (min_bound !== -999) ? min_bound : 0
-      //   const max = (max_bound !== -999) ? max_bound : 255
+      // INTSLIDER -- a single decimal value dragged between a min and max.
+      // bounds carries [min, max]; -999 in either slot means "no limit",
+      // in which case we fall back to a sensible default (0 / 100).
+      else if (control_type === "IntSlider") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 255
       
-      //   this.renderIntSliderControl(name,value,min,max,'', control_disabled)
-      // }
+        this.renderIntSliderControl(name,value,min,max,'', control_disabled)
+      }
 
 
-      // // INTSLIDERS -- a multi-select: each option gets its own int slider. 
-      // // names come from the labels list. On every toggle
-      // // we send the complete desired selection (declarative), not a single delta.
-      // else if (control_type === "IntSliders") {
-      //   const min = (min_bound !== -999) ? min_bound : 0
-      //   const max = (max_bound !== -999) ? max_bound : 255
-      //   return (
-      //   <React.Fragment>
-      //     <div hidden={show_header_label === false }>
-      //     <Label title={display_name} key={name}></Label>
-      //     </div>
-      //             <div>
-      //               {/* Map over the device names array */}
-      //               {labels.map((slider_name, index) => (
-      //                 this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
-      //               ))}
-      //             </div>
-      //     </React.Fragment>
-      //   )
-      // }
+      // INTSLIDERS -- a multi-select: each option gets its own int slider. 
+      // names come from the labels list. On every toggle
+      // we send the complete desired selection (declarative), not a single delta.
+      else if (control_type === "IntSliders") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 255
+        return (
+        <React.Fragment>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
+                  <div>
+                    {/* Map over the device names array */}
+                    {labels.map((slider_name, index) => (
+                      this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
+                    ))}
+                  </div>
+          </React.Fragment>
+        )
+      }
 
 
 
@@ -875,51 +875,51 @@ class Nepi_IF_Control extends Component {
       }
 
 
-      // // FLOATSLIDER -- a single decimal value dragged between a min and max.
-      // // bounds carries [min, max]; -999 in either slot means "no limit",
-      // // in which case we fall back to a sensible default (0 / 100).
-      // else if (control_type === "FloatSlider") {
-      //   const min = (min_bound !== -999) ? min_bound : 0
-      //   const max = (max_bound !== -999) ? max_bound : 1
+      // FLOATSLIDER -- a single decimal value dragged between a min and max.
+      // bounds carries [min, max]; -999 in either slot means "no limit",
+      // in which case we fall back to a sensible default (0 / 100).
+      else if (control_type === "FloatSlider") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 1
 
-      //   // Step size and display precision come off the control message the same
-      //   // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
-      //   // defaults step to 1, and its render rounds the value to displayDecimals
-      //   // before handing it to BOTH the slider handle and the (disabled) text box.
-      //   // Left unset, a [0.0, 1.0] control is a two-position switch, and passing
-      //   // only one of the two still is -- a display coarser than the step
-      //   // re-quantizes the handle even when the step is right.
-      //   //
-      //   // round_value is how many decimals the node rounds a SET value to
-      //   // (nepi_control default -1, meaning no rounding); round_display is how
-      //   // many the RUI should show (default 2). Neither is trusted on its own:
-      //   // both are int32, so a control message that never carried them arrives
-      //   // with 0 rather than undefined, and round_value 0 is step 1 -- the defect
-      //   // again. The range check below is what actually rules that out.
-      //   this.renderFloatSliderControl(name,value,min,max,round_value,round_display,'')
-      // }
+        // Step size and display precision come off the control message the same
+        // defensive way the bounds above do. Both MUST be passed: SliderAdjustment
+        // defaults step to 1, and its render rounds the value to displayDecimals
+        // before handing it to BOTH the slider handle and the (disabled) text box.
+        // Left unset, a [0.0, 1.0] control is a two-position switch, and passing
+        // only one of the two still is -- a display coarser than the step
+        // re-quantizes the handle even when the step is right.
+        //
+        // round_value is how many decimals the node rounds a SET value to
+        // (nepi_control default -1, meaning no rounding); round_display is how
+        // many the RUI should show (default 2). Neither is trusted on its own:
+        // both are int32, so a control message that never carried them arrives
+        // with 0 rather than undefined, and round_value 0 is step 1 -- the defect
+        // again. The range check below is what actually rules that out.
+        this.renderFloatSliderControl(name,value,min,max,round_value,round_display,'')
+      }
 
 
-      // // FLOATSLIDERS -- a multi-select: each option gets its own float slider. 
-      // // names come from the labels list. On every toggle
-      // // we send the complete desired selection (declarative), not a single delta.
-      // else if (control_type === "FloatSliders") {
-      //   const min = (min_bound !== -999) ? min_bound : 0
-      //   const max = (max_bound !== -999) ? max_bound : 1
-      //   return (
-      //   <React.Fragment>
-      //     <div hidden={show_header_label === false }>
-      //     <Label title={display_name} key={name}></Label>
-      //     </div>
-      //             <div>
-      //               {/* Map over the device names array */}
-      //               {labels.map((slider_name, index) => (
-      //                 this.renderFloatSliderControl(slider_name, values[index], min, max, round_value, round_display, index, control_disabled)
-      //               ))}
-      //             </div>
-      //   </React.Fragment>
-      //   )
-      // }
+      // FLOATSLIDERS -- a multi-select: each option gets its own float slider. 
+      // names come from the labels list. On every toggle
+      // we send the complete desired selection (declarative), not a single delta.
+      else if (control_type === "FloatSliders") {
+        const min = (min_bound !== -999) ? min_bound : 0
+        const max = (max_bound !== -999) ? max_bound : 1
+        return (
+        <React.Fragment>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
+                  <div>
+                    {/* Map over the device names array */}
+                    {labels.map((slider_name, index) => (
+                      this.renderFloatSliderControl(slider_name, values[index], min, max, round_value, round_display, index, control_disabled)
+                    ))}
+                  </div>
+        </React.Fragment>
+        )
+      }
 
       // RANGESLIDER -- a min/max *range* dragged between two limits. values
       // holds the current [min, max] handles; bounds holds the outer

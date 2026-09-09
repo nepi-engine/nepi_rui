@@ -100,7 +100,7 @@ class Nepi_IF_Data extends Component {
     const namespace = this.getNamespace()
     const props_status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : null
     const namespace_changed = (namespace !== this.state.dataNamespace)
-    if ((namespace != null && namespace_changed && props_status_msg == null) || this.state.needs_update === true) {
+    if ((namespace != null && namespace_changed === true && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
     // Guarded: an unconditional setState here re-enters componentDidUpdate on
@@ -142,6 +142,7 @@ class Nepi_IF_Data extends Component {
   }
 
   render() {
+    const namespace = this.getNamespace()
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : this.state.status_msg
 
@@ -175,11 +176,12 @@ class Nepi_IF_Data extends Component {
       data_body = (
         <Columns>
           <Column>
-            {names.map((name, i) => {
-              const datum_msg = msgs[i]
-              if (datum_msg == null) { return null }
-              return this.renderDatum(datum_msg)
-            })}
+            {msgs.map((msg) => { return (
+            <Nepi_IF_Datum
+                  namespace={namespace}
+                  datum_msg={msg}
+                />
+            )})}
           </Column>
         </Columns>
       )

@@ -99,7 +99,7 @@ class Nepi_IF_Controls extends Component {
     const namespace = this.getNamespace()
     const props_status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : null
     const namespace_changed = (namespace !== this.state.controlsNamespace)
-    if ((namespace != null && namespace_changed && props_status_msg == null) || this.state.needs_update === true) {
+    if ((namespace != null && namespace_changed === true && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
     // Guarded: an unconditional setState here re-enters componentDidUpdate on
@@ -141,6 +141,7 @@ class Nepi_IF_Controls extends Component {
   }
 
   render() {
+    const namespace = this.getNamespace()
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : this.state.status_msg
 
@@ -174,11 +175,12 @@ class Nepi_IF_Controls extends Component {
       controls_body = (
         <Columns>
           <Column>
-            {names.map((name, i) => {
+            {msgs.map((msg) => { return (
                 <Nepi_IF_Control
                   namespace={namespace}
-                  control_msg={msg[i]}
+                  control_msg={msg}
                 />
+            )
             })}
           </Column>
         </Columns>
