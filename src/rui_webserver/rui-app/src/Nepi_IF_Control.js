@@ -87,13 +87,33 @@ class Nepi_IF_Control extends Component {
     const control_msg = this.props.control_msg !== undefined ? this.props.control_msg : null
     
 
-    const LIST_TYPES = ["Menu","Selections","Toggles","IntDouble","IntTriple","IntSliders","FloatDouble","FloatTriple","FloatSliders","RangeSlider","ColorRGB"]
+
+    const CONTROL_TYPES = ["Menu","Selection","Selections","Trigger", "Toggle", "Toggles", "String", 
+                 "Int","IntDouble","IntTriple","IntSlider","IntSliders",
+                 "Float","FloatDouble","FloatTriple","FloatSlider","FloatSliders","RangeSlider",
+                 "ColorRGB"]
+
+    const LIST_TYPES = ["Menu","Selections","Toggles",
+              "IntDouble","IntTriple","IntSliders",
+              "FloatDouble","FloatTriple","FloatSliders","RangeSlider",
+              "ColorRGB"]
+
+    const OPTIONS_TYPES =  ["Menu","Selection","Selections"]
+
+    const LABELS_TYPES = ["IntDouble","Toggles","IntTriple","IntSliders",
+                "FloatDouble","FloatTriple","FloatSliders",
+                "ColorRGB"]
+
+    const BOUNDS_TYPES = ["Int","IntDouble","IntTriple","IntSlider","IntSliders",
+                "Float","FloatDouble","FloatTriple","FloatSlider","FloatSliders","RangeSlider",
+                "ColorRGB"]
 
     const STRING_TYPES = ["Selection","Selections","Toggles"]
     const BOOL_TYPES = ["Toggle"]
     const INT_TYPES = ["Menu","Int","IntDouble","IntTriple","IntSlider","IntSliders","ColorRGB"]
-    const FLOAT_TYPES = ["Float",,"FloatDouble","FloatTriple","FloatSliders","RangeSlider"]
-    const EMPTY_TYPES = ['Trigger']
+    const FLOAT_TYPES = ["Float","FloatDouble","FloatTriple","FloatSlider","FloatSliders","RangeSlider"]
+    const TRIGGER_TYPES = ['Trigger']
+    
 
     if (control_msg == null) { return null }
     const msg_value = control_msg.value
@@ -104,8 +124,7 @@ class Nepi_IF_Control extends Component {
     const IS_BOOL_TYPE = BOOL_TYPES.indexOf(control_type)
     const IS_INT_TYPE = INT_TYPES.indexOf(control_type)
     const IS_FLOAT_TYPE = FLOAT_TYPES.indexOf(control_type)
-    const IS_EMPTY_TYPE = EMPTY_TYPES.indexOf(control_type)
-
+    const IS_TRIGGER_TYPE = TRIGGER_TYPES.indexOf(control_type)
 
     var values_list = null
     var value = null
@@ -122,10 +141,9 @@ class Nepi_IF_Control extends Component {
     if (IS_INT_TYPE !== -1){
       values_list = msg_value.map(item => parseInt(item))
     }
-    if (IS_EMPTY_TYPE !== -1){
-      values_list = msg_value.map(item => 'EMPTY')
+    if (IS_TRIGGER_TYPE !== -1){
+      values_list = msg_value.map(item => parseFloat(item))
     }
-
     if (values_list != null){
       if (IS_LIST_TYPE !== -1) { 
         value = values_list
@@ -255,7 +273,7 @@ class Nepi_IF_Control extends Component {
 
 
 
-  renderDoubleControl(name, control_type, value,options){
+  renderDoubleControl(name, control_type, value,labels, control_disabled){
 
         return (
 
@@ -264,9 +282,10 @@ class Nepi_IF_Control extends Component {
                 <Columns>
                 <Column>
 
-                  <label > {options[0]} </label>                
+                  <label > {labels[0]} </label>                
                   <Input
-                    id={'csbx_' + name + '_' + options[0]}
+                    disabled={control_disabled}
+                    id={'csbx_' + name + '_' + labels[0]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 0, e)}
@@ -276,9 +295,10 @@ class Nepi_IF_Control extends Component {
                 </Column>
                 <Column>
 
-                  <label > {options[1]} </label>                
+                  <label > {labels[1]} </label>                
                   <Input
-                    id={'csbx_' + name + '_' + options[1]}
+                    disabled={control_disabled}
+                    id={'csbx_' + name + '_' + labels[1]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 1, e)}
@@ -294,7 +314,7 @@ class Nepi_IF_Control extends Component {
       }
 
 
-  renderTripleControl(name, control_type, value, options){
+  renderTripleControl(name, control_type, value, labels, control_disabled){
 
         return (
 
@@ -303,9 +323,10 @@ class Nepi_IF_Control extends Component {
                 <Columns>
                 <Column>
 
-                  <label > {options[0]} </label>                
+                  <label > {labels[0]} </label>                
                   <Input
-                    id={'csbx_' + name + '_' + options[0]}
+                    disabled={control_disabled}
+                    id={'csbx_' + name + '_' + labels[0]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 0, e)}
@@ -315,9 +336,10 @@ class Nepi_IF_Control extends Component {
                 </Column>
                 <Column>
 
-                  <label > {options[1]} </label>                
+                  <label > {labels[1]} </label>                
                   <Input
-                    id={'csbx_' + name + '_' + options[1]}
+                    disabled={control_disabled}
+                    id={'csbx_' + name + '_' + labels[1]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 1, e)}
@@ -327,9 +349,10 @@ class Nepi_IF_Control extends Component {
                 </Column>
                 <Column>
 
-                  <label > {options[2]} </label>                
+                  <label > {labels[2]} </label>                
                   <Input
-                    id={'csbx_' + name + '_' + options[2]}
+                    disabled={control_disabled}
+                    id={'csbx_' + name + '_' + labels[2]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 2, e)}
@@ -345,12 +368,13 @@ class Nepi_IF_Control extends Component {
       }
 
 
-  renderIntSliderControl(name,value,min,max, index){
+  renderIntSliderControl(name,value,min,max, index, control_disabled){
         const namespace = this.props.namespace !== undefined ? this.props.namespace : null
         const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
 
         return (
           <SliderAdjustment
+            disabled={control_disabled}
             title={name}
             comp_name={name}
             comp_index={index}
@@ -373,7 +397,7 @@ class Nepi_IF_Control extends Component {
 
 
 
-  renderFloatSliderControl(name,value,min,max,round_value, round_display, index){
+  renderFloatSliderControl(name,value,min,max,round_value, round_display, index, control_disabled){
         const namespace = this.props.namespace !== undefined ? this.props.namespace : null
         const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
         // Step size and display precision come off the control message the same
@@ -404,6 +428,7 @@ class Nepi_IF_Control extends Component {
 
         return (
           <SliderAdjustment
+            disabled={control_disabled}
             title={name}
             comp_name={name}
             comp_index={index}
@@ -431,10 +456,9 @@ class Nepi_IF_Control extends Component {
     const namespace = this.props.namespace !== undefined ? this.props.namespace : null
     const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
     const control_msg = this.props.control_msg !== undefined ? this.props.control_msg : null
-    const control_hidden = this.props.control_hidden !== undefined ? this.props.control_hidden : false
-    const show_bound = this.props.show_bound !== undefined ? this.props.show_bound : true
+
   
-    if (namespace == null || control_msg == null || control_hidden === true) {
+    if (namespace == null || control_msg == null) {
       return (
         <React.Fragment>
           
@@ -446,9 +470,14 @@ class Nepi_IF_Control extends Component {
       const name = control_msg.name
       const control_type =  control_msg.type
       const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
+      const show_header_label = display_name === '' || display_name === 'None' 
+      const control_hidden = this.props.hidden !== undefined ? this.props.hidden : control_msg.hidden
+      const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.disabled
       const options = control_msg.options
+      const labels = control_msg.labels
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
+      const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
       const value = this.getControlValue()
       const round_value =  (control_msg.round_value >= 0) ? control_msg.round_value : 6
       const round_display =  (control_msg.round_display >= 0) ? control_msg.round_display : 6
@@ -456,6 +485,8 @@ class Nepi_IF_Control extends Component {
       // Value inputs whose value tracks either the in-progress edit or the message
       const editing = (name in this.state.editValues)
 
+
+      if (control_hidden === true){return (null)}
       // MENU -- drop-down of string options; the control's value is the *index*
       // of the selected option. Sends the new index as an Int.
       if (control_type === "Menu") {
@@ -463,6 +494,7 @@ class Nepi_IF_Control extends Component {
         return (
           <Label title={display_name} key={name}>
             <Select
+              disabled={control_disabled}
               id={'csbx_' + name}
               value={value}
               onChange={(e) => sendUpdateControlValue(namespace  + "/" + topic,  name, String(parseInt(e.target.value, 10)))}
@@ -473,31 +505,14 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      // SELECTION -- drop-down of string options; the control's value is the
-      // selected option *text* (not its index). Sends the new text as a String.
-      // "Discrete" is an alias of "Selection", not a separate control_type: it is the
-      // spelling driver params yaml files use for the same named option list,
-      // so it renders through this same branch. 
-      if (control_type === "Selection" || control_type === "Discrete") {
-        return (
-          <Label title={display_name} key={name}>
-            <Select
-              id={'csbx_' + name}
-              value={value}
-              onChange={(e) => sendUpdateControlValue(namespace  + "/" + topic, name, e.target.value)}
-            >
-              {options.map((opt, i) => <Option key={name + '_' + i} value={opt}>{opt}</Option>)}
-            </Select>
-          </Label>
-        )
-      }
+
 
       // TOGGLES -- a multi-select: each option gets its own toggle. The value
       // is the full array of currently-selected option strings. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       if (control_type === "Toggles") {
         const na_options = ['NONE','ALL']
-        const show_options =  [...na_options, ...options]
+        const show_options =  [...na_options, ...labels]
         return (
           <Label title={display_name} key={name}>
             <div>
@@ -505,10 +520,11 @@ class Nepi_IF_Control extends Component {
                 <div key={name + '_' + i} style={{ display: "inline-block", marginRight: Styles.vars.spacing.regular, textAlign: "center" }}>
                   <div style={{ fontSize: Styles.vars.fontSize.small, marginBottom: Styles.vars.spacing.xs }}>{opt}</div>
                   <AsyncToggle
+                    disabled={control_disabled}
                     checked={values.indexOf(opt) !== -1}
                     onClick={() => {
                       // Send the complete desired selection (declarative), not a toggle.
-                      const next = (opt === 'ALL') ? options : 
+                      const next = (opt === 'ALL') ? labels : 
                                       (opt === 'NONE') ? [] :
                                           values.indexOf(opt) !== -1
                                             ? values.filter((s) => s !== opt)
@@ -520,6 +536,27 @@ class Nepi_IF_Control extends Component {
                 </div>
               ))}
             </div>
+          </Label>
+        )
+      }
+
+
+      // SELECTION -- drop-down of string options; the control's value is the
+      // selected option *text* (not its index). Sends the new text as a String.
+      // "Discrete" is an alias of "Selection", not a separate control_type: it is the
+      // spelling driver params yaml files use for the same named option list,
+      // so it renders through this same branch. 
+      if (control_type === "Selection" || control_type === "Discrete") {
+        return (
+          <Label title={display_name} key={name}>
+            <Select
+              disabled={control_disabled}
+              id={'csbx_' + name}
+              value={value}
+              onChange={(e) => sendUpdateControlValue(namespace  + "/" + topic, name, e.target.value)}
+            >
+              {options.map((opt, i) => <Option key={name + '_' + i} value={opt}>{opt}</Option>)}
+            </Select>
           </Label>
         )
       }
@@ -548,6 +585,7 @@ class Nepi_IF_Control extends Component {
             <div hidden={this.state.ddOpen === false}>
               {rows.map((opt, i) => (
                 <div
+                  disabled={control_disabled}
                   key={name + '_dd_' + i}
                   onClick={() => {
                     const next = (opt === 'All') ? options :
@@ -578,13 +616,43 @@ class Nepi_IF_Control extends Component {
       // TRIGGER -- a momentary action. There is no persistent value; pressing the
       // button fires a one-shot trigger (an empty String payload).
       if (control_type === "Trigger") {
+
+        const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
+        var button_title = "Trigger"
+        if (labels.length > 0){
+          button_title = labels[0]
+        }
         return (
-          <Label title={display_name} key={name}>
-            <ButtonMenu>
-              <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, value)}>{"Trigger"}</Button>
-            </ButtonMenu>
-          </Label>
+
+        <React.Fragment>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
+
+                <Columns>
+                <Column>
+
+                              
+                  <ButtonMenu>
+                      disabled={control_disabled}
+                    <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, value)}>{button_title}</Button>
+                  </ButtonMenu>
+
+                </Column>
+                <Column>
+ 
+                  <Input
+                    disabled={true}
+                    value={show_value}
+                  
+                  />
+                  
+                </Column>
+              </Columns>
+
+          </React.Fragment>   
         )
+
       }
 
       // TOGGLE -- a single on/off switch. Sends the *opposite* of the current
@@ -594,6 +662,7 @@ class Nepi_IF_Control extends Component {
         return (
           <Label title={display_name} key={name}>
             <AsyncToggle
+              disabled={control_disabled}
               checked={checked}
               onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, !checked)}
             />
@@ -610,6 +679,7 @@ class Nepi_IF_Control extends Component {
         return (
           <Label title={display_name} key={name}>
             <Input
+              disabled={control_disabled}
               id={'csbx_' + name}
               style={{ width: "100%" }}
               value={show_value}
@@ -629,14 +699,17 @@ class Nepi_IF_Control extends Component {
         return (
 
             <React.Fragment>
-              <Label title={display_name} key={name}>
-              </Label>
 
-                <div hidden={show_bound === false}>
+          <Label title={display_name} key={name}></Label>
+
+
+                <div hidden={show_bounds === false}>
                   {this.renderBounds(min_bound,max_bound)}
                 </div>
                 
+                
                 <Input
+                  disabled={control_disabled}
                   id={'csbx_' + name}
                   style={{ width: "100%" }}
                   value={show_value}
@@ -653,14 +726,15 @@ class Nepi_IF_Control extends Component {
         return (
 
         <React.Fragment>
-          <Label title={display_name} key={name}>
-          </Label>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
 
-            <div hidden={show_bound === false}>
+            <div hidden={show_bounds === false}>
               {this.renderBounds(min_bound,max_bound)}
             </div>
             
-            {this.renderDoubleControl(name, control_type, value, options)}
+            {this.renderDoubleControl(name, control_type, value, labels,control_disabled)}
 
         </React.Fragment> 
         )
@@ -671,14 +745,15 @@ class Nepi_IF_Control extends Component {
         return (
 
         <React.Fragment>
-          <Label title={display_name} key={name}>
-          </Label>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
 
-            <div hidden={show_bound === false}>
+            <div hidden={show_bounds === false}>
               {this.renderBounds(min_bound,max_bound)}
             </div>
             
-            {this.renderTripleControl(name, control_type, value, options)}
+            {this.renderTripleControl(name, control_type, value, labels, control_disabled)}
 
         </React.Fragment> 
         )
@@ -692,25 +767,28 @@ class Nepi_IF_Control extends Component {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 255
       
-        this.renderIntSliderControl(name,value,min,max,'')
+        this.renderIntSliderControl(name,value,min,max,'', control_disabled)
       }
 
 
       // INTSLIDERS -- a multi-select: each option gets its own int slider. 
-      // names come from the options list. On every toggle
+      // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       if (control_type === "IntSliders") {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 255
         return (
-          <Label title={display_name} key={name}>
+        <React.Fragment>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
                   <div>
                     {/* Map over the device names array */}
-                    {options.map((slider_name, index) => (
-                      this.renderIntSliderControl(slider_name, values[index], min, max, index)
+                    {labels.map((slider_name, index) => (
+                      this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
                     ))}
                   </div>
-          </Label>
+          </React.Fragment>
         )
       }
 
@@ -725,21 +803,23 @@ class Nepi_IF_Control extends Component {
         return (
 
         <React.Fragment>
-          <Label title={display_name} key={name}>
-          </Label>
 
-            <div hidden={show_bound === false}>
+          <Label title={display_name} key={name}>  </Label>
+
+
+            <div hidden={show_bounds === false}>
               {this.renderBounds(min_bound,max_bound)}
             </div>
             
             <Input
+              disabled={control_disabled}
               id={'csbx_' + name}
               style={{ width: "100%" }}
               value={show_value}
               onChange={(e) => this.onInputChange(name, e)}
               onKeyDown={(e) => this.onInputKey(name, control_type, e)}
             />
-
+        
         </React.Fragment> 
         )
       }
@@ -749,14 +829,15 @@ class Nepi_IF_Control extends Component {
         return (
 
         <React.Fragment>
-          <Label title={display_name} key={name}>
-          </Label>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
 
-            <div hidden={show_bound === false}>
+            <div hidden={show_bounds === false}>
               {this.renderBounds(min_bound,max_bound)}
             </div>
             
-            {this.renderDoubleControl(name, control_type, show_value, options)}
+            {this.renderDoubleControl(name, control_type, show_value, labels, control_disabled)}
 
         </React.Fragment> 
         )
@@ -767,14 +848,15 @@ class Nepi_IF_Control extends Component {
         return (
 
         <React.Fragment>
-          <Label title={display_name} key={name}>
-          </Label>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
 
-            <div hidden={show_bound === false}>
+            <div hidden={show_bounds === false}>
               {this.renderBounds(min_bound,max_bound)}
             </div>
             
-            {this.renderTripleControl(name, control_type, show_value, options)}
+            {this.renderTripleControl(name, control_type, show_value, labels, control_disabled)}
 
         </React.Fragment> 
         )
@@ -807,20 +889,23 @@ class Nepi_IF_Control extends Component {
 
 
       // FLOATSLIDERS -- a multi-select: each option gets its own float slider. 
-      // names come from the options list. On every toggle
+      // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       if (control_type === "FloatSliders") {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 1
         return (
-          <Label title={display_name} key={name}>
+        <React.Fragment>
+          <div hidden={show_header_label === false }>
+          <Label title={display_name} key={name}></Label>
+          </div>
                   <div>
                     {/* Map over the device names array */}
-                    {options.map((slider_name, index) => (
-                      this.renderFloatSliderControl(slider_name, values[index], min, max, round_value, round_display, index)
+                    {labels.map((slider_name, index) => (
+                      this.renderFloatSliderControl(slider_name, values[index], min, max, round_value, round_display, index, control_disabled)
                     ))}
                   </div>
-          </Label>
+        </React.Fragment>
         )
       }
 
@@ -833,6 +918,7 @@ class Nepi_IF_Control extends Component {
         const max_limit = (max_bound !== -999) ? max_bound : 100
         return (
           <RangeAdjustment
+            disabled={control_disabled}
             key={name}
             title={display_name}
             comp_name={name}
@@ -850,7 +936,7 @@ class Nepi_IF_Control extends Component {
 
 
       // ColorRGB -- an multi-select: each option (R,G,B) gets its own int slider.
-      // names come from the options list. On every toggle
+      // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       if (control_type === "ColorRGB") {
         const min = 0
@@ -875,12 +961,12 @@ class Nepi_IF_Control extends Component {
                 </Column>
               </Columns>
 
-                  {this.renderTripleControl(name, control_type, value, options)}
+                  {this.renderTripleControl(name, control_type, value, labels)}
           
                   <div>
                     {/* Map over the device names array */}
-                    {options.map((slider_name, index) => (
-                      this.renderIntSliderControl(slider_name, values[index], min, max, index)
+                    {labels.map((slider_name, index) => (
+                      this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
                     ))}
                   </div>
 

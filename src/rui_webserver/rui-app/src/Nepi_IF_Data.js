@@ -21,25 +21,27 @@ import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
 
 import Toggle from "react-toggle"
+import AsyncToggle from "./AsyncToggle"
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
+import Select, { Option } from "./Select"
 import Label from "./Label"
 import Input from "./Input"
 import Styles from "./Styles"
-import BooleanIndicator from "./BooleanIndicator"
+import Button, { ButtonMenu } from "./Button"
+import { SliderAdjustment } from "./AdjustmentWidgets"
+import RangeAdjustment from "./RangeAdjustment"
 
-import { round, onChangeSwitchStateValue } from "./Utilities"
+import { setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue } from "./Utilities"
+
+
+import Nepi_IF_Datum from "./Nepi_IF_Datum"
 
 @inject("ros")
 @observer
 
-// Component that contains the DataIF read-only data display. Renders one row
-// per datum from a nepi_interfaces/DataStatus message.
-//
-// This component is display only. It has no publishers, no editable inputs and
-// no calls into any Store.js send function. The node that owns the DataIF is
-// the only writer of record. The single Toggle below drives local component
-// state ("Show Data") and never touches ROS.
+// Component that contains the DataIF data. Renders one widget per
+// datum from a nepi_interfaces/DataStatus message.
 class Nepi_IF_Data extends Component {
   constructor(props) {
     super(props)
@@ -48,9 +50,6 @@ class Nepi_IF_Data extends Component {
       dataNamespace: null,
       status_msg: null,
 
-      // "Show Data" toggle state (Nepi_IF_Controls pattern). Defaults shown;
-      // can be overridden via the show_data prop or forced on via
-      // allways_show_data.
       show_data: (this.props.show_data !== undefined) ? this.props.show_data : true,
 
       statusListener: null,
@@ -61,6 +60,7 @@ class Nepi_IF_Data extends Component {
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
     this.renderDatum = this.renderDatum.bind(this)
+
   }
 
   getNamespace() {
@@ -74,8 +74,7 @@ class Nepi_IF_Data extends Component {
     return namespace
   }
 
-  // Nothing in this component is editable, so the incoming status is tracked
-  // directly -- there is no in-progress edit to reconcile against it.
+
   statusListener(message) {
     this.setState({ status_msg: message })
   }
@@ -100,15 +99,14 @@ class Nepi_IF_Data extends Component {
   componentDidUpdate(prevProps, prevState, snapshot) {
     const namespace = this.getNamespace()
     const props_status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : null
-    // dataNamespace, not controlsNamespace: this component never sets a
-    // controlsNamespace, so comparing against it made every render look like a
-    // namespace change and resubscribe.
     const namespace_changed = (namespace !== this.state.dataNamespace)
     if ((namespace != null && namespace_changed && props_status_msg == null) || this.state.needs_update === true) {
       this.updateStatusListener(namespace)
     }
-    // Guarded for the same reason as Nepi_IF_Controls: an unconditional
-    // setState here re-enters componentDidUpdate on every render.
+    // Guarded: an unconditional setState here re-enters componentDidUpdate on
+    // every render (mobx-react's observer SCU re-renders on any state identity
+    // change), which is an infinite update loop, and it also cleared the
+    // operator's in-progress edits on every frame.
     if (namespace_changed === true || this.state.needs_update === true) {
       this.setState({ dataNamespace: namespace, needs_update: false})
     }
@@ -125,102 +123,41 @@ class Nepi_IF_Data extends Component {
     }
   }
 
-  // Render a single datum given its type and Datum message. Every branch below
-  // is read-only: a disabled Input value box for numbers and strings, a
-  // BooleanIndicator for bools. Array types render one box (or one indicator)
-  // per element in a single row, matching the side-by-side pattern in
-  // Nepi_IF_PTX-Data.js.
-  renderDatum(name, type, datum_msg, index) {
-    const display_name = (datum_msg.display_name && datum_msg.display_name !== '') ? datum_msg.display_name : name
-    const description = datum_msg.description || ''
 
-    // round_display is the number of decimals the RUI formats a Float/Floats
-    // value to. Default 2 when the datum does not carry a sane value.
-    const decimals = (typeof datum_msg.round_display === 'number' && datum_msg.round_display >= 0) ? datum_msg.round_display : 2
-
-    // BOOL -- read-only indicator (green on, grey off). Never a Toggle.
-    if (type === "Bool") {
+  // Render a single datum given its type and Datum message.
+  // Each block below maps one nepi_data datum type to its RUI widget and
+  // the nepi_data "set_*_datum_value" topic it publishes to on change.
+  renderDatum(datum_msg) {
+    const namespace = this.getNamespace()
       return (
-        <Label title={display_name} key={name}>
-          <BooleanIndicator title={description} value={(datum_msg.value_bool === true)} />
-        </Label>
-      )
-    }
 
-    // BOOLS -- one read-only indicator per element, in element order.
-    if (type === "Bools") {
-      const values = datum_msg.value_bools || []
-      return (
-        <Label title={display_name} key={name}>
-          <div>
-            {values.map((v, i) => (
-              <div key={name + '_' + i} style={{ display: "inline-block", marginRight: Styles.vars.spacing.regular }}>
-                <BooleanIndicator title={description} value={(v === true)} />
-              </div>
-            ))}
-          </div>
-        </Label>
-      )
-    }
 
-    // STRING / INT / FLOAT -- a single read-only value box.
-    if (type === "String" || type === "Int" || type === "Float") {
-      var value = ''
-      if (type === "String") { value = datum_msg.value_string }
-      else if (type === "Int") { value = datum_msg.value_int }
-      else { value = round(datum_msg.value_float, decimals) }
-      return (
-        <Label title={display_name} key={name}>
-          <Input disabled title={description} style={{ width: "100%" }} value={value} />
-        </Label>
-      )
-    }
-
-    // STRINGS / INTS / FLOATS -- one read-only value box per element, in
-    // element order, side by side in one row.
-    if (type === "Strings" || type === "Ints" || type === "Floats") {
-      var values = []
-      if (type === "Strings") { values = datum_msg.value_strings || [] }
-      else if (type === "Ints") { values = datum_msg.value_ints || [] }
-      else { values = (datum_msg.value_floats || []).map((v) => round(v, decimals)) }
-      const boxWidth = (values.length > 0) ? Math.floor(90 / values.length) + "%" : "90%"
-      return (
-        <Label title={display_name} key={name}>
-          {values.map((v, i) => (
-            <Input
-              key={name + '_' + i}
-              disabled
-              title={description}
-              style={{ width: boxWidth, float: "left" }}
-              value={(v !== '-999' && v !== -999) ? v : 'UNSET'}
+         <Nepi_IF_Datum
+              namespace={namespace}
+              datum_msg={datum_msg}
             />
-          ))}
-        </Label>
-      )
-    }
 
-    return null
+      )
+
   }
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : this.state.status_msg
-    // Show Data toggle (Nepi_IF_Controls pattern). The data set is shown when
-    // DataStatus.show_data is true; the toggle is only offered when the node
-    // says it has one (DataStatus.has_show_control). allways_show_data forces
-    // the data open and hides the toggle.
-    const allways_show_data = (this.props.allways_show_data !== undefined) ? this.props.allways_show_data : false
-    const status_show_data = (status_msg != null) ? (status_msg.show_data === true) : true
-    const has_show_control = (status_msg != null) ? (status_msg.has_show_control === true) : false
-    const show_data = (allways_show_data === true) ? true : (this.state.show_data && status_show_data)
 
-    const show_data_toggle = (allways_show_data === false && has_show_control === true) ? (
+    // Show Data toggle (Nepi_IF_Settings pattern). allways_show_data
+    // forces the data open and hides the toggle.
+    const allways_show_data = (this.props.allways_show_data !== undefined) ? this.props.allways_show_data : false
+    const show_data = (allways_show_data === true) ? true : this.state.show_data
+
+    const show_data_toggle = (allways_show_data === false) ? (
       <Columns>
         <Column>
           <Label title="Show Data">
+            {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
             <Toggle
               checked={show_data === true}
-              onClick={() => onChangeSwitchStateValue.bind(this)("show_data", this.state.show_data)}>
+              onClick={() => onChangeSwitchStateValue.bind(this)("show_data", show_data)}>
             </Toggle>
           </Label>
         </Column>
@@ -229,23 +166,19 @@ class Nepi_IF_Data extends Component {
       </Columns>
     ) : null
 
-    // Data rows, one per non-hidden datum, in data_name_list order. Only built
-    // when the section is expanded and a status has arrived.
+
     var data_body = null
     if (show_data === true && status_msg != null) {
       const names = status_msg.data_name_list || []
       const types = status_msg.data_type_list || []
       const msgs = status_msg.data_msg_list || []
-      const hiddens = status_msg.data_hidden_list || []
       data_body = (
         <Columns>
           <Column>
             {names.map((name, i) => {
               const datum_msg = msgs[i]
               if (datum_msg == null) { return null }
-              // Hidden data are not shown in the Data box.
-              if (hiddens[i] === true || datum_msg.hidden === true) { return null }
-              return this.renderDatum(name, types[i], datum_msg, i)
+              return this.renderDatum(datum_msg)
             })}
           </Column>
         </Columns>

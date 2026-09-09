@@ -50,17 +50,6 @@ class Nepi_IF_Controls extends Component {
       controlsNamespace: null,
       status_msg: null,
 
-      // name -> in-progress edit string for editable text/number inputs
-      editValues: {},
-
-      // name -> { baseline, typed, type } for values we have sent but not yet
-      // seen confirmed in an incoming status. Keeps the optimistic override in
-      // editValues alive until statusListener() reconciles it (see below).
-      pending: {},
-
-      // "Show Controls" toggle state (Nepi_IF_Settings pattern). Defaults shown;
-      // can be overridden via the show_controls prop or forced on via
-      // allways_show_controls.
       show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : true,
 
       statusListener: null,
@@ -70,7 +59,6 @@ class Nepi_IF_Controls extends Component {
     this.getNamespace = this.getNamespace.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
-    this.getControlValue = this.getControlValue.bind(this)
     this.renderControl = this.renderControl.bind(this)
 
   }
@@ -86,100 +74,8 @@ class Nepi_IF_Controls extends Component {
     return namespace
   }
 
-  // Read the current value a control reports in a status message, by name and
-  // type. Returns null if the control isn't present or isn't an editable type.
-  getControlValue(message, name, type) {
-    if (message == null) { return null }
-    const names = message.controls_name_list || []
-    const i = names.indexOf(name)
-    if (i === -1) { return null }
-    const control_msg = message[i]
-
-    const LIST_TYPES = ["Selections","Toggles","RangeSlider"]
-
-    const STRING_TYPES = ["Selection","Selections","Toggles"]
-    const BOOL_TYPES = ["Toggle", "Toggles"]
-    const INT_TYPES = ["Int"]
-    const FLOAT_TYPES = ["Float","FloatSlider","RangeSlider"]
-    const EMPTY_TYPES = ['Trigger']
-
-    if (control_msg == null) { return null }
-    const msg_value = control_msg.value
-    var values_list = null
-    var value = null
-
-    if (STRING_TYPES.indexOf(type) !== -1){
-      values_list = msg_value
-    }
-    else if (BOOL_TYPES.indexOf(type) !== -1){
-      values_list = msg_value.map(item => item === 'true')
-    }
-    else if (FLOAT_TYPES.indexOf(type) !== -1){
-      value = msg_value.map(item => parseFloat(item))
-    }
-    else if (INT_TYPES.indexOf(type) !== -1){
-      values_list = msg_value.map(item => parseInt(item))
-    }
-    else if (EMPTY_TYPES.indexOf(type) !== -1){
-      values_list = msg_value.map(item => '')
-    }
-
-    if (values_list != null){
-      if (LIST_TYPES.indexOf(type) !== -1) { 
-        value = values_list
-      }
-      else if (values_list.length > 0){
-        value = values_list[0]
-      }
-    }
-
-    return value
-  }
-
   statusListener(message) {
-    // Reconcile any in-progress edits against the freshly received status.
-    // While a value is being edited we keep showing the user's typed text (an
-    // optimistic override in editValues) until this status confirms the change.
-    // We drop the override when either the backend value has moved off what it
-    // held when we sent (covers the node clamping/rejecting to a *different*
-    // value, e.g. Int bounds [0,10]) or it now equals what the user typed.
-    // Dropping the override in the same message that carries the new value lets
-    // the input hand off from typed-text to backend-value with no stale frame.
-    const pendingKeys = Object.keys(this.state.pending)
-    if (pendingKeys.length === 0) {
-      this.setState({ status_msg: message })
-      return
-    }
-    const editValues = { ...this.state.editValues }
-    const pending = { ...this.state.pending }
-    let changed = false
-    pendingKeys.forEach((name) => {
-      const p = pending[name]
-      const cur = this.getControlValue(message, name, p.type)
-      if (cur == null) { return }
-      var moved = false
-      var matches = false
-      if (p.type === "Int") {
-        moved = cur !== p.baseline
-        matches = cur === parseInt(p.typed, 10)
-      } else if (p.type === "Float") {
-        moved = cur !== p.baseline
-        matches = cur === parseFloat(p.typed)
-      } else { // String
-        moved = String(cur) !== String(p.baseline)
-        matches = String(cur) === String(p.typed)
-      }
-      if (moved || matches) {
-        delete editValues[name]
-        delete pending[name]
-        changed = true
-      }
-    })
-    if (changed) {
-      this.setState({ status_msg: message, editValues: editValues, pending: pending })
-    } else {
-      this.setState({ status_msg: message })
-    }
+    this.setState({ status_msg: message })
   }
 
   updateStatusListener(namespace) {
@@ -211,7 +107,7 @@ class Nepi_IF_Controls extends Component {
     // change), which is an infinite update loop, and it also cleared the
     // operator's in-progress edits on every frame.
     if (namespace_changed === true || this.state.needs_update === true) {
-      this.setState({ controlsNamespace: namespace, needs_update: false, editValues: {}, pending: {} })
+      this.setState({ controlsNamespace: namespace, needs_update: false})
     }
   }
 
@@ -232,14 +128,12 @@ class Nepi_IF_Controls extends Component {
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
   renderControl(control_msg) {
     const namespace = this.getNamespace()
-    const control_hidden = control_msg.hidden
       return (
 
 
          <Nepi_IF_Control
               namespace={namespace}
               control_msg={control_msg}
-              control_hidden={control_hidden}
             />
 
       )
@@ -271,8 +165,7 @@ class Nepi_IF_Controls extends Component {
       </Columns>
     ) : null
 
-    // Controls widgets, one per non-hidden control. Only built when the section
-    // is expanded and a status has arrived.
+
     var controls_body = null
     if (show_controls === true && status_msg != null) {
       const names = status_msg.controls_name_list || []
@@ -284,9 +177,6 @@ class Nepi_IF_Controls extends Component {
             {names.map((name, i) => {
               const control_msg = msgs[i]
               if (control_msg == null) { return null }
-              // Hidden controls are not shown in the Controls box (they remain
-              // manageable from the Controls Settings box).
-              if (control_msg.hidden === true) { return null }
               return this.renderControl(control_msg)
             })}
           </Column>

@@ -38,7 +38,7 @@ import { onChangeSwitchStateValue} from "./Utilities"
 @observer
 
 // Component that contains the Process controls
-class Nepi_IF_ConnectProcess extends Component {
+class Nepi_IF_Process extends Component {
   constructor(props) {
     super(props)
 
@@ -215,17 +215,11 @@ class Nepi_IF_ConnectProcess extends Component {
 
 
     const has_controls = status_msg.has_controls
-    var allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_controls): false
-    var show_controls = (allways_show_controls === true) ? true : this.state.show_controls
-    if (status_msg.show_controls === false || controls_restricted === true || has_controls === false) {
-      allways_show_controls = false
-      show_controls = false
-    }
-    else {
-      show_controls = (show_controls === true || allways_show_controls === true)
-    }
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_controls): false
+    const show_controls = (this.props.show_controls !== undefined) ? (this.props.show_controls  && has_controls): has_controls
 
     const has_results = status_msg.has_results
+    const allways_show_results = (this.props.allways_show_results !== undefined) ? (this.props.allways_show_results  && has_results): false
     const show_results = (this.props.show_results !== undefined) ? (this.props.show_results  && has_results): has_results
     
 
@@ -291,7 +285,7 @@ class Nepi_IF_ConnectProcess extends Component {
               <Nepi_IF_Data
                 make_section={false}
                 title={null}
-                allways_show_data={true}
+                allways_show_data={allways_show_results}
                 namespace={ status_msg.namespace}
                 status_msg={status_msg.results}
                 />
@@ -303,37 +297,13 @@ class Nepi_IF_ConnectProcess extends Component {
                   node reports back, and they are shown separately so an enable
                   the node could not honour is visible rather than silent. */}
  
-
-              <Columns>
-                <Column>
-
-
-                    {(allways_show_controls === false && has_controls === true) ?
-                    <Label title="Show Controls">
-                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                        <Toggle
-                          checked={show_controls===true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls",show_controls)}>
-                        </Toggle>
-                    </Label>
-                    : null }
-
-                  </Column>
-                  <Column>
-
-
-
-                  </Column>
-                </Columns>
-
-
-
+                
 
       { ( show_controls === true ) ?
       <NepiIFControls
         make_section={false}
         title={null}
-        allways_show_controls={true}
+        allways_show_controls={allways_show_controls}
         namespace={ status_msg.namespace}
         status_msg={status_msg.controls}
         />
@@ -399,4 +369,4 @@ class Nepi_IF_ConnectProcess extends Component {
   }
 
 }
-export default Nepi_IF_ConnectProcess
+export default Nepi_IF_Process
