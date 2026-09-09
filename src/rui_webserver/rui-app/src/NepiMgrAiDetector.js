@@ -843,7 +843,7 @@ renderDetectorSettings() {
       var source_topic = "None"
       var shortname = ''
       if (status_msg != null){
-              const image_pub_topics = process_status_msg.imaging_pub_topics
+              const image_pub_topics = process_status_msg.image_pub_topics
               const image_names = createMenuFirstLastNames(image_pub_topics)
               if (image_pub_topics.length > 0){
                 if (selected_image_topic_found === false){
