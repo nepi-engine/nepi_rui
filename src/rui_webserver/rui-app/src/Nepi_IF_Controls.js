@@ -175,9 +175,10 @@ class Nepi_IF_Controls extends Component {
         <Columns>
           <Column>
             {names.map((name, i) => {
-              const control_msg = msgs[i]
-              if (control_msg == null) { return null }
-              return this.renderControl(control_msg)
+                <Nepi_IF_Control
+                  namespace={namespace}
+                  control_msg={msg[i]}
+                />
             })}
           </Column>
         </Columns>
