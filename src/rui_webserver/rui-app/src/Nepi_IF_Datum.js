@@ -316,11 +316,20 @@ class Nepi_IF_Datum extends Component {
       // Value inputs whose value tracks either the in-progress edit or the message
 
 
-      if (datum_hidden === true){return (null)}
+
+      if (datum_hidden === true){
+        return (
+            <React.Fragment>
+
+            </React.Fragment>
+        )
+
+
+      }
 
       // Bool -- a single on/off switch. Sends the *opposite* of the current
       // value as a Toggle each time it is clicked.
-      if (datum_type === "Bool") {
+      else if (datum_type === "Bool") {
         const checked = (value === 'True' || value === 'true' || value === true)
         return (
           <Label title={display_name} key={name}>
@@ -338,7 +347,7 @@ class Nepi_IF_Datum extends Component {
       // Bools -- a multi-select: each option gets its own toggle. The value
       // is the full array of currently-selected option strings. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (datum_type === "Bools") {
+      else if (datum_type === "Bools") {
         const na_options = ['NONE','ALL']
         const show_options =  [...na_options, ...labels]
         return (
@@ -379,7 +388,7 @@ class Nepi_IF_Datum extends Component {
       // editable-input pattern: the box shows an in-progress edit string while
       // the user types, and the value is sent (parsed to the right datum_type) only on
       // Enter. See onInputChange / onInputKey above.
-      if (datum_type === "String") {
+      else if (datum_type === "String") {
         const show_value =  value
         return (
           <Label title={display_name} key={name}>
@@ -391,7 +400,7 @@ class Nepi_IF_Datum extends Component {
         )
       }
   
-      if (datum_type === "Strings") {
+      else if (datum_type === "Strings") {
         const show_value =  values
         return (
           <Label title={display_name} key={name}>
@@ -406,7 +415,7 @@ class Nepi_IF_Datum extends Component {
     
       // TRIGGER -- a momentary action. There is no persistent value; pressing the
       // button fires a one-shot trigger (an empty String payload).
-      if (datum_type === "Trigger") {
+      else if (datum_type === "Trigger") {
 
         const show_value = round( value, round_display)
         var button_title = "Trigger"
@@ -452,7 +461,7 @@ class Nepi_IF_Datum extends Component {
       // editable-input pattern: the box shows an in-progress edit string while
       // the user types, and the value is sent (parsed to the right datum_type) only on
       // Enter. See onInputChange / onInputKey above.
-      if (datum_type === "Int") {
+      else if (datum_type === "Int") {
         const show_value =  value
         return (
 
@@ -474,7 +483,7 @@ class Nepi_IF_Datum extends Component {
         )
       }
 
-      if (datum_type === "IntDouble") {
+      else if (datum_type === "IntDouble") {
         
         return (
 
@@ -493,7 +502,7 @@ class Nepi_IF_Datum extends Component {
         )
       }
 
-      if (datum_type === "IntTriple") {
+      else if (datum_type === "IntTriple") {
         
         return (
 
@@ -516,7 +525,7 @@ class Nepi_IF_Datum extends Component {
       // Ints -- a multi-select: each option gets its own int slider. 
       // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (datum_type === "Ints") {
+      else if (datum_type === "Ints") {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 255
         return (
@@ -541,7 +550,7 @@ class Nepi_IF_Datum extends Component {
       // editable-input pattern: the box shows an in-progress edit string while
       // the user types, and the value is sent (parsed to the right datum_type) only on
       // Enter. See onInputChange / onInputKey above.
-      if (datum_type === "Float") {
+      else if (datum_type === "Float") {
         const show_value = round( value, round_display)
         return (
 
@@ -563,7 +572,7 @@ class Nepi_IF_Datum extends Component {
         )
       }
 
-      if (datum_type === "FloatDouble") {
+      else if (datum_type === "FloatDouble") {
         const show_value = round( value, round_display)
         return (
 
@@ -582,7 +591,7 @@ class Nepi_IF_Datum extends Component {
         )
       }
 
-      if (datum_type === "FloatTriple") {
+      else if (datum_type === "FloatTriple") {
         const show_value = round( value, round_display)
         return (
 
@@ -606,7 +615,7 @@ class Nepi_IF_Datum extends Component {
       // Floats -- a multi-select: each option gets its own float slider. 
       // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (datum_type === "Floats") {
+      else if (datum_type === "Floats") {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 1
         return (
@@ -630,7 +639,7 @@ class Nepi_IF_Datum extends Component {
       // ColorRGB -- an multi-select: each option (R,G,B) gets its own int slider.
       // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (datum_type === "ColorRGB") {
+      else if (datum_type === "ColorRGB") {
         const min = 0
         const max = 255
         const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
@@ -664,7 +673,16 @@ class Nepi_IF_Datum extends Component {
       }
 
 
-      return null
+
+      else {
+        return (
+            <React.Fragment>
+
+            </React.Fragment>
+        )
+
+
+      }
     }
   }
 

@@ -486,10 +486,22 @@ class Nepi_IF_Control extends Component {
       const editing = (name in this.state.editValues)
 
 
-      if (control_hidden === true){return (null)}
+      if (control_hidden === true){
+        return (
+            <React.Fragment>
+
+            </React.Fragment>
+        )
+
+
+      }
+
+
+
+
       // MENU -- drop-down of string options; the control's value is the *index*
       // of the selected option. Sends the new index as an Int.
-      if (control_type === "Menu") {
+      else if (control_type === "Menu") {
         const display_value = (options.length >= value) ? options[value] : 'Option_' + String(value)
         return (
           <Label title={display_name} key={name}>
@@ -510,7 +522,7 @@ class Nepi_IF_Control extends Component {
       // TOGGLES -- a multi-select: each option gets its own toggle. The value
       // is the full array of currently-selected option strings. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (control_type === "Toggles") {
+      else if (control_type === "Toggles") {
         const na_options = ['NONE','ALL']
         const show_options =  [...na_options, ...labels]
         return (
@@ -546,7 +558,7 @@ class Nepi_IF_Control extends Component {
       // "Discrete" is an alias of "Selection", not a separate control_type: it is the
       // spelling driver params yaml files use for the same named option list,
       // so it renders through this same branch. 
-      if (control_type === "Selection" || control_type === "Discrete") {
+      else if (control_type === "Selection" || control_type === "Discrete") {
         return (
           <Label title={display_name} key={name}>
             <Select
@@ -562,7 +574,7 @@ class Nepi_IF_Control extends Component {
       }
 
     
-      if (control_type === "Selections") {
+      else if (control_type === "Selections") {
         // "None" and "All" are actions, not selectable options: they are never
         // highlighted and are never sent as values -- they resolve to [] and to
         // the full option list respectively. Mixed case, and the collapsed
@@ -615,7 +627,7 @@ class Nepi_IF_Control extends Component {
 
       // TRIGGER -- a momentary action. There is no persistent value; pressing the
       // button fires a one-shot trigger (an empty String payload).
-      if (control_type === "Trigger") {
+      else if (control_type === "Trigger") {
 
         const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
         var button_title = "Trigger"
@@ -657,7 +669,7 @@ class Nepi_IF_Control extends Component {
 
       // TOGGLE -- a single on/off switch. Sends the *opposite* of the current
       // value as a Toggle each time it is clicked.
-      if (control_type === "Toggle") {
+      else if (control_type === "Toggle") {
         const checked = (value === 'True' || value === 'true' || value === true)
         return (
           <Label title={display_name} key={name}>
@@ -674,7 +686,7 @@ class Nepi_IF_Control extends Component {
       // editable-input pattern: the box shows an in-progress edit string while
       // the user types, and the value is sent (parsed to the right control_type) only on
       // Enter. See onInputChange / onInputKey above.
-      if (control_type === "String" ) {
+      else if (control_type === "String" ) {
         const show_value = (editing === true) ? this.state.editValues[name] : value
         return (
           <Label title={display_name} key={name}>
@@ -694,7 +706,7 @@ class Nepi_IF_Control extends Component {
       // editable-input pattern: the box shows an in-progress edit string while
       // the user types, and the value is sent (parsed to the right control_type) only on
       // Enter. See onInputChange / onInputKey above.
-      if (control_type === "Int") {
+      else if (control_type === "Int") {
         const show_value = (editing === true) ? this.state.editValues[name] : value
         return (
 
@@ -721,7 +733,7 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      if (control_type === "IntDouble") {
+      else if (control_type === "IntDouble") {
         
         return (
 
@@ -740,7 +752,7 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      if (control_type === "IntTriple") {
+      else if (control_type === "IntTriple") {
         
         return (
 
@@ -760,37 +772,37 @@ class Nepi_IF_Control extends Component {
       }
 
 
-      // INTSLIDER -- a single decimal value dragged between a min and max.
-      // bounds carries [min, max]; -999 in either slot means "no limit",
-      // in which case we fall back to a sensible default (0 / 100).
-      if (control_type === "IntSlider") {
-        const min = (min_bound !== -999) ? min_bound : 0
-        const max = (max_bound !== -999) ? max_bound : 255
+      // // INTSLIDER -- a single decimal value dragged between a min and max.
+      // // bounds carries [min, max]; -999 in either slot means "no limit",
+      // // in which case we fall back to a sensible default (0 / 100).
+      // else if (control_type === "IntSlider") {
+      //   const min = (min_bound !== -999) ? min_bound : 0
+      //   const max = (max_bound !== -999) ? max_bound : 255
       
-        this.renderIntSliderControl(name,value,min,max,'', control_disabled)
-      }
+      //   this.renderIntSliderControl(name,value,min,max,'', control_disabled)
+      // }
 
 
-      // INTSLIDERS -- a multi-select: each option gets its own int slider. 
-      // names come from the labels list. On every toggle
-      // we send the complete desired selection (declarative), not a single delta.
-      if (control_type === "IntSliders") {
-        const min = (min_bound !== -999) ? min_bound : 0
-        const max = (max_bound !== -999) ? max_bound : 255
-        return (
-        <React.Fragment>
-          <div hidden={show_header_label === false }>
-          <Label title={display_name} key={name}></Label>
-          </div>
-                  <div>
-                    {/* Map over the device names array */}
-                    {labels.map((slider_name, index) => (
-                      this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
-                    ))}
-                  </div>
-          </React.Fragment>
-        )
-      }
+      // // INTSLIDERS -- a multi-select: each option gets its own int slider. 
+      // // names come from the labels list. On every toggle
+      // // we send the complete desired selection (declarative), not a single delta.
+      // else if (control_type === "IntSliders") {
+      //   const min = (min_bound !== -999) ? min_bound : 0
+      //   const max = (max_bound !== -999) ? max_bound : 255
+      //   return (
+      //   <React.Fragment>
+      //     <div hidden={show_header_label === false }>
+      //     <Label title={display_name} key={name}></Label>
+      //     </div>
+      //             <div>
+      //               {/* Map over the device names array */}
+      //               {labels.map((slider_name, index) => (
+      //                 this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
+      //               ))}
+      //             </div>
+      //     </React.Fragment>
+      //   )
+      // }
 
 
 
@@ -798,7 +810,7 @@ class Nepi_IF_Control extends Component {
       // editable-input pattern: the box shows an in-progress edit string while
       // the user types, and the value is sent (parsed to the right control_type) only on
       // Enter. See onInputChange / onInputKey above.
-      if (control_type === "Float") {
+      else if (control_type === "Float") {
         const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
         return (
 
@@ -824,7 +836,7 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      if (control_type === "FloatDouble") {
+      else if (control_type === "FloatDouble") {
         const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
         return (
 
@@ -843,7 +855,7 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      if (control_type === "FloatTriple") {
+      else if (control_type === "FloatTriple") {
         const show_value = round((editing === true) ? this.state.editValues[name] : value, round_display)
         return (
 
@@ -866,7 +878,7 @@ class Nepi_IF_Control extends Component {
       // // FLOATSLIDER -- a single decimal value dragged between a min and max.
       // // bounds carries [min, max]; -999 in either slot means "no limit",
       // // in which case we fall back to a sensible default (0 / 100).
-      // if (control_type === "FloatSlider") {
+      // else if (control_type === "FloatSlider") {
       //   const min = (min_bound !== -999) ? min_bound : 0
       //   const max = (max_bound !== -999) ? max_bound : 1
 
@@ -891,7 +903,7 @@ class Nepi_IF_Control extends Component {
       // // FLOATSLIDERS -- a multi-select: each option gets its own float slider. 
       // // names come from the labels list. On every toggle
       // // we send the complete desired selection (declarative), not a single delta.
-      // if (control_type === "FloatSliders") {
+      // else if (control_type === "FloatSliders") {
       //   const min = (min_bound !== -999) ? min_bound : 0
       //   const max = (max_bound !== -999) ? max_bound : 1
       //   return (
@@ -912,7 +924,7 @@ class Nepi_IF_Control extends Component {
       // RANGESLIDER -- a min/max *range* dragged between two limits. values
       // holds the current [min, max] handles; bounds holds the outer
       // [min_limit, max_limit] the handles may move within.
-      if (control_type === "RangeSlider") {
+      else if (control_type === "RangeSlider") {
         const values = control_msg.values || [0, 1]
         const min_limit = (min_bound !== -999) ? min_bound : 0
         const max_limit = (max_bound !== -999) ? max_bound : 100
@@ -938,7 +950,7 @@ class Nepi_IF_Control extends Component {
       // ColorRGB -- an multi-select: each option (R,G,B) gets its own int slider.
       // names come from the labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
-      if (control_type === "ColorRGB") {
+      else if (control_type === "ColorRGB") {
         const min = 0
         const max = 255
         const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
@@ -977,8 +989,13 @@ class Nepi_IF_Control extends Component {
         )
       }
 
+      else{
+        return (
+            <React.Fragment>
 
-      return null
+            </React.Fragment>
+        )
+      }
     }
   }
 
