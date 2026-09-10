@@ -50,7 +50,7 @@ class Nepi_IF_Controls extends Component {
       controlsNamespace: null,
       status_msg: null,
 
-      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : true,
+      show_controls: (this.props.show_controls !== undefined) ? this.props.show_controls : false,
 
       statusListener: null,
       needs_update: false
@@ -59,6 +59,7 @@ class Nepi_IF_Controls extends Component {
     this.getNamespace = this.getNamespace.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
+    this.renderControls = this.renderControls.bind(this)
     this.renderControl = this.renderControl.bind(this)
 
   }
@@ -126,10 +127,55 @@ class Nepi_IF_Controls extends Component {
   // Render a single control given its type and Control message.
   // Each block below maps one nepi_controls control type to its RUI widget and
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
+  renderControls(status_msg) {
+    const control_msgs = (status_msg.controls_msg_list !== undefined) ? status_msg.controls_msg_list : []
+
+    // Show Controls toggle (Nepi_IF_Settings pattern). allways_show_controls
+    // forces the controls open and hides the toggle.
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
+
+
+    return (
+          <React.Fragment>
+
+
+              {(allways_show_controls === false) ?
+                  <Columns>
+                    <Column>
+                      <Label title="Show Controls">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+                        <Toggle
+                          checked={show_controls === true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls", show_controls)}>
+                        </Toggle>
+                      </Label>
+                    </Column>
+                    <Column>
+                    </Column>
+                  </Columns>
+                : null             
+            }
+
+
+            {(show_controls === true) ?
+                  control_msgs.map((control_msg) => ( this.renderControl(control_msg) ) )
+                : null             
+            }
+
+          </React.Fragment>
+    )
+   
+
+  }
+
+
+  // Render a single control given its type and Control message.
+  // Each block below maps one nepi_controls control type to its RUI widget and
+  // the nepi_controls "set_*_control_value" topic it publishes to on change.
   renderControl(control_msg) {
     const namespace = this.getNamespace()
       return (
-
 
          <Nepi_IF_Control
               namespace={namespace}
@@ -144,64 +190,36 @@ class Nepi_IF_Controls extends Component {
     const namespace = this.getNamespace()
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : this.state.status_msg
-
-    // Show Controls toggle (Nepi_IF_Settings pattern). allways_show_controls
-    // forces the controls open and hides the toggle.
-    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
-    const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
-
-    const show_controls_toggle = (allways_show_controls === false) ? (
-      <Columns>
-        <Column>
-          <Label title="Show Controls">
-            {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-            <Toggle
-              checked={show_controls === true}
-              onClick={() => onChangeSwitchStateValue.bind(this)("show_controls", show_controls)}>
-            </Toggle>
-          </Label>
-        </Column>
-        <Column>
-        </Column>
-      </Columns>
-    ) : null
+    const title = (this.props.title !== undefined) ? this.props.title : "CONTROLS"
 
 
-    var controls_body = null
-    if (show_controls === true && status_msg != null) {
-      const names = status_msg.controls_name_list || []
-      const types = status_msg.controls_type_list || []
-      const msgs = status_msg.controls_msg_list || []
-      controls_body = (
-        <Columns>
-          <Column>
-            {msgs.map((msg) => { return (
-                <Nepi_IF_Control
-                  namespace={namespace}
-                  control_msg={msg}
-                />
-            )
-            })}
-          </Column>
-        </Columns>
+    if (namespace == null || status_msg == null) {
+      return (
+          <React.Fragment>
+
+          </React.Fragment>
       )
     }
+    else if (make_section === false) {
+      const control_msgs = status_msg.controls_msg_list || []
+      return (
+          <React.Fragment>
 
-    const body = (
-      <React.Fragment>
-        {show_controls_toggle}
-        {controls_body}
-      </React.Fragment>
-    )
+              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+              <Label title={title} />
 
-    if (make_section === false) {
-      return body
+              {this.renderControls(status_msg)}
+          </React.Fragment>
+      )
     }
-    return (
-      <Section title={(this.props.title !== undefined) ? this.props.title : "CONTROLS"}>
-        {body}
+    else {
+      const control_msgs = status_msg.controls_msg_list || []
+      return (
+      <Section title={title}>
+          {this.renderControls(status_msg)}
       </Section>
-    )
+      )
+    }
   }
 }
 
