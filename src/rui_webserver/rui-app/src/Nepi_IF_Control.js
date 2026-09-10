@@ -55,6 +55,14 @@ class Nepi_IF_Control extends Component {
     this.INT_TYPES = ["Menu","Int","Ints","IntSlider","ColorRGB"]
     this.FLOAT_TYPES = ["Float","Floats","FloatSlider","RangeSlider"]
     this.TRIGGER_TYPES = ['Button','Buttons']
+    // The single-value types, mirroring nepi_controls.SINGLE_TYPES. The engine
+    // tests this list FIRST and hands back value[0] for anything in it, so a
+    // Selection reports one option string even though it is also a LIST_TYPE.
+    // getControlValue has to make the same call in the same order.
+    this.SINGLE_TYPES = ["Menu","Button","Toggle",
+                         "String","Selection",
+                         "Int","IntSlider",
+                         "Float","FloatSlider"]
 
 
     this.state = {
@@ -138,7 +146,14 @@ class Nepi_IF_Control extends Component {
       values_list = msg_value.map(item => parseFloat(item))
     }
 
-    return values
+    if (values_list == null) { return null }
+    // Control.value is always a string[] on the wire, one entry per component.
+    // Single-value types unwrap to their one entry; everything else keeps the
+    // list, which is what the multi-component branches map over.
+    if (this.SINGLE_TYPES.indexOf(control_type) !== -1) {
+      return (values_list.length > 0) ? values_list[0] : null
+    }
+    return values_list
   }
 
   
@@ -170,12 +185,14 @@ class Nepi_IF_Control extends Component {
     // to detect when the backend has acted on our change.
     const baseline = this.getControlValue()
     var sent = false
-    if (IS_STRING_TYPE === true) {
+    // indexOf returns an index, never true, so none of these branches could
+    // fire: pressing Enter in a text box published nothing at all.
+    if (IS_STRING_TYPE !== -1) {
       sendUpdateControlValue(namespace  + "/" + topic, name, raw)
-    } else if (IS_INT_TYPE === true) {
+    } else if (IS_INT_TYPE !== -1) {
       const val = parseInt(raw, 10)
       if (!Number.isNaN(val)) { sendUpdateControlValue(namespace  + "/" + topic, name, raw); sent = true }
-    } else if (IS_FLOAT_TYPE === true) {
+    } else if (IS_FLOAT_TYPE !== -1) {
       const val = parseFloat(raw)
       if (!Number.isNaN(val)) { sendUpdateControlValue(namespace  + "/" + topic, name, raw); sent = true }
     }
@@ -192,7 +209,11 @@ class Nepi_IF_Control extends Component {
     const el = document.getElementById('csbx_' + name)
     if (el) { setElementStyleModified(el) }
     const editValues = { ...this.state.editValues }
-    var update_values = this.getControlValue()
+    // List form, for the same reason render() needs it: a single-value control
+    // reports a scalar, whose .length is undefined, so the guard below was
+    // false and a keystroke in the box updated nothing.
+    const current = this.getControlValue()
+    var update_values = (current == null) ? [] : (Array.isArray(current) ? current : [current])
     if (update_values.length > index){
         update_values[index] = e.target.value
         editValues[name] = update_values
@@ -219,22 +240,24 @@ class Nepi_IF_Control extends Component {
     // to detect when the backend has acted on our change.
     const baseline = this.getControlValue()
     var sent = false
-    if (control_type === "ColorRBG") {
+    // Same two fixes as onInputKey: the type is spelled ColorRGB, and indexOf
+    // returns an index rather than true, so no per-component edit ever sent.
+    if (control_type === "ColorRGB") {
       const val = parseInt(raw, 10)
-      if (!Number.isNaN(val)) { 
+      if (!Number.isNaN(val)) {
         if (val >= 0 && val <= 255){
-          sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true 
+          sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true
         }
       }
     }
-    else if (IS_STRING_TYPE === true) {
+    else if (IS_STRING_TYPE !== -1) {
       sendUpdateControlValue(namespace  + "/" + topic, name, raw, index)
-    } 
-    else if (IS_INT_TYPE === true) {
+    }
+    else if (IS_INT_TYPE !== -1) {
       const val = parseInt(raw, 10)
       if (!Number.isNaN(val)) { sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true }
-    } 
-    else if (IS_FLOAT_TYPE === true) {
+    }
+    else if (IS_FLOAT_TYPE !== -1) {
       const val = parseFloat(raw)
       if (!Number.isNaN(val)) { sendUpdateControlValue(namespace  + "/" + topic, name, raw, index); sent = true }
     }
@@ -288,10 +311,15 @@ class Nepi_IF_Control extends Component {
     }
     else {
       const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
+      // Bound here as in every other handler in this file: the widgets below
+      // publish, and neither name was in scope.
+      const namespace = this.props.namespace !== undefined ? this.props.namespace : null
+      const { sendUpdateControlValue } = this.props.ros
       const name = control_msg.name
       const control_type =  control_msg.type
       const display_label = control_msg.display_labels[control_index]
-      const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.disabled
+      // Control.msg spells it display_disabled.
+      const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.display_disabled
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
@@ -372,7 +400,7 @@ class Nepi_IF_Control extends Component {
           <React.Fragment>
             <ButtonMenu>
                 disabled={control_disabled}
-              <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, 'TRIGGER', control_index)}>{control_label}</Button>
+              <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, 'TRIGGER', control_index)}>{display_label}</Button>
             </ButtonMenu>
         </React.Fragment>  
         )
@@ -488,8 +516,12 @@ class Nepi_IF_Control extends Component {
       const control_type =  control_msg.type
       const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
       const show_header_label = display_name === '' || display_name === 'None' 
-      const control_hidden = this.props.hidden !== undefined ? this.props.hidden : control_msg.hidden
-      const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.disabled
+      // Control.msg spells these display_hidden / display_disabled. Read under
+      // the old names both were undefined, so nothing ever hid or disabled --
+      // and show_bounds, which gates on control_disabled === false, never
+      // rendered the min/max boxes.
+      const control_hidden = this.props.hidden !== undefined ? this.props.hidden : control_msg.display_hidden
+      const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.display_disabled
       const options = control_msg.options
       const display_labels = control_msg.display_labels
       const min_bound = control_msg.min_bound
@@ -498,7 +530,12 @@ class Nepi_IF_Control extends Component {
       const value = this.getControlValue()
       const round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
-      const values = (value != null) ? value : []
+      // Every use of `values` below indexes or maps it, but getControlValue
+      // returns the NATIVE value -- a scalar for the single-value types -- so
+      // taking it straight through handed the Int/Float/Toggle branches a
+      // number and `values.map is not a function` took down the whole device
+      // page. One entry per component, always a list.
+      const values = (value == null) ? [] : (Array.isArray(value) ? value : [value])
       // Value inputs whose value tracks either the in-progress edit or the message
       const editing = (name in this.state.editValues)
 
@@ -786,7 +823,9 @@ class Nepi_IF_Control extends Component {
       // holds the current [min, max] handles; bounds holds the outer
       // [min_limit, max_limit] the handles may move within.
       else if (control_type === "RangeSlider") {
-        const values = control_msg.values || [0, 1]
+        // control_msg.values is not a field on Control.msg -- the handles come
+        // from the value list, which getControlValue already parsed to floats.
+        const handles = (values.length > 1) ? values : [0, 1]
         const min_limit = (min_bound !== -999) ? min_bound : 0
         const max_limit = (max_bound !== -999) ? max_bound : 100
         return (
@@ -797,8 +836,8 @@ class Nepi_IF_Control extends Component {
             comp_name={name}
             is_control={true}
             topic={namespace + "/" + topic}
-            min={values[0]}
-            max={values[1]}
+            min={handles[0]}
+            max={handles[1]}
             min_limit_m={min_limit}
             max_limit_m={max_limit}
             tooltip={control_msg.description}
@@ -839,10 +878,10 @@ class Nepi_IF_Control extends Component {
                 <Columns>
                 <Column>
 
-                  <label > {labels[0]} </label>                
+                  <label > {display_labels[0]} </label>                
                   <Input
                     disabled={control_disabled}
-                    id={'csbx_' + name + '_' + labels[0]}
+                    id={'csbx_' + name + '_' + display_labels[0]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 0, e)}
@@ -852,10 +891,10 @@ class Nepi_IF_Control extends Component {
                 </Column>
                 <Column>
 
-                  <label > {labels[1]} </label>                
+                  <label > {display_labels[1]} </label>                
                   <Input
                     disabled={control_disabled}
-                    id={'csbx_' + name + '_' + labels[1]}
+                    id={'csbx_' + name + '_' + display_labels[1]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 1, e)}
@@ -865,10 +904,10 @@ class Nepi_IF_Control extends Component {
                 </Column>
                 <Column>
 
-                  <label > {labels[2]} </label>                
+                  <label > {display_labels[2]} </label>                
                   <Input
                     disabled={control_disabled}
-                    id={'csbx_' + name + '_' + labels[2]}
+                    id={'csbx_' + name + '_' + display_labels[2]}
                     style={{ width: "100%" }}
                     value={value}
                     onChange={(e) => this.onInputChangeIndex(name, value, 2, e)}
@@ -889,13 +928,20 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      else {
+      // Fallthrough for every remaining type -- one renderControl per value
+      // entry -- reached because each branch above returns. It was written as an
+      // empty `else {}` followed by this return, which is the same thing; the
+      // brace that closed that else is the one this return needs to stay inside
+      // the enclosing block. show_values must be the LIST: round() of the whole
+      // value returned a number, which has no .map(). An in-progress edit
+      // already holds the full updated array (onInputChangeIndex writes it so).
+      // Same list guard as `values`: onInputChangeIndex stores the whole updated
+      // array, but onInputChange stores a bare string for a single-value control.
+      const edit_values = (editing === true) ? this.state.editValues[name] : null
+      const show_values = (edit_values == null) ? values
+                        : (Array.isArray(edit_values) ? edit_values : [edit_values])
 
-        const show_value = round((editing === true) ? this.state.editValues[name] : value, display_round)
-       
-
-        }
-        return (
+      return (
 
         <React.Fragment>
           <div hidden={show_header_label === false }>
@@ -909,7 +955,7 @@ class Nepi_IF_Control extends Component {
         
           <div>
             {/* Map over the device names array */}
-            {show_value.map((comp_value, index) => (
+            {show_values.map((comp_value, index) => (
               this.renderControl(comp_value, index, control_msg)
             ))}
           </div>
