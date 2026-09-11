@@ -192,7 +192,7 @@ class Nepi_IF_Datum extends Component {
       const name = datum_msg.name
       const datum_type =  datum_msg.type
       const display_label = datum_msg.display_labels[datum_index]
-      const display_options = this.props.display_options !== undefined ? this.props.display_options : control_msg.display_options
+      const display_options = this.props.display_options !== undefined ? this.props.display_options : datum_msg.display_options
       // Datum.msg spells it display_disabled.
       const datum_disabled = true
 
@@ -316,7 +316,7 @@ class Nepi_IF_Datum extends Component {
       // always had.
       const display_row = (datum_msg.display_row === true)
       const display_labels = datum_msg.display_labels
-      const display_options = this.props.display_options !== undefined ? this.props.display_options : control_msg.display_options
+      const display_options = this.props.display_options !== undefined ? this.props.display_options : datum_msg.display_options
       const min_bound = datum_msg.min_bound
       const max_bound = datum_msg.max_bound
       const show_bounds = (this.props.show_bounds !== undefined ? this.props.show_bounds : false)
