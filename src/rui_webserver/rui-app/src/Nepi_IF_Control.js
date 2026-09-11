@@ -323,7 +323,11 @@ class Nepi_IF_Control extends Component {
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
-      const round =  (control_msg.round >= 0) ? control_msg.round : 6
+      // Named value_round, NOT round: `round` is the formatting helper imported
+      // from ./Utilities at the top of this file, and a const of that name
+      // shadows it for the whole function body -- which made every Float branch
+      // below throw "round is not a function" and take the page down with it.
+      const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
 
 
@@ -522,13 +526,23 @@ class Nepi_IF_Control extends Component {
       // rendered the min/max boxes.
       const control_hidden = this.props.hidden !== undefined ? this.props.hidden : control_msg.display_hidden
       const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.display_disabled
+      // Control.display_row: true lays a multi-value control's widgets side by
+      // side in one row, false stacks them. Defaulted rather than read bare so
+      // a publisher built against the older message -- where this field was a
+      // string, and arrives here undefined -- keeps the stacked layout it has
+      // always had.
+      const display_row = (control_msg.display_row === true)
       const options = control_msg.options
       const display_labels = control_msg.display_labels
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
       const value = this.getControlValue()
-      const round =  (control_msg.round >= 0) ? control_msg.round : 6
+      // Named value_round, NOT round: `round` is the formatting helper imported
+      // from ./Utilities at the top of this file, and a const of that name
+      // shadows it for the whole function body -- which made every Float branch
+      // below throw "round is not a function" and take the page down with it.
+      const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
       // Every use of `values` below indexes or maps it, but getControlValue
       // returns the NATIVE value -- a scalar for the single-value types -- so
@@ -692,12 +706,22 @@ class Nepi_IF_Control extends Component {
           <div hidden={show_header_label === false }>
           <Label title={display_name} key={name}></Label>
           </div>
-                  <div>
-                    {/* Map over the device names array */}
-                    {display_labels.map((slider_name, index) => (
-                      this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
-                    ))}
-                  </div>
+                  {(display_row === true) ?
+                    <Columns>
+                      {display_labels.map((slider_name, index) => (
+                        <Column key={name + '_row_' + index}>
+                          {this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)}
+                        </Column>
+                      ))}
+                    </Columns>
+                  :
+                    <div>
+                      {/* Map over the device names array */}
+                      {display_labels.map((slider_name, index) => (
+                        this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
+                      ))}
+                    </div>
+                  }
           </React.Fragment>
         )
       }
@@ -794,7 +818,7 @@ class Nepi_IF_Control extends Component {
         // both are int32, so a control message that never carried them arrives
         // with 0 rather than undefined, and round 0 is step 1 -- the defect
         // again. The range check below is what actually rules that out.
-        this.renderFloatSliderControl(name,value,min,max,round,display_round,'')
+        this.renderFloatSliderControl(name,value,min,max,value_round,display_round,'')
       }
 
 
@@ -809,12 +833,22 @@ class Nepi_IF_Control extends Component {
           <div hidden={show_header_label === false }>
           <Label title={display_name} key={name}></Label>
           </div>
-                  <div>
-                    {/* Map over the device names array */}
-                    {display_labels.map((slider_name, index) => (
-                      this.renderFloatSliderControl(slider_name, values[index], min, max, round, display_round, index, control_disabled)
-                    ))}
-                  </div>
+                  {(display_row === true) ?
+                    <Columns>
+                      {display_labels.map((slider_name, index) => (
+                        <Column key={name + '_row_' + index}>
+                          {this.renderFloatSliderControl(slider_name, values[index], min, max, value_round, display_round, index, control_disabled)}
+                        </Column>
+                      ))}
+                    </Columns>
+                  :
+                    <div>
+                      {/* Map over the device names array */}
+                      {display_labels.map((slider_name, index) => (
+                        this.renderFloatSliderControl(slider_name, values[index], min, max, value_round, display_round, index, control_disabled)
+                      ))}
+                    </div>
+                  }
         </React.Fragment>
         )
       }
@@ -917,12 +951,22 @@ class Nepi_IF_Control extends Component {
                 </Column>
               </Columns>
           
-              <div>
-                {/* Map over the device names array */}
-                {display_labels.map((slider_name, index) => (
-                  this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
-                ))}
-              </div>
+              {(display_row === true) ?
+                <Columns>
+                  {display_labels.map((slider_name, index) => (
+                    <Column key={name + '_row_' + index}>
+                      {this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)}
+                    </Column>
+                  ))}
+                </Columns>
+              :
+                <div>
+                  {/* Map over the device names array */}
+                  {display_labels.map((slider_name, index) => (
+                    this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
+                  ))}
+                </div>
+              }
 
           </React.Fragment>
         )
@@ -952,15 +996,28 @@ class Nepi_IF_Control extends Component {
         <div hidden={show_bounds === false}>
           {this.renderBounds(min_bound,max_bound)}
         </div>
-        
-          <div>
-            {/* Map over the device names array */}
-            {show_values.map((comp_value, index) => (
-              this.renderControl(comp_value, index, control_msg)
-            ))}
-          </div>
 
-          </React.Fragment>   
+          {(display_row === true) ?
+            <Columns>
+              {/* Same renderControl calls as the stacked layout below, one per
+                  value entry -- only the wrapper differs, so what each widget
+                  publishes is unchanged. */}
+              {show_values.map((comp_value, index) => (
+                <Column key={name + '_row_' + index}>
+                  {this.renderControl(comp_value, index, control_msg)}
+                </Column>
+              ))}
+            </Columns>
+          :
+            <div>
+              {/* Map over the device names array */}
+              {show_values.map((comp_value, index) => (
+                this.renderControl(comp_value, index, control_msg)
+              ))}
+            </div>
+          }
+
+          </React.Fragment>
         )
 
       }
