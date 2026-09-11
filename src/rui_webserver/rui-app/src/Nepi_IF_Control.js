@@ -272,29 +272,43 @@ class Nepi_IF_Control extends Component {
 
 
   renderBounds(min,max){
-       
-        const min_bound = (min !== parseInt(-999) ) ? min : 'Nan'
-        const max_bound = (max !== parseInt(-999) ) ? max : 'Nan'
+
+        // -999 is the Control.msg "no limit" sentinel, tested the same way the
+        // slider branches below test it. Each end is judged on its own, so a
+        // control bounded below and open above keeps just its Min box.
+        const show_min = (min !== -999)
+        const show_max = (max !== -999)
+
+        // Columns filters falsy children and recounts, so the surviving box gets
+        // first && last and goes full width.
+        if (show_min === false && show_max === false) { return null }
+
         return (
 
           <React.Fragment>
 
                 <Columns>
-                <Column>
+                {(show_min === true) ?
+                  <Column>
 
-                  <label > {"Min"} </label>                
-                  <Input disabled={true} value={min_bound} />
+                    <label > {"Min"} </label>
+                    <Input disabled={true} value={min} />
 
-                </Column>
-                <Column>
+                  </Column>
+                : null
+                }
+                {(show_max === true) ?
+                  <Column>
 
-                  <label > {"Max"} </label>                
-                  <Input disabled={true} value={max_bound} />
-                  
-                </Column>
+                    <label > {"Max"} </label>
+                    <Input disabled={true} value={max} />
+
+                  </Column>
+                : null
+                }
               </Columns>
 
-          </React.Fragment>              
+          </React.Fragment>
 
         )
       }
@@ -405,10 +419,11 @@ class Nepi_IF_Control extends Component {
         return (
           <React.Fragment>
             <ButtonMenu>
+              <Button
                 disabled={control_disabled}
-              <Button onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, 'TRIGGER', control_index)}>{display_label}</Button>
+                onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, 'TRIGGER', control_index)}>{display_label}</Button>
             </ButtonMenu>
-        </React.Fragment>  
+        </React.Fragment>
         )
     }
 
@@ -678,7 +693,7 @@ class Nepi_IF_Control extends Component {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 255
       
-        this.renderIntSliderControl(name,value,min,max,'', control_disabled)
+        return this.renderIntSliderControl(name,value,min,max,'', control_disabled)
       }
 
 
@@ -738,7 +753,7 @@ class Nepi_IF_Control extends Component {
         // both are int32, so a control message that never carried them arrives
         // with 0 rather than undefined, and round 0 is step 1 -- the defect
         // again. The range check below is what actually rules that out.
-        this.renderFloatSliderControl(name,value,min,max,value_round,display_round,'')
+        return this.renderFloatSliderControl(name,value,min,max,value_round,display_round,'', control_disabled)
       }
 
       // RANGESLIDER -- a min/max *range* dragged between two limits. values
