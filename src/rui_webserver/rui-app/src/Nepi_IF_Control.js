@@ -292,7 +292,7 @@ class Nepi_IF_Control extends Component {
                   <Column>
 
                     <label > {"Min"} </label>
-                    <Input disabled={true} value={min} />
+                    <Input disabled={true} style={{ width: "100%" }} value={min} />
 
                   </Column>
                 : null
@@ -301,7 +301,7 @@ class Nepi_IF_Control extends Component {
                   <Column>
 
                     <label > {"Max"} </label>
-                    <Input disabled={true} value={max} />
+                    <Input disabled={true} style={{ width: "100%" }} value={max} />
 
                   </Column>
                 : null
