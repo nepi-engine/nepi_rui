@@ -320,7 +320,7 @@ class Nepi_IF_Control extends Component {
 
 
   renderControl(control_value, control_index, control_msg) {
-     
+
     if (control_value == null || control_msg == null) {
       return (
         <React.Fragment>
@@ -404,7 +404,9 @@ class Nepi_IF_Control extends Component {
         return (
 
         <React.Fragment>
-           
+
+            <Label title={display_label} key={name}></Label>
+
             <Input
               disabled={control_disabled}
               id={'csbx_' + name}
