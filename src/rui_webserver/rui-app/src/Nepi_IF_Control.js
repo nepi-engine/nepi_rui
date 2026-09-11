@@ -348,7 +348,7 @@ class Nepi_IF_Control extends Component {
       // below throw "round is not a function" and take the page down with it.
       const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
-
+      const display_options = this.props.display_options !== undefined ? this.props.display_options : control_msg.display_options
 
 
       const IS_STRING_TYPE = this.STRING_TYPES.indexOf(control_type)
@@ -566,7 +566,7 @@ class Nepi_IF_Control extends Component {
       const values = this.getControlValue()
       const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
-     
+      const display_options = this.props.display_options !== undefined ? this.props.display_options : control_msg.display_options
       const editing = (name in this.state.editValues)
 
 
