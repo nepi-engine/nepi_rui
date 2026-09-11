@@ -64,6 +64,10 @@ class Nepi_IF_Control extends Component {
                          "Int","IntSlider",
                          "Float","FloatSlider"]
 
+    this.DOUBLE_TYPES = ["RangeSlider"]
+
+    this.TRIPLE_TYPES = ["ColorRGB"]
+
 
     this.state = {
       // name -> in-progress edit string for editable text/number inputs
@@ -83,6 +87,9 @@ class Nepi_IF_Control extends Component {
 
 
     this.getControlValue = this.getControlValue.bind(this)
+
+    this.renderIntSliderControl = this.renderIntSliderControl.bind(this)
+    this.renderFloatSliderControl = this.renderFloatSliderControl.bind(this)
 
     this.renderBounds = this.renderBounds.bind(this)
     this.renderControl = this.renderControl.bind(this)
@@ -105,22 +112,12 @@ class Nepi_IF_Control extends Component {
   // control_type. Returns null if the control isn't present or isn't an editable control_type.
   getControlValue() {
 
-    const CONTROL_TYPES = ["Menu","Button", "Buttons", "Toggle", "Toggles", 
-                    "String", "Strings","Selection","Selections",
-                    "Int","Ints","IntSlider","IntSliders",
-                    "Float","Floats","FloatSlider","FloatSliders",
-                    "RangeSlider", "ColorRGB"]
-
-
-
-
-
 
     const control_msg = this.props.control_msg !== undefined ? this.props.control_msg : null
     if (control_msg == null) { return null }
     const msg_value = control_msg.value
     const control_type = control_msg.type
-
+    const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
 
     const IS_STRING_TYPE = this.STRING_TYPES.indexOf(control_type)
     const IS_BOOL_TYPE =this.BOOL_TYPES.indexOf(control_type)
@@ -137,21 +134,27 @@ class Nepi_IF_Control extends Component {
       values_list = msg_value.map(item => item === 'True')
     }
     else if (IS_FLOAT_TYPE !== -1){
-      values_list = msg_value.map(item => parseFloat(item))
+      values_list = msg_value.map(item => round(parseFloat(item),display_round))
     }
     else if (IS_INT_TYPE !== -1){
       values_list = msg_value.map(item => parseInt(item))
     }
     else if (IS_TRIGGER_TYPE !== -1){
-      values_list = msg_value.map(item => parseFloat(item))
+      values_list = msg_value.map(item => round(parseFloat(item),display_round))
     }
 
     if (values_list == null) { return null }
     // Control.value is always a string[] on the wire, one entry per component.
     // Single-value types unwrap to their one entry; everything else keeps the
     // list, which is what the multi-component branches map over.
-    if (this.SINGLE_TYPES.indexOf(control_type) !== -1) {
-      return (values_list.length > 0) ? values_list[0] : null
+    if (this.SINGLE_TYPES.indexOf(control_type) !== -1 ) {
+      return (values_list.length > 0) ? [values_list[0]] : null
+    }
+    if (this.DOUBLE_TYPES.indexOf(control_type) !== -1 ) {
+      return (values_list.length > 1) ? [values_list[0],values_list[1]] : null
+    }
+    if (this.TRIPLE_TYPES.indexOf(control_type) !== -1 ) {
+      return (values_list.length > 2) ? [values_list[0],values_list[1],values_list[2]] : null
     }
     return values_list
   }
@@ -170,10 +173,9 @@ class Nepi_IF_Control extends Component {
     if (e.key !== 'Enter') { return }
 
     const IS_STRING_TYPE = this.STRING_TYPES.indexOf(control_type)
-    const IS_BOOL_TYPE =this.BOOL_TYPES.indexOf(control_type)
     const IS_INT_TYPE = this.INT_TYPES.indexOf(control_type)
     const IS_FLOAT_TYPE = this.FLOAT_TYPES.indexOf(control_type)
-    const IS_TRIGGER_TYPE = this.TRIGGER_TYPES.indexOf(control_type)
+
 
     const namespace = this.props.namespace !== undefined ? this.props.namespace : null
     const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
@@ -537,33 +539,15 @@ class Nepi_IF_Control extends Component {
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
-      const value = this.getControlValue()
-      // Named value_round, NOT round: `round` is the formatting helper imported
-      // from ./Utilities at the top of this file, and a const of that name
-      // shadows it for the whole function body -- which made every Float branch
-      // below throw "round is not a function" and take the page down with it.
+      const values = this.getControlValue()
       const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
-      // Every use of `values` below indexes or maps it, but getControlValue
-      // returns the NATIVE value -- a scalar for the single-value types -- so
-      // taking it straight through handed the Int/Float/Toggle branches a
-      // number and `values.map is not a function` took down the whole device
-      // page. One entry per component, always a list.
-      const values = (value == null) ? [] : (Array.isArray(value) ? value : [value])
-      // Value inputs whose value tracks either the in-progress edit or the message
+     
       const editing = (name in this.state.editValues)
 
 
-      const IS_STRING_TYPE = this.STRING_TYPES.indexOf(control_type)
-      const IS_BOOL_TYPE =this.BOOL_TYPES.indexOf(control_type)
-      const IS_INT_TYPE = this.INT_TYPES.indexOf(control_type)
-      const IS_FLOAT_TYPE = this.FLOAT_TYPES.indexOf(control_type)
-      const IS_TRIGGER_TYPE = this.TRIGGER_TYPES.indexOf(control_type)
 
-
-
-
-      if (control_hidden === true || value == null){
+      if (control_hidden === true || values == null){
         return (
           <React.Fragment>
             
@@ -571,10 +555,10 @@ class Nepi_IF_Control extends Component {
         )
       }
 
-      // MENU -- drop-down of string options; the control's value is the *index*
+      // MENU -- drop-down of string options; the control's values[0] is the *index*
       // of the selected option. Sends the new index as an Int.
       else if (control_type === "Menu") {
-        const display_value = (options.length >= value) ? options[value] : 'Option_' + String(value)
+        const value = values[0]
         return (
           <Label title={display_name} key={name}>
             <Select
@@ -594,6 +578,7 @@ class Nepi_IF_Control extends Component {
       // the user types, and the value is sent (parsed to the right control_type) only on
       // Enter. See onInputChange / onInputKey above.
       else if (control_type === "String" ) {
+        const value = values[0]
         const show_value = (editing === true) ? this.state.editValues[name] : value
         return (
           <Label title={display_name} key={name}>
@@ -616,6 +601,7 @@ class Nepi_IF_Control extends Component {
       // spelling driver params yaml files use for the same named option list,
       // so it renders through this same branch. 
       else if (control_type === "Selection") {
+        const value = values[0]
         return (
           <Label title={display_name} key={name}>
             <Select
@@ -688,6 +674,7 @@ class Nepi_IF_Control extends Component {
       // bounds carries [min, max]; -999 in either slot means "no limit",
       // in which case we fall back to a sensible default (0 / 100).
       else if (control_type === "IntSlider") {
+        const value = values[0]
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 255
       
@@ -695,112 +682,45 @@ class Nepi_IF_Control extends Component {
       }
 
 
-      // INTSLIDERS -- a multi-select: each option gets its own int slider. 
-      // names come from the display_labels list. On every toggle
-      // we send the complete desired selection (declarative), not a single delta.
-      else if (control_type === "IntSliders") {
-        const min = (min_bound !== -999) ? min_bound : 0
-        const max = (max_bound !== -999) ? max_bound : 255
-        return (
-        <React.Fragment>
-          <div hidden={show_header_label === false }>
-          <Label title={display_name} key={name}></Label>
-          </div>
-                  {(display_row === true) ?
-                    <Columns>
-                      {display_labels.map((slider_name, index) => (
-                        <Column key={name + '_row_' + index}>
-                          {this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)}
-                        </Column>
-                      ))}
-                    </Columns>
-                  :
-                    <div>
-                      {/* Map over the device names array */}
-                      {display_labels.map((slider_name, index) => (
-                        this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
-                      ))}
-                    </div>
-                  }
-          </React.Fragment>
-        )
-      }
+      // // INTSLIDERS -- a multi-select: each option gets its own int slider. 
+      // // names come from the display_labels list. On every toggle
+      // // we send the complete desired selection (declarative), not a single delta.
+      // else if (control_type === "IntSliders") {
+      //   const value = values[0]
+      //   const min = (min_bound !== -999) ? min_bound : 0
+      //   const max = (max_bound !== -999) ? max_bound : 255
+      //   return (
+      //   <React.Fragment>
+      //     <div hidden={show_header_label === false }>
+      //     <Label title={display_name} key={name}></Label>
+      //     </div>
+      //             {(display_row === true) ?
+      //               <Columns>
+      //                 {display_labels.map((slider_name, index) => (
+      //                   <Column key={name + '_row_' + index}>
+      //                     {this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)}
+      //                   </Column>
+      //                 ))}
+      //               </Columns>
+      //             :
+      //               <div>
+      //                 {/* Map over the device names array */}
+      //                 {display_labels.map((slider_name, index) => (
+      //                   this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
+      //                 ))}
+      //               </div>
+      //             }
+      //     </React.Fragment>
+      //   )
+      // }
 
-
-
-      // FLOAT -- free-form typed values. These follow the PTX
-      // editable-input pattern: the box shows an in-progress edit string while
-      // the user types, and the value is sent (parsed to the right control_type) only on
-      // Enter. See onInputChange / onInputKey above.
-      else if (control_type === "Float") {
-        const show_value = round((editing === true) ? this.state.editValues[name] : value, display_round)
-        return (
-
-        <React.Fragment>
-
-          <Label title={display_name} key={name}>  </Label>
-
-
-            <div hidden={show_bounds === false}>
-              {this.renderBounds(min_bound,max_bound)}
-            </div>
-            
-            <Input
-              disabled={control_disabled}
-              id={'csbx_' + name}
-              style={{ width: "100%" }}
-              value={show_value}
-              onChange={(e) => this.onInputChange(name, e)}
-              onKeyDown={(e) => this.onInputKey(name, control_type, e)}
-            />
-        
-        </React.Fragment> 
-        )
-      }
-
-      else if (control_type === "FloatDouble") {
-        const show_value = round((editing === true) ? this.state.editValues[name] : value, display_round)
-        return (
-
-        <React.Fragment>
-          <div hidden={show_header_label === false }>
-          <Label title={display_name} key={name}></Label>
-          </div>
-
-            <div hidden={show_bounds === false}>
-              {this.renderBounds(min_bound,max_bound)}
-            </div>
-            
-            {this.renderDoubleControl(name, control_type, show_value, display_labels, control_disabled)}
-
-        </React.Fragment> 
-        )
-      }
-
-      else if (control_type === "FloatTriple") {
-        const show_value = round((editing === true) ? this.state.editValues[name] : value, display_round)
-        return (
-
-        <React.Fragment>
-          <div hidden={show_header_label === false }>
-          <Label title={display_name} key={name}></Label>
-          </div>
-
-            <div hidden={show_bounds === false}>
-              {this.renderBounds(min_bound,max_bound)}
-            </div>
-            
-            {this.renderTripleControl(name, control_type, show_value, display_labels, control_disabled)}
-
-        </React.Fragment> 
-        )
-      }
 
 
       // FLOATSLIDER -- a single decimal value dragged between a min and max.
       // bounds carries [min, max]; -999 in either slot means "no limit",
       // in which case we fall back to a sensible default (0 / 100).
       else if (control_type === "FloatSlider") {
+        const value = values[0]
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 1
 
@@ -821,45 +741,14 @@ class Nepi_IF_Control extends Component {
         this.renderFloatSliderControl(name,value,min,max,value_round,display_round,'')
       }
 
-
-      // FLOATSLIDERS -- a multi-select: each option gets its own float slider. 
-      // names come from the display_labels list. On every toggle
-      // we send the complete desired selection (declarative), not a single delta.
-      else if (control_type === "FloatSliders") {
-        const min = (min_bound !== -999) ? min_bound : 0
-        const max = (max_bound !== -999) ? max_bound : 1
-        return (
-        <React.Fragment>
-          <div hidden={show_header_label === false }>
-          <Label title={display_name} key={name}></Label>
-          </div>
-                  {(display_row === true) ?
-                    <Columns>
-                      {display_labels.map((slider_name, index) => (
-                        <Column key={name + '_row_' + index}>
-                          {this.renderFloatSliderControl(slider_name, values[index], min, max, value_round, display_round, index, control_disabled)}
-                        </Column>
-                      ))}
-                    </Columns>
-                  :
-                    <div>
-                      {/* Map over the device names array */}
-                      {display_labels.map((slider_name, index) => (
-                        this.renderFloatSliderControl(slider_name, values[index], min, max, value_round, display_round, index, control_disabled)
-                      ))}
-                    </div>
-                  }
-        </React.Fragment>
-        )
-      }
-
       // RANGESLIDER -- a min/max *range* dragged between two limits. values
       // holds the current [min, max] handles; bounds holds the outer
       // [min_limit, max_limit] the handles may move within.
       else if (control_type === "RangeSlider") {
         // control_msg.values is not a field on Control.msg -- the handles come
         // from the value list, which getControlValue already parsed to floats.
-        const handles = (values.length > 1) ? values : [0, 1]
+        
+        const handles = (values.length > 1) ? [values[0],values[1]] : [0, 1]
         const min_limit = (min_bound !== -999) ? min_bound : 0
         const max_limit = (max_bound !== -999) ? max_bound : 100
         return (
@@ -885,6 +774,7 @@ class Nepi_IF_Control extends Component {
       // names come from the display_labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       else if (control_type === "ColorRGB") {
+        const value = (values.length > 2) ? [values[0],values[1],,values[2]] : [255, 255, 255]
         const min = 0
         const max = 255
         const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
