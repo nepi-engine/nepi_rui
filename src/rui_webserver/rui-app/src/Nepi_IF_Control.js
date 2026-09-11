@@ -214,8 +214,11 @@ class Nepi_IF_Control extends Component {
     // List form, for the same reason render() needs it: a single-value control
     // reports a scalar, whose .length is undefined, so the guard below was
     // false and a keystroke in the box updated nothing.
-    const current = this.getControlValue()
-    var update_values = (current == null) ? [] : (Array.isArray(current) ? current : [current])
+    // Seed from any edit already in progress, not from the message: read from
+    // the message, typing in one box of a multi-box control (ColorRGB's G)
+    // threw away the unsent edit in its siblings (R).
+    const current = (name in this.state.editValues) ? this.state.editValues[name] : this.getControlValue()
+    var update_values = (current == null) ? [] : (Array.isArray(current) ? [...current] : [current])
     if (update_values.length > index){
         update_values[index] = e.target.value
         editValues[name] = update_values
@@ -435,14 +438,17 @@ class Nepi_IF_Control extends Component {
 
 
 
-  renderIntSliderControl(name,value,min,max, index, control_disabled){
+  renderIntSliderControl(name,value,min,max, index, control_disabled, title){
         const namespace = this.props.namespace !== undefined ? this.props.namespace : null
         const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
+        // comp_name is what sendUpdate() publishes the control as, so it stays
+        // the control name; title is display only and may differ per component.
+        const slider_title = (title !== undefined) ? title : name
 
         return (
           <SliderAdjustment
             disabled={control_disabled}
-            title={name}
+            title={slider_title}
             comp_name={name}
             comp_index={index}
             is_control={true}
@@ -536,7 +542,8 @@ class Nepi_IF_Control extends Component {
       const name = control_msg.name
       const control_type =  control_msg.type
       const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
-      const show_header_label = display_name === '' || display_name === 'None' 
+      // True when there IS a name to show; the consumer below hides on false.
+      const show_header_label = display_name !== '' && display_name !== 'None'
       // Control.msg spells these display_hidden / display_disabled. Read under
       // the old names both were undefined, so nothing ever hid or disabled --
       // and show_bounds, which gates on control_disabled === false, never
@@ -785,93 +792,43 @@ class Nepi_IF_Control extends Component {
       }
 
 
-      // ColorRGB -- an multi-select: each option (R,G,B) gets its own int slider.
-      // names come from the display_labels list. On every toggle
-      // we send the complete desired selection (declarative), not a single delta.
+      // ColorRGB -- one 0-255 component per channel, labelled from
+      // display_labels, over a swatch of the combined color. Boxes go through
+      // renderControl and sliders through renderIntSliderControl, the same two
+      // helpers every other multi-value control uses.
       else if (control_type === "ColorRGB") {
-        const value = (values.length > 2) ? [values[0],values[1],,values[2]] : [255, 255, 255]
-        const min = 0
-        const max = 255
-        const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
+        const edit_values = (editing === true) ? this.state.editValues[name] : null
+        const show_values = (edit_values == null) ? values
+                          : (Array.isArray(edit_values) ? edit_values : [edit_values])
+        const indicator_color = rgbToIindicatorColor(show_values[0],show_values[1],show_values[2])
         return (
 
           <React.Fragment>
-                
 
-
-                <Columns>
-                <Column>
-
+            <Columns>
+              <Column>
                 <Label title={display_name} key={name}> </Label>
+              </Column>
+              <Column>
+                <ColoredIndicator indicator_color={indicator_color} />
+              </Column>
+            </Columns>
 
+            <Columns>
+              {show_values.map((comp_value, index) => (
+                <Column key={name + '_rgb_' + index}>
+                  {this.renderControl(comp_value, index, control_msg)}
                 </Column>
-                <Column>
+              ))}
+            </Columns>
 
-                  <ColoredIndicator indicator_color={indicator_color} />
-                  
-                </Column>
-              </Columns>
-
-
-
-                <Columns>
-                <Column>
-
-                  <label > {display_labels[0]} </label>                
-                  <Input
-                    disabled={control_disabled}
-                    id={'csbx_' + name + '_' + display_labels[0]}
-                    style={{ width: "100%" }}
-                    value={value}
-                    onChange={(e) => this.onInputChangeIndex(name, value, 0, e)}
-                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 0, e)}
-                  />
-
-                </Column>
-                <Column>
-
-                  <label > {display_labels[1]} </label>                
-                  <Input
-                    disabled={control_disabled}
-                    id={'csbx_' + name + '_' + display_labels[1]}
-                    style={{ width: "100%" }}
-                    value={value}
-                    onChange={(e) => this.onInputChangeIndex(name, value, 1, e)}
-                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 1, e)}
-                  />
-                  
-                </Column>
-                <Column>
-
-                  <label > {display_labels[2]} </label>                
-                  <Input
-                    disabled={control_disabled}
-                    id={'csbx_' + name + '_' + display_labels[2]}
-                    style={{ width: "100%" }}
-                    value={value}
-                    onChange={(e) => this.onInputChangeIndex(name, value, 2, e)}
-                    onKeyDown={(e) => this.onInputKeyIndex(name, control_type, 2, e)}
-                  />
-
-                </Column>
-              </Columns>
-          
-              {(display_row === true) ?
-                <Columns>
-                  {display_labels.map((slider_name, index) => (
-                    <Column key={name + '_row_' + index}>
-                      {this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)}
-                    </Column>
-                  ))}
-                </Columns>
-              :
-                <div>
-                  {/* Map over the device names array */}
-                  {display_labels.map((slider_name, index) => (
-                    this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
-                  ))}
-                </div>
-              }
+            <div>
+              {display_labels.map((slider_name, index) => (
+                <React.Fragment key={name + '_slider_' + index}>
+                  {this.renderIntSliderControl(name, show_values[index], 0, 255, index, control_disabled, slider_name)}
+                </React.Fragment>
+              ))}
+            </div>
 
           </React.Fragment>
         )
