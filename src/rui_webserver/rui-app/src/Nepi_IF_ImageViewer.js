@@ -43,7 +43,7 @@ import Select, { Option } from "./Select"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
-import { onChangeChangeStateValue, onChangeSwitchStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
+import { onChangeChangeStateValue, createMenuFirstLastName, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
