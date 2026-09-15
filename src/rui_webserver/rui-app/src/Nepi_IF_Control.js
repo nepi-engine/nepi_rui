@@ -36,6 +36,16 @@ import ColoredIndicator from "./ColoredIndicator"
 
 import { round, rgbToIindicatorColor, setElementStyleModified, clearElementStyleModified, onChangeSwitchStateValue } from "./Utilities"
 
+// Width of the left gutter a grouped row reserves for its label. Every row in a
+// control set uses the same value, which is what aligns the input boxes into a
+// column regardless of how long each row's label is.
+//
+// Sized so a label with a unit suffix -- "Longitude (°)", "Speed (m/s)" -- sits
+// on ONE line. At 100 those wrapped to two ("Longitude" over "(°)"), which
+// double-spaced every row. A label longer than this still wraps rather than
+// overflowing, so the gutter stays a fixed column either way.
+const ROW_LABEL_WIDTH = 130
+
 
 
 
@@ -331,7 +341,12 @@ class Nepi_IF_Control extends Component {
 
 
 
-  renderControl(control_value, control_index, control_msg) {
+  // hide_label suppresses this widget's OWN caption. A grouped row draws the
+  // row label itself, from the first control's display_name, so letting each
+  // widget also render display_label prints the caption twice ("Latitude (°)
+  // Latitude (°) [box]") and pushes every input to a different x, which is what
+  // breaks column alignment across rows.
+  renderControl(control_value, control_index, control_msg, hide_label = false) {
 
     if (control_value == null || control_msg == null) {
       return (
@@ -384,13 +399,21 @@ class Nepi_IF_Control extends Component {
         return (
           <React.Fragment>
 
-              <Label title={display_label} key={name}>
+              {(hide_label === true) ?
                 <AsyncToggle
                   disabled={control_disabled}
                   checked={checked}
                   onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, !checked)}
                 />
-              </Label> 
+              :
+                <Label title={display_label} key={name}>
+                  <AsyncToggle
+                    disabled={control_disabled}
+                    checked={checked}
+                    onClick={() => sendUpdateControlValue(namespace  + "/" + topic, name, !checked)}
+                  />
+                </Label>
+              }
 
           </React.Fragment>  
         )
@@ -402,8 +425,9 @@ class Nepi_IF_Control extends Component {
 
             <React.Fragment>
 
-          <Label title={display_label} key={name}></Label>
-                
+          {(hide_label === true) ? null
+            : <Label title={display_label} key={name}></Label>}
+
                 <Input
                   disabled={control_disabled}
                   id={'csbx_' + name}
@@ -422,7 +446,8 @@ class Nepi_IF_Control extends Component {
 
         <React.Fragment>
 
-            <Label title={display_label} key={name}></Label>
+            {(hide_label === true) ? null
+              : <Label title={display_label} key={name}></Label>}
 
             <Input
               disabled={control_disabled}
@@ -628,15 +653,21 @@ class Nepi_IF_Control extends Component {
                            : (Array.isArray(group_edit_values) ? group_edit_values : [group_edit_values])
         return (
           <React.Fragment>
-            {(group_first === true && show_header_label === true) ?
-              <div style={{ minWidth: 100 }}>
-                <Label title={display_name} key={name}></Label>
+            {(group_first === true) ?
+              /* Fixed width, not minWidth, and it renders even when the label
+                 is empty. This div is the row's left gutter: every row in a set
+                 reserves the same space, so each row's first widget starts at
+                 the same x and the input boxes line up down the column. A
+                 minWidth would let a long label push its own row's box right. */
+              <div style={{ width: ROW_LABEL_WIDTH, flexShrink: 0 }}>
+                {(show_header_label === true) ?
+                  <Label title={display_name} key={name}></Label> : null}
               </div>
               : null
             }
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               {group_values.map((comp_value, index) => (
-                this.renderControl(comp_value, index, control_msg)
+                this.renderControl(comp_value, index, control_msg, true)
               ))}
               {(group_first === false && show_header_label === true) ?
                 <span style={{ fontSize: 11, color: '#aaa' }}>{display_name}</span>
