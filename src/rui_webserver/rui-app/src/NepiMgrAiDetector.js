@@ -486,8 +486,8 @@ renderDetectorSettings() {
     
 
 
-      const max_process_rate_hz = process_status_msg.max_process_rate_hz 
-      const max_image_pub_rate_hz = process_status_msg.max_image_pub_rate_hz
+      const set_process_rate = process_status_msg.set_process_rate 
+      const set_image_rate = process_status_msg.set_image_rate
 
       const imaging_enabled = process_status_msg.image_pub_enabled
       const use_last_image = process_status_msg.use_last_image
@@ -749,7 +749,7 @@ renderDetectorSettings() {
           <SliderAdjustment
                   title={"Max Detection Rate"}
                   msgType={"std_msgs/Float32"}
-                  adjustment={max_process_rate_hz}
+                  adjustment={set_process_rate}
                   topic={process_namespace + "/set_max_process_rate"}
                   scaled={1.0}
                   min={1}
@@ -762,9 +762,9 @@ renderDetectorSettings() {
           <SliderAdjustment
                   title={"Max Image Publish Rate"}
                   msgType={"std_msgs/Float32"}
-                  adjustment={max_image_pub_rate_hz}
+                  adjustment={set_image_rate}
                   topic={process_namespace + "/set_max_image_pub_rate"}
-                  scaled={1.0}max_image_pub_rate_hz
+                  scaled={1.0}set_image_rate
                   min={1}
                   max={20}
                   disabled={false}
