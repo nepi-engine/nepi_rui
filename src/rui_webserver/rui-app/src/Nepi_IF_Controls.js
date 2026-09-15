@@ -159,8 +159,12 @@ class Nepi_IF_Controls extends Component {
 
 
             {(show_controls === true) ?
-                  control_msgs.map((control_msg) => ( this.renderControl(control_msg) ) )
-                : null             
+                  this.groupControls(control_msgs).map((group, group_index) => (
+                    (group.name === '')
+                      ? this.renderControl(group.controls[0])
+                      : this.renderControlRow(group, group_index)
+                  ))
+                : null
             }
 
           </React.Fragment>
@@ -170,6 +174,56 @@ class Nepi_IF_Controls extends Component {
   }
 
 
+  // Collect controls into row groups. Controls carrying the same non-empty
+  // Control.display_group render on ONE horizontal line; an empty group -- the
+  // default, and what every control carried before the field existed -- gets a
+  // group of its own and renders stacked exactly as before.
+  //
+  // Grouping is over CONSECUTIVE runs on purpose. If the same group name
+  // reappears further down the list it opens a NEW row rather than pulling that
+  // control back up into the earlier one, so a control can never jump out of
+  // list order and surprise the operator. The node publishes controls in the
+  // order it declared them, so declaration order is row order.
+  groupControls(control_msgs) {
+    const groups = []
+    control_msgs.forEach((control_msg) => {
+      const name = (control_msg.display_group !== undefined && control_msg.display_group !== null)
+                   ? control_msg.display_group : ''
+      const open = (groups.length > 0) ? groups[groups.length - 1] : null
+      if (name !== '' && open !== null && open.name === name) {
+        open.controls.push(control_msg)
+      }
+      else {
+        groups.push({ name: name, controls: [control_msg] })
+      }
+    })
+    return groups
+  }
+
+  // Render one row group as a single flex line. Children get in_group so they
+  // drop their own header block, and group_first marks the one that supplies
+  // the row label. flexWrap keeps a long row from overflowing its column on a
+  // narrow window instead of clipping.
+  renderControlRow(group, group_index) {
+    const namespace = this.getNamespace()
+    return (
+      <div
+        key={'control_group_' + group.name + '_' + group_index}
+        style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap',
+                 gap: 8, marginBottom: Styles.vars.spacing.xs }}>
+        {group.controls.map((control_msg, index) => (
+          <Nepi_IF_Control
+            key={control_msg.name}
+            namespace={namespace}
+            control_msg={control_msg}
+            in_group={true}
+            group_first={index === 0}
+          />
+        ))}
+      </div>
+    )
+  }
+
   // Render a single control given its type and Control message.
   // Each block below maps one nepi_controls control type to its RUI widget and
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
@@ -178,6 +232,7 @@ class Nepi_IF_Controls extends Component {
       return (
 
          <Nepi_IF_Control
+              key={control_msg.name}
               namespace={namespace}
               control_msg={control_msg}
             />

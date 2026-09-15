@@ -68,6 +68,18 @@ class Nepi_IF_Control extends Component {
 
     this.TRIPLE_TYPES = ["ColorRGB"]
 
+    // Types that can share a row via Control.display_group. These are exactly
+    // the types renderControl() draws as a BARE widget, with no <Label> wrapper
+    // of its own, so a row of them puts each caption where the row layout wants
+    // it. Menu, Selection, Selections, the sliders and ColorRGB are absent on
+    // purpose: render() returns those from their own branches below, each
+    // already wrapped in a <Label title={display_name}>, so they keep their
+    // caption above their widget and simply sit inline in the row. Grouping one
+    // of those degrades to that; it does not disappear.
+    this.GROUPABLE_TYPES = ["String","Toggle","Toggles",
+                            "Int","Ints","Float","Floats",
+                            "Button","Buttons"]
+
 
     this.state = {
       // name -> in-progress edit string for editable text/number inputs
@@ -337,6 +349,11 @@ class Nepi_IF_Control extends Component {
       const name = control_msg.name
       const control_type =  control_msg.type
       const display_label = control_msg.display_labels[control_index]
+      // Control.display_width: pixel width for this control's input widget.
+      // 0 or absent -- every control that predates the field -- keeps the
+      // "100%" the inputs have always used, so ungrouped layouts are unchanged.
+      // A row group needs fixed widths, since "100%" of a flex child collapses.
+      const input_width = (control_msg.display_width > 0) ? control_msg.display_width : "100%"
       // Control.msg spells it display_disabled.
       const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.display_disabled
       const min_bound = control_msg.min_bound
@@ -390,7 +407,7 @@ class Nepi_IF_Control extends Component {
                 <Input
                   disabled={control_disabled}
                   id={'csbx_' + name}
-                  style={{ width: "100%" }}
+                  style={{ width: input_width }}
                   value={show_value}
                   onChange={(e) => this.onInputChangeIndex(name, control_index,  e)}
                   onKeyDown={(e) => this.onInputKeyIndex(name, control_type, control_index, e)}
@@ -410,7 +427,7 @@ class Nepi_IF_Control extends Component {
             <Input
               disabled={control_disabled}
               id={'csbx_' + name}
-              style={{ width: "100%" }}
+              style={{ width: input_width }}
               value={show_value}
               onChange={(e) => this.onInputChangeIndex(name, control_index,  e)}
               onKeyDown={(e) => this.onInputKeyIndex(name, control_type, control_index, e)}
@@ -568,13 +585,64 @@ class Nepi_IF_Control extends Component {
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
       const display_options = this.props.display_options !== undefined ? this.props.display_options : control_msg.display_options
       const editing = (name in this.state.editValues)
+      // Row grouping, set by Nepi_IF_Controls when this control shares a
+      // non-empty Control.display_group with its neighbours. Both default to
+      // the ungrouped case, so a control rendered on its own -- every control
+      // that predates the field, and every direct mount of this component --
+      // takes the original stacked layout below and is untouched by this.
+      const in_group = (this.props.in_group === true)
+      const group_first = (this.props.group_first === true)
+      // Pixel width hint for the input widget; 0 (the default) means let the
+      // renderer size it, which is what every existing control does.
+      const display_width = (control_msg.display_width > 0) ? control_msg.display_width : 0
 
 
 
       if (control_hidden === true || values == null){
         return (
           <React.Fragment>
-            
+
+          </React.Fragment>
+        )
+      }
+
+      // ROW GROUP -- this control shares a non-empty Control.display_group with
+      // its neighbours and Nepi_IF_Controls is laying them on one line. This has
+      // to intercept BEFORE the type dispatch below, because every branch there
+      // returns its widget already wrapped in <Label title={display_name}>,
+      // which puts the caption ABOVE the widget; a row of those is a row of
+      // stacked captions, not the single line a group is asking for.
+      //
+      // The FIRST control of a row supplies the row label on the left, in the
+      // same 100px gutter the stacked layout leaves for a Label. Every LATER
+      // control renders its display_name inline AFTER its own widget, which is
+      // what puts a caption like "Auto" to the right of its toggle. Bounds are
+      // omitted: renderBounds is a block and would break the line, so a control
+      // that needs its min/max shown should be left ungrouped.
+      else if (in_group === true && this.GROUPABLE_TYPES.indexOf(control_type) !== -1) {
+        // Same in-progress edit handling as the stacked layout: an active edit
+        // holds the full updated array, and onInputChange stores a bare string
+        // for a single-value control, so normalize back to a list.
+        const group_edit_values = (editing === true) ? this.state.editValues[name] : null
+        const group_values = (group_edit_values == null) ? values
+                           : (Array.isArray(group_edit_values) ? group_edit_values : [group_edit_values])
+        return (
+          <React.Fragment>
+            {(group_first === true && show_header_label === true) ?
+              <div style={{ minWidth: 100 }}>
+                <Label title={display_name} key={name}></Label>
+              </div>
+              : null
+            }
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {group_values.map((comp_value, index) => (
+                this.renderControl(comp_value, index, control_msg)
+              ))}
+              {(group_first === false && show_header_label === true) ?
+                <span style={{ fontSize: 11, color: '#aaa' }}>{display_name}</span>
+                : null
+              }
+            </div>
           </React.Fragment>
         )
       }
