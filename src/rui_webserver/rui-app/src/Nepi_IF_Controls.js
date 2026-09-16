@@ -218,6 +218,7 @@ class Nepi_IF_Controls extends Component {
             control_msg={control_msg}
             in_group={true}
             group_first={index === 0}
+            show_bounds={this.props.show_bounds}
           />
         ))}
       </div>
@@ -227,6 +228,12 @@ class Nepi_IF_Controls extends Component {
   // Render a single control given its type and Control message.
   // Each block below maps one nepi_controls control type to its RUI widget and
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
+  //
+  // show_bounds is forwarded, not consumed here. Nepi_IF_Control has always read
+  // a show_bounds prop and defaulted it to true, but nothing passed one, so the
+  // read-only Min/Max block under a bounded control could not be turned off by
+  // the page mounting the set. Forwarding it changes nothing by itself: an
+  // absent prop arrives undefined and the child still defaults to true.
   renderControl(control_msg) {
     const namespace = this.getNamespace()
       return (
@@ -235,6 +242,7 @@ class Nepi_IF_Controls extends Component {
               key={control_msg.name}
               namespace={namespace}
               control_msg={control_msg}
+              show_bounds={this.props.show_bounds}
             />
 
       )
