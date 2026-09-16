@@ -266,7 +266,7 @@ class AppsMgr extends Component {
     const order = (app_status_msg != null) ? app_status_msg.order : null
     const msg_str = (app_status_msg != null) ? app_status_msg.msg_str : ''
 
-    const disable_enable = (enabled === false && running === true) || (running === false)
+    const disable_enable = (enabled === false && running === true)
     return (
       <React.Fragment>
 
