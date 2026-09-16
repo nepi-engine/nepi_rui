@@ -94,7 +94,11 @@ rosrun nepi_rui run_webserver.py         # start Flask backend
 
 ## Known Constraints and Fragile Areas
 
-**Node.js 8.11.1 is the target version.** The `package.json` and build tooling were written for Node 8. Building with newer Node versions may work but is not guaranteed. The README explicitly notes known vulnerabilities in this Node version.
+**Node.js 14.1.0 is what actually builds the RUI, not the 8.11.1 the README states.** `build_nepi_rui.sh` sources `devenv.sh`, whose `nvm use` reads `/opt/nepi/nepi_rui/.nvmrc` — pinned to `14.1.0`, giving npm 6.14.4. Confirmed from a device build log 2026-09-16. The README's `nvm install 8.11.1` and its vulnerability note are stale; `package.json` and the react-scripts 1.1.5 tooling were written for Node 8 and still work on 14.
+
+**That `.nvmrc` is not in this repo.** It exists only at the deploy root on the device. `build_nepi_rui.sh` rsyncs `src/nepi_rui/` to `/opt/nepi/nepi_rui/` without `--delete`, so the file survives every build but nothing in version control defines it — a rebuilt or re-mastered device gets whatever nvm's default alias happens to be, and the Node version can change silently. Check `/opt/nepi/nepi_rui/.nvmrc` before blaming a build difference on source changes.
+
+**RUI build speed is env-gated.** `build_nepi_rui.sh` exports `GENERATE_SOURCEMAP=false`, `RUI_SKIP_LINT=1` and `RUI_NO_COMPRESS=1` as overridable defaults (63s to 15s on device); `config-overrides.js` implements them. Lint is off by default, so a build printing no warnings is expected — run `RUI_SKIP_LINT=0 ruibld` to see them. See the 2026-09 entry in the workspace `CLAUDE.md` for measurements and for why parallel minification was tried and removed.
 
 **React 16.5.2 is significantly outdated.** Modern React (17+, 18+) introduced breaking changes. Any upgrade requires evaluating MobX compatibility, the react-app-rewired setup, and all hook/lifecycle patterns.
 
