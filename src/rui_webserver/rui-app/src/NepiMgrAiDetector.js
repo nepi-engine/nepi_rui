@@ -183,7 +183,7 @@ class DetectorMgr extends Component {
     }
     const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
     const selected_process = this.state.selected_process
-    const check_process = this.state.selected_process.replace('/detections','')
+    const check_process = this.state.selected_process.replace('/targets','')
     const detector_ind = ai_models_namespaces.indexOf(check_process)
     this.setState({detector_ind: detector_ind})
     if (detector_ind !== -1){
