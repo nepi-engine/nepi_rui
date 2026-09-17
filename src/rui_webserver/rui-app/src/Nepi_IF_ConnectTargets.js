@@ -211,6 +211,14 @@ class NepiIFConnectTargets extends Component {
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
     const header_title = (this.props.title !== undefined) ? this.props.title : "Targets Connect"
 
+    // Single-line row mode, ported from Nepi_IF_ConnectNavPose so the two
+    // sibling connect components read the same prop the same way. Pages that
+    // pack several connect rows into one panel pass shortened={true} and get
+    // exactly one line: just the Select, no header line and no Connected
+    // indicator. Default false leaves both layouts below untouched, so every
+    // existing consumer renders as it always has.
+    const shortened = (this.props.shortened !== undefined) ? this.props.shortened : false
+
     const selector = (
       <Label title={title}>
         <Select
@@ -227,6 +235,18 @@ class NepiIFConnectTargets extends Component {
         <BooleanIndicator value={connected} />
       </Label>
     )
+
+    if (shortened === true) {
+      return (
+        <Columns>
+          <Column>
+
+            {selector}
+
+          </Column>
+        </Columns>
+      )
+    }
 
     if (show_connect_header === true) {
       return (

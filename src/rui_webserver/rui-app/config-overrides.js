@@ -140,12 +140,28 @@ function rewireBuildSpeed(config, env) {
     config.plugins = config.plugins.filter(
       p => !(p instanceof webpack.optimize.UglifyJsPlugin)
     )
+    // Source map quality. `cheap-module-source-map` maps LINES ONLY, with no
+    // column information. DevTools will happily show the original file with
+    // that -- the Sources tree looks correct -- but it cannot bind a breakpoint
+    // to a precise generated location, so clicking the line-number gutter does
+    // nothing. Setting breakpoints requires column mappings, i.e. `source-map`.
+    //
+    // Full `source-map` measured at ~38s on 2026-09-17, but that was over a
+    // MINIFIED bundle, where most of the cost is uglify re-mapping its own
+    // output. With the minifier already removed above, webpack only has to emit
+    // per-module mappings, which is a different and much cheaper job.
+    //   RUI_CHEAP_SOURCEMAP=1 ruibld  -> line-only maps, no breakpoints, faster
     if (process.env.GENERATE_SOURCEMAP !== "false") {
-      config.devtool = "cheap-module-source-map"
+      const cheap = process.env.RUI_CHEAP_SOURCEMAP === "1"
+      config.devtool = cheap ? "cheap-module-source-map" : "source-map"
+      console.log(
+        "config-overrides: minify off + " +
+          config.devtool +
+          (cheap ? " (no breakpoints)" : " (breakpoints work)")
+      )
+    } else {
+      console.log("config-overrides: minify off, no source maps")
     }
-    console.log(
-      "config-overrides: minify off + cheap-module-source-map (RUI_UNMINIFIED=1)"
-    )
   } else if (process.env.RUI_NO_COMPRESS === "1") {
     config.plugins = config.plugins.map(plugin => {
       if (!(plugin instanceof webpack.optimize.UglifyJsPlugin)) {
