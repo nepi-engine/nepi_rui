@@ -190,7 +190,7 @@ class DetectorMgr extends Component {
 
       var statusListener = this.props.ros.setupStatusListener(
         selected_process + '/status',
-        "nepi_interfaces/DetectorStatus",
+        "nepi_interfaces/TargetsStatus",
         this.statusListener
       )
       this.setState({ 
@@ -246,7 +246,7 @@ class DetectorMgr extends Component {
     const ai_models_types = this.props.ros.ai_models_running_type_list
     const selected_process = this.state.selected_process
     var items = []
-    var check_type = 'detection'
+    var check_type = 'target'
     var type = 'Unknown'
 
     if (ai_models_namespaces.length === 0) {
@@ -257,14 +257,14 @@ class DetectorMgr extends Component {
           type = ai_models_types[i]
           if (type === check_type ){
             //items.push(<Option value={ai_models_namespaces[i]}>{ai_models_names[i]}</Option>)
-            items.push(<Option value={ai_models_namespaces[i] + '/detections'}>{ai_models_display_names[i]}</Option>)
+            items.push(<Option value={ai_models_namespaces[i] + '/targets'}>{ai_models_display_names[i]}</Option>)
           }
       }
     }
 
-    if ( ai_models_namespaces.indexOf(selected_process.replace('/detections','')) === -1){
+    if ( ai_models_namespaces.indexOf(selected_process.replace('/targets','')) === -1){
       if (ai_models_namespaces.length > 0){
-        this.setState({selected_process: ai_models_namespaces[0] + '/detections'})
+        this.setState({selected_process: ai_models_namespaces[0] + '/targets'})
       }
       else if (selected_process !== 'None') {
         this.setState({selected_process: 'None'})

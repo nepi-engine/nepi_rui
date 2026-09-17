@@ -39,7 +39,7 @@ import NepiIFConfig from "./Nepi_IF_Config"
 // targets source connected through the ConnectTargetsIF interface. It
 // subscribes to the connect namespace ConnectIFStatus (selector/connection
 // state and section-visibility flags) and to the selected source's
-// TargetingStatus (the targeting process's ProcessStatus telemetry plus its
+// TargetsStatus (the targeting process's ProcessStatus telemetry plus its
 // class filtering state), talking to ROS directly through this.props.ros the
 // same way the neighboring Nepi_IF_Connect* components do.
 //
@@ -57,7 +57,7 @@ class NepiIFConnectTargets extends Component {
 
       // Two status sources
       connect_status_msg: null,   // ConnectIFStatus
-      device_status_msg: null,    // TargetingStatus
+      device_status_msg: null,    // TargetsStatus
 
       // The source status topic the source listener is currently pointed at
       selected_topic: 'None',
@@ -142,7 +142,7 @@ class NepiIFConnectTargets extends Component {
   }
 
   // Function for configuring and subscribing to the selected source's targeting
-  // status topic (selected_topic/status), message type TargetingStatus.
+  // status topic (selected_topic/status), message type TargetsStatus.
   updateDeviceStatusListener(selected_topic) {
     if (this.state.deviceStatusListener != null) {
       this.state.deviceStatusListener.unsubscribe()
@@ -152,7 +152,7 @@ class NepiIFConnectTargets extends Component {
       const statusNamespace = selected_topic + '/status'
       var deviceStatusListener = this.props.ros.setupStatusListener(
         statusNamespace,
-        "nepi_interfaces/TargetingStatus",
+        "nepi_interfaces/TargetsStatus",
         this.deviceStatusListener
       )
       this.setState({ deviceStatusListener: deviceStatusListener })
@@ -160,7 +160,7 @@ class NepiIFConnectTargets extends Component {
     this.setState({ selected_topic: selected_topic })
   }
 
-  // Callback for TargetingStatus messages.
+  // Callback for TargetsStatus messages.
   deviceStatusListener(message) {
     this.setState({ device_status_msg: message })
   }
@@ -273,10 +273,10 @@ class NepiIFConnectTargets extends Component {
     )
   }
 
-  // Read-only source telemetry, backed by TargetingStatus. No command
+  // Read-only source telemetry, backed by TargetsStatus. No command
   // publishers here. The targeting process's run state and rate stats live on
   // the nested ProcessStatus; the class filtering state lives on
-  // TargetingStatus itself.
+  // TargetsStatus itself.
   renderData() {
     const status_msg = this.state.device_status_msg
     if (status_msg == null || status_msg.process_status == null) {
