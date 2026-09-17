@@ -50,6 +50,53 @@ function rewireBuildSpeed(config, env) {
   }
   config.module.rules.forEach(addBabelCache)
 
+  // hard-source-webpack-plugin caches webpack's whole module graph -- module
+  // resolution, parsing, dependencies and per-module source maps -- where the
+  // babel cache above only stores transpiled output. The per-module source maps
+  // are the point: they are what a full `source-map` build spends its time on.
+  //
+  // OPTIONAL DEPENDENCY, deliberately. It is not in package.json, because this
+  // file also ships to devices whose node_modules predate it, and a hard
+  // require would fail their build outright. Absent, this block is a no-op and
+  // the build is exactly what it was.
+  //   npm install --save-dev hard-source-webpack-plugin@0.13.1
+  //   RUI_NO_HARD_SOURCE=1 ruibld   -> ignore it even when installed
+  //
+  // The plugin is unmaintained (last release 2019) and its known failure mode
+  // is serving a stale cache after a config change -- which here means after
+  // any change to this file or to the RUI_* variables. configHash below folds
+  // both into the cache key so that cannot happen; if a build ever looks
+  // impossibly stale anyway, delete node_modules/.cache/hard-source.
+  if (process.env.RUI_NO_HARD_SOURCE !== "1") {
+    let HardSourcePlugin = null
+    try {
+      HardSourcePlugin = require("hard-source-webpack-plugin")
+    } catch (e) {
+      HardSourcePlugin = null
+    }
+    if (HardSourcePlugin) {
+      const fs = require("fs")
+      const crypto = require("crypto")
+      const selfHash = crypto
+        .createHash("md5")
+        .update(fs.readFileSync(__filename))
+        .digest("hex")
+      config.plugins.unshift(
+        new HardSourcePlugin({
+          configHash: () =>
+            [
+              selfHash,
+              process.env.GENERATE_SOURCEMAP,
+              process.env.RUI_SKIP_LINT,
+              process.env.RUI_NO_COMPRESS,
+              process.env.RUI_UNMINIFIED
+            ].join("|")
+        })
+      )
+      console.log("config-overrides: hard-source module cache enabled")
+    }
+  }
+
   // eslint-loader runs over every source file on every production build. It
   // only ever warns here (nothing sets CI=true), so skipping it changes no
   // output -- it just removes the warnings from the log.
@@ -74,11 +121,32 @@ function rewireBuildSpeed(config, env) {
     console.log("config-overrides: eslint-loader skipped (RUI_SKIP_LINT=1)")
   }
 
-  // uglify's compress pass is the expensive half of minification; mangle does
-  // most of the size reduction for much less work. Dropping compress grows the
-  // bundle, which matters little for a UI served over the LAN from the device
-  // itself, but it is a real artifact change so it stays opt in.
-  if (process.env.RUI_NO_COMPRESS === "1") {
+  // Minification is what makes the build undebuggable. With compress and mangle
+  // on, the whole app lands on one line with renamed identifiers, so a browser
+  // stack trace means nothing without a full `source-map` -- and producing one
+  // costs ~38s on this hardware (measured 2026-09-17: npm build 16s -> 54s,
+  // i.e. the entire speedup). The cheaper devtools are no help: they map lines
+  // but not columns, and a minified bundle has one line.
+  //
+  // RUI_UNMINIFIED=1 attacks the cause instead of paying to undo it. Dropping
+  // UglifyJsPlugin keeps module boundaries and original line structure, which
+  // makes `cheap-module-source-map` accurate, and that variant is far cheaper
+  // to build than `source-map`. Two costs at once are avoided: uglify does not
+  // run, and the source map is the cheap kind. What it costs is bundle size --
+  // nothing is minified at all.
+  //
+  // This supersedes RUI_NO_COMPRESS; if both are set, RUI_UNMINIFIED wins.
+  if (process.env.RUI_UNMINIFIED === "1") {
+    config.plugins = config.plugins.filter(
+      p => !(p instanceof webpack.optimize.UglifyJsPlugin)
+    )
+    if (process.env.GENERATE_SOURCEMAP !== "false") {
+      config.devtool = "cheap-module-source-map"
+    }
+    console.log(
+      "config-overrides: minify off + cheap-module-source-map (RUI_UNMINIFIED=1)"
+    )
+  } else if (process.env.RUI_NO_COMPRESS === "1") {
     config.plugins = config.plugins.map(plugin => {
       if (!(plugin instanceof webpack.optimize.UglifyJsPlugin)) {
         return plugin
