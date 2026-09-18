@@ -66,6 +66,7 @@ class Nepi_IF_Process extends Component {
     this.renderProcessSelector = this.renderProcessSelector.bind(this)
     this.onProcessSelected = this.onProcessSelected.bind(this)
     this.renderProcess = this.renderProcess.bind(this)
+    this.renderSettings = this.renderSettings.bind(this)
   }
 
   // Callback for handling ROS Process Status messages.
@@ -200,59 +201,34 @@ class Nepi_IF_Process extends Component {
 
 
   renderProcess() {
-   
+    const { sendBoolMsg, sendTriggerMsg } = this.props.ros
+    const namespace = status_msg.namespace
     const status_msg = this.state.status_msg
-    const config_topic = status_msg.config_topic
-
-    const { userRestricted} = this.props.ros
-    const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
-    
-
-    
-    const controls_restricted = userRestricted.indexOf('SYSTEM-PROCESS-CONTROL') !== -1 && (ignore_restrictions === false)
-
-    const show_process = (this.props.show_process !== undefined) ? this.props.show_process: status_msg.show_process
-
-
-    const has_controls = status_msg.has_controls
-    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_controls): false
-    const show_controls = (this.props.show_controls !== undefined) ? (this.props.show_controls  && has_controls): has_controls
 
     const has_results = status_msg.has_results
     const allways_show_results = (this.props.allways_show_results !== undefined) ? (this.props.allways_show_results  && has_results): false
     const show_results = (this.props.show_results !== undefined) ? (this.props.show_results  && has_results): has_results
     
 
-    const { sendBoolMsg, sendTriggerMsg } = this.props.ros
-    const namespace = status_msg.namespace
-    // Normalized rather than read raw: a ProcessStatus from a node built
-    // against a different nepi_interfaces can arrive missing these, and an
-    // undefined here would otherwise reach AsyncToggle as its checked prop.
     const enabled = (status_msg.enabled === true)
     const show_enable = (this.props.show_enable !== undefined) ? this.props.show_enable: status_msg.show_enable
     const running = (status_msg.running === true)
     const process_ready = (status_msg.process_ready === true)
     const msg_str = (status_msg.msg_str !== undefined && status_msg.msg_str !== null) ? status_msg.msg_str : ''
 
+    const { userRestricted} = this.props.ros
+    const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
+    const controls_restricted = userRestricted.indexOf('SYSTEM-PROCESS-CONTROL') !== -1 && (ignore_restrictions === false)
 
-      return (
-        <React.Fragment>
+    const config_topic = status_msg.config_topic
+    const show_config = status_msg.show_config === true && config_topic !== '' && controls_restricted !== false
 
-              { ( show_process === true ) ?
+    const allways_show_settings = (this.props.allways_show_settings !== undefined) ? this.props.allways_show_settings : false
+    const show_settings = (allways_show_settings === true) ? true : this.state.show_settings
 
-                <Columns>
-                <Column>
-                    <Label title={"Select Process"}>
-                      {this.renderProcessSelector()}
-                    </Label>
-                </Column>
-                <Column>
-                      <ButtonMenu>
-                      <Button onClick={() => sendTriggerMsg(namespace + '/reload_process')}>{"RELOAD"}</Button>
-                    </ButtonMenu>
-                </Column>
-              </Columns>
-                : null}
+
+    return (
+          <React.Fragment>
 
 
              {(show_enable === true) ?
@@ -281,23 +257,84 @@ class Nepi_IF_Process extends Component {
               : null } */}
 
 
-              { ( show_results === true ) ?
-              <Nepi_IF_Data
-                make_section={false}
-                title={null}
-                allways_show_data={allways_show_results}
-                namespace={ status_msg.namespace}
-                status_msg={status_msg.results}
+            { ( show_results === true ) ?
+            <Nepi_IF_Data
+              make_section={false}
+              title={null}
+              allways_show_data={allways_show_results}
+              namespace={ status_msg.namespace}
+              status_msg={status_msg.results}
+              />
+              : null}
+
+                      
+              {(allways_show_settings === false) ?
+                  <Columns>
+                    <Column>
+                      <Label title="Show Controls">
+                        {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+                        <Toggle
+                          checked={show_settings === true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_settings", show_settings)}>
+                        </Toggle>
+                      </Label>
+                    </Column>
+                    <Column>
+                    </Column>
+                  </Columns>
+                : null             
+            }
+
+              { (show_settings === true && controls_restricted === false) ? this.renderSettings() : null}
+
+
+              { (show_config === true ) ?
+                <NepiIFConfig
+                  namespace={config_topic}
+                  title={"Nepi_IF_Config"}
                 />
                 : null}
+            
+        </React.Fragment>
+      )
 
-              {/* The process enable. This is the control that starts and stops
-                  the process itself; everything below it is display state.
-                  Enabled is what the operator asked for, Running is what the
-                  node reports back, and they are shown separately so an enable
-                  the node could not honour is visible rather than silent. */}
- 
-                
+  }
+
+renderSettings() {
+    const { sendBoolMsg, sendTriggerMsg } = this.props.ros
+    const namespace = status_msg.namespace
+    const status_msg = this.state.status_msg
+    
+    const show_process = (this.props.show_process !== undefined) ? this.props.show_process: status_msg.show_process
+    const show_reload = (this.props.show_reload !== undefined) ? this.props.show_reload: status_msg.show_reload
+
+    const has_controls = status_msg.has_controls
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_controls): false
+    const show_controls = (this.props.show_controls !== undefined) ? (this.props.show_controls  && has_controls): has_controls
+
+    return (
+        <React.Fragment>
+
+
+
+      { ( show_process === true ) ?
+
+        <Columns>
+        <Column>
+            <Label title={"Select Process"}>
+              {this.renderProcessSelector()}
+            </Label>
+        </Column>
+        <Column>
+            <div hidden={show_reload === false}>
+                  <ButtonMenu>
+                  <Button onClick={() => sendTriggerMsg(namespace + '/reload_process')}>{"RELOAD"}</Button>
+                </ButtonMenu>
+            </div>
+        </Column>
+      </Columns>
+        : null}
+
 
       { ( show_controls === true ) ?
       <NepiIFControls
@@ -309,18 +346,11 @@ class Nepi_IF_Process extends Component {
         />
         : null}
 
-      { ( config_topic !== '' ) ?
-        <NepiIFConfig
-          namespace={config_topic}
-          title={"Nepi_IF_Config"}
-        />
-        : null}
-            
+
         </React.Fragment>
       )
 
   }
-
 
 
 

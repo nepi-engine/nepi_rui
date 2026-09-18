@@ -246,7 +246,7 @@ class DetectorMgr extends Component {
     const ai_models_types = this.props.ros.ai_models_running_type_list
     const selected_process = this.state.selected_process
     var items = []
-    var check_type = 'target'
+    var check_type = 'detection'
     var type = 'Unknown'
 
     if (ai_models_namespaces.length === 0) {
