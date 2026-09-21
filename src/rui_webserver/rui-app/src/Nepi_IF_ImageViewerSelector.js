@@ -32,6 +32,8 @@ import Styles from "./Styles"
 import Select, { Option } from "./Select"
 
 import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFControls from "./Nepi_IF_Controls"
+
 import {createMenuFirstLastName, createMenuFirstLastNames} from "./Utilities"
 
 
@@ -434,6 +436,11 @@ class NepiIFImageViewerSelector extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const hide_image = this.state.hide_list === false
 
+    const controls_options_topic = (this.props.controls_options_topic !== undefined) ? this.props.controls_options_topic : ''
+    const show_options = controls_options_topic !== ''
+    
+
+                 
 
     if (make_section === false){
       return (
@@ -445,7 +452,15 @@ class NepiIFImageViewerSelector extends Component {
               </div>
 
                 <div style={{ width: '50%' }}>
-                  {}
+                   { ( show_options === true ) ?
+                  <NepiIFControls
+                    make_section={false}
+                    title={null}
+                    allways_show_controls={true}
+                    namespace={ controls_options_topic}
+                    is_row={true}
+                    />
+                    : null}
                 </div>
                 
                 <div style={{ width: '20%' }} hidden={hide_image}>
@@ -471,7 +486,15 @@ class NepiIFImageViewerSelector extends Component {
               </div>
 
                 <div style={{ width: '50%' }}>
-                  {}
+                  { ( show_options === true ) ?
+                  <NepiIFControls
+                    make_section={false}
+                    title={null}
+                    allways_show_controls={true}
+                    namespace={ controls_options_topic}
+                    is_row={true}
+                    />
+                    : null}
                 </div>
 
                 <div style={{ width: '20%' }}>

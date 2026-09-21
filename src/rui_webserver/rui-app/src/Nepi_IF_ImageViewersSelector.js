@@ -22,7 +22,7 @@ import Styles from "./Styles"
 
 import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
-
+import NepiIFControls from "./Nepi_IF_Controls"
 
 
 @inject("ros")
@@ -301,6 +301,8 @@ class NepiIFImageViewersSelector extends Component {
     const colFlexSize_2 = (has_col_2 === false)? "0%" : "49%"
     const make_section = true //(num_windows !== 1)
 
+    const controls_options_topic = (this.props.controls_options_topic !== undefined) ? this.props.controls_options_topic : ''
+    const show_options = controls_options_topic !== ''
     
   
       return (
@@ -308,6 +310,17 @@ class NepiIFImageViewersSelector extends Component {
   <React.Fragment>
               <div style={{ display: 'flex' }}>
             
+                  { ( show_options === true ) ?
+                  <NepiIFControls
+                    make_section={false}
+                    title={null}
+                    allways_show_controls={true}
+                    namespace={ controls_options_topic}
+                    is_row={true}
+                    />
+                    : null}
+
+
                   <div style={{ width: colFlexSize_1 }}>
 
 

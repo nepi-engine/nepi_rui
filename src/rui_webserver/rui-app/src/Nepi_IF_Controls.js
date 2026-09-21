@@ -135,7 +135,7 @@ class Nepi_IF_Controls extends Component {
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
 
-
+    const is_row = (this.props.is_row !== undefined) ? this.props.is_row : false
     return (
           <React.Fragment>
 
@@ -158,14 +158,29 @@ class Nepi_IF_Controls extends Component {
             }
 
 
-            {(show_controls === true) ?
+            {(show_controls === true && is_row === false) ?
                   this.groupControls(control_msgs).map((group, group_index) => (
                     (group.name === '')
                       ? this.renderControl(group.controls[0])
-                      : this.renderControlRow(group, group_index)
+                      : this.rebderControlGroup(group, group_index)
                   ))
                 : null
             }
+
+          {(show_controls === true && is_row === true) ?
+            <Columns>
+              {/* Same renderControl calls as the stacked layout below, one per
+                  value entry -- only the wrapper differs, so what each widget
+                  publishes is unchanged. */}
+              {control_msgs.map((control_msg, index) => (
+                <Column key={control_msg.name + '_row_' + index}>
+                  {this.renderControl(control_msg)}
+                </Column>
+              ))}
+            </Columns>
+          : null
+            }
+
 
           </React.Fragment>
     )
@@ -204,7 +219,7 @@ class Nepi_IF_Controls extends Component {
   // drop their own header block, and group_first marks the one that supplies
   // the row label. flexWrap keeps a long row from overflowing its column on a
   // narrow window instead of clipping.
-  renderControlRow(group, group_index) {
+  rebderControlGroup(group, group_index) {
     const namespace = this.getNamespace()
     return (
       <div
@@ -218,7 +233,7 @@ class Nepi_IF_Controls extends Component {
             control_msg={control_msg}
             in_group={true}
             group_first={index === 0}
-            show_bounds={this.props.show_bounds}
+            show_bounds={this.props.show_bounds === true}
           />
         ))}
       </div>
