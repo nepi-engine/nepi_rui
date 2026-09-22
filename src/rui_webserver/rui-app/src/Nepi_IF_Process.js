@@ -302,8 +302,8 @@ class Nepi_IF_Process extends Component {
 
 renderSettings() {
     const { sendBoolMsg, sendTriggerMsg } = this.props.ros
-    const namespace = status_msg.namespace
     const status_msg = this.state.status_msg
+    const namespace = status_msg.namespace
     
     const show_process = (this.props.show_process !== undefined) ? this.props.show_process: status_msg.show_process
     const show_reload = (this.props.show_reload !== undefined) ? this.props.show_reload: status_msg.show_reload
