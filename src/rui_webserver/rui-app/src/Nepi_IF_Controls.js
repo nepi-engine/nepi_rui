@@ -283,7 +283,7 @@ class Nepi_IF_Controls extends Component {
       return (
           <React.Fragment>
 
-              <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+              
               <Label title={title} />
 
               {this.renderControls(status_msg)}

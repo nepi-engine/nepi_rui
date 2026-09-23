@@ -28,7 +28,7 @@ import Label from "./Label"
 import BooleanIndicator from "./BooleanIndicator"
 import Select, { Option } from "./Select"
 import { Column, Columns } from "./Columns"
-
+import Styles from "./Styles"
 import NepiIFControls from "./Nepi_IF_Controls"
 import Nepi_IF_Data from "./Nepi_IF_Data"
 import NepiIFConfig from "./Nepi_IF_Config"
@@ -66,7 +66,7 @@ class Nepi_IF_Process extends Component {
     this.renderProcessSelector = this.renderProcessSelector.bind(this)
     this.onProcessSelected = this.onProcessSelected.bind(this)
     this.renderProcess = this.renderProcess.bind(this)
-    this.renderSettings = this.renderSettings.bind(this)
+    this.renderControls = this.renderControls.bind(this)
   }
 
   // Callback for handling ROS Process Status messages.
@@ -223,8 +223,8 @@ class Nepi_IF_Process extends Component {
     const config_topic = status_msg.config_topic
     const show_config = status_msg.show_config === true && config_topic !== '' && controls_restricted !== false
 
-    const allways_show_settings = (this.props.allways_show_settings !== undefined) ? this.props.allways_show_settings : false
-    const show_settings = (allways_show_settings === true) ? true : this.state.show_settings
+    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
+    const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
 
 
     return (
@@ -268,14 +268,14 @@ class Nepi_IF_Process extends Component {
               : null}
 
                       
-              {(allways_show_settings === false) ?
+              {(allways_show_controls === false) ?
                   <Columns>
                     <Column>
                       <Label title="Show Controls">
                         {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                         <Toggle
-                          checked={show_settings === true}
-                          onClick={() => onChangeSwitchStateValue.bind(this)("show_settings", show_settings)}>
+                          checked={show_controls === true}
+                          onClick={() => onChangeSwitchStateValue.bind(this)("show_controls", show_controls)}>
                         </Toggle>
                       </Label>
                     </Column>
@@ -285,7 +285,7 @@ class Nepi_IF_Process extends Component {
                 : null             
             }
 
-              { (show_settings === true && controls_restricted === false) ? this.renderSettings() : null}
+              { (show_controls === true && controls_restricted === false) ? this.renderControls() : null}
 
 
               { (show_config === true ) ?
@@ -300,7 +300,7 @@ class Nepi_IF_Process extends Component {
 
   }
 
-renderSettings() {
+renderControls() {
     const { sendBoolMsg, sendTriggerMsg } = this.props.ros
     const status_msg = this.state.status_msg
     const namespace = status_msg.namespace
@@ -308,16 +308,27 @@ renderSettings() {
     const show_process = (this.props.show_process !== undefined) ? this.props.show_process: status_msg.show_process
     const show_reload = (this.props.show_reload !== undefined) ? this.props.show_reload: status_msg.show_reload
 
-    const has_controls = status_msg.has_controls
-    const allways_show_controls = (this.props.allways_show_controls !== undefined) ? (this.props.allways_show_controls  && has_controls): false
-    const show_controls = (this.props.show_controls !== undefined) ? (this.props.show_controls  && has_controls): has_controls
+
 
     return (
         <React.Fragment>
 
 
 
+
+
+      <NepiIFControls
+        make_section={false}
+        title={null}
+        allways_show_controls={true}
+        namespace={ status_msg.namespace}
+        status_msg={status_msg.controls}
+        />
+
+
       { ( show_process === true ) ?
+        <React.Fragment>
+          <div style={{ borderTop: "1px solid #999999", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
         <Columns>
         <Column>
@@ -333,17 +344,8 @@ renderSettings() {
             </div>
         </Column>
       </Columns>
-        : null}
 
-
-      { ( show_controls === true ) ?
-      <NepiIFControls
-        make_section={false}
-        title={null}
-        allways_show_controls={allways_show_controls}
-        namespace={ status_msg.namespace}
-        status_msg={status_msg.controls}
-        />
+          </React.Fragment>
         : null}
 
 
