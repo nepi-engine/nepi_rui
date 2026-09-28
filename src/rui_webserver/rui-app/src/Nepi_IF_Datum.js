@@ -367,12 +367,14 @@ class Nepi_IF_Datum extends Component {
                 <Columns>
                 <Column>
 
-                <Label title={display_name} key={name}> </Label>
+                <Label title={display_name} key={name}> 
+                      <ColoredIndicator indicator_color={indicator_color} />
+                </Label>
 
                 </Column>
                 <Column>
 
-                  <ColoredIndicator indicator_color={indicator_color} />
+                  
                   
                 </Column>
               </Columns>
