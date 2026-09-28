@@ -354,7 +354,7 @@ class Nepi_IF_Datum extends Component {
       // names come from the display_labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       else if (datum_type === "ColorRGB") {
-        const value = (values.length > 2) ? [values[0],values[1],,values[2]] : [255, 255, 255]
+        const value = (values.length > 2) ? [values[0],values[1],values[2]] : [255, 255, 255]
         const min = 0
         const max = 255
         const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
@@ -387,7 +387,7 @@ class Nepi_IF_Datum extends Component {
                     disabled={datum_disabled}
                     id={'csbx_' + name + '_' + display_labels[0]}
                     style={{ width: "100%" }}
-                    value={value}
+                    value={value[0]}
                   />
 
                 </Column>
@@ -398,7 +398,7 @@ class Nepi_IF_Datum extends Component {
                     disabled={datum_disabled}
                     id={'csbx_' + name + '_' + display_labels[1]}
                     style={{ width: "100%" }}
-                    value={value}
+                    value={value[1]}
                   />
                   
                 </Column>
@@ -409,7 +409,7 @@ class Nepi_IF_Datum extends Component {
                     disabled={datum_disabled}
                     id={'csbx_' + name + '_' + display_labels[2]}
                     style={{ width: "100%" }}
-                    value={value}
+                    value={value[2]}
                   />
 
                 </Column>
