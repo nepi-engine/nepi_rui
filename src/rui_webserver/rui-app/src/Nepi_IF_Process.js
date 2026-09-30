@@ -31,7 +31,6 @@ import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import NepiIFControls from "./Nepi_IF_Controls"
 import Nepi_IF_Data from "./Nepi_IF_Data"
-import NepiIFConfig from "./Nepi_IF_Config"
 import { onChangeSwitchStateValue} from "./Utilities"
 
 @inject("ros")
@@ -220,8 +219,6 @@ class Nepi_IF_Process extends Component {
     const ignore_restrictions = (this.props.ignore_restrictions !== undefined) ? this.props.ignore_restrictions : false
     const controls_restricted = userRestricted.indexOf('SYSTEM-PROCESS-CONTROL') !== -1 && (ignore_restrictions === false)
 
-    const config_topic = status_msg.config_topic
-    const show_config = status_msg.show_config === true && config_topic !== '' && controls_restricted !== false
 
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
@@ -287,13 +284,6 @@ class Nepi_IF_Process extends Component {
 
               { (show_controls === true && controls_restricted === false) ? this.renderControls() : null}
 
-
-              { (show_config === true ) ?
-                <NepiIFConfig
-                  namespace={config_topic}
-                  title={"Nepi_IF_Config"}
-                />
-                : null}
             
         </React.Fragment>
       )
