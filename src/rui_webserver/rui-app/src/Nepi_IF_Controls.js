@@ -221,6 +221,7 @@ class Nepi_IF_Controls extends Component {
   // narrow window instead of clipping.
   rebderControlGroup(group, group_index) {
     const namespace = this.getNamespace()
+    const topic = this.props.topic !== undefined ? this.props.topic : 'update_control'
     return (
       <div
         key={'control_group_' + group.name + '_' + group_index}
@@ -230,6 +231,7 @@ class Nepi_IF_Controls extends Component {
           <Nepi_IF_Control
             key={control_msg.name}
             namespace={namespace}
+            topic={topic}
             control_msg={control_msg}
             in_group={true}
             group_first={index === 0}
@@ -251,11 +253,13 @@ class Nepi_IF_Controls extends Component {
   // absent prop arrives undefined and the child still defaults to true.
   renderControl(control_msg) {
     const namespace = this.getNamespace()
+    const topic = this.props.topic !== undefined ? this.props.topic : 'update_control'
       return (
 
          <Nepi_IF_Control
               key={control_msg.name}
               namespace={namespace}
+              topic={topic}
               control_msg={control_msg}
               show_bounds={this.props.show_bounds}
             />

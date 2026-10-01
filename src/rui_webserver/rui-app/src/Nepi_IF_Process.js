@@ -65,6 +65,7 @@ class Nepi_IF_Process extends Component {
     this.renderProcessSelector = this.renderProcessSelector.bind(this)
     this.onProcessSelected = this.onProcessSelected.bind(this)
     this.renderProcess = this.renderProcess.bind(this)
+    this.renderSettings = this.renderSettings.bind(this)
     this.renderControls = this.renderControls.bind(this)
   }
 
@@ -204,13 +205,13 @@ class Nepi_IF_Process extends Component {
     const status_msg = this.state.status_msg
     const namespace = status_msg.namespace
 
+    const show_settings = (this.props.show_settings !== undefined) ? this.props.show_settings : status_msg.show_settings
+
     const has_results = status_msg.has_results
     const allways_show_results = (this.props.allways_show_results !== undefined) ? (this.props.allways_show_results  && has_results): false
-    const show_results = (this.props.show_results !== undefined) ? (this.props.show_results  && has_results): has_results
+    const show_results = (this.props.show_results !== undefined) ? (this.props.show_results  && has_results): status_msg.show_results && has_results
     
 
-    const enabled = (status_msg.enabled === true)
-    const show_enable = (this.props.show_enable !== undefined) ? this.props.show_enable: status_msg.show_enable
     const running = (status_msg.running === true)
     const process_ready = (status_msg.process_ready === true)
     const msg_str = (status_msg.msg_str !== undefined && status_msg.msg_str !== null) ? status_msg.msg_str : ''
@@ -227,32 +228,7 @@ class Nepi_IF_Process extends Component {
     return (
           <React.Fragment>
 
-
-             {(show_enable === true) ?
-              <Columns>
-                <Column>
-                    <Label title={"Enable"}>
-                      <AsyncToggle
-                        disabled={process_ready === false}
-                        checked={enabled === true}
-                        onClick={() => sendBoolMsg(namespace + "/set_enable", !enabled)}>
-                      </AsyncToggle>
-                    </Label>
-                </Column>
-                <Column>
-                    <Label title={"Running"}>
-                      <BooleanIndicator value={running === true} />
-                    </Label>
-                </Column>
-              </Columns>
-              : null }
-
-              {/* {(show_enable === true && msg_str !== '' && msg_str !== undefined) ?
-                <pre style={{ height: "24px", overflowY: "auto" }} align={"left"} textAlign={"left"}>
-                  {msg_str}
-                </pre>
-              : null } */}
-
+            { (show_settings === true) ? this.renderSettings() : null}
 
             { ( show_results === true ) ?
             <Nepi_IF_Data
@@ -289,6 +265,38 @@ class Nepi_IF_Process extends Component {
       )
 
   }
+
+
+
+renderSettings() {
+    const { sendBoolMsg, sendTriggerMsg } = this.props.ros
+    const status_msg = this.state.status_msg
+    const namespace = status_msg.namespace
+    const topic = this.props.setting_update_topic !== undefined ? this.props.setting_update_topic : 'update_setting'
+
+
+
+
+    return (
+        <React.Fragment>
+
+
+      <NepiIFControls
+        make_section={false}
+        title={null}
+        allways_show_controls={true}
+        namespace={ status_msg.namespace}
+        topic={topic}
+        status_msg={status_msg.settings}
+        />
+
+
+
+        </React.Fragment>
+      )
+
+  }
+
 
 renderControls() {
     const { sendBoolMsg, sendTriggerMsg } = this.props.ros

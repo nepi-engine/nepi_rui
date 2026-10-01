@@ -587,7 +587,8 @@ class Nepi_IF_Control extends Component {
       const control_type =  control_msg.type
       const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
       // True when there IS a name to show; the consumer below hides on false.
-      const show_header_label = display_name !== '' && display_name !== 'None'
+      const display_labels = control_msg.display_labels
+      const show_header_label = display_name !== '' && display_name !== 'None' && display_labels.length > 1
       // Control.msg spells these display_hidden / display_disabled. Read under
       // the old names both were undefined, so nothing ever hid or disabled --
       // and show_bounds, which gates on control_disabled === false, never
@@ -601,7 +602,7 @@ class Nepi_IF_Control extends Component {
       // always had.
       const display_row = (control_msg.display_row === true)
       const options = control_msg.options
-      const display_labels = control_msg.display_labels
+
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
