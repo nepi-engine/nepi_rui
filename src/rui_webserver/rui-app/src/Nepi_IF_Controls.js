@@ -100,7 +100,7 @@ class Nepi_IF_Controls extends Component {
     const namespace = this.getNamespace()
     const props_status_msg = (this.props.status_msg !== undefined) ? this.props.status_msg : null
     const namespace_changed = (namespace !== this.state.controlsNamespace)
-    if ((namespace != null && namespace_changed === true && props_status_msg == null) || this.state.needs_update === true) {
+    if (((namespace != null && namespace_changed === true ) || this.state.needs_update === true) && props_status_msg == null ) {
       this.updateStatusListener(namespace)
     }
     // Guarded: an unconditional setState here re-enters componentDidUpdate on

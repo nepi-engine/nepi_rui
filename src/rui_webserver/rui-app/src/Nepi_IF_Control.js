@@ -482,7 +482,7 @@ class Nepi_IF_Control extends Component {
 
 
 
-  renderIntSliderControl(name,value,min,max, index, control_disabled, title){
+  renderIntSliderControl(name,value,min,max, control_disabled, title){
         const namespace = this.props.namespace !== undefined ? this.props.namespace : null
         const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
         // comp_name is what sendUpdate() publishes the control as, so it stays
@@ -494,7 +494,6 @@ class Nepi_IF_Control extends Component {
             disabled={control_disabled}
             title={slider_title}
             comp_name={name}
-            comp_index={index}
             is_control={true}
             topic={namespace + "/" + topic}
             msgType={"std_msgs/Float32"}
@@ -512,7 +511,7 @@ class Nepi_IF_Control extends Component {
 
 
 
-  renderFloatSliderControl(name,value,min,max,round, display_round, index, control_disabled){
+  renderFloatSliderControl(name,value,min,max,round, display_round, control_disabled, title){
         const namespace = this.props.namespace !== undefined ? this.props.namespace : null
         const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
         // Step size and display precision come off the control message the same
@@ -540,13 +539,13 @@ class Nepi_IF_Control extends Component {
         // finer than the node asked for.
         const step_decimals = Math.min(6, Math.max(0, Math.ceil(-Math.log10(step))))
         const displayDecimals = Math.max(step_decimals, display_round)
+        const slider_title = (title !== undefined) ? title : name
 
         return (
           <SliderAdjustment
             disabled={control_disabled}
-            title={name}
+            title={slider_title}
             comp_name={name}
-            comp_index={index}
             is_control={true}
             topic={namespace + "/" + topic}
             msgType={"std_msgs/Float32"}
@@ -802,7 +801,7 @@ class Nepi_IF_Control extends Component {
         const min = (min_bound !== -999) ? min_bound : 0
         const max = (max_bound !== -999) ? max_bound : 255
       
-        return this.renderIntSliderControl(name,value,min,max,'', control_disabled)
+        return this.renderIntSliderControl(name,value,min,max, control_disabled, display_name)
       }
 
 
@@ -862,7 +861,7 @@ class Nepi_IF_Control extends Component {
         // both are int32, so a control message that never carried them arrives
         // with 0 rather than undefined, and round 0 is step 1 -- the defect
         // again. The range check below is what actually rules that out.
-        return this.renderFloatSliderControl(name,value,min,max,value_round,display_round,'', control_disabled)
+        return this.renderFloatSliderControl(name,value,min,max,value_round,display_round, control_disabled, display_name)
       }
 
       // RANGESLIDER -- a min/max *range* dragged between two limits. values

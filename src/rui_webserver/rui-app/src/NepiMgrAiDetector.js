@@ -38,7 +38,7 @@ import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 //import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import {filterStrList, createMenuFirstLastNames} from "./Utilities"
+import {filterInStrList, createMenuFirstLastNames} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -70,7 +70,7 @@ class DetectorMgr extends Component {
 
       sources_list_viewable: true,
       source_list_detector_viewable: false,
-      source_filter_str_list: ['detections_image','targets_image','alert_image','track_image'],
+      source_filter_str_list: ['color_image'],
 
       selected_display_topic: "None",
       selected_display_text: "None",
@@ -343,7 +343,7 @@ class DetectorMgr extends Component {
   createImageTopicsOptions() {
     const source_filter_str_list = this.state.source_filter_str_list
     const { imageTopics } = this.props.ros
-    const img_options = filterStrList(imageTopics,source_filter_str_list)
+    const img_options = filterInStrList(imageTopics,source_filter_str_list)
     var imageTopicShortnames = createMenuFirstLastNames(img_options)
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
@@ -371,7 +371,7 @@ class DetectorMgr extends Component {
     const remove_img_namespace = process_namespace + "/remove_source_topic"
     const remove_imgs_namespace = process_namespace + "/remove_source_topics"
     const source_filter_str_list = this.state.source_filter_str_list
-    const img_options = filterStrList(imageTopics,source_filter_str_list)
+    const img_options = filterInStrList(imageTopics,source_filter_str_list)
     const selected_sources = this.state.process_status_msg.selected_sources
     const source_topic = event.target.value
     //this.setState({selected_display_topic: source_topic})
