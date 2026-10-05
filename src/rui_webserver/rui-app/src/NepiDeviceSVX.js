@@ -19,12 +19,15 @@
  */
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
+import Toggle from "react-toggle"
 
 
 import Section from "./Section"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Label from "./Label"
+import AsyncToggle from "./AsyncToggle"
+import Styles from "./Styles"
 
 import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFAdmin from "./Nepi_IF_Admin"
@@ -45,7 +48,16 @@ class NepiDeviceSVX extends Component {
       namespace: 'None',
       node_name: 'None',
 
+      // Every discovered servo's servo_connected flag, by namespace. The selector
+      // lists only servos marked connected unless show_all_channels is on.
+      connected_dict: {},
+      show_all_channels: false,
+
     }
+
+    // One status listener per discovered servo, by namespace. Kept off state
+    // because nothing renders from the listener objects themselves.
+    this.connectedListeners = {}
 
     this.renderImageViewer = this.renderImageViewer.bind(this)
 
@@ -54,9 +66,76 @@ class NepiDeviceSVX extends Component {
     this.createDeviceOptions = this.createDeviceOptions.bind(this)
     this.onDeviceSelected = this.onDeviceSelected.bind(this)
 
+    this.updateConnectedListeners = this.updateConnectedListeners.bind(this)
+    this.onConnectedStatus = this.onConnectedStatus.bind(this)
+
     this.renderDeviceSelection = this.renderDeviceSelection.bind(this)
 
    }
+
+
+  // The SVX capabilities query does not carry servo_connected (it is runtime
+  // config, not a capability), so read it from each servo's own status topic.
+  updateConnectedListeners() {
+    const topics = Object.keys(this.props.ros.svxDevices)
+    const listeners = this.connectedListeners
+    for (var i = 0; i < topics.length; i++) {
+      const svx_namespace = topics[i]
+      if (listeners[svx_namespace] == null) {
+        listeners[svx_namespace] = this.props.ros.setupSVXStatusListener(
+          svx_namespace,
+          (message) => this.onConnectedStatus(svx_namespace, message)
+        )
+      }
+    }
+    const listened = Object.keys(listeners)
+    for (var j = 0; j < listened.length; j++) {
+      const svx_namespace = listened[j]
+      if (topics.indexOf(svx_namespace) === -1) {
+        if (listeners[svx_namespace]) {
+          listeners[svx_namespace].unsubscribe()
+        }
+        delete listeners[svx_namespace]
+        if (svx_namespace in this.state.connected_dict) {
+          this.setState((prevState) => {
+            const connected_dict = Object.assign({}, prevState.connected_dict)
+            delete connected_dict[svx_namespace]
+            return { connected_dict: connected_dict }
+          })
+        }
+      }
+    }
+  }
+
+  // Status arrives at the servo's status rate, so only touch state on a change.
+  onConnectedStatus(svx_namespace, message) {
+    const connected = (message.servo_connected === true)
+    if (this.state.connected_dict[svx_namespace] !== connected) {
+      this.setState((prevState) => ({
+        connected_dict: Object.assign({}, prevState.connected_dict, { [svx_namespace]: connected })
+      }))
+    }
+  }
+
+  componentDidMount() {
+    this.updateConnectedListeners()
+  }
+
+  // svxDevices is observed in render, so a servo appearing or vanishing re-renders
+  // this component and lands here.
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    this.updateConnectedListeners()
+  }
+
+  componentWillUnmount() {
+    const listened = Object.keys(this.connectedListeners)
+    for (var i = 0; i < listened.length; i++) {
+      if (this.connectedListeners[listened[i]]) {
+        this.connectedListeners[listened[i]].unsubscribe()
+      }
+    }
+    this.connectedListeners = {}
+  }
 
 
   setDeviceSelection(namespace) {
@@ -76,11 +155,22 @@ class NepiDeviceSVX extends Component {
     const { svxDevices} = this.props.ros
     const topics = Object.keys(svxDevices)
     const namespace = this.state.namespace
+    const show_all = (this.state.show_all_channels === true)
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     var device_name = ""
     for (var i = 0; i < topics.length; i++) {
+      const connected = (this.state.connected_dict[topics[i]] === true)
+      // The current selection always stays listed, so switching Servo Connected
+      // off does not yank the panel away mid-edit; it drops out of the list once
+      // something else is selected.
+      if (connected === false && show_all === false && topics[i] !== namespace) {
+        continue
+      }
       device_name = topics[i].split('/svx')[0].split('/').pop()
+      if (connected === false) {
+        device_name = device_name + " (not connected)"
+      }
       items.push(<Option value={topics[i]}>{device_name}</Option>)
     }
     // Check that our current selection hasn't disappeard as an available option
@@ -102,14 +192,21 @@ class NepiDeviceSVX extends Component {
 
 
   renderDeviceSelection() {
+    const { sendBoolMsg } = this.props.ros
     const namespace = this.state.namespace ? this.state.namespace : "None"
+    const device_selected = (namespace !== 'None')
+    const servo_connected = (this.state.connected_dict[namespace] === true)
+    const topics = Object.keys(this.props.ros.svxDevices)
+    const connected_count = topics.filter((topic) => this.state.connected_dict[topic] === true).length
+    const show_hint = (topics.length > 0 && connected_count === 0 && this.state.show_all_channels === false)
 
       return(
 
+        <React.Fragment>
 
           <Columns>
           <Column>
-          
+
             <Label title={"Device"}>
               <Select
                 onChange={this.onDeviceSelected}
@@ -122,10 +219,42 @@ class NepiDeviceSVX extends Component {
           </Column>
           <Column>
 
+            <Label title={"Show All Channels"}>
+              {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+              <Toggle
+                checked={this.state.show_all_channels === true}
+                onClick={() => this.setState({ show_all_channels: !this.state.show_all_channels })}
+              />
+            </Label>
+
           </Column>
         </Columns>
-          
 
+          {(show_hint === true) ?
+            <div style={{ marginBottom: Styles.vars.spacing.small }}>
+              {"No servos are marked connected. Turn on Show All Channels, select the channel your servo is plugged into, and switch on Servo Connected."}
+            </div>
+          : null}
+
+          {(device_selected === true) ?
+            <Columns>
+            <Column>
+
+              <Label title={"Servo Connected"}>
+                <AsyncToggle
+                  checked={servo_connected}
+                  onClick={() => sendBoolMsg(namespace + "/set_servo_connected", !servo_connected)}
+                />
+              </Label>
+
+            </Column>
+            <Column>
+
+            </Column>
+          </Columns>
+          : null}
+
+        </React.Fragment>
 
       )
   }
