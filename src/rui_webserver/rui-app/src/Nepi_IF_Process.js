@@ -321,6 +321,7 @@ renderControls() {
         allways_show_controls={true}
         namespace={ status_msg.namespace}
         status_msg={status_msg.controls}
+        show_reset={true}
         />
 
 
