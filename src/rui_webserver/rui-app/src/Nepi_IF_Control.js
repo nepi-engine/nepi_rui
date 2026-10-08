@@ -425,9 +425,8 @@ class Nepi_IF_Control extends Component {
 
             <React.Fragment>
 
-          {(hide_label === true) ? null
-            : <Label title={display_label} key={name}></Label>}
 
+              {(hide_label === true) ?
                 <Input
                   disabled={control_disabled}
                   id={'csbx_' + name}
@@ -436,6 +435,18 @@ class Nepi_IF_Control extends Component {
                   onChange={(e) => this.onInputChangeIndex(name, control_index,  e)}
                   onKeyDown={(e) => this.onInputKeyIndex(name, control_type, control_index, e)}
                 />
+              :
+                <Label title={display_label} key={name}>
+                <Input
+                  disabled={control_disabled}
+                  id={'csbx_' + name}
+                  style={{ width: input_width }}
+                  value={show_value}
+                  onChange={(e) => this.onInputChangeIndex(name, control_index,  e)}
+                  onKeyDown={(e) => this.onInputKeyIndex(name, control_type, control_index, e)}
+                />
+                </Label>
+              }
 
             </React.Fragment> 
         )
@@ -446,9 +457,7 @@ class Nepi_IF_Control extends Component {
 
         <React.Fragment>
 
-            {(hide_label === true) ? null
-              : <Label title={display_label} key={name}></Label>}
-
+              {(hide_label === true) ?
             <Input
               disabled={control_disabled}
               id={'csbx_' + name}
@@ -457,6 +466,20 @@ class Nepi_IF_Control extends Component {
               onChange={(e) => this.onInputChangeIndex(name, control_index,  e)}
               onKeyDown={(e) => this.onInputKeyIndex(name, control_type, control_index, e)}
             />
+              :
+                <Label title={display_label} key={name}>
+            <Input
+              disabled={control_disabled}
+              id={'csbx_' + name}
+              style={{ width: input_width }}
+              value={show_value}
+              onChange={(e) => this.onInputChangeIndex(name, control_index,  e)}
+              onKeyDown={(e) => this.onInputKeyIndex(name, control_type, control_index, e)}
+            />
+                </Label>
+              }
+
+
         
         </React.Fragment> 
         )
@@ -604,7 +627,7 @@ class Nepi_IF_Control extends Component {
 
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
-      const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
+      const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : control_msg.display_bounds)
       const values = this.getControlValue()
       const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
@@ -665,9 +688,9 @@ class Nepi_IF_Control extends Component {
               </div>
               : null
             }
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {group_values.map((comp_value, index) => (
-                this.renderControl(comp_value, index, control_msg, true)
+                this.renderControl(comp_value, index, control_msg, false)
               ))}
               {(group_first === false && show_header_label === true) ?
                 <span style={{ fontSize: 11, color: '#aaa' }}>{display_name}</span>

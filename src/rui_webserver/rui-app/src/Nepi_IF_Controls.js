@@ -128,13 +128,15 @@ class Nepi_IF_Controls extends Component {
   // Each block below maps one nepi_controls control type to its RUI widget and
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
   renderControls(status_msg) {
+    const namespace = this.getNamespace()
     const control_msgs = (status_msg.controls_msg_list !== undefined) ? status_msg.controls_msg_list : []
 
     // Show Controls toggle (Nepi_IF_Settings pattern). allways_show_controls
     // forces the controls open and hides the toggle.
     const allways_show_controls = (this.props.allways_show_controls !== undefined) ? this.props.allways_show_controls : false
     const show_controls = (allways_show_controls === true) ? true : this.state.show_controls
-
+    const show_reset = (this.props.show_reset !== undefined) ? this.props.show_reset : false
+    const topic = this.props.update_topic !== undefined ? this.props.update_topic : 'reset_controls'
     const is_row = (this.props.is_row !== undefined) ? this.props.is_row : false
     return (
           <React.Fragment>
@@ -181,6 +183,24 @@ class Nepi_IF_Controls extends Component {
           : null
             }
 
+          {(show_controls === true && show_reset === true)  ?
+
+                  <Columns>
+                    <Column>
+
+                    </Column>
+                    <Column>
+                      <ButtonMenu>
+                        <Button onClick={() => this.props.ros.sendTriggerMsg(namespace + "/" + topic)}>{"Reset Controls"}</Button>
+                      </ButtonMenu>
+
+                    </Column>
+                  </Columns>
+
+          : null
+          }            
+
+
 
           </React.Fragment>
     )
@@ -221,7 +241,7 @@ class Nepi_IF_Controls extends Component {
   // narrow window instead of clipping.
   rebderControlGroup(group, group_index) {
     const namespace = this.getNamespace()
-    const topic = this.props.topic !== undefined ? this.props.topic : 'update_control'
+    const topic = this.props.update_topic !== undefined ? this.props.update_topic : 'update_control'
     return (
       <div
         key={'control_group_' + group.name + '_' + group_index}
@@ -253,7 +273,7 @@ class Nepi_IF_Controls extends Component {
   // absent prop arrives undefined and the child still defaults to true.
   renderControl(control_msg) {
     const namespace = this.getNamespace()
-    const topic = this.props.topic !== undefined ? this.props.topic : 'update_control'
+    const topic = this.props.update_topic !== undefined ? this.props.update_topic : 'update_control'
       return (
 
          <Nepi_IF_Control
