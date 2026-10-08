@@ -688,7 +688,7 @@ class Nepi_IF_Control extends Component {
               </div>
               : null
             }
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {group_values.map((comp_value, index) => (
                 this.renderControl(comp_value, index, control_msg, false)
               ))}
