@@ -667,7 +667,7 @@ class Nepi_IF_Control extends Component {
             }
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               {group_values.map((comp_value, index) => (
-                this.renderControl(comp_value, index, control_msg, true)
+                this.renderControl(comp_value, index, control_msg, false)
               ))}
               {(group_first === false && show_header_label === true) ?
                 <span style={{ fontSize: 11, color: '#aaa' }}>{display_name}</span>
