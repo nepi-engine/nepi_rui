@@ -36,28 +36,28 @@ import NepiIFConfig from "./Nepi_IF_Config"
 @observer
 
 // Reusable component that renders the selector, data, and controls for a
-// targets source connected through the ConnectTargetsIF interface. It
+// detections source connected through the ConnectDetectionsIF interface. It
 // subscribes to the connect namespace ConnectIFStatus (selector/connection
 // state and section-visibility flags) and to the selected source's
-// TargetingStatus (the targeting process's ProcessStatus telemetry plus its
-// class filtering state), talking to ROS directly through this.props.ros the
-// same way the neighboring Nepi_IF_Connect* components do.
+// DetectorStatus (the detector's ProcessStatus telemetry plus its class
+// filtering state), talking to ROS directly through this.props.ros the same way
+// the neighboring Nepi_IF_Connect* components do.
 //
-// ConnectTargetsIF publishes no command topics on the selected source beyond
+// ConnectDetectionsIF publishes no command topics on the selected source beyond
 // the standard save/reset config triggers, so the controls section is the
 // shared Nepi_IF_Config panel pointed at the selected source namespace.
-class NepiIFConnectTargets extends Component {
+class NepiIFConnectDetections extends Component {
   constructor(props) {
     super(props)
 
     this.state = {
 
-      // Connect namespace (node_name/targets_connect)
+      // Connect namespace (node_name/detections_connect)
       namespace: null,
 
       // Two status sources
       connect_status_msg: null,   // ConnectIFStatus
-      device_status_msg: null,    // TargetingStatus
+      device_status_msg: null,    // DetectorStatus
 
       // The source status topic the source listener is currently pointed at
       selected_topic: 'None',
@@ -113,7 +113,7 @@ class NepiIFConnectTargets extends Component {
   }
 
   // Function for configuring and subscribing to the connect namespace status
-  // topic (node_name/targets_connect/status), message type ConnectIFStatus.
+  // topic (node_name/detections_connect/status), message type ConnectIFStatus.
   updateConnectStatusListener() {
     const namespace = this.getConnectNamespace()
     if (this.state.connectStatusListener != null) {
@@ -141,8 +141,8 @@ class NepiIFConnectTargets extends Component {
     }
   }
 
-  // Function for configuring and subscribing to the selected source's targeting
-  // status topic (selected_topic/status), message type TargetingStatus.
+  // Function for configuring and subscribing to the selected source's detector
+  // status topic (selected_topic/status), message type DetectorStatus.
   updateDeviceStatusListener(selected_topic) {
     if (this.state.deviceStatusListener != null) {
       this.state.deviceStatusListener.unsubscribe()
@@ -152,7 +152,7 @@ class NepiIFConnectTargets extends Component {
       const statusNamespace = selected_topic + '/status'
       var deviceStatusListener = this.props.ros.setupStatusListener(
         statusNamespace,
-        "nepi_interfaces/TargetingStatus",
+        "nepi_interfaces/DetectorStatus",
         this.deviceStatusListener
       )
       this.setState({ deviceStatusListener: deviceStatusListener })
@@ -160,7 +160,7 @@ class NepiIFConnectTargets extends Component {
     this.setState({ selected_topic: selected_topic })
   }
 
-  // Callback for TargetingStatus messages.
+  // Callback for DetectorStatus messages.
   deviceStatusListener(message) {
     this.setState({ device_status_msg: message })
   }
@@ -195,7 +195,7 @@ class NepiIFConnectTargets extends Component {
     const available_names = connect_status_msg.available_names
     const selected_topic = connect_status_msg.selected_topic
     const connected = connect_status_msg.connected
-    const title = (this.props.select_title !== undefined) ? this.props.select_title : "Select Targeter"
+
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     for (var i = 0; i < available_topics.length; i++) {
@@ -209,10 +209,21 @@ class NepiIFConnectTargets extends Component {
     // the selector, and the Select spans the panel width. Default false keeps
     // the original one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
-    const header_title = (this.props.title !== undefined) ? this.props.title : "Targets Connect"
+    const header_title = (this.props.title !== undefined) ? this.props.title : "Detections Connect"
+
+    // Single-line row mode. Pages that pack several connect rows into one panel
+    // pass shortened={true} and get exactly one line: the row's name (the title
+    // prop) on the left, its Select on the right, no header line and no
+    // Connected indicator. Default false leaves both layouts below untouched,
+    // so every existing consumer renders as it always has.
+    const shortened = (this.props.shortened !== undefined) ? this.props.shortened : false
+
+    // In shortened mode the row's one label IS its name, so the second word
+    // ("Detector") would just repeat the title the caller already passed.
+    const selector_label = (shortened === true) ? header_title : "Detector"
 
     const selector = (
-      <Label title={title}>
+      <Label title={selector_label}>
         <Select
           onChange={this.onSourceSelected}
           value={selected_topic}
@@ -227,6 +238,18 @@ class NepiIFConnectTargets extends Component {
         <BooleanIndicator value={connected} />
       </Label>
     )
+
+    if (shortened === true) {
+      return (
+        <Columns>
+          <Column>
+
+            {selector}
+
+          </Column>
+        </Columns>
+      )
+    }
 
     if (show_connect_header === true) {
       return (
@@ -273,10 +296,9 @@ class NepiIFConnectTargets extends Component {
     )
   }
 
-  // Read-only source telemetry, backed by TargetingStatus. No command
-  // publishers here. The targeting process's run state and rate stats live on
-  // the nested ProcessStatus; the class filtering state lives on
-  // TargetingStatus itself.
+  // Read-only source telemetry, backed by DetectorStatus. No command publishers
+  // here. The detector's run state and rate stats live on the nested
+  // ProcessStatus; the class filtering state lives on DetectorStatus itself.
   renderData() {
     const status_msg = this.state.device_status_msg
     if (status_msg == null || status_msg.process_status == null) {
@@ -312,7 +334,7 @@ class NepiIFConnectTargets extends Component {
 
         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-        <Label title={"Targeter Name"}>
+        <Label title={"Detector Name"}>
           <Input disabled value={name} />
         </Label>
 
@@ -364,10 +386,10 @@ class NepiIFConnectTargets extends Component {
     )
   }
 
-  // Controls, backed by ConnectIFStatus. ConnectTargetsIF registers no command
-  // publishers on the selected source beyond the standard save / reset /
-  // factory-reset config triggers, so the controls section is the shared
-  // Nepi_IF_Config panel pointed at the selected source namespace.
+  // Controls, backed by ConnectIFStatus. ConnectDetectionsIF registers no
+  // command publishers on the selected source beyond the standard save /
+  // reset / factory-reset config triggers, so the controls section is the
+  // shared Nepi_IF_Config panel pointed at the selected source namespace.
   renderControls() {
     const connect_status_msg = this.state.connect_status_msg
     if (connect_status_msg == null) {
@@ -408,7 +430,7 @@ class NepiIFConnectTargets extends Component {
   render() {
     const connect_status_msg = this.state.connect_status_msg
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "Targets Connect"
+    const title = (this.props.title !== undefined) ? this.props.title : "Detections Connect"
 
     // No connect status yet: render nothing (empty Columns/Column), matching
     // the Nepi_IF_ConnectMotor "not ready" branch.
@@ -458,4 +480,4 @@ class NepiIFConnectTargets extends Component {
 
 }
 
-export default NepiIFConnectTargets
+export default NepiIFConnectDetections

@@ -227,7 +227,7 @@ class Nepi_IF_Datum extends Component {
 
             <React.Fragment>
 
-          <Label title={display_label} key={name}>
+          <Label title={display_label} key={name}></Label>
                 
                 <Input
                   disabled={datum_disabled}
@@ -235,7 +235,7 @@ class Nepi_IF_Datum extends Component {
                   style={{ width: "100%" }}
                   value={show_value}
                 />
-        </Label>
+
             </React.Fragment> 
         )
     }
@@ -245,14 +245,13 @@ class Nepi_IF_Datum extends Component {
 
         <React.Fragment>
            
-            <Label title={display_label} key={name}>
             <Input
               disabled={datum_disabled}
               id={'csbx_' + name}
               style={{ width: "100%" }}
               value={show_value}
             />
-          </Label>
+        
         </React.Fragment> 
         )
     }
@@ -261,7 +260,7 @@ class Nepi_IF_Datum extends Component {
         return (
             <React.Fragment>
 
-          <Label title={display_label} key={name}>
+          <Label title={display_label} key={name}></Label>
                 
                 <Input
                   disabled={datum_disabled}
@@ -269,7 +268,7 @@ class Nepi_IF_Datum extends Component {
                   style={{ width: "100%" }}
                   value={show_value}
                 />
-          </Label>
+
             </React.Fragment> 
         )
     }
@@ -303,8 +302,7 @@ class Nepi_IF_Datum extends Component {
       const name = datum_msg.name
       const datum_type =  datum_msg.type
       const display_name = (datum_msg.display_name && datum_msg.display_name !== '') ? datum_msg.display_name : name
-      const display_labels = datum_msg.display_labels
-      const show_header_label = display_name !== '' && display_name !== 'None' && display_labels.length > 1
+      const show_header_label = display_name === '' || display_name === 'None' 
       // Datum.msg spells these display_hidden / display_disabled. Read under
       // the old names both were undefined, so nothing ever hid or disabled --
       // and show_bounds, which gates on datum_disabled === false, never
@@ -317,7 +315,7 @@ class Nepi_IF_Datum extends Component {
       // string, and arrives here undefined -- keeps the stacked layout it has
       // always had.
       const display_row = (datum_msg.display_row === true)
-      
+      const display_labels = datum_msg.display_labels
       const display_options = this.props.display_options !== undefined ? this.props.display_options : datum_msg.display_options
       const min_bound = datum_msg.min_bound
       const max_bound = datum_msg.max_bound
@@ -356,7 +354,7 @@ class Nepi_IF_Datum extends Component {
       // names come from the display_labels list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       else if (datum_type === "ColorRGB") {
-        const value = (values.length > 2) ? [values[0],values[1],values[2]] : [255, 255, 255]
+        const value = (values.length > 2) ? [values[0],values[1],,values[2]] : [255, 255, 255]
         const min = 0
         const max = 255
         const indicator_color = rgbToIindicatorColor(value[0],value[1],value[2])
@@ -369,14 +367,12 @@ class Nepi_IF_Datum extends Component {
                 <Columns>
                 <Column>
 
-                <Label title={display_name} key={name}> 
-                      <ColoredIndicator indicator_color={indicator_color} />
-                </Label>
+                <Label title={display_name} key={name}> </Label>
 
                 </Column>
                 <Column>
 
-                  
+                  <ColoredIndicator indicator_color={indicator_color} />
                   
                 </Column>
               </Columns>
@@ -391,7 +387,7 @@ class Nepi_IF_Datum extends Component {
                     disabled={datum_disabled}
                     id={'csbx_' + name + '_' + display_labels[0]}
                     style={{ width: "100%" }}
-                    value={value[0]}
+                    value={value}
                   />
 
                 </Column>
@@ -402,7 +398,7 @@ class Nepi_IF_Datum extends Component {
                     disabled={datum_disabled}
                     id={'csbx_' + name + '_' + display_labels[1]}
                     style={{ width: "100%" }}
-                    value={value[1]}
+                    value={value}
                   />
                   
                 </Column>
@@ -413,7 +409,7 @@ class Nepi_IF_Datum extends Component {
                     disabled={datum_disabled}
                     id={'csbx_' + name + '_' + display_labels[2]}
                     style={{ width: "100%" }}
-                    value={value[2]}
+                    value={value}
                   />
 
                 </Column>

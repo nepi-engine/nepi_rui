@@ -103,7 +103,6 @@ class NepiDeviceControls extends Component {
       has_goto_pose: null,
       has_goto_position: null,
       has_goto_location: null,
-      has_goto_velocity: null,
       has_fake_gps: null,
 
       action_options: null,
@@ -132,12 +131,6 @@ class NepiDeviceControls extends Component {
       y_meters: 0,
       z_meters: 0,
       yaw_deg_position: 0,
-
-      x_mps: 0,
-      y_mps: 0,
-      z_mps: 0,
-      yaw_degps: 0,
-      duration_s: 0,
 
       location_lat: 0,
       location_long: 0,
@@ -244,7 +237,6 @@ class NepiDeviceControls extends Component {
           has_goto_pose: capabilities.has_goto_pose,
           has_goto_position: capabilities.has_goto_position,
           has_goto_location: capabilities.has_goto_location,
-          has_goto_velocity: capabilities.has_goto_velocity,
           has_fake_gps: capabilities.has_fake_gps,
           action_options: capabilities.go_action_options,
           actions_list: actions,
@@ -270,9 +262,6 @@ class NepiDeviceControls extends Component {
         }
         if (capabilities.has_goto_position) {
           controls_auto_list.push("Position")
-        }
-        if (capabilities.has_goto_velocity) {
-          controls_auto_list.push("Velocity")
         }
         if (capabilities.has_goto_location) {
           controls_auto_list.push("Location")
@@ -583,7 +572,7 @@ class NepiDeviceControls extends Component {
 
 
   render() {
-    const { sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg, sendFloatGotoVelocityMsg } = this.props.ros
+    const { sendTriggerMsg, sendFloatGotoPoseMsg, sendFloatGotoPositionMsg, sendFloatGotoLocationMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
     const namespace = this.props.rbxNamespace
     return (
@@ -919,71 +908,6 @@ class NepiDeviceControls extends Component {
                   <ButtonMenu>
                     <Button onClick={() => this.state.autonomous_ready ?
                       sendFloatGotoPositionMsg(namespace + "/goto_position", this.state.x_meters, this.state.y_meters, this.state.z_meters, this.state.yaw_deg_position) :
-                      this.doNothing()
-                    }>{"Send"}</Button>
-                  </ButtonMenu>
-
-                </div>
-
-                <div hidden={(this.state.selected_auto_control !== "Velocity")}>
-                  <label style={{ fontWeight: 'bold' }}>
-                    {"GoTo Velocity (Body)"}
-                  </label>
-
-
-                  <Label title={"Forward -> X (m/s)"}>
-                    <Input
-                      value={this.state.x_mps}
-                      id="x_mps"
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event, "x_mps")}
-                      onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event, "x_mps")}
-                      style={{ width: "80%" }}
-                    />
-                  </Label>
-
-                  <Label title={"Left -> Y (m/s)"}>
-                    <Input
-                      value={this.state.y_mps}
-                      id="y_mps"
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event, "y_mps")}
-                      onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event, "y_mps")}
-                      style={{ width: "80%" }}
-                    />
-                  </Label>
-
-                  <Label title={"Up -> Z (m/s)"}>
-                    <Input
-                      value={this.state.z_mps}
-                      id="z_mps"
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event, "z_mps")}
-                      onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event, "z_mps")}
-                      style={{ width: "80%" }}
-                    />
-                  </Label>
-
-                  <Label title={"Yaw Rate (deg/s)"}>
-                    <Input
-                      value={this.state.yaw_degps}
-                      id="yaw_degps"
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event, "yaw_degps")}
-                      onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event, "yaw_degps")}
-                      style={{ width: "80%" }}
-                    />
-                  </Label>
-
-                  <Label title={"Duration (s)"}>
-                    <Input
-                      value={this.state.duration_s}
-                      id="duration_s"
-                      onChange={(event) => onUpdateSetStateValue.bind(this)(event, "duration_s")}
-                      onKeyDown={(event) => onEnterSetStateFloatValue.bind(this)(event, "duration_s")}
-                      style={{ width: "80%" }}
-                    />
-                  </Label>
-
-                  <ButtonMenu>
-                    <Button onClick={() => this.state.autonomous_ready ?
-                      sendFloatGotoVelocityMsg(namespace + "/goto_velocity", this.state.x_mps, this.state.y_mps, this.state.z_mps, this.state.yaw_degps, this.state.duration_s) :
                       this.doNothing()
                     }>{"Send"}</Button>
                   </ButtonMenu>

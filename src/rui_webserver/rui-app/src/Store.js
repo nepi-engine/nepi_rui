@@ -2820,29 +2820,6 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  sendFloatGotoVelocityMsg(namespace, float1_str,float2_str,float3_str,float4_str,float5_str) {
-    let float1Val = parseFloat(float1_str)
-    let float2Val = parseFloat(float2_str)
-    let float3Val = parseFloat(float3_str)
-    let float4Val = parseFloat(float4_str)
-    let float5Val = parseFloat(float5_str)
-    if (!isNaN(float1Val) && !isNaN(float2Val) && !isNaN(float3Val) && !isNaN(float4Val) && !isNaN(float5Val)) {
-      this.publishMessage({
-        name: namespace,
-        messageType: "nepi_interfaces/GotoVelocity",
-        data: {
-          x_mps: float1Val,
-          y_mps: float2Val,
-          z_mps: float3Val,
-          yaw_degps: float4Val,
-          duration_s: float5Val
-        },
-        noPrefix: true
-      })
-    }
-  }
-
-  @action.bound
   sendMotorControlMsg(namespace, motor_ind, speed_ratio) {
     this.publishMessage({
       name: namespace,

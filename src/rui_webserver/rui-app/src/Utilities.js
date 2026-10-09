@@ -49,7 +49,7 @@ export function convertStrToStrList(inputStr) {
   return strList
 }
 
-export function filterOutStrList(inputList,filterList) {
+export function filterStrList(inputList,filterList) {
   var outputList = []
   for (var i = 0; i < inputList.length; ++i) {
     var filter_check = false
@@ -59,24 +59,6 @@ export function filterOutStrList(inputList,filterList) {
       }
     }
     if (filter_check === false){
-      outputList.push(inputList[i])
-    }
-  }
-  return outputList
-}
-
-
-
-export function filterInStrList(inputList,filterList) {
-  var outputList = []
-  for (var i = 0; i < inputList.length; ++i) {
-    var filter_check = true
-    for (var j = 0; j < filterList.length; ++j) {
-      if (inputList[i].indexOf(filterList[j]) === -1) {
-        filter_check = false
-      }
-    }
-    if (filter_check === true){
       outputList.push(inputList[i])
     }
   }

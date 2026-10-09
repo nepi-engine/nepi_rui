@@ -38,7 +38,7 @@ import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
 //import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import {filterInStrList, createMenuFirstLastNames} from "./Utilities"
+import {filterStrList, createMenuFirstLastNames} from "./Utilities"
 
 function round(value, decimals = 0) {
   return Number(value).toFixed(decimals)
@@ -70,7 +70,7 @@ class DetectorMgr extends Component {
 
       sources_list_viewable: true,
       source_list_detector_viewable: false,
-      source_filter_str_list: ['color_image'],
+      source_filter_str_list: ['detections_image','targets_image','alert_image','track_image'],
 
       selected_display_topic: "None",
       selected_display_text: "None",
@@ -183,14 +183,14 @@ class DetectorMgr extends Component {
     }
     const ai_models_namespaces = this.props.ros.ai_models_running_namespace_list
     const selected_process = this.state.selected_process
-    const check_process = this.state.selected_process.replace('/targets','')
+    const check_process = this.state.selected_process.replace('/detections','')
     const detector_ind = ai_models_namespaces.indexOf(check_process)
     this.setState({detector_ind: detector_ind})
     if (detector_ind !== -1){
 
       var statusListener = this.props.ros.setupStatusListener(
         selected_process + '/status',
-        "nepi_interfaces/TargetsStatus",
+        "nepi_interfaces/DetectorStatus",
         this.statusListener
       )
       this.setState({ 
@@ -257,14 +257,14 @@ class DetectorMgr extends Component {
           type = ai_models_types[i]
           if (type === check_type ){
             //items.push(<Option value={ai_models_namespaces[i]}>{ai_models_names[i]}</Option>)
-            items.push(<Option value={ai_models_namespaces[i] + '/targets'}>{ai_models_display_names[i]}</Option>)
+            items.push(<Option value={ai_models_namespaces[i] + '/detections'}>{ai_models_display_names[i]}</Option>)
           }
       }
     }
 
-    if ( ai_models_namespaces.indexOf(selected_process.replace('/targets','')) === -1){
+    if ( ai_models_namespaces.indexOf(selected_process.replace('/detections','')) === -1){
       if (ai_models_namespaces.length > 0){
-        this.setState({selected_process: ai_models_namespaces[0] + '/targets'})
+        this.setState({selected_process: ai_models_namespaces[0] + '/detections'})
       }
       else if (selected_process !== 'None') {
         this.setState({selected_process: 'None'})
@@ -343,7 +343,7 @@ class DetectorMgr extends Component {
   createImageTopicsOptions() {
     const source_filter_str_list = this.state.source_filter_str_list
     const { imageTopics } = this.props.ros
-    const img_options = filterInStrList(imageTopics,source_filter_str_list)
+    const img_options = filterStrList(imageTopics,source_filter_str_list)
     var imageTopicShortnames = createMenuFirstLastNames(img_options)
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
@@ -371,7 +371,7 @@ class DetectorMgr extends Component {
     const remove_img_namespace = process_namespace + "/remove_source_topic"
     const remove_imgs_namespace = process_namespace + "/remove_source_topics"
     const source_filter_str_list = this.state.source_filter_str_list
-    const img_options = filterInStrList(imageTopics,source_filter_str_list)
+    const img_options = filterStrList(imageTopics,source_filter_str_list)
     const selected_sources = this.state.process_status_msg.selected_sources
     const source_topic = event.target.value
     //this.setState({selected_display_topic: source_topic})
