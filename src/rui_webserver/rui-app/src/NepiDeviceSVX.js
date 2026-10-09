@@ -216,9 +216,6 @@ class NepiDeviceSVX extends Component {
               </Select>
             </Label>
 
-          </Column>
-          <Column>
-
             <Label title={"Show All Channels"}>
               {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
               <Toggle
@@ -226,6 +223,9 @@ class NepiDeviceSVX extends Component {
                 onClick={() => this.setState({ show_all_channels: !this.state.show_all_channels })}
               />
             </Label>
+
+          </Column>
+          <Column>
 
           </Column>
         </Columns>
