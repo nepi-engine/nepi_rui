@@ -35,11 +35,13 @@ import { SliderAdjustment} from "./AdjustmentWidgets"
 import { Column, Columns } from "./Columns"
 import Styles from "./Styles"
 import Input from "./Input"
+import Select, { Option } from "./Select"
+
 
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFTransform from "./Nepi_IF_Transform"
-import Select, { Option } from "./Select"
+import NepiIFControls from "./Nepi_IF_Controls"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 
 
@@ -2881,6 +2883,13 @@ class Nepi_IF_ImageViewer extends Component {
     const show_render = selected_control === 'RENDER'  && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
     const show_overlay = selected_control === 'OVERLAY'  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
 
+    const controls_options_topic = (this.props.controls_options_topic !== undefined) ? this.props.controls_options_topic : ''
+    const show_options = controls_options_topic !== ''
+    
+
+
+
+
     return (
       
       <Columns>
@@ -2893,6 +2902,17 @@ class Nepi_IF_ImageViewer extends Component {
                         <div style={{ align: 'left' }}>
                           <Label title={title} />
                         </div>
+
+            
+                          { ( show_options === true ) ?
+                          <NepiIFControls
+                            make_section={false}
+                            title={null}
+                            allways_show_controls={true}
+                            namespace={ controls_options_topic}
+                            is_row={true}
+                            />
+                            : null}
 
 
                         {(show_3d_controls === true) ?

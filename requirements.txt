@@ -1,0 +1,17 @@
+Flask
+Flask-Cors
+ipython
+PyYAML
+rospkg
+tornado
+pymongo
+typing
+Pillow
+Twisted
+empy
+pyOpenSSL
+autobahn
+pyasn1
+service_identity
+future
+cryptography

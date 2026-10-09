@@ -66,8 +66,8 @@ import NepiIFSettings from "./Nepi_IF_Settings"
         driver_msg_str: "",
         
 
-        type_list: ['IDX','LSX','PTX','RBX','NPX'],
-        type_names: ['Imaging','Lights','PanTilts','Robots','NavPose'],
+        type_list: ['IDX','LSX','PTX','SVX','RBX','NPX'],
+        type_names: ['Imaging','Lights','PanTilts','Servos','Robots','NavPose'],
         selected_type: 'All',
         
         viewableDrivers: false,
@@ -304,8 +304,8 @@ import NepiIFSettings from "./Nepi_IF_Settings"
                   </label>
 
 
-            <pre style={{ height: "150px", overflowY: "auto" }}>
-            {"\nDescription: " + description + 
+            <pre style={{ height: "150px", overflowY: "auto", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+            {"\nDescription: " + description +
             "\nStatus: " + msg_str +
             "\nType: " + type  + "     Group: " + group_id + "     Package: " + driver_pkg
             }

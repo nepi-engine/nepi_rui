@@ -418,7 +418,7 @@ class AiModelsMgr extends Component {
     const running = (model_status_msg != null) ? model_status_msg.running : false
     const msg_str = (model_status_msg != null) ? model_status_msg.msg_str : ''
 
-    const disable_enable = (enabled === false && running === true)
+    const disable_enable = (enabled === false && running === true) 
 
 
 
