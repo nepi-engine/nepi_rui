@@ -849,8 +849,8 @@ class NavPoseMgr extends Component {
     const { selected_topic_config } = this.state
 
     const CONFIG_SECTIONS = {
-      init:   ['NavPose Init Topic Config',   'init_topic',   'available_init_topics',   'init_topic_connected',   'init_topic_connecting',   'init_topic_available',   'init_topic_avg_rate'],
       update: ['NavPose Update Topic Config', 'update_topic', 'available_update_topics', 'update_topic_connected', 'update_topic_connecting', 'update_topic_available', 'update_topic_avg_rate'],
+      init:   ['NavPose Init Topic Config',   'init_topic',   'available_init_topics',   'init_topic_connected',   'init_topic_connecting',   'init_topic_available',   'init_topic_avg_rate'],
       offset: ['NavPose Offset Topic Config', 'offset_topic', 'available_offset_topics', 'offset_topic_connected', 'offset_topic_connecting', 'offset_topic_available', 'offset_topic_avg_rate'],
       reset:  ['NavPose Reset Topic Config',  'reset_topic',  'available_reset_topics',  'reset_topic_connected',  'reset_topic_connecting',  'reset_topic_available',  'reset_topic_avg_rate'],
     }
