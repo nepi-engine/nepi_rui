@@ -76,7 +76,7 @@ class NepiIFMessages extends Component {
 
     // Callback for handling ROS  messages
     messagesListener(message) {
-      const msg_str = message.message
+
       const paused = this.state.paused
       const queue_size = this.state.queue_size
       var queue_length = this.msg_queue.getLength()
@@ -85,7 +85,7 @@ class NepiIFMessages extends Component {
         queue_length = this.msg_queue.getLength()
       }
       if (paused === false){
-        this.msg_queue.pushItem(msg_str)
+        this.msg_queue.pushItem(message)
       }
 
       this.setState({
@@ -137,10 +137,16 @@ class NepiIFMessages extends Component {
     }
   }
 
-  convertStrListToJoinedStr(str_list) {
+  convertStrListToJoinedStr(msg_list) {
+    var message = null
+    var msg_level = null
+    var msg_str = null
     var mod_str_list = []
-    for (var i = 0; i < str_list.length; ++i) {
-      mod_str_list.push(str_list[i]+"\n")
+    for (var i = 0; i < msg_list.length; ++i) {    
+      message = msg_list[i]
+      msg_level = message.level
+      msg_str = message.message
+      mod_str_list.push(msg_str+"\n")
     }
     const joined_str = mod_str_list.join("")
     return joined_str
@@ -202,8 +208,8 @@ class NepiIFMessages extends Component {
 
   renderMessages() {
     const connected = this.state.connected
-    const msg_str_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
-    const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
+    const msg_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
+    const msg_str = this.convertStrListToJoinedStr(msg_list.reverse())
     const paused = this.state.paused
     const show_messages = this.state.show_messages
 

@@ -14,7 +14,7 @@
 # ====================
 # - mailto:nepi@numurus.com
 #
-
+import os
 
 
 from std_msgs.msg import UInt8
@@ -44,7 +44,7 @@ class RUICfgMgrNode:
 
         ##############################  
         # Create Msg Class
-        self.msg_if = MsgIF(log_name = None)
+        self.msg_if = MsgIF()
         self.msg_if.pub_info("Starting IF Initialization Processes")
 
 

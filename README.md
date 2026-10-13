@@ -100,12 +100,12 @@ Once this is complete, you can proceed to install dependencies and set up the Py
 
 The web server backend can be manually started with
 
-        /opt/nepi/nepi_rui/etc/start_rui.sh        
+        /opt/nepi/nepi_rui/start_rui.sh        
 
 after which the webserver should be available on port 5003 of any IP address assigned to the device.
 
 ## Automate Start-up
-A start-up script is provided at `nepi_rui/etc/start_rui.sh`. This can be automatically run by installing `systemd` services file `nepi_rui/launch/nepi_rui.service`:
+A start-up script is provided at `nepi_rui/start_rui.sh`. This can be automatically run by installing `systemd` services file `nepi_rui/launch/nepi_rui.service`:
 
         sudo cp /opt/nepi/nepi_rui/etc/nepi_rui.service /etc/systemd/system
         sudo systemctl enable nepi_rui

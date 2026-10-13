@@ -90,7 +90,7 @@ npm run build                            # or npm start for hot-reload dev serve
 rosrun nepi_rui run_webserver.py         # start Flask backend
 ```
 
-**Production deployment:** Managed by `/opt/nepi/nepi_rui/etc/start_rui.sh` or a systemd service. The `RUI_HOME` environment variable must be set to the deployment root.
+**Production deployment:** Managed by `/opt/nepi/nepi_rui/start_rui.sh` or a systemd service. The `RUI_HOME` environment variable must be set to the deployment root.
 
 ## Known Constraints and Fragile Areas
 
