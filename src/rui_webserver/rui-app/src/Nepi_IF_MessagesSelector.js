@@ -82,9 +82,9 @@ class NepiIFMessagesSelector extends Component {
     var items = []
     const msgTopics = this.props.ros.messageTopics
     const msgTopicsSorted = msgTopics.sort()
-    //items.push(<Option value={"All"}>{"All"}</Option>)
+    //items.push(<Option value={"ALL"}>{"ALL"}</Option>)
     if (msgTopics.length > 0 && msgTopics.indexOf(allNamespace) !== -1 ){
-      items.push(<Option value={allNamespace}>{"All"}</Option>)
+      items.push(<Option value={allNamespace}>{"ALL"}</Option>)
       if (sel_topic === "Connecting"){
         this.setState({selected_topic: allNamespace})
         this.messageSelectionUpdated('NONE')
@@ -108,7 +108,13 @@ class NepiIFMessagesSelector extends Component {
     const base_namespace = this.getBaseNamespace()
     const debug_namespace = selected_topic.replace('/messages','')
     const update_namespace = (debug_namespace === base_namespace) ? 'ALL' : debug_namespace
-    this.props.ros.sendStringMsg(base_namespace + "/set_debug_namespace", update_namespace)
+    if (update_namespace === 'NONE'){
+      this.props.ros.sendBoolMsg(base_namespace + "/set_debug_enable", false)
+      this.props.ros.sendStringMsg(base_namespace + "/set_debug_namespace", 'ALL')
+    }
+    else {
+      this.props.ros.sendStringMsg(base_namespace + "/set_debug_namespace", update_namespace)
+    }
 
   }
 
@@ -116,15 +122,16 @@ class NepiIFMessagesSelector extends Component {
     
     const selected_topic = event.target.value
 
-    this.messageSelectionUpdated(selected_topic)
     this.setState({selected_topic: selected_topic})
+    this.messageSelectionUpdated(selected_topic)
+    
     
   }
 
   renderSelection() {
     const messageTopics = this.createMessageOptions()
     const allNamespace = this.getAllNamespace()
-    const selected_topic = (this.state.selected_topic !== 'All') ? this.state.selected_topic : allNamespace
+    const selected_topic = (this.state.selected_topic !== 'ALL') ? this.state.selected_topic : allNamespace
 
     return (
       <React.Fragment>
@@ -183,7 +190,7 @@ class NepiIFMessagesSelector extends Component {
   render() {
     const base_namespace = this.getBaseNamespace()
     const allNamespace = this.getAllNamespace()
-    const selected_topic = (this.state.selected_topic !== 'All') ? this.state.selected_topic : allNamespace
+    const selected_topic = (this.state.selected_topic !== 'ALL') ? this.state.selected_topic : allNamespace
 
     const debug_mode = this.props.ros.systemDebugEnabled
     const hide_app = this.state.selected_topic === "Connecting"
