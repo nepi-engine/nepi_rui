@@ -87,7 +87,7 @@ class NepiIFMessagesSelector extends Component {
       items.push(<Option value={allNamespace}>{"All"}</Option>)
       if (sel_topic === "Connecting"){
         this.setState({selected_topic: allNamespace})
-        this.messageSelectionUpdated(allNamespace)
+        this.messageSelectionUpdated('NONE')
       }
       const shortnames = createMenuBaseNames(msgTopics)
       var topic = ""
