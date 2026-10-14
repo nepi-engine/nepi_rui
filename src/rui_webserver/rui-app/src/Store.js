@@ -167,6 +167,7 @@ class ROSConnectionStore {
       this.systemAdminModeSet = false
 
       this.systemDebugEnabled = false
+      this.systemDebugNamespace = 'NONE'
 
       this.managers_list = []
       this.managers_active_list = []
@@ -827,6 +828,7 @@ class ROSConnectionStore {
   @observable systemAdminModeSet = false
 
   @observable systemDebugEnabled = false
+  @observable systemDebugNamespace = 'NONE'
 
   @observable managers_list = []
   @observable managers_active_list = []
@@ -908,6 +910,7 @@ class ROSConnectionStore {
         this.systemRunModeOptions = message.sys_run_mode_options
         this.systemRunMode = message.sys_run_mode
         this.systemDebugEnabled = message.sys_debug_enabled
+        this.systemDebugNamespace = message.sys_debug_namespace
 
 
         this.managers_list = message.sys_managers_ordered_list

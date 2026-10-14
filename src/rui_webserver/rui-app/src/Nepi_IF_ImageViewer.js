@@ -2404,7 +2404,7 @@ class Nepi_IF_ImageViewer extends Component {
       const crosshair_names = message.overlay_crosshair_names && crosshairs_enabled === true
       const crosshair_pixels = message.overlay_crosshair_pixels && crosshairs_enabled === true
       const crosshair_degrees = message.overlay_crosshair_degrees && crosshairs_enabled === true
-      const crosshair_msgs = message.overlay_crosshair_messages && crosshairs_enabled === true
+      const crosshair_msgs = message.overlay_crosshair_text && crosshairs_enabled === true
       
       // const crosshairs_color_r = message.crosshairs_color_r
       // const crosshairs_color_g = message.crosshairs_color_g
@@ -2524,7 +2524,7 @@ class Nepi_IF_ImageViewer extends Component {
                               <AsyncToggle
                                 disabled={crosshairs_enabled === false}
                                 checked={crosshair_msgs}
-                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_messages',!crosshair_msgs)}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_crosshair_text',!crosshair_msgs)}
                               /> 
                             </Label>
 
@@ -2583,7 +2583,7 @@ class Nepi_IF_ImageViewer extends Component {
       const target_names = message.overlay_target_names && targets_enabled === true
       const target_pixels = message.overlay_target_pixels && targets_enabled === true
       const target_degrees = message.overlay_target_degrees && targets_enabled === true
-      const target_msgs = message.overlay_target_messages && targets_enabled === true
+      const target_msgs = message.overlay_target_text && targets_enabled === true
       
       // const targets_color_r = message.targets_color_r
       // const targets_color_g = message.targets_color_g
@@ -2703,7 +2703,7 @@ class Nepi_IF_ImageViewer extends Component {
                               <AsyncToggle
                                 disabled={targets_enabled === false}
                                 checked={target_msgs}
-                                onClick={() => sendBoolMsg(namespace + '/overlay_target_messages',!target_msgs)}
+                                onClick={() => sendBoolMsg(namespace + '/overlay_target_text',!target_msgs)}
                               /> 
                             </Label>
 

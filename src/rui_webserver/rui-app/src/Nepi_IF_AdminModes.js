@@ -26,6 +26,10 @@ import { Columns, Column } from "./Columns"
 import Label from "./Label"
 import Styles from "./Styles"
 
+
+import NepiIFAdminDebug from "./Nepi_IF_AdminDebug"
+
+
 @inject("ros")
 @observer
 class NepiIFAdminModes extends Component {
@@ -121,6 +125,17 @@ class NepiIFAdminModes extends Component {
                         </div>
 
                   </div>
+
+
+
+                  {                        
+                      <NepiIFAdminDebug
+                        make_section={false}
+                        />    
+                    }
+
+
+
 
 
       </React.Fragment>

@@ -23,13 +23,16 @@ import { observer, inject } from "mobx-react"
 import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Styles from "./Styles"
+
+import AsyncToggle from "./AsyncToggle"
+import Label from "./Label"
+
 // import Label from "./Label"
 // import Toggle from "react-toggle"
 
 // import {onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFMessages from "./Nepi_IF_Messages"
-
 
 import { createMenuBaseNames} from "./Utilities"
 
@@ -45,10 +48,24 @@ class NepiIFMessagesSelector extends Component {
       selected_topic: "Connecting",
     }
 
+    this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.onChangeMessageSelection = this.onChangeMessageSelection.bind(this)
+    this.messageSelectionUpdated = this.messageSelectionUpdated.bind(this)
 
     
   }
+
+
+
+  getBaseNamespace(){
+    const { namespacePrefix, deviceId} = this.props.ros
+    var baseNamespace = null
+    if (namespacePrefix !== null && deviceId !== null){
+      baseNamespace = "/" + namespacePrefix + "/" + deviceId
+    }
+    return baseNamespace
+  }
+
 
   getAllNamespace(){
     const { namespacePrefix, deviceId} = this.props.ros
@@ -70,6 +87,7 @@ class NepiIFMessagesSelector extends Component {
       items.push(<Option value={allNamespace}>{"All"}</Option>)
       if (sel_topic === "Connecting"){
         this.setState({selected_topic: allNamespace})
+        this.messageSelectionUpdated(allNamespace)
       }
       const shortnames = createMenuBaseNames(msgTopics)
       var topic = ""
@@ -86,9 +104,21 @@ class NepiIFMessagesSelector extends Component {
     return items    
   }
 
+  messageSelectionUpdated(selected_topic){
+    const base_namespace = this.getBaseNamespace()
+    const debug_namespace = selected_topic.replace('/messages','')
+    const update_namespace = (debug_namespace === base_namespace) ? 'ALL' : debug_namespace
+    this.props.ros.sendStringMsg(base_namespace + "/set_debug_namespace", update_namespace)
+
+  }
+
   onChangeMessageSelection(event){
-    var selected_topic = event.target.value
+    
+    const selected_topic = event.target.value
+
+    this.messageSelectionUpdated(selected_topic)
     this.setState({selected_topic: selected_topic})
+    
   }
 
   renderSelection() {
@@ -115,6 +145,8 @@ class NepiIFMessagesSelector extends Component {
             {messageTopics}
             </Select>
          
+
+
 
       </Column>
       </Columns>
@@ -149,17 +181,41 @@ class NepiIFMessagesSelector extends Component {
 
 
   render() {
+    const base_namespace = this.getBaseNamespace()
     const allNamespace = this.getAllNamespace()
     const selected_topic = (this.state.selected_topic !== 'All') ? this.state.selected_topic : allNamespace
 
-
+    const debug_mode = this.props.ros.systemDebugEnabled
     const hide_app = this.state.selected_topic === "Connecting"
     return (
 
 
       <div style={{ display: 'flex' }}>
         <div style={{ width: '20%' }}>
-          {this.renderSelection()}
+                    {this.renderSelection()}
+
+
+                      <div style={{ display: 'flex' }}>
+                              <div style={{ width: '20%' }} >
+                              </div>
+
+
+
+                              <div style={{ width: '60%' }} >
+                                    <Label title="Debug">
+                                          <AsyncToggle
+                                          checked={debug_mode === true}
+                                          onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/enable_debug_mode", !debug_mode)}>
+                                        </AsyncToggle>
+                                    </Label>
+                              </div>
+
+                              <div style={{ width: '20%' }} >
+                              </div>
+                    </div>
+
+
+
         </div>
 
         <div style={{ width: '5%' }}>
