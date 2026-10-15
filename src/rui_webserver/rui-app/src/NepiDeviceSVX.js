@@ -335,11 +335,12 @@ class NepiDeviceSVX extends Component {
                           // <node>/svx/settings (confirmed on-device: settings_topic =
                           // /nepi/.../maestro_..._ch0/svx/settings).
                           //
-                          // This used to prefer capabilities.settings_topic, but
-                          // `capabilities` here is the SVXCapabilitiesQuery response, which
-                          // has no settings_topic field (that field is on DeviceSVXStatus).
-                          // The lookup was always undefined and always fell through, so the
-                          // derived path is the only one that has ever been used.
+                          // This used to prefer capabilities.settings_topic, but back then
+                          // `capabilities` was the flat SVXCapabilitiesQuery response, which
+                          // had no settings_topic field. The lookup was always undefined and
+                          // always fell through, so the derived path is the only one that has
+                          // ever been used. `capabilities` is now the DeviceSVXStatus the query
+                          // carries, but the derived path stays as the one proven on device.
                           namespace + '/settings'
                         }
                         // Was allways_show_settings, a prop Nepi_IF_Settings does not read

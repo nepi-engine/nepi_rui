@@ -1483,8 +1483,9 @@ class ROSConnectionStore {
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
     })
-    if (response != null){
-    this.idxDevices[namespace] = response
+    // The capabilities query returns the device status message in device_status
+    if (response != null && response.device_status != null){
+    this.idxDevices[namespace] = response.device_status
     }
 
   }
@@ -1497,8 +1498,9 @@ class ROSConnectionStore {
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/PTXCapabilitiesQuery",
     })
-    if (response != null){
-    this.ptxDevices[namespace] = response
+    // The capabilities query returns the device status message in device_status
+    if (response != null && response.device_status != null){
+    this.ptxDevices[namespace] = response.device_status
     }
 
     
@@ -1512,8 +1514,9 @@ class ROSConnectionStore {
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/SVXCapabilitiesQuery",
     })
-    if (response != null){
-    this.svxDevices[namespace] = response
+    // The capabilities query returns the device status message in device_status
+    if (response != null && response.device_status != null){
+    this.svxDevices[namespace] = response.device_status
     }
   }
   @action.bound
@@ -1523,8 +1526,9 @@ class ROSConnectionStore {
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/LSXCapabilitiesQuery",
     })
-    if (response != null){
-    this.lsxDevices[namespace] = response
+    // The capabilities query returns the device status message in device_status
+    if (response != null && response.device_status != null){
+    this.lsxDevices[namespace] = response.device_status
     }
 
   }
@@ -1537,8 +1541,9 @@ class ROSConnectionStore {
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
     })
-    if (response != null){
-    this.rbxDevices[namespace] = response
+    // The capabilities query returns the device status message in device_status
+    if (response != null && response.device_status != null){
+    this.rbxDevices[namespace] = response.device_status
     }
 
   }
@@ -1549,8 +1554,9 @@ class ROSConnectionStore {
       name: namespace + "/capabilities_query",
       messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
     })
-    if (response != null){
-    this.npxDevices[namespace] = response
+    // The capabilities query returns the device status message in device_status
+    if (response != null && response.device_status != null){
+    this.npxDevices[namespace] = response.device_status
     }
   }
 
