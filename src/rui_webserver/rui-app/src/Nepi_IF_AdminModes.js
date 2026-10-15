@@ -118,7 +118,7 @@ class NepiIFAdminModes extends Component {
                               <Label title="Debug Mode">
                                     <AsyncToggle
                                     checked={debug_mode === true}
-                                    onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/enable_debug_mode", !debug_mode)}>
+                                    onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/set_debug_enable", !debug_mode)}>
                                   </AsyncToggle>
                               </Label>
 

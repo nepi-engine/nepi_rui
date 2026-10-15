@@ -30,6 +30,44 @@ import {Queue, onChangeSwitchStateValue} from "./Utilities"
 
 
 
+export const MSG_COLORS = {
+  WHITE:  "#FFFFFF",
+  
+  RED: "#ff0000",
+  ORANGE: "#ff8700",
+  YELLOW: "#ffff00",
+  GREEN: "#008700",
+  BLUE: "#0000ff",
+  INDIGO: "#8700ff",
+  VIOLET: "#d700ff",
+  CYAN: "#00ffff",
+  MAGENTA: "#ff5fff",
+  PINK: "#ff005f",
+
+  DARK_RED: "#870000",
+  DARK_ORANGE: "#af5f00",
+  DARK_YELLOW: "#afaf00",
+  DARK_GREEN: "#005f00",
+  DARK_BLUE: "#000087",
+  DARK_INDIGO: "#5f0087",
+  DARK_VIOLET: "#870087",
+  DARK_CYAN: "#008787",
+  DARK_MAGENTA: "#87005f",
+  DARK_PINK: "#af005f",
+
+  INFO: "#FFFFFF",
+  WARN: "#e3b10c",
+  ERROR: "#ff0000",
+  FATAL: "#870000",
+  DEBUG: "#ff8700",
+
+  // --- Utility ---
+  RESET: "#FFFFFF"
+};
+
+
+
+
 @inject("ros")
 @observer
 
@@ -64,13 +102,13 @@ class NepiIFMessages extends Component {
 
     this.msg_queue = new Queue()
 
-    this.convertStrListToJoinedStr = this.convertStrListToJoinedStr.bind(this)
     this.onClickPause = this.onClickPause.bind(this)
 
     this.renderShowControl = this.renderShowControl.bind(this)
     this.renderMessages = this.renderMessages.bind(this)
     this.messagesListener = this.messagesListener.bind(this)
     this.updateMessagesListener = this.updateMessagesListener.bind(this)
+
   }
 
 
@@ -136,21 +174,6 @@ class NepiIFMessages extends Component {
     }
   }
 
-  convertStrListToJoinedStr(msg_list) {
-    var message = null
-    var msg_level = null
-    var msg_str = null
-    var mod_str_list = []
-    for (var i = 0; i < msg_list.length; ++i) {    
-      message = msg_list[i]
-      msg_level = message.level
-      msg_str = message.message
-      mod_str_list.push(msg_str+"\n")
-    }
-    const joined_str = mod_str_list.join("")
-    return joined_str
-
-  }
 
   onClickPause(){
     const currentVal = this.state.paused
@@ -204,16 +227,14 @@ class NepiIFMessages extends Component {
   }
 
 
-
   renderMessages() {
     const connected = this.state.connected
-    const msg_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems() : ["Waiting for message to publish"]
-    const msg_str = this.convertStrListToJoinedStr(msg_list.reverse())
+    const msg_list = (connected === true && this.msg_queue.getLength() > 0) ? this.msg_queue.getItems().reverse() : null
     const paused = this.state.paused
     const show_messages = this.state.show_messages
 
 
-    if (show_messages === false){
+    if (msg_list == null || show_messages === false){
       return(
         <Columns>
         <Column>
@@ -259,7 +280,18 @@ class NepiIFMessages extends Component {
           </label>
           
             <pre style={{ height: "1000px", overflowY: "auto" }}>
-              {msg_str ? msg_str : ""}
+                <div style={{ padding: '10px', fontFamily: 'sans-serif' }}>
+                  <ul>
+                    {msg_list.map((item) => (
+                      <li 
+                        key={item.id} 
+                        style={{ color: MSG_COLORS[item.color], fontSize: '17px', margin: '8px 0' }}
+                      >
+                        {item.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
             </pre>
             </div>
 
@@ -276,9 +308,6 @@ class NepiIFMessages extends Component {
   }
 
   render() {
-    //Unused const show_debug = this.props.ros.systemDebugEnabled
-    //Unused const msg_str = this.convertStrListToJoinedStr(msg_str_list.reverse())
-    //Unused const paused = this.state.paused
     const { userRestricted} = this.props.ros
     const message_view_restricted = userRestricted.indexOf('SYSTEM-MESSAGES-VIEW') !== -1
 
