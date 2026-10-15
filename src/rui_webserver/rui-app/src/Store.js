@@ -1484,7 +1484,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
     })
     if (response != null){
-    this.idxDevices[namespace] = response
+    this.idxDevices[namespace] = response.device_status
     }
 
   }
@@ -1498,7 +1498,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/PTXCapabilitiesQuery",
     })
     if (response != null){
-    this.ptxDevices[namespace] = response
+    this.ptxDevices[namespace] = response.device_status
     }
 
     
@@ -1513,7 +1513,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/SVXCapabilitiesQuery",
     })
     if (response != null){
-    this.svxDevices[namespace] = response
+    this.svxDevices[namespace] = response.device_status
     }
   }
   @action.bound
@@ -1524,7 +1524,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/LSXCapabilitiesQuery",
     })
     if (response != null){
-    this.lsxDevices[namespace] = response
+    this.lsxDevices[namespace] = response.device_status
     }
 
   }
@@ -1538,7 +1538,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
     })
     if (response != null){
-    this.rbxDevices[namespace] = response
+    this.rbxDevices[namespace] = response.device_status
     }
 
   }
@@ -1550,7 +1550,7 @@ class ROSConnectionStore {
       messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
     })
     if (response != null){
-    this.npxDevices[namespace] = response
+    this.npxDevices[namespace] = response.device_status
     }
   }
 
