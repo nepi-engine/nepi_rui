@@ -508,6 +508,21 @@ class ROSConnectionStore {
         listener.unsubscribe()
       })
       this.resetStates()
+
+      // resetStates() sets rosAutoReconnect = false, and checkROSConnection()
+      // only re-arms its own setTimeout `if (this.rosAutoReconnect)`. Since
+      // App.js starts that loop exactly ONCE on mount, leaving it false here
+      // permanently killed the reconnect loop: the RUI dropped to
+      // "Connecting" and never came back on its own, however healthy the
+      // device got again, until a page reload. (The commented-out line above
+      // shows this was already the intent; it could not survive resetStates()
+      // clobbering the flag.)
+      //
+      // Setting the flag is the whole fix -- deliberately no setTimeout here.
+      // This method's only caller is checkROSConnection() itself, whose tail
+      // already re-arms the loop; re-arming here as well would leave two
+      // self-rescheduling loops after one teardown, four after the next.
+      this.rosAutoReconnect = true
     }
   }
 
@@ -653,7 +668,15 @@ class ROSConnectionStore {
 
   @observable connectedToNepi = false
   @observable hearbeatNepi = false
-  @observable watchdogNepiMax = 5
+  // Ticks of NEPI_TIMEOUT_MSEC (3 s) without a system status message before
+  // the client declares the device gone and tears the websocket down (see
+  // checkROSConnection/destroyROSConnection). Was 5, i.e. a ~15 s stall in
+  // that one topic dropped every subscription in the RUI. system_mgr
+  // publishes it at only ~1-1.7 Hz measured on a loaded ARM device, so a CPU
+  // spike (simulator, AI, a slow disk check) could starve it past 15 s with
+  // nothing actually wrong. 20 ticks (~60 s) still detects a real outage, and
+  // is safe now that a teardown reliably re-arms the reconnect loop.
+  @observable watchdogNepiMax = 20
   @observable watchdogNepiCounter = 0
 
 
@@ -1742,8 +1765,19 @@ class ROSConnectionStore {
       }
 
       // sort the image topics for comparison to work
-      newImageTopics.sort()    
-    }  
+      newImageTopics.sort()
+
+      // Drop duplicate topic names. The upstream topic list can carry the same
+      // topic more than once (a topic with both a publisher and a subscriber
+      // is reported once per role by pub/sub-oriented listings), and every
+      // image selector built from this then rendered the same camera twice,
+      // visually identical since only the last two path segments are shown.
+      // Deduping here fixes every consumer at once. Sorted first, so equal
+      // names are adjacent.
+      newImageTopics = newImageTopics.filter(function (topic, ind, arr) {
+        return ind === 0 || topic !== arr[ind - 1]
+      })
+    }
     else {
       newImageTopics = []
     }
@@ -2656,12 +2690,12 @@ class ROSConnectionStore {
     this.publishMessage({
       name: namespace,
       messageType: "nepi_interfaces/ErrorBounds",
-      data: { 
-        data: {
-          max_distance_error_m: max_m,
-          max_rotation_error_deg: max_d,
-          min_stabilize_time_s: min_stab
-        }
+      // ErrorBounds' fields sit at the top level of the message -- an extra
+      // "data" wrapper is not a field of it, so rosbridge rejected the publish.
+      data: {
+        max_distance_error_m: max_m,
+        max_rotation_error_deg: max_d,
+        min_stabilize_time_s: min_stab
       },
       noPrefix: true
     })
@@ -2778,6 +2812,23 @@ class ROSConnectionStore {
         noPrefix: true
       })
     }
+  }
+
+  // Keyboard-driven teleop velocity -- geometry_msgs/Twist, matching
+  // device_if_rbx.py's set_teleop_velocity topic exactly (a stock ROS message,
+  // not a new nepi_interfaces one). Ratios in [-1,1]; each driver scales them
+  // by its own speed limits.
+  @action.bound
+  sendTeleopVelocityMsg(namespace, linear_x, linear_y, linear_z, angular_z) {
+    this.publishMessage({
+      name: namespace + "/set_teleop_velocity",
+      messageType: "geometry_msgs/Twist",
+      data: {
+        linear: { x: linear_x, y: linear_y, z: linear_z },
+        angular: { x: 0.0, y: 0.0, z: angular_z }
+      },
+      noPrefix: true
+    })
   }
 
   @action.bound

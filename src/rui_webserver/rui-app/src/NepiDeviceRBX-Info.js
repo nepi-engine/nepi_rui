@@ -26,6 +26,7 @@ import Toggle from "react-toggle"
 import Label from "./Label"
 import { Column, Columns } from "./Columns"
 import Input from "./Input"
+import Button, { ButtonMenu } from "./Button"
 import Styles from "./Styles"
 
 
@@ -127,12 +128,16 @@ class NepiRBXMessages extends Component {
   }
 
   // Callback for handling NavPose messages. The system/info panel pose values
-  // come from the device's NavPose topic.
+  // come from the device's NavPose topic. Robots with no WGS84 reference
+  // (this.props.is_local_frame) report position as native ENU x_m/y_m/z_m
+  // instead of latitude/longitude/altitude_m -- current_lat/long/altitude
+  // are reused to carry whichever set is meaningful for this device, and
+  // render() below relabels them accordingly.
   navposeListener(message) {
     this.setState({
-      current_lat: message.latitude ,
-      current_long: message.longitude ,
-      current_altitude: message.altitude_m ,
+      current_lat: this.props.is_local_frame ? message.x_m : message.latitude ,
+      current_long: this.props.is_local_frame ? message.y_m : message.longitude ,
+      current_altitude: this.props.is_local_frame ? message.z_m : message.altitude_m ,
       current_heading: message.heading_deg ,
       current_roll: message.roll_deg ,
       current_pitch: message.pitch_deg ,
@@ -328,27 +333,27 @@ class NepiRBXMessages extends Component {
             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
             <label style={{fontWeight: 'bold'}}>
-              {"Nave Pose"}
+              {"Nav Pose"}
             </label>
 
             <Columns>
             <Column>
-          
-            <Label title={"Latitude"}>
+
+            <Label title={this.props.is_local_frame ? "X (m)" : "Latitude"}>
               <Input
                 disabled value={this.state.current_lat}
                 id="InitLatitude"
               />
             </Label>
 
-            <Label title={"Longitude"}>
+            <Label title={this.props.is_local_frame ? "Y (m)" : "Longitude"}>
               <Input
                 disabled value={this.state.current_long}
                 id="InitLongitude"
               />
             </Label>
 
-            <Label title={"Altitude (m)"}>
+            <Label title={this.props.is_local_frame ? "Z (m)" : "Altitude (m)"}>
               <Input
                 disabled value={this.state.current_altitude}
                 id="InitAltitude"
@@ -378,6 +383,13 @@ class NepiRBXMessages extends Component {
                   id="InitYaw"
                 />
               </Label>
+
+              <div hidden={!this.props.has_set_home}>
+                <Label title={""}></Label>
+                <ButtonMenu>
+                  <Button onClick={() => this.props.ros.sendTriggerMsg(this.props.rbxNamespace + "/set_home_current")}>{"Set Home"}</Button>
+                </ButtonMenu>
+              </div>
 
               </Column>
               </Columns>

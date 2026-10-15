@@ -127,8 +127,11 @@ const ButtonMenu = props => {
   return (
     <div {...props} style={actualStyle}>
       {buttons.map((button, index) =>
+        // Merge, don't replace -- a button that sets its own style (e.g. a
+        // selected-state backgroundColor) had that style silently discarded
+        // by this clone, since it used to overwrite `style` outright.
         React.cloneElement(button, {
-          style: { marginLeft: Styles.vars.spacing.regular }
+          style: { marginLeft: Styles.vars.spacing.regular, ...button.props.style }
         })
       )}
     </div>

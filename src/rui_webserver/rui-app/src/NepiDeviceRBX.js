@@ -89,11 +89,36 @@ class NepiDeviceRBX extends Component {
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No device selected",
 
-      rbxInfoListener: null
+      rbxInfoListener: null,
+
+      // This device's own settings/status, kept here for two consumers: the
+      // setting NAMES and VALUES are passed to NepiDeviceControls (driver
+      // Settings such as teleop_movement_enabled/autonomous_movement_enabled
+      // gate its control types), and enabled_image_sources curates
+      // createImageOptions(). enabled_image_sources is a comma-separated topic
+      // allowlist, or empty for "unrestricted" (no curation saved).
+      rbxSettingsListener: null,
+      settingsNamesList: [],
+      settingsValuesDict: {},
+      enabled_image_sources: "",
+
+      // Robot Link (nepi_app_sim_connector) status, shown as "Linked with
+      // <device>" next to the selector. robot_link/status is a JSON-encoded
+      // std_msgs/String. There is one sim connector instance, at
+      // <root namespace>/app_sim_connector, so the root is derived from
+      // currentRBXNamespace rather than hardcoded. Without the app the topic
+      // has no publisher and the indicator simply never renders.
+      robotLinkListener: null,
+      robot_link_status: null
     }
 
     this.updateInfoListener = this.updateInfoListener.bind(this)
     this.infoListener = this.infoListener.bind(this)
+    this.updateRbxSettingsListener = this.updateRbxSettingsListener.bind(this)
+    this.rbxSettingsListenerCb = this.rbxSettingsListenerCb.bind(this)
+    this.updateRobotLinkListener = this.updateRobotLinkListener.bind(this)
+    this.robotLinkListenerCb = this.robotLinkListenerCb.bind(this)
+    this.renderLinkIndicator = this.renderLinkIndicator.bind(this)
 
     this.setDeviceSelection = this.setDeviceSelection.bind(this)
     this.clearDeviceSelection = this.clearDeviceSelection.bind(this)
@@ -181,6 +206,86 @@ class NepiDeviceRBX extends Component {
   }
 
 
+  // Callback for this device's settings ControlsStatus: parallel name and
+  // Control lists, each Control's current value in value[0] (a string[]).
+  rbxSettingsListenerCb(message) {
+    const names = (message.controls_name_list !== undefined) ? message.controls_name_list : []
+    const msgs = (message.controls_msg_list !== undefined) ? message.controls_msg_list : []
+    var valuesDict = {}
+    for (var i = 0; i < names.length; i++) {
+      const ctrl = msgs[i]
+      valuesDict[names[i]] = (ctrl != null && ctrl.value !== undefined && ctrl.value.length > 0) ? ctrl.value[0] : ""
+    }
+    const enabled = (valuesDict["enabled_image_sources"] !== undefined) ? valuesDict["enabled_image_sources"] : ""
+    this.setState({ settingsNamesList: names, settingsValuesDict: valuesDict, enabled_image_sources: enabled })
+  }
+
+  updateRbxSettingsListener(rbxNamespace) {
+    if (this.state.rbxSettingsListener) {
+      this.state.rbxSettingsListener.unsubscribe()
+      this.setState({ rbxSettingsListener: null, settingsNamesList: [], settingsValuesDict: {}, enabled_image_sources: "" })
+    }
+    if (rbxNamespace !== null && rbxNamespace !== '' && rbxNamespace !== 'None') {
+      var listener = this.props.ros.setupSettingsStatusListener(
+        rbxNamespace + "/settings/status",
+        this.rbxSettingsListenerCb
+      )
+      this.setState({ rbxSettingsListener: listener })
+    }
+  }
+
+  updateRobotLinkListener(rbxNamespace) {
+    if (this.state.robotLinkListener) {
+      this.state.robotLinkListener.unsubscribe()
+      this.setState({ robotLinkListener: null, robot_link_status: null })
+    }
+    if (rbxNamespace === null || rbxNamespace === '' || rbxNamespace === 'None') {
+      return
+    }
+    const deviceBaseNamespace = rbxNamespace.split('/rbx')[0]
+    const rootNamespace = deviceBaseNamespace.substring(0, deviceBaseNamespace.lastIndexOf('/'))
+    const listener = this.props.ros.setupStatusListener(
+      rootNamespace + "/app_sim_connector/sim/robot_link/status",
+      "std_msgs/String",
+      this.robotLinkListenerCb
+    )
+    this.setState({ robotLinkListener: listener })
+  }
+
+  robotLinkListenerCb(message) {
+    try {
+      this.setState({ robot_link_status: JSON.parse(message.data) })
+    } catch (e) {
+      // Malformed/empty payload -- keep the last good status.
+    }
+  }
+
+  // Renders "Linked with <other device>" next to the device selector when
+  // Robot Link is actively enabled and this device is one end of it.
+  renderLinkIndicator() {
+    const status = this.state.robot_link_status
+    const namespace = this.state.currentRBXNamespace
+    if (status == null || namespace == null || status.enabled !== true) {
+      return null
+    }
+    var otherNamespace = null
+    if (status.sim_namespace === namespace) {
+      otherNamespace = status.physical_namespace
+    } else if (status.physical_namespace === namespace) {
+      otherNamespace = status.sim_namespace
+    }
+    if (!otherNamespace) {
+      return null
+    }
+    const otherName = otherNamespace.split('/rbx')[0].split('/').pop()
+    return (
+      <Label title={""}>
+        <p style={{ color: Styles.vars.colors.green }}>{"Linked with " + otherName}</p>
+      </Label>
+    )
+  }
+
+
   // Lifecycle method called when component updates.
   // Used to track changes in the selected device.
   componentDidUpdate(prevProps, prevState) {
@@ -193,16 +298,24 @@ class NepiDeviceRBX extends Component {
       if (currentRBXNamespace.indexOf('null') === -1) {
         this.setState({ image_topic: currentRBXNamespace.split('/rbx')[0] + "/image" })
         this.updateInfoListener()
+        this.updateRbxSettingsListener(currentRBXNamespace)
+        this.updateRobotLinkListener(currentRBXNamespace)
       }
     }
   }
 
 
   // Lifecycle method called just before the component unmounts.
-  // Used to unsubscribe from the /info topic.
+  // Used to unsubscribe from the /info, settings and robot link topics.
   componentWillUnmount() {
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
+    }
+    if (this.state.rbxSettingsListener) {
+      this.state.rbxSettingsListener.unsubscribe()
+    }
+    if (this.state.robotLinkListener) {
+      this.state.robotLinkListener.unsubscribe()
     }
   }
 
@@ -262,12 +375,30 @@ class NepiDeviceRBX extends Component {
     var items = []
     items.push(<Option>{"None"}</Option>)
 
+    // enabled_image_sources (see rbxSettingsListenerCb) is an opt-in
+    // curation Setting: when a driver exposes it and the operator has saved a
+    // non-empty allowlist (the Sim Connector's Robot Capabilities panel writes
+    // it), only those topics are offered, and the list is exhaustive. Empty
+    // or absent means nothing is curated, and the full candidate list below
+    // is offered exactly as before.
+    const enabledRaw = this.state.enabled_image_sources || ""
+    const enabledList = enabledRaw.split(',').map((s) => s.trim()).filter((s) => s !== "")
+
     const image_topics = this.props.ros.imageTopics
     var img_topics = []
 
     for (var i = 0; i < image_topics.length; i++) {
       const topic = image_topics[i]
-      if (topic.startsWith(RBXDeviceNamespace) === true || topic.includes('zed_node') === true) {
+      if (topic.includes('zed_node') === true) {
+        continue
+      }
+      if (enabledList.length > 0) {
+        if (enabledList.includes(topic)) {
+          img_topics.push(topic)
+        }
+        continue
+      }
+      if (topic.startsWith(RBXDeviceNamespace) === true) {
         continue
       }
       img_topics.push(topic)
@@ -284,6 +415,12 @@ class NepiDeviceRBX extends Component {
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
     }
+    if (this.state.rbxSettingsListener) {
+      this.state.rbxSettingsListener.unsubscribe()
+    }
+    if (this.state.robotLinkListener) {
+      this.state.robotLinkListener.unsubscribe()
+    }
     this.setState({
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No device selected",
@@ -292,7 +429,13 @@ class NepiDeviceRBX extends Component {
       states_list: null,
       modes_list: null,
       actions_list: null,
-      rbxInfoListener: null
+      rbxInfoListener: null,
+      rbxSettingsListener: null,
+      settingsNamesList: [],
+      settingsValuesDict: {},
+      enabled_image_sources: "",
+      robotLinkListener: null,
+      robot_link_status: null
     })
   }
 
@@ -330,9 +473,12 @@ class NepiDeviceRBX extends Component {
 
   sendErrorBounds() {
     const { sendErrorBoundsMsg } = this.props.ros
-    const max_m = this.state.error_bound_m
-    const max_d = this.state.error_bound_deg
-    const min_stab = this.state.error_stabilize_s
+    const max_m = parseFloat(this.state.error_bound_m)
+    const max_d = parseFloat(this.state.error_bound_deg)
+    const min_stab = parseFloat(this.state.error_stabilize_s)
+    if (isNaN(max_m) || isNaN(max_d) || isNaN(min_stab)) {
+      return
+    }
     const namespace = this.state.currentRBXNamespace + "/set_goto_error_bounds"
     sendErrorBoundsMsg(namespace, max_m, max_d, min_stab)
   }
@@ -346,9 +492,14 @@ class NepiDeviceRBX extends Component {
   }
 
   onDropdownSelectedAction(event) {
+    // Looked up by VALUE in the driver's own actions_list, not by
+    // event.target.selectedIndex (a DOM position): the dropdown's position of
+    // an action need not match the driver's own action index, so
+    // position-based dispatch could fire a different action.
+    const actions = this.state.actions_list || []
     this.setState({
       selected_setup_action: event.target.value,
-      selected_setup_action_index: event.target.selectedIndex
+      selected_setup_action_index: actions.indexOf(event.target.value)
     })
   }
 
@@ -373,6 +524,8 @@ class NepiDeviceRBX extends Component {
                   {this.createTopicOptions(Object.keys(rbxDevices))}
                 </Select>
               </Label>
+
+              {this.renderLinkIndicator()}
 
             </Column>
             <Column>
@@ -633,6 +786,7 @@ class NepiDeviceRBX extends Component {
           {(deviceSelected === true) ?
             <NepiDeviceMessages
               rbxNamespace={namespace}
+              has_set_home={(this.state.rbx_capabilities !== null) ? (this.state.rbx_capabilities.has_set_home === true) : false}
               title={"System Information"}
             />
             : null}
@@ -653,10 +807,16 @@ class NepiDeviceRBX extends Component {
             />
             : null}
 
+          {/* Driver Settings such as teleop_movement_enabled and
+              autonomous_movement_enabled decide which control types are
+              offered; capabilities alone only say whether a robot type
+              supports something, not whether this deployment wants it. */}
           {(deviceSelected === true) ?
             <NepiDeviceControls
               rbxNamespace={namespace}
               title={"Process Controls"}
+              settingsNamesList={this.state.settingsNamesList}
+              settingsValuesDict={this.state.settingsValuesDict}
             />
             : null}
 

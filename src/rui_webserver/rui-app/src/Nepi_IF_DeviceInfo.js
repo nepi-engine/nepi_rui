@@ -92,6 +92,17 @@ class NepiIFDeviceInfo extends Component {
 
   }
 
+  // Subscribe on mount when the namespace is already set. componentDidUpdate
+  // below only reacts to the namespace CHANGING after mount, so a page that
+  // mounts this component with its namespace in place (e.g. NepiDeviceRBX.js,
+  // which renders it only once a device is selected) never subscribed, and
+  // the device name stayed blank.
+  componentDidMount() {
+    if (this.props.deviceNamespace != null) {
+      this.updateListener()
+    }
+  }
+
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
