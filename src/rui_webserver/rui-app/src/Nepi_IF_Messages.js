@@ -94,8 +94,7 @@ class NepiIFMessages extends Component {
     }
 
   // Function for configuring and subscribing to 
-  updateMessagesListener() {
-    const namespace = this.state.messagesNamespace
+  updateMessagesListener(namespace) {
     if (namespace != null){
       if (this.state.messagesListener != null) {
         this.state.messagesListener.unsubscribe()
@@ -123,7 +122,7 @@ class NepiIFMessages extends Component {
       if (((namespace_updated === true) || (this.state.needs_update === true)) && (message_publishing === true)) {
         if (namespace.indexOf('null') === -1){
           this.setState({ messagesNamespace: namespace})
-          this.updateMessagesListener()
+          this.updateMessagesListener(namespace)
         }
       }
     }
