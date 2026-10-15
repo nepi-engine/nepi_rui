@@ -50,6 +50,7 @@ class NepiIFMessagesSelector extends Component {
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.onChangeMessageSelection = this.onChangeMessageSelection.bind(this)
+    this.onChangeDebugEnable = this.onChangeDebugEnable.bind(this)
     this.messageSelectionUpdated = this.messageSelectionUpdated.bind(this)
 
     
@@ -118,15 +119,25 @@ class NepiIFMessagesSelector extends Component {
 
   }
 
-  onChangeMessageSelection(event){
+  onChangeDebugEnable(enable){
+    const base_namespace = this.getBaseNamespace()
+    const allNamespace = this.getAllNamespace()
+    const selected_topic = (this.state.selected_topic === allNamespace) ? 'ALL' : this.state.selected_topic.replace('/messages','')
+
+    this.props.ros.sendBoolMsg(base_namespace + "/set_debug_enable", enable)
+    this.props.ros.sendStringMsg(base_namespace + "/set_debug_namespace", selected_topic)
     
+  }
+
+  onChangeMessageSelection(event){
     const selected_topic = event.target.value
 
     this.setState({selected_topic: selected_topic})
     this.messageSelectionUpdated(selected_topic)
     
-    
   }
+
+
 
   renderSelection() {
     const messageTopics = this.createMessageOptions()
@@ -212,7 +223,7 @@ class NepiIFMessagesSelector extends Component {
                                     <Label title="Debug">
                                           <AsyncToggle
                                           checked={debug_mode === true}
-                                          onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/enable_debug_mode", !debug_mode)}>
+                                          onClick={() => this.onChangeDebugEnable(!debug_mode)}>
                                         </AsyncToggle>
                                     </Label>
                               </div>
