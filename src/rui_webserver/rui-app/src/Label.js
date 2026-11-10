@@ -40,6 +40,18 @@ const styles = Styles.Create({
   }
 })
 
+// Common labelStyle options:  color, fontFamily, fontSize, fontStyle, fontWeight, padding, margin, textAlign, letterSpacing, lineHeight, textAlign, textDecorationLine
+
+{/* <YourComponent 
+  label="Username" 
+  labelStyle={{
+    paddingTop: '10px',
+    paddingBottom: '10px',
+    paddingLeft: '5px',
+    paddingRight: '5px'
+  }} 
+/> */}
+
 const Label = ({ marginLeft, title, children, alignRight, labelStyle}) => {
     const alignmentStyle = alignRight? styles.rightLabelTitle : styles.labelTitle
     const actualStyle = {

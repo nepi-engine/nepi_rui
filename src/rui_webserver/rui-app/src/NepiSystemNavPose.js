@@ -353,7 +353,7 @@ class NavPoseMgr extends Component {
                 <Label title={"Sync Transforms"}>
                     <AsyncToggle
                       checked={navpose_sync_transforms}
-                      onClick={() => sendBoolMsg(mgrNamespace + '/set_sync_tranforms' ,!navpose_sync_transforms)}
+                      onClick={() => sendBoolMsg(mgrNamespace + '/set_sync_transforms' ,!navpose_sync_transforms)}
                     /> 
                   </Label>
 

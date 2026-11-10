@@ -26,8 +26,10 @@ import { Columns, Column } from "./Columns"
 import Select, { Option } from "./Select"
 import Label from "./Label"
 
+import NepiIFSaveData from "./Nepi_IF_SaveData"
+import NepiIFConnectNavPose from "./Nepi_IF_ConnectNavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
-
+import NepiIFMessages from "./Nepi_IF_Messages"
 
 import NepiDevicePTXControls from "./NepiDevicePTX-Controls"
 import NepiDevicePTXImageViewer from "./NepiDevicePTX-ImageViewer"
@@ -152,8 +154,11 @@ class NepiDevicePTX extends Component {
  render() {
     const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    // const capabilities = this.props.ros.ptxDevices[namespace]
-    // const node_name = capabilities ? capabilities.device_node_name : 'None'
+    const status_msg = this.props.ros.ptxDevices[namespace]
+    const save_data_topic = (status_msg && status_msg.save_data_topic) ? status_msg.save_data_topic : null
+    const settings_topic = (status_msg && status_msg.settings_topic) ? status_msg.settings_topic : null
+    const navpose_connect_topic = (status_msg && status_msg.navpose_connect_topic) ? status_msg.navpose_connect_topic : null
+    const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null
     
         return (
 
@@ -167,9 +172,41 @@ class NepiDevicePTX extends Component {
               <div style={{ width: "73%" }}>
 
 
-              {(device_selected === true) ?
-              this.renderImageViewer()
-              : null}
+                {(device_selected === true) ?
+                this.renderImageViewer()
+                : null}
+
+
+                  {(device_selected === true) ?
+                      <NepiIFSaveData
+                      saveNamespace={save_data_topic}
+                      make_section={true}
+                      show_all_save_options={false}
+                      show_topic_selector={false}
+                    />
+                : null}
+
+                  {(device_selected === true) ?
+                    <NepiIFConnectNavPose
+                    namespace={navpose_connect_topic}
+                    navpose_topic={navpose_topic}
+                    select_title={"NavPose Frame"}
+                    show_selector={true}
+                    show_transform={true}
+                    show_controls={true}
+                    show_data={false}
+                    make_section={true}
+                    />
+                  : null}
+
+
+                  {(device_selected === true) ?
+                    <NepiIFMessages
+                    messagesNamespace={namespace + '/messages'}
+                    hide_control={true}
+                    title={"Messages"}
+                    />
+                  : null}
 
               </div>
 
@@ -198,12 +235,11 @@ class NepiDevicePTX extends Component {
                     </Section>
 
                       {(device_selected === true) ?
-                      <NepiIFSettings
-                        settingsNamespace={namespace + '/settings'}
-                        allways_show_controls={true}
-                        make_section={true}
-                        title={"Device Settings"}
-                    />
+                          <NepiIFSettings
+                            settingsNamespace={settings_topic}
+                            allways_show_controls={true}
+                            title={"Device Settings"}
+                        />
                     : null}
 
 

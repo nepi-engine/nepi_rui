@@ -42,6 +42,7 @@ import {setElementStyleModified, clearElementStyleModified, onChangeSwitchStateV
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
+
 @inject("ros")
 @observer
 
@@ -119,8 +120,8 @@ class NepiDeviceSVXControls extends Component {
       this.updateSettingsListener(message.settings_topic)
     }
 
-    const homePos = message.home_pos_deg
-    const speedMax = message.speed_max_dps
+    const homePos = message.pos_home
+    const speedMax = message.speed_max
 
     var needs_update = false
     if (last_status_msg == null){
@@ -128,14 +129,14 @@ class NepiDeviceSVXControls extends Component {
     }
     else {
        needs_update = (
-          homePos !== last_status_msg.home_pos_deg ||
-          speedMax !== last_status_msg.speed_max_dps
+          homePos !== last_status_msg.pos_home ||
+          speedMax !== last_status_msg.speed_max
       )
     }
     if (needs_update === true){
       this.setState({
-          homePos : round(message.home_pos_deg, 1),
-          speedMax : round(message.speed_max_dps, 1)
+          homePos : round(message.pos_home, 1),
+          speedMax : round(message.speed_max, 1)
       })
     }
 
@@ -221,8 +222,8 @@ class NepiDeviceSVXControls extends Component {
     const status = this.state.status_msg
     const dmin = this.state.degMin
     const dmax = this.state.degMax
-    const lo = (dmin != null && !isNaN(dmin)) ? dmin : (status ? status.min_softstop_deg : 0)
-    const hi = (dmax != null && !isNaN(dmax)) ? dmax : (status ? status.max_softstop_deg : 0)
+    const lo = (dmin != null && !isNaN(dmin)) ? dmin : (status ? status.min_soft_limit : 0)
+    const hi = (dmax != null && !isNaN(dmax)) ? dmax : (status ? status.max_soft_limit : 0)
     return [lo, hi]
   }
 
@@ -334,7 +335,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
       {
         const el = document.getElementById("SVXMaxSpeed")
         clearElementStyleModified(el)
-        sendFloatMsg(namespace + "/set_speed_max_dps", el.value)
+        sendFloatMsg(namespace + "/set_speed_max", el.value)
       }
       else if (e.target.id === "SVXSpin")
       {
@@ -353,12 +354,13 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   // Continuous mode: one bipolar slider (-100..0..+100). Sign is the spin direction,
   // magnitude is the speed ratio. Publishes to the two existing control topics.
   onBipolarChange(value) {
-    const { sendIntMsg, sendFloatMsg } = this.props.ros
+    const { sendFloatMsg } = this.props.ros
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : 'None'
     const v = Number(value)
     const dir = (v >= 0) ? 1 : -1
     const ratio = Math.abs(v) / 100.0
-    sendIntMsg(namespace + "/set_spin_direction", dir)
+    // DeviceSVXIF takes the direction as the sign of a Float32 on set_direction
+    sendFloatMsg(namespace + "/set_direction", dir)
     sendFloatMsg(namespace + "/set_speed_ratio", ratio)
   }
 
@@ -375,13 +377,13 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
-      has_homing = capabilities && (capabilities.has_homing === true)
-      has_set_home = capabilities && (capabilities.has_set_home === true)
+      has_homing = capabilities && (capabilities.has_go_home_control === true)
+      has_set_home = capabilities && (capabilities.has_set_home_control === true)
     }
 
     const homePos = this.state.homePos
     // Same saved slot, mode-aware label: "Stop" for a continuous servo, "Home" otherwise.
-    const spinning = (status_msg != null && status_msg.has_spin === true)
+    const spinning = (status_msg != null && status_msg.is_spin === true)
 
     const show_controls =  this.state.show_controls
 
@@ -439,6 +441,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               </div>
 
 
+
         </React.Fragment>
       )
   }
@@ -466,7 +469,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
   renderDeviceIF() {
-    const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const { sendTriggerMsg } = this.props.ros
     const namespace = (this.props.namespace !== undefined) ? this.props.namespace : null
     const status_msg = this.state.status_msg
 
@@ -478,20 +481,19 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const devicesList = Object.keys(devices)
     if (devicesList.indexOf(namespace) !== -1){
       const capabilities = devices[namespace]
-      has_abs_pos = capabilities && (capabilities.has_absolute_positioning === true)
+      has_abs_pos = capabilities && (capabilities.has_position_control === true)
       has_goto_control = capabilities && (capabilities.has_goto_control === true)
-      has_homing = capabilities && (capabilities.has_homing === true)
-      has_speed_control = capabilities && (capabilities.has_adjustable_speed === true)
+      has_homing = capabilities && (capabilities.has_go_home_control === true)
+      has_speed_control = capabilities && (capabilities.has_speed_control === true)
     }
 
-    // Continuous vs positional is IF-owned configuration (status_msg.has_spin), not a
-    // driver capability. The Continuous-Spinning toggle declares which kind of servo is
-    // plugged in and publishes set_continuous_mode; the IF flips has_spin and the
-    // controls switch to direction+speed. Driven off live status so it round-trips.
-    const spinning = (status_msg.has_spin === true)
+    // Continuous vs positional is the servo type the driver declares (status_msg.is_spin).
+    // RC1's DeviceSVXIF has no runtime set_continuous_mode, so the Continuous Spinning
+    // toggle below only shows the type; the controls switch to direction+speed off it.
+    const spinning = (status_msg.is_spin === true)
 
-    const position_now = status_msg.position_now_deg
-    const position_goal = status_msg.position_goal_deg
+    const position_now = status_msg.pos_now
+    const position_goal = status_msg.pos_goal
     const positionNowClean = position_now + .001
     const positionGoalClean = position_goal + .001
 
@@ -503,19 +505,19 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     // center (0) unless the servo is actually spinning; only then reflect the
     // reported direction/speed. Once the user drags, the handle holds the committed
     // value (this.state.bipolar) rather than snapping back before the status echo.
-    const spinDirection = status_msg.spin_direction
+    const spinDirection = status_msg.dir_now
     const speedRatio = status_msg.speed_ratio
-    const bipolarFromStatus = (status_msg.is_spinning === true)
+    const bipolarFromStatus = (status_msg.is_moving === true)
       ? (((spinDirection >= 0) ? 1 : -1) * (speedRatio || 0) * 100)
       : 0
     const bipolarVal = (this.state.bipolar != null) ? this.state.bipolar : bipolarFromStatus
 
     const pwmAvail = this.pwmAvailable()
 
-    // A driver that supplies no speed max setter reports set_max_dps_disabled on status,
+    // A driver that supplies no speed max setter reports set_max_disabled on status,
     // and the max speed input must not be offered. The speed ratio slider stays live --
     // the max is what cannot move, not the speed.
-    const setMaxDpsDisabled = (status_msg.set_max_dps_disabled === true)
+    const setMaxDpsDisabled = (status_msg.set_max_disabled === true)
 
     return (
       <React.Fragment>
@@ -529,9 +531,10 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
           <Label title={"Continuous Spinning"}>
+            {/* Read-only: the driver declares the servo type (is_spin) */}
             <Toggle
-              checked={spinning}
-              onClick={() => sendBoolMsg.bind(this)(namespace + "/set_continuous_mode", !spinning)}>
+              disabled
+              checked={spinning}>
             </Toggle>
           </Label>
 
@@ -705,7 +708,11 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
               { (status_msg != null) ? this.renderDeviceIF() : null}
               { (status_msg != null && show_controls === true) ? this.renderControlPanel() : null}
+              
               { (status_msg != null && show_config === true) ? this.renderSettings() : null}
+
+
+
               { (status_msg != null && show_config === true) ?
                 <NepiIFConfig
                 namespace={namespace}

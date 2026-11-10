@@ -37,7 +37,6 @@ import NepiIFConfig from "./Nepi_IF_Config"
 // block at the end of render(). No other consumer on this page.
 import NepiIFControls from "./Nepi_IF_Controls"
 
-
 import {onDropdownSelectedSendStr, createMenuListFromStrList, onChangeSwitchStateValue} from "./Utilities"
 //import {createShortValuesFromNamespaces} from "./Utilities"
 
@@ -298,6 +297,7 @@ class NepiControlsLightsControls extends Component {
     const namespace = this.state.namespace
 
     const devices = this.props.ros.lsxDevices
+    const status_msg = this.props.ros.lsxDevices[namespace]
     var has_standby_mode = false
     var has_on_off_control = false
     var has_intensity_control = false
@@ -328,7 +328,6 @@ class NepiControlsLightsControls extends Component {
 
     const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : device_controls_restricted === false
    const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
-
 
 
     if (device_controls_restricted === true){
@@ -500,6 +499,8 @@ class NepiControlsLightsControls extends Component {
                 />
               </React.Fragment>
             : null}
+
+
 
             <NepiIFConfig
                 namespace={namespace}

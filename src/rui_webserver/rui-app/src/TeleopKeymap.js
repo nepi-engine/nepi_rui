@@ -82,10 +82,10 @@ export function buildTeleopKeyMap() {
   const map = {}
   map[bindings.forward] = [1, 0, 0, 0]
   map[bindings.backward] = [-1, 0, 0, 0]
-  map[bindings.turn_left] = [0, 0, 0, -1]
-  map[bindings.turn_right] = [0, 0, 0, 1]
-  map[bindings.strafe_left] = [0, -1, 0, 0]
-  map[bindings.strafe_right] = [0, 1, 0, 0]
+  map[bindings.turn_left] = [0, 0, 0, 1]
+  map[bindings.turn_right] = [0, 0, 0, -1]
+  map[bindings.strafe_left] = [0, 1, 0, 0]
+  map[bindings.strafe_right] = [0, -1, 0, 0]
   map[bindings.altitude_up] = [0, 0, 1, 0]
   map[bindings.altitude_down] = [0, 0, -1, 0]
   return map

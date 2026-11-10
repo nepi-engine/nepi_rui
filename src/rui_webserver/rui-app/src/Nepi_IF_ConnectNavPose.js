@@ -30,6 +30,8 @@ import Styles from "./Styles"
 
 import { round } from "./Utilities"
 
+import NepiIFTransform from "./Nepi_IF_Transform"
+import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFConfig from "./Nepi_IF_Config"
 
 @inject("ros")
@@ -194,7 +196,7 @@ class NepiIFConnectNavPose extends Component {
     const available_topics = connect_status_msg.available_topics
     const available_names = connect_status_msg.available_names
     const selected_topic = connect_status_msg.selected_topic
-    const connected = connect_status_msg.connected
+    const connected = connect_status_msg.status_connected
 
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
@@ -407,15 +409,39 @@ class NepiIFConnectNavPose extends Component {
       )
     }
 
+    const transform_topic = connect_status_msg.transform_topic
+
+    const show_transform = (this.props.show_transform !== undefined)? this.props.show_transform : false
+    const edit_transform = (this.props.edit_transform !== undefined)? this.props.edit_transform : false
+    
+    const navpose_topic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic : null
     return (
       <React.Fragment>
 
-        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-        <NepiIFConfig
-          namespace={namespace}
-          title={"Nepi_IF_Config"}
-        />
+            {(show_transform === true) ?
+            <NepiIFTransform
+              transformNamespace={transform_topic}
+              title={"Navpose Transform"}
+              read_only={edit_transform}
+              device_transform={true}
+              show_line={false}
+              show_config={false}
+              make_section={false}
+            />
+            : null }
+
+            <NepiIFNavPose
+              navposeNamespace={navpose_topic}
+              read_only={true}
+              show_line={false}
+              make_section={false}
+            />
+
+              {/* <NepiIFConfig
+                namespace={namespace}
+                title={"Nepi_IF_Config"}
+              /> */}
 
       </React.Fragment>
     )
@@ -426,8 +452,7 @@ class NepiIFConnectNavPose extends Component {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const title = (this.props.title !== undefined) ? this.props.title : "NavPose Connect"
 
-    // No connect status yet: render nothing (empty Columns/Column), matching
-    // the Nepi_IF_ConnectMotor "not ready" branch.
+
     if (connect_status_msg == null) {
       return (
         <Columns>

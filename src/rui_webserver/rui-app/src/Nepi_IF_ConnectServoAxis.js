@@ -26,20 +26,15 @@ import { Columns, Column } from "./Columns"
 import BooleanIndicator from "./BooleanIndicator"
 import Label from "./Label"
 
-import NepiIFMotorData from "./Nepi_IF_Motor-Data"
-import NepiIFMotorControls from "./Nepi_IF_Motor-Controls"
+import NepiIFServoAxisData from "./Nepi_IF_ServoAxis-Data"
+import NepiIFServoAxisControls from "./Nepi_IF_ServoAxis-Controls"
 
 @inject("ros")
 @observer
 
-// Reusable component that renders the device selector for a motorized device
-// connected through the ConnectMotorsDeviceIF interface, and composes the data and
-// controls children for the selected device. It subscribes to the connect
-// namespace ConnectIFStatus (selector/connection state and section-visibility
-// flags) only -- the two children each own their own MotorsStatus
-// subscription -- talking to ROS directly through this.props.ros the same way
+
 // the neighboring Nepi_IF_ components do.
-class NepiIFConnectMotor extends Component {
+class NepiIFConnectServoAxis extends Component {
   constructor(props) {
     super(props)
 
@@ -163,7 +158,7 @@ class NepiIFConnectMotor extends Component {
     // the selector, and the Select spans the panel width. Default false keeps
     // the original one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
-    const header_title = (this.props.title !== undefined) ? this.props.title : "Motor Connect"
+    const header_title = (this.props.title !== undefined) ? this.props.title : "Servo Connect"
 
     const selector = (
       <Label title={"Device"}>
@@ -229,7 +224,7 @@ class NepiIFConnectMotor extends Component {
 
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "Motor Connect"
+    const title = (this.props.title !== undefined) ? this.props.title : "Servo Connect"
     const connect_status_msg = this.state.connect_status_msg
     var show_selector = false
     var show_data = false
@@ -269,14 +264,14 @@ class NepiIFConnectMotor extends Component {
           : null }
 
           { (show_data === true && has_device === true) ?
-            <NepiIFMotorData
+            <NepiIFServoAxisData
               namespace={selected_namespace}
               make_section={false}
             />
           : null }
 
           { (show_controls === true && has_device === true) ?
-            <NepiIFMotorControls
+            <NepiIFServoAxisControls
               namespace={selected_namespace}
               make_section={false}
               show_controls_option={this.props.show_controls_option}
@@ -306,4 +301,4 @@ class NepiIFConnectMotor extends Component {
 
 }
 
-export default NepiIFConnectMotor
+export default NepiIFConnectServoAxis

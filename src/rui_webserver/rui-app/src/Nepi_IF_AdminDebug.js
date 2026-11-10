@@ -43,10 +43,16 @@ class NepiIFAdminDebug extends Component {
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
    
-    this.sendDebugOption = this.sendDebugOption.bind(this)
-    this.renderAdminDebugOption = this.renderAdminDebugOption.bind(this)
-    this.renderAdminDebug = this.renderAdminDebug.bind(this)
 
+    this.renderLevels = this.renderLevels.bind(this)
+
+    this.sendOption = this.sendOption.bind(this)
+    this.renderOption = this.renderOption.bind(this)
+    this.renderOptions = this.renderOptions.bind(this)
+    
+    this.sendNamespace = this.sendNamespace.bind(this)
+    this.renderNamespace = this.renderNamespace.bind(this)
+    this.renderNamespaces = this.renderNamespaces.bind(this)
 
 
   }
@@ -61,7 +67,138 @@ class NepiIFAdminDebug extends Component {
   }
 
 
-  sendDebugOption(name,value){
+
+
+  renderLevels() {
+    const base_namespace = this.getBaseNamespace()
+    const debug_level = this.props.ros.systemDebugLevel
+    const debug_level_topic = base_namespace + '/set_debug_level'
+    return (
+
+
+
+      <React.Fragment>
+
+
+        <Columns>
+          <Column>
+  
+                <Label title="LOW">
+                          <AsyncToggle
+                        checked={debug_level === 'LOW'}
+                        onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'LOW')}>
+                      </AsyncToggle>
+                </Label>
+
+          </Column>
+        <Column>
+
+                <Label title="MED">
+                          <AsyncToggle
+                        checked={debug_level === 'MED'}
+                        onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'MED')}>
+                      </AsyncToggle>
+                </Label>
+
+              
+          </Column>
+        </Columns>
+
+
+
+
+        <Columns>
+          <Column>
+  
+              <Label title="HIGH">
+                        <AsyncToggle
+                      checked={debug_level === 'HIGH'}
+                      onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'HIGH')}>
+                    </AsyncToggle>
+              </Label>
+
+          </Column>
+        <Column>
+
+                <Label title="ALL">
+                          <AsyncToggle
+                        checked={debug_level === 'ALL'}
+                        onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'ALL')}>
+                      </AsyncToggle>
+              </Label>
+  
+          </Column>
+        </Columns>
+
+      </React.Fragment>
+    )
+  }
+
+
+
+  sendOption(name,value){
+    const base_namespace = this.getBaseNamespace()
+    if (value === true){
+      this.props.ros.sendStringMsg(base_namespace + "/add_debug_option", name)
+    }
+    else {
+      this.props.ros.sendStringMsg(base_namespace + "/remove_debug_option", name)
+    }
+  }
+
+
+    
+  renderOption(name) {
+    const enabled = (this.props.ros.systemDebugOptions.indexOf(name) !== -1)
+    return (
+
+      <React.Fragment>
+
+
+                        <Label title={name}>
+
+                            <AsyncToggle
+                            checked={enabled}
+                            onClick={() => this.sendOption(name,!enabled)}>
+                          </AsyncToggle>
+
+                        </Label>
+
+      </React.Fragment>
+    )
+  }
+
+  renderOptions() {
+    const options = this.props.ros.systemDebugAvailableOptions
+    return (
+
+
+      <React.Fragment>
+
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+                  <div>
+                    <Label title={'DEBUG DISPLAY MESSAGES'}> </Label>
+
+                    {/* Map over the restriction options array */}
+                    {options.map((name) => (
+                      this.renderOption(name)
+                    ))}
+                  </div>
+
+
+      </React.Fragment>
+    )
+  }
+
+
+    
+
+  
+
+    sendNamespace(name,value){
     const base_namespace = this.getBaseNamespace()
     if (value === true){
       this.props.ros.sendStringMsg(base_namespace + "/set_debug_namespace", name)
@@ -73,7 +210,7 @@ class NepiIFAdminDebug extends Component {
 
 
     
-    renderAdminDebugOption(namespace) {
+  renderNamespace(namespace) {
     
     const name = getBasename(namespace)
     const enabled = (namespace === this.props.ros.systemDebugNamespace)
@@ -86,19 +223,16 @@ class NepiIFAdminDebug extends Component {
 
                             <AsyncToggle
                             checked={enabled}
-                            onClick={() => this.sendDebugOption(namespace,!enabled)}>
+                            onClick={() => this.sendNamespace(namespace,!enabled)}>
                           </AsyncToggle>
 
                         </Label>
-
-
-
 
       </React.Fragment>
     )
   }
 
-  renderAdminDebug() {
+  renderNamespaces() {
     const base_namespace = this.getBaseNamespace()
     const msgTopics = this.props.ros.messageTopics
     const msgTopicsSorted = msgTopics.sort()
@@ -109,13 +243,19 @@ class NepiIFAdminDebug extends Component {
 
       <React.Fragment>
 
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+
+                  <div>
+                    <Label title={'DEBUG PROCESS OPTIONS'}> </Label>
+                  </div>
 
                   <div>
                   
 
                     {/* Map over the restriction options array */}
                     {msgDebugOptions.map((topic) => (
-                      this.renderAdminDebugOption(topic.replace('/messages',''))
+                      this.renderNamespace(topic.replace('/messages',''))
                     ))}
                   </div>
 
@@ -129,11 +269,12 @@ class NepiIFAdminDebug extends Component {
 
 
 
+
   render() {
     const base_namespace = this.getBaseNamespace()
     const debug_mode = this.props.ros.systemDebugEnabled
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "DEBUG OPTIONS"
+    const title = (this.props.title !== undefined) ? this.props.title : "DEBUG MODE OPTIONS"
 
     if (base_namespace == null || debug_mode === false){
       return (
@@ -154,7 +295,9 @@ class NepiIFAdminDebug extends Component {
 
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Label title={title} />
-                {this.renderAdminDebug()}
+                {this.renderLevels()}
+                {this.renderOptions()}
+                {this.renderNamespaces()}
 
 
           </React.Fragment>
@@ -165,7 +308,9 @@ class NepiIFAdminDebug extends Component {
 
           <Section title={title}>
 
-                  {this.renderAdminDebug()}
+                {this.renderLevels()}
+                {this.renderOptions()}
+                {this.renderNamespaces()}
 
 
         </Section>

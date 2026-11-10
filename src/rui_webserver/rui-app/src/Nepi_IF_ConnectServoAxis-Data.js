@@ -31,25 +31,25 @@ import { round } from "./Utilities"
 @inject("ros")
 @observer
 
-// Read-only motor device data component. Subscribes to the device's MotorsStatus
+// Read-only motor device data component. Subscribes to the device's ServoStatus
 // on the namespace prop (namespace/motor_status) and renders telemetry only. No
-// command publishers, no editable inputs. The companion Nepi_IF_Motor-Controls
+// command publishers, no editable inputs. The companion Nepi_IF_ServoAxis-Controls
 // component owns every command widget for the same device.
 //
-// Motor devices have no dedicated store listener setup method and no
+// ServoAxis devices have no dedicated store listener setup method and no
 // capabilities dictionary, so the subscription is made through the generic
 // setupStatusListener.
 //
 // One row per motor, each with a divider and the bold motor_name header. The
-// pre-split Nepi_IF_ConnectMotor placed a motor's read-only cells and its
+// pre-split Nepi_IF_ConnectServoAxis placed a motor's read-only cells and its
 // command cells side by side in adjacent columns of a single row; with data and
 // controls in separate components those become two stacked blocks, each with its
 // own per-motor rows.
-class NepiIFMotorData extends Component {
+class NepiIFServoAxisData extends Component {
   constructor(props) {
     super(props)
 
-    // these states track the values through MotorsStatus messages
+    // these states track the values through ServoStatus messages
     this.state = {
 
       namespace: 'None',
@@ -59,8 +59,8 @@ class NepiIFMotorData extends Component {
 
     }
 
-    this.renderMotorStatus = this.renderMotorStatus.bind(this)
-    this.renderMotorRow = this.renderMotorRow.bind(this)
+    this.renderServoAxisStatus = this.renderServoAxisStatus.bind(this)
+    this.renderServoAxisRow = this.renderServoAxisRow.bind(this)
     this.renderData = this.renderData.bind(this)
 
     this.updateStatusListener = this.updateStatusListener.bind(this)
@@ -68,14 +68,14 @@ class NepiIFMotorData extends Component {
 
   }
 
-  // Callback for handling ROS MotorsStatus messages. Nothing in this component
+  // Callback for handling ROS ServoStatus messages. Nothing in this component
   // is editable, so the incoming status is tracked directly.
   statusListener(message) {
     this.setState({ status_msg: message })
   }
 
   // Function for configuring and subscribing to the device's motor status topic
-  // (namespace/motor_status), message type MotorsStatus.
+  // (namespace/motor_status), message type ServoStatus.
   updateStatusListener() {
     const { namespace } = this.props
     if (this.state.statusListener != null) {
@@ -86,7 +86,7 @@ class NepiIFMotorData extends Component {
       const statusNamespace = namespace + '/motor_status'
       var statusListener = this.props.ros.setupStatusListener(
         statusNamespace,
-        "nepi_interfaces/MotorsStatus",
+        "nepi_interfaces/ServoStatus",
         this.statusListener
       )
       this.setState({ statusListener: statusListener})
@@ -111,7 +111,7 @@ class NepiIFMotorData extends Component {
     }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to MotorsStatus message
+  // Used to unsubscribe to ServoStatus message
   componentWillUnmount() {
     if (this.state.statusListener) {
       this.state.statusListener.unsubscribe()
@@ -119,15 +119,15 @@ class NepiIFMotorData extends Component {
   }
 
 
-  // Read-only telemetry fields for a single motor, backed by one MotorStatus
-  // element of the MotorsStatus array. No divider or motor-name header (the row
+  // Read-only telemetry fields for a single motor, backed by one ServoAxisStatus
+  // element of the ServoStatus array. No divider or motor-name header (the row
   // that hosts this supplies those); no command publishers here.
   //
   // The rotatable-wheel (steering) rows render only for a motor reporting
   // has_rotation true, and the rotation limit rows only where that rotation is
   // limited (has_continuous_rotation false). A non-steering motor's rows are
   // unchanged.
-  renderMotorStatus(motor) {
+  renderServoAxisStatus(motor) {
     const motor_enable = motor.motor_enable
     const motor_dir = motor.motor_dir
     const motor_max_speed = round(motor.motor_max_speed + .001, 2)
@@ -208,7 +208,7 @@ class NepiIFMotorData extends Component {
 
   // One row per motor: a divider, the bold motor_name header, then that motor's
   // read-only status.
-  renderMotorRow(motor, index) {
+  renderServoAxisRow(motor, index) {
     const motor_name = (motor.motor_name !== undefined && motor.motor_name !== '') ? motor.motor_name : ('motor_' + index)
 
     return (
@@ -220,7 +220,7 @@ class NepiIFMotorData extends Component {
 
         <Columns>
           <Column>
-            {this.renderMotorStatus(motor)}
+            {this.renderServoAxisStatus(motor)}
           </Column>
         </Columns>
 
@@ -228,7 +228,7 @@ class NepiIFMotorData extends Component {
     )
   }
 
-  // Read-only device telemetry, backed by MotorsStatus. Renders the device
+  // Read-only device telemetry, backed by ServoStatus. Renders the device
   // header (device name / motor count) and one row per motor.
   renderData() {
     const status_msg = this.state.status_msg
@@ -252,11 +252,11 @@ class NepiIFMotorData extends Component {
           <Input disabled value={device_name} />
         </Label>
 
-        <Label title={"Motor Count"}>
+        <Label title={"ServoAxis Count"}>
           <Input disabled value={motors.length} />
         </Label>
 
-        { motors.map((motor, index) => this.renderMotorRow(motor, index)) }
+        { motors.map((motor, index) => this.renderServoAxisRow(motor, index)) }
 
       </React.Fragment>
     )
@@ -298,4 +298,4 @@ class NepiIFMotorData extends Component {
   }
 
 }
-export default NepiIFMotorData
+export default NepiIFServoAxisData

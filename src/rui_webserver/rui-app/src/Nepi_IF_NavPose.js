@@ -31,15 +31,10 @@ import Select, { Option } from "./Select"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
-import NepiIFTransform from "./Nepi_IF_Transform"
 
-// Mirrors nepi_nav.NAVPOSE_3D_FRAME_OPTIONS
-const NAVPOSE_3D_FRAME_OPTIONS = ['base_frame','nepi_frame','sensor_frame','world_frame']
 
-function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
-  //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
-}
+import { round} from "./Utilities"
+
 
 @inject("ros")
 @observer
@@ -55,9 +50,9 @@ class NepiIFNavPose extends Component {
       status_msg: null,
 
       dataListener: null,
-      data_msg: null,
+      navpose_msg: null,
 
-      navpose_data: null,
+      navpose_msg: null,
       navpose_times: null,
 
       connected: false,
@@ -77,14 +72,7 @@ class NepiIFNavPose extends Component {
     this.updateDataListener = this.updateDataListener.bind(this)
     this.dataListener = this.dataListener.bind(this)
 
-    this.renderSelection = this.renderSelection.bind(this)
     this.renderData = this.renderData.bind(this)
-
-    this.toggleViewableNavpose = this.toggleViewableNavpose.bind(this)
-    this.onToggleNavposeSelection = this.onToggleNavposeSelection.bind(this)
-    this.getNavposeOptions = this.getNavposeOptions.bind(this)
-    this.onChangeNavposeFrame = this.onChangeNavposeFrame.bind(this)
-
 
     this.sendNavposeUpdateMessage = this.sendNavposeUpdateMessage.bind(this)
     this.sendNavposeClearMessage = this.sendNavposeClearMessage.bind(this)
@@ -109,13 +97,13 @@ class NepiIFNavPose extends Component {
   dataListener(message) {
 
 
-    const last_navpose_data = this.state.navpose_data
+    const last_navpose_msg = this.state.navpose_msg
     
      const has_pan_tilt = message.has_pan_tilt
     const show_pt_values = (this.state.show_pt_values != null && has_pan_tilt === true) ? this.state.show_pt_values === true : has_pan_tilt === true
-     var navpose_data_from_msg = null
+     var navpose_msg_from_msg = null
      if (show_pt_values === true) {
-        navpose_data_from_msg = {
+        navpose_msg_from_msg = {
             navpose_frame: message.navpose_frame,
             navpose_description: message.navpose_description,
 
@@ -154,7 +142,7 @@ class NepiIFNavPose extends Component {
           }
         }
       else {
-        navpose_data_from_msg = {
+        navpose_msg_from_msg = {
             navpose_frame: message.navpose_frame,
             navpose_description: message.navpose_description,
 
@@ -194,24 +182,24 @@ class NepiIFNavPose extends Component {
         }
 
       // Preserve fields the user is currently editing so subscription doesn't reset them
-      const navpose_data = { ...navpose_data_from_msg }
-      if (last_navpose_data && this.dirtyFields.size > 0) {
+      const navpose_msg = { ...navpose_msg_from_msg }
+      if (last_navpose_msg && this.dirtyFields.size > 0) {
         for (const field of this.dirtyFields) {
-          if (field in last_navpose_data) {
-            navpose_data[field] = last_navpose_data[field]
+          if (field in last_navpose_msg) {
+            navpose_msg[field] = last_navpose_msg[field]
           }
         }
       }
 
-      if (JSON.stringify(navpose_data) !== JSON.stringify(last_navpose_data)){
+      if (JSON.stringify(navpose_msg) !== JSON.stringify(last_navpose_msg)){
           this.setState({
-            navpose_data: navpose_data,
-            navpose_data_copy: navpose_data_from_msg
+            navpose_msg: navpose_msg,
+            navpose_msg_copy: navpose_msg_from_msg
           })
       }
 
       this.setState({
-        data_msg: message,
+        navpose_msg: message,
         connected: true
       })
 
@@ -222,8 +210,8 @@ class NepiIFNavPose extends Component {
       this.state.statusListener.unsubscribe()
       this.setState({statusListener: null, 
                     status_msg: null, 
-                    data_msg: null, 
-                    navpose_data: null,
+                    navpose_msg: null, 
+                    navpose_msg: null,
                     navpose_times: null,
                     connected: false})
     }
@@ -245,8 +233,8 @@ class NepiIFNavPose extends Component {
   updateDataListener(navposeNamespace) {
     if (this.state.dataListener != null) {
       this.state.dataListener.unsubscribe()
-      this.setState({dataListener: null, data_msg: null, 
-                    navpose_data: null, data_needs_update: false})
+      this.setState({dataListener: null, navpose_msg: null, 
+                    navpose_msg: null, data_needs_update: false})
     }
     if (this.state.dataListener !== 'None') {
         const dataListener = this.props.ros.setupDataListener(
@@ -269,18 +257,23 @@ class NepiIFNavPose extends Component {
   // Lifecycle method called when compnent updates.
   // Used to track changes in the topic
   componentDidUpdate(prevProps, prevState, snapshot) {
-    var navposeNamespace = (this.props.navposeNamespace !== undefined && this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
+    const navpose_msg = (this.props.navpose_msg !== undefined) ? this.props.navpose_msg : null
+    const navposeNamespace = (this.props.navposeNamespace !== undefined && this.props.navposeNamespace !== '' && this.props.navposeNamespace !== 'None' && this.props.navposeNamespace !== null) ? 
                              this.props.navposeNamespace : this.state.navposeNamespace
-    if (this.state.navposeNamespace !== navposeNamespace ){
+    if (this.state.navposeNamespace !== navposeNamespace){
         this.setState({
           navposeNamespace: navposeNamespace,
         })
-        this.updateStatusListener(navposeNamespace)
-        this.updateDataListener(navposeNamespace)
-      } 
+
+        if (navpose_msg == null){
+          this.updateStatusListener(navposeNamespace)
+          this.updateDataListener(navposeNamespace)
+        } 
+    } 
 
   }
   
+
   
   // Lifecycle method called just before the component umounts.
   // Used to unsubscribe to StatusNPX message
@@ -290,8 +283,8 @@ class NepiIFNavPose extends Component {
     }
     if (this.state.dataListener != null) {
       this.state.dataListener.unsubscribe()
-      this.setState({dataListener: null, data_msg: null, 
-                    navpose_data: null, data_needs_update: false})
+      this.setState({dataListener: null, navpose_msg: null, 
+                    navpose_msg: null, data_needs_update: false})
     }
   }
 
@@ -299,145 +292,36 @@ class NepiIFNavPose extends Component {
 
 
 
-  toggleViewableNavpose() {
-    const viewable = !this.state.viewableNavpose
-    this.setState({viewableNavpose: viewable})
-  }
-
-
-  onToggleNavposeSelection(event){
-    const navposeNamespace = event.target.value
-    this.setState({navposeNamespace: navposeNamespace})
-    const navpose_updated_topic =   (this.props.navpose_updated_topic !== undefined)? this.props.navpose_updated_topic : null
-    if (navpose_updated_topic != null) {
-      this.props.ros.sendStringMsg(navposeNamespace)
-
-
-    }
-  }
-
-
-  // Function for creating image topic options.
-  getNavposeOptions() {
-    const navpose_frames_topics = this.props.ros.navpose_frames_topics
-    const navpose_frames = this.props.ros.navpose_frames
-    const navposeNamespace = this.state.navposeNamespace
-    var items = []
-
-    if (navpose_frames.length === 0){
-      items.push(<Option value={'None'}>{'None'}</Option>)
-    }
-    else {
-        for (var i = 0; i < navpose_frames.length; i++) {
-            items.push(<Option value={navpose_frames_topics[i]}>{navpose_frames[i]}</Option>)
-          }
-        if (navposeNamespace === 'None'){
-          this.setState({navposeNamespace: navpose_frames_topics[0]})
-        }
-    }
-    return items
-  }
-
-
-  onChangeNavposeFrame(event) {
-    const frame = event.target.value
-    const navposeNamespace = this.state.navposeNamespace
-    if (navposeNamespace == null || navposeNamespace === 'None' || navposeNamespace === '') {
-      return
-    }
-    // The camera's navpose data topic is <device_ns>/navpose; the frame setter
-    // lives on the device node, so strip the trailing /navpose segment.
-    var device_ns = navposeNamespace
-    const suffix = '/navpose'
-    if (device_ns.endsWith(suffix)) {
-      device_ns = device_ns.slice(0, device_ns.length - suffix.length)
-    }
-    this.props.ros.sendStringMsg(device_ns + '/set_navpose_frame', frame)
-  }
-
-
-  renderSelection() {
-    const show_selection = (this.props.show_selection !== undefined)? this.props.show_selection : false
-    if (show_selection === false) {
-      return (
-        <Columns>
-          <Column>
-          </Column>
-        </Columns>
-      )
-    }
-
-    const status_msg = this.state.status_msg
-    const navpose_data = this.state.navpose_data
-    const current_frame = (navpose_data != null && navpose_data.navpose_frame)
-        ? navpose_data.navpose_frame
-        : ((status_msg != null && status_msg.frame_name) ? status_msg.frame_name : 'None')
-    const transform_topic = (status_msg != null && status_msg.transform_topic) ? status_msg.transform_topic : ''
-
-    const { userRestricted } = this.props.ros
-    // const navpose_view_restricted = userRestricted.indexOf('DATA-NAVPOSE-VIEW') !== -1
-    const navpose_control_restricted = userRestricted.indexOf('DATA-NAVPOSE-CONTROL') !== -1
-
-    return (
-      <React.Fragment>
-
-        <Label title={"NavPose Frame"}>
-          <Select
-            id={"navpose_frame"}
-            value={current_frame}
-            disabled={navpose_control_restricted}
-            onChange={this.onChangeNavposeFrame}
-          >
-            {NAVPOSE_3D_FRAME_OPTIONS.map((f) => <Option value={f}>{f}</Option>)}
-          </Select>
-        </Label>
-
-        {(transform_topic !== '' && transform_topic !== 'None' && navpose_control_restricted === false) ?
-        <NepiIFTransform
-          transformNamespace={transform_topic}
-          title={"Camera Frame Transform"}
-          device_transform={true}
-          make_section={false}
-        />
-        : null }
-
-      </React.Fragment>
-    )
-  }
-
-
-
-
-  sendNavposeUpdateMessage(navpose_data){
+  sendNavposeUpdateMessage(navpose_msg){
     const {sendUpdateNavposeMsg} = this.props.ros
     const navposeNamespace = this.state.navposeNamespace
     const updateNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : navposeNamespace + "/update_navpose"
     const frame_name = (this.props.frame_name !== undefined)? this.props.frame_name : ""
     const comp_name = (this.props.comp_name !== undefined)? this.props.comp_name : ""
     const type_name = (this.props.type_name !== undefined)? this.props.type_name : ""
-    if (navpose_data != null) {
-      sendUpdateNavposeMsg(updateNamespace,frame_name,navpose_data,comp_name,type_name)
+    if (navpose_msg != null) {
+      sendUpdateNavposeMsg(updateNamespace,frame_name,navpose_msg,comp_name,type_name)
     }
   }
 
 
   sendNavposeClearMessage(){
-    const navpose_data = this.props.ros.blankNavpose
-    this.sendNavposeUpdateMessage(navpose_data)
+    const navpose_msg = this.props.ros.blankNavpose
+    this.sendNavposeUpdateMessage(navpose_msg)
   }
 
 
   onUpdateInputNavposeValue(event, name) {
     const value = event.target.value
     this.dirtyFields.add(name)
-    const navpose_data = { ...this.state.navpose_data, [name]: value }
-    this.setState({ navpose_data })
+    const navpose_msg = { ...this.state.navpose_msg, [name]: value }
+    this.setState({ navpose_msg })
     event.target.style.color = Styles.vars.colors.red
     event.target.style.fontWeight = "bold"
   }
 
   onKeySaveInputNavposeValue(event, name) {
-    const navpose_data_copy = this.state.navpose_data_copy
+    const navpose_msg_copy = this.state.navpose_msg_copy
     const force_enable = this.props.update_namespace !== undefined
     const HAS_FLAG_MAP = {
       latitude: 'has_location', longitude: 'has_location',
@@ -450,26 +334,26 @@ class NepiIFNavPose extends Component {
     }
     if (event.key === 'Enter') {
       const value = parseFloat(event.target.value)
-      const navpose_data = { ...this.state.navpose_data }
+      const navpose_msg = { ...this.state.navpose_msg }
       if (isNaN(value)) {
-        navpose_data[name] = navpose_data_copy ? navpose_data_copy[name] : 0
+        navpose_msg[name] = navpose_msg_copy ? navpose_msg_copy[name] : 0
       } else {
-        navpose_data[name] = value
+        navpose_msg[name] = value
         if (force_enable && HAS_FLAG_MAP[name]) {
-          navpose_data[HAS_FLAG_MAP[name]] = true
+          navpose_msg[HAS_FLAG_MAP[name]] = true
         }
       }
       this.dirtyFields.delete(name)
-      this.setState({ navpose_data })
-      this.sendNavposeUpdateMessage(navpose_data)
+      this.setState({ navpose_msg })
+      this.sendNavposeUpdateMessage(navpose_msg)
       event.target.style.color = Styles.vars.colors.black
       event.target.style.fontWeight = "normal"
     }
     if (event.key === 'Escape') {
-      const navpose_data = { ...this.state.navpose_data }
-      navpose_data[name] = navpose_data_copy ? navpose_data_copy[name] : 0
+      const navpose_msg = { ...this.state.navpose_msg }
+      navpose_msg[name] = navpose_msg_copy ? navpose_msg_copy[name] : 0
       this.dirtyFields.delete(name)
-      this.setState({ navpose_data })
+      this.setState({ navpose_msg })
       event.target.style.color = Styles.vars.colors.black
       event.target.style.fontWeight = "normal"
     }
@@ -478,9 +362,9 @@ class NepiIFNavPose extends Component {
 
 
   renderData() {
-    const navpose_data = this.props.navpose_data !== undefined ? this.props.navpose_data : ((this.state.navpose_data != null) ? this.state.navpose_data : null)
+    const navpose_msg = this.props.navpose_msg !== undefined ? this.props.navpose_msg : ((this.state.navpose_msg != null) ? this.state.navpose_msg : null)
 
-    if (navpose_data == null) {
+    if (navpose_msg == null) {
 
       return(
         <Columns>
@@ -492,45 +376,51 @@ class NepiIFNavPose extends Component {
 
     }
     else {
+          const navposeNamespace = this.state.navposeNamespace
 
-          const navpose_frame = navpose_data.navpose_frame
-          const navpose_description = navpose_data.navpose_description
-          const frame_nav = navpose_data.frame_nav
-          const frame_alt =navpose_data.frame_alt
-          const frame_depth = navpose_data.frame_depth
+          const navpose_frame = navpose_msg.navpose_frame
+          const navpose_description = navpose_msg.navpose_description
+          const frame_nav = navpose_msg.frame_nav
+          const frame_alt =navpose_msg.frame_altitude
+          const frame_depth = navpose_msg.frame_depth
 
           const force_enable = this.props.update_namespace !== undefined
 
-          const has_location = navpose_data.has_location
-          const latitude = (force_enable || has_location === true) && navpose_data.latitude !== -999 ? navpose_data.latitude : null
-          const longitude = (force_enable || has_location === true) && navpose_data.longitude !== -999 ? navpose_data.longitude : null
+          const has_location = navpose_msg.has_location
+          const latitude = (force_enable || has_location === true) && navpose_msg.latitude !== -999 ? navpose_msg.latitude : null
+          const longitude = (force_enable || has_location === true) && navpose_msg.longitude !== -999 ? navpose_msg.longitude : null
 
-          const has_heading = navpose_data.has_heading
-          const heading_deg = (force_enable || has_heading === true) && navpose_data.heading_deg !== -999 ? navpose_data.heading_deg : null
+          const has_heading = navpose_msg.has_heading
+          const heading_deg = (force_enable || has_heading === true) && navpose_msg.heading_deg !== -999 ? navpose_msg.heading_deg : null
 
-          const has_position = navpose_data.has_position
-          const x_m = (force_enable || has_position === true) && navpose_data.x_m !== -999 ? navpose_data.x_m : null
-          const y_m = (force_enable || has_position === true) && navpose_data.y_m !== -999 ? navpose_data.y_m : null
-          const z_m = (force_enable || has_position === true) && navpose_data.z_m !== -999 ? navpose_data.z_m : null
+          const has_position = navpose_msg.has_position
+          const x_m = (force_enable || has_position === true) && navpose_msg.x_m !== -999 ? navpose_msg.x_m : null
+          const y_m = (force_enable || has_position === true) && navpose_msg.y_m !== -999 ? navpose_msg.y_m : null
+          const z_m = (force_enable || has_position === true) && navpose_msg.z_m !== -999 ? navpose_msg.z_m : null
 
-          const has_orientation = navpose_data.has_orientation
-          const roll_deg = (force_enable || has_orientation === true) && navpose_data.roll_deg !== -999 ? navpose_data.roll_deg : null
-          const pitch_deg = (force_enable || has_orientation === true) && navpose_data.pitch_deg !== -999 ? navpose_data.pitch_deg : null
-          const yaw_deg = (force_enable || has_orientation === true) && navpose_data.yaw_deg !== -999 ? navpose_data.yaw_deg : null
+          const has_orientation = navpose_msg.has_orientation
+          const roll_deg = (force_enable || has_orientation === true) && navpose_msg.roll_deg !== -999 ? navpose_msg.roll_deg : null
+          const pitch_deg = (force_enable || has_orientation === true) && navpose_msg.pitch_deg !== -999 ? navpose_msg.pitch_deg : null
+          const yaw_deg = (force_enable || has_orientation === true) && navpose_msg.yaw_deg !== -999 ? navpose_msg.yaw_deg : null
 
-          // const has_altitude = navpose_data.has_altitude
-          const altitude_m = navpose_data.altitude_m !== -999 ? navpose_data.altitude_m : null
+          // const has_altitude = navpose_msg.has_altitude
+          const altitude_m = navpose_msg.altitude_m !== -999 ? navpose_msg.altitude_m : null
 
-          // const has_depth = navpose_data.has_depth
-          const depth_m = navpose_data.depth_m !== -999 ? navpose_data.depth_m : null
+          // const has_depth = navpose_msg.has_depth
+          const depth_m = navpose_msg.depth_m !== -999 ? navpose_msg.depth_m : null
 
-          const has_pan_tilt = navpose_data.has_pan_tilt
-          const pan_deg = (force_enable || has_pan_tilt === true) && navpose_data.pan_deg !== -999 ? navpose_data.pan_deg : null
-          const tilt_deg = (force_enable || has_pan_tilt === true) && navpose_data.tilt_deg !== -999 ? navpose_data.tilt_deg : null
+          const has_pan_tilt = navpose_msg.has_pan_tilt
+          const pan_deg = (force_enable || has_pan_tilt === true) && navpose_msg.pan_deg !== -999 ? navpose_msg.pan_deg : null
+          const tilt_deg = (force_enable || has_pan_tilt === true) && navpose_msg.tilt_deg !== -999 ? navpose_msg.tilt_deg : null
 
-          const msg = ("\nRef Desc: " + navpose_description +
-          "\n\nNav Frame: " + frame_nav + "  Alt Frame: " + frame_alt + "  Depth Frame: " + frame_depth
-          )
+          const show_frame_info = (this.props.show_frame_info !== undefined) ? this.props.show_frame_info : true
+          const frame_msg = ('NavPose Frame:\u00A0\u00A0' + frame_nav + 
+            '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Alt Frame:\u00A0\u00A0' + frame_alt + 
+            '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Depth Frame:\u00A0\u00A0' + frame_depth )
+
+          const show_source_topic = (this.props.show_source_topic !== undefined) ? this.props.show_source_topic : true
+          const source_msg = ("Source Topic: " + navposeNamespace )
+
           
           const allow_updates = (this.props.allow_updates !== undefined)? this.props.allow_updates : false
           const read_only = this.props.read_only === true
@@ -548,25 +438,17 @@ class NepiIFNavPose extends Component {
 
 <React.Fragment>
 
-            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {navpose_frame}
-            </label>
+    
 
-
-            <label align={"left"} textAlign={"left"}>
-            {msg}
-          </label>
 
               <Columns>
                 <Column>
-                  <label style={{fontWeight: 'bold'}}>
-                    {"Location"}
-                  </label>
+
                   <Label title={"Latitude"}>
                     <Input
                       id={"latitude"}
                       disabled={mk_disabled(has_location)}
-                      value={this.dirtyFields.has('latitude') ? navpose_data.latitude : round(latitude, 6)}
+                      value={this.dirtyFields.has('latitude') ? navpose_msg.latitude : round(latitude, 6)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"latitude")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"latitude")}
@@ -576,7 +458,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"longitude"}
                       disabled={mk_disabled(has_location)}
-                      value={this.dirtyFields.has('longitude') ? navpose_data.longitude : round(longitude, 6)}
+                      value={this.dirtyFields.has('longitude') ? navpose_msg.longitude : round(longitude, 6)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"longitude")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"longitude")}
@@ -590,7 +472,7 @@ class NepiIFNavPose extends Component {
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"heading_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"heading_deg")}
-                      value={this.dirtyFields.has('heading_deg') ? navpose_data.heading_deg : round(heading_deg, 2)}
+                      value={this.dirtyFields.has('heading_deg') ? navpose_msg.heading_deg : round(heading_deg, 2)}
                     />
                   </Label>
 
@@ -598,7 +480,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"altitude_m"}
                       disabled={read_only || disabled}
-                      value={this.dirtyFields.has('altitude_m') ? navpose_data.altitude_m : round(altitude_m, 2)}
+                      value={this.dirtyFields.has('altitude_m') ? navpose_msg.altitude_m : round(altitude_m, 2)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"altitude_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"altitude_m")}
@@ -609,7 +491,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"depth_m"}
                       disabled={read_only || disabled}
-                      value={this.dirtyFields.has('depth_m') ? navpose_data.depth_m : round(depth_m, 2)}
+                      value={this.dirtyFields.has('depth_m') ? navpose_msg.depth_m : round(depth_m, 2)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"depth_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"depth_m")}
@@ -619,17 +501,15 @@ class NepiIFNavPose extends Component {
 
                 </Column>
                 <Column>
-                  <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
-                    <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>
-                    {"Orientation Frame " + frame_nav}
-                    </label>
-                  </div>
+                  <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}></div>
+
+                  
                   <Label title={"Roll (deg)"}>
                     <Input
                       id={"roll_deg"}
                       disabled={mk_disabled(has_orientation)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('roll_deg') ? navpose_data.roll_deg : round(roll_deg, 2)}
+                      value={this.dirtyFields.has('roll_deg') ? navpose_msg.roll_deg : round(roll_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"roll_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"roll_deg")}
                     />
@@ -639,7 +519,7 @@ class NepiIFNavPose extends Component {
                       id={"pitch_deg"}
                       disabled={mk_disabled(has_orientation)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('pitch_deg') ? navpose_data.pitch_deg : round(pitch_deg, 2)}
+                      value={this.dirtyFields.has('pitch_deg') ? navpose_msg.pitch_deg : round(pitch_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"pitch_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"pitch_deg")}
                     />
@@ -650,7 +530,7 @@ class NepiIFNavPose extends Component {
                       id={"yaw_deg"}
                       disabled={mk_disabled(has_orientation)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('yaw_deg') ? navpose_data.yaw_deg : round(yaw_deg, 2)}
+                      value={this.dirtyFields.has('yaw_deg') ? navpose_msg.yaw_deg : round(yaw_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"yaw_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"yaw_deg")}
                     />
@@ -663,33 +543,23 @@ class NepiIFNavPose extends Component {
                       id={"pan_deg"}
                       disabled={mk_disabled(has_pan_tilt)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('pan_deg') ? navpose_data.pan_deg : round(pan_deg, 2)}
+                      value={this.dirtyFields.has('pan_deg') ? navpose_msg.pan_deg : round(pan_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"pan_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"pan_deg")}
                     />
                   </Label>
-      {/*
-                  <Label title={"Ref. Frame"}>
-                    <Input
-                      disabled
-                      style={{ width: "80%" }}
-                      value={navPoseOrientationFrame}
-                    />
-                  </Label>
-      */}
+
                   </Column>
                 <Column>
 
-                  <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}>
-                    <label style={{fontWeight: 'bold', flex: 1, textAlign: "left"}}>{" "}</label>
-                  </div>
+                   <div style={{ display: "flex", marginLeft: Styles.vars.spacing.regular }}></div>
 
                   <Label title={"X (m)"}>
                     <Input
                       id={"x_m"}
                       disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('x_m') ? navpose_data.x_m : round(x_m, 2)}
+                      value={this.dirtyFields.has('x_m') ? navpose_msg.x_m : round(x_m, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"x_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"x_m")}
                     />
@@ -699,7 +569,7 @@ class NepiIFNavPose extends Component {
                       id={"y_m"}
                       disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('y_m') ? navpose_data.y_m : round(y_m, 2)}
+                      value={this.dirtyFields.has('y_m') ? navpose_msg.y_m : round(y_m, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"y_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"y_m")}
                     />
@@ -709,7 +579,7 @@ class NepiIFNavPose extends Component {
                       id={"z_m"}
                       disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('z_m') ? navpose_data.z_m : round(z_m, 2)}
+                      value={this.dirtyFields.has('z_m') ? navpose_msg.z_m : round(z_m, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"z_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"z_m")}
                     />
@@ -722,23 +592,64 @@ class NepiIFNavPose extends Component {
                       id={"tilt_deg"}
                       disabled={mk_disabled(has_pan_tilt)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('tilt_deg') ? navpose_data.tilt_deg : round(tilt_deg, 2)}
+                      value={this.dirtyFields.has('tilt_deg') ? navpose_msg.tilt_deg : round(tilt_deg, 2)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"tilt_deg")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"tilt_deg")}
                     />
                   </Label>
 
-                  <div hidden={has_pan_tilt === false}>
-                    <Label title={"Use PT Frame"}>
-                      <Toggle
-                        checked={show_pt_values}
-                        onClick={() => this.setState({ show_pt_values: !show_pt_values })}
-                      />
-                    </Label>
-                  </div>
+
 
                 </Column>
               </Columns>
+
+
+                  <Columns>
+                <Column>
+
+
+                </Column>
+                <Column>
+
+     
+
+
+                </Column>
+              </Columns>
+
+                        <div style={{ display: 'flex' }}>
+                                <div style={{ width: '70%' }}>
+
+                                      { (show_frame_info === true ) ?       
+                                          <Label title={frame_msg}></Label>
+                                      : null}
+
+                                      { (show_source_topic === true ) ?       
+                                            <Label title={source_msg}></Label>
+                                      : null}
+
+
+                                </div>
+
+                                <div style={{ width: '30%' }}>
+
+
+                                        { (has_pan_tilt === true ) ?       
+                                              <Label title={"Use PT Frame"}>
+                                                <Toggle
+                                                  checked={show_pt_values}
+                                                  onClick={() => this.setState({ show_pt_values: !show_pt_values })}
+                                                />
+                                              </Label>
+                                        : null}
+
+                    
+                                </div>
+
+                      </div>
+
+
+
         </React.Fragment>
           )
         }
@@ -780,8 +691,8 @@ class NepiIFNavPose extends Component {
         const save_topic = this.props.save_data_topic !== undefined ? this.props.save_data_topic : save_data_topic
         const show_save = this.props.show_save !== undefined ? this.props.show_save : true
         const show_save_menu = show_save === true && save_topic != null && save_topic !== ''
-
-        if (navposeNamespace == null || navpose_view_restricted === true) {
+        const navpose_msg = (this.props.navpose_msg !== undefined) ? this.props.navpose_msg : null
+        if ((navposeNamespace == null && navpose_msg == null) || navpose_view_restricted === true) {
     
           return(
             <Columns>
@@ -795,11 +706,11 @@ class NepiIFNavPose extends Component {
         else if (make_section === true) {
 
               return (
-                <Section>
-                <Label title={title} />
+                <Section title={title}>
+                
 
-                {this.renderSelection()}
                 {this.renderData()}
+                
                 { (show_config === true) ?
                     this.renderConfigs()
                 : null }
@@ -827,12 +738,27 @@ class NepiIFNavPose extends Component {
                 { (show_line === true) ?
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 : null }
-              <Label title={title} />
 
-              {this.renderSelection()}
-              {this.renderData()}
-              { (show_config === true) ?
-                  this.renderConfigs()
+                {/* <Label title={title} labelStyle={{fontWeight: 'bold'}}/> */}
+                  
+                <Label title={title}/>
+
+                {this.renderData()}
+                
+                { (show_config === true) ?
+                    this.renderConfigs()
+                : null }
+                
+                {(show_save_menu) ?
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                : null }
+                {(show_save_menu) ?
+                
+                  <NepiIFSaveData
+                  saveNamespace={save_topic}
+                  make_section={false}
+                  show_topic_selector={false}
+                />
               : null }
   
               </React.Fragment>

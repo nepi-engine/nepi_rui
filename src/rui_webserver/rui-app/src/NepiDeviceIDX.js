@@ -27,11 +27,16 @@ import Select, { Option } from "./Select"
 
 
 import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFSaveData from "./Nepi_IF_SaveData"
+import NepiIFConnectNavPose from "./Nepi_IF_ConnectNavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
-
+import NepiIFMessages from "./Nepi_IF_Messages"
 
 import NepiDeviceIDXControls from "./NepiDeviceIDX-Controls"
 import NepiIFPointcloudControls from "./Nepi_IF_Pointcloud-Controls"
+
+
+
 
 @inject("ros")
 @observer
@@ -119,8 +124,8 @@ class NepiDeviceIDX extends Component {
 
   createDataProductOptions() {
     const namespace = this.state.namespace ? this.state.namespace : "None"
-    const capabilities = this.props.ros.idxDevices[namespace]
-    const data_products = capabilities ? capabilities.data_products : []
+    const status_msg = this.props.ros.idxDevices[namespace]
+    const data_products = status_msg ? status_msg.data_products : []
 
     var items = []
     var data_product
@@ -259,12 +264,16 @@ class NepiDeviceIDX extends Component {
           <Column equalWidth={false}>
 
 
+
+
             <NepiIFImageViewer
               image_topic={image_topic}
               title={image_text}
               data_product={this.state.data_product}
               hideQualitySelector={false}
               show_topic_selector={false}
+              show_save_config={false}
+              show_save_data={false}
               show_all_config_options={false}
             />
 
@@ -279,10 +288,19 @@ class NepiDeviceIDX extends Component {
     const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
     const data_product = this.state.data_product
-    const capabilities = this.props.ros.idxDevices[namespace]
-    // const node_name = capabilities ? capabilities.device_node_name : 'None'
-    const data_products = (capabilities && capabilities.data_products) ? capabilities.data_products : []
+
+    const status_msg = this.props.ros.idxDevices[namespace]
+
+    const save_data_topic = (status_msg && status_msg.save_data_topic) ? status_msg.save_data_topic : null
+    const settings_topic = (status_msg && status_msg.settings_topic) ? status_msg.settings_topic : null
+    const navpose_connect_topic = (status_msg && status_msg.navpose_connect_topic) ? status_msg.navpose_connect_topic : null
+    const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null
+
+    // const node_name = status_msg ? status_msg.device_node_name : 'None'
+    const data_products = (status_msg && status_msg.data_products) ? status_msg.data_products : []
     const has_pointcloud = (data_products.indexOf('pointcloud') !== -1)
+
+    
 
         return (
 
@@ -299,6 +317,39 @@ class NepiDeviceIDX extends Component {
               {(device_selected === true) ?
               this.renderImageViewer()
               : null}
+
+
+                  {(device_selected === true) ?
+                      <NepiIFSaveData
+                      saveNamespace={save_data_topic}
+                      make_section={true}
+                      show_all_save_options={false}
+                      show_topic_selector={false}
+                    />
+                : null}
+
+                  {(device_selected === true) ?
+                    <NepiIFConnectNavPose
+                    namespace={navpose_connect_topic}
+                    navpose_topic={navpose_topic}
+                    select_title={"NavPose Frame"}
+                    show_selector={true}
+                    show_transform={true}
+                    show_controls={true}
+                    show_data={false}
+                    make_section={true}
+                    />
+                  : null}
+
+
+                  {(device_selected === true) ?
+                    <NepiIFMessages
+                    messagesNamespace={namespace + '/messages'}
+                    hide_control={true}
+                    title={"Messages"}
+                    />
+                  : null}
+
 
               </div>
 
@@ -342,7 +393,7 @@ class NepiDeviceIDX extends Component {
 
                           {(device_selected === true) ?
                           <NepiIFSettings
-                            settingsNamespace={namespace + '/settings'}
+                            settingsNamespace={settings_topic}
                             allways_show_controls={true}
                             title={"Device Settings"}
                         />

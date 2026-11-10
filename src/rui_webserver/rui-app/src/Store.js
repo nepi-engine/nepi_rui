@@ -161,12 +161,15 @@ class ROSConnectionStore {
       this.triggerMask = TRIGGER_MASKS.DEFAULT
 
 
-
+      this.systemAdminRestricted = true
       this.systemAdminEnabled = false
       this.systemAdminPasswordValid = false
       this.systemAdminModeSet = false
 
       this.systemDebugEnabled = false
+      this.systemDebugLevel = 'LOW'
+      this.systemDebugAvailableOptions = []
+      this.systemDebugOptions = []
       this.systemDebugNamespace = 'NONE'
 
       this.managers_list = []
@@ -687,10 +690,9 @@ class ROSConnectionStore {
   @observable deviceSerial = null
   @observable deviceInWater = false
 
-  @observable navPoseTopics = []
-  @observable navPoseCaps = {}
+  //@observable navPoseTopics = []
+  //@observable navPoseCaps = {}
   @observable imageTopics = []
-  @observable imageCaps = {}
   @observable imageTargetTopics = []
   @observable depthMapTopics = []
   @observable depthMapCaps = {}
@@ -845,12 +847,15 @@ class ROSConnectionStore {
   @observable triggerMask = TRIGGER_MASKS.DEFAULT
 
 
-
+  @observable systemAdminRestricted = true
   @observable systemAdminEnabled = false
   @observable systemAdminPasswordValid = false
   @observable systemAdminModeSet = false
 
   @observable systemDebugEnabled = false
+  @observable systemDebugLevel = 'LOW'
+  @observable systemDebugAvailableOptions = []
+  @observable systemDebugOptions = []
   @observable systemDebugNamespace = 'NONE'
 
   @observable managers_list = []
@@ -924,7 +929,7 @@ class ROSConnectionStore {
 
         ///////////////////
         // NEPI Configuration
-
+        this.systemAdminRestricted=message.sys_admin_restricted
         this.systemAdminEnabled=message.sys_admin_enabled
         this.systemAdminPasswordValid=message.sys_admin_password_valid
         this.systemAdminModeSet = message.sys_admin_mode_set
@@ -933,6 +938,9 @@ class ROSConnectionStore {
         this.systemRunModeOptions = message.sys_run_mode_options
         this.systemRunMode = message.sys_run_mode
         this.systemDebugEnabled = message.sys_debug_enabled
+        this.systemDebugLevel = message.sys_debug_level
+        this.systemDebugAvailableOptions = message.sys_debug_available_options
+        this.systemDebugOptions = message.sys_debug_options
         this.systemDebugNamespace = message.sys_debug_namespace
 
 
@@ -1475,36 +1483,25 @@ class ROSConnectionStore {
 
 
 
-  @action.bound
-  async callImageCapabilitiesQueryService(namespace) {
-    const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/ImageCapabilitiesQuery",  
-    })
-    if (response != null){
-    this.imageCaps[namespace] = response
-    }
-  }
+  // @action.bound
+  // async callNavPoseCapabilitiesQueryService(namespace) {
 
-  @action.bound
-  async callNavPoseCapabilitiesQueryService(namespace) {
-
-      const response = await this.callService({
-        name: namespace + "/capabilities_query",
-        messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
-      })
-      if (response != null){
-      this.navPoseCaps[namespace] = response
-      }
-  }
+  //     const response = await this.callService({
+  //       name: namespace + "/status_query",
+  //       messageType: "nepi_interfaces/NavPoseCapabilitiesQuery",  
+  //     })
+  //     if (response != null){
+  //     this.navPoseCaps[namespace] = response
+  //     }
+  // }
   
 
   @action.bound
-  async callIDXCapabilitiesQueryService(namespace) {
+  async callDeviceIDXStatusQueryService(namespace) {
 
     const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/IDXCapabilitiesQuery",  
+      name: namespace + "/status_query",
+      messageType: "nepi_interfaces/DeviceIDXStatusQuery",  
     })
     if (response != null){
     this.idxDevices[namespace] = response.device_status
@@ -1514,11 +1511,11 @@ class ROSConnectionStore {
 
 
   @action.bound
-  async callPTXCapabilitiesQueryService(namespace) {
+  async callDevicePTXStatusQueryService(namespace) {
 
     const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/PTXCapabilitiesQuery",
+      name: namespace + "/status_query",
+      messageType: "nepi_interfaces/DevicePTXStatusQuery",
     })
     if (response != null){
     this.ptxDevices[namespace] = response.device_status
@@ -1529,22 +1526,22 @@ class ROSConnectionStore {
 
 
   @action.bound
-  async callSVXCapabilitiesQueryService(namespace) {
+  async callDeviceSVXStatusQueryService(namespace) {
 
     const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/SVXCapabilitiesQuery",
+      name: namespace + "/status_query",
+      messageType: "nepi_interfaces/DeviceSVXStatusQuery",
     })
     if (response != null){
     this.svxDevices[namespace] = response.device_status
     }
   }
   @action.bound
-  async callLSXCapabilitiesQueryService(namespace) {
+  async callDeviceLSXStatusQueryService(namespace) {
 
     const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/LSXCapabilitiesQuery",
+      name: namespace + "/status_query",
+      messageType: "nepi_interfaces/DeviceLSXStatusQuery",
     })
     if (response != null){
     this.lsxDevices[namespace] = response.device_status
@@ -1554,11 +1551,11 @@ class ROSConnectionStore {
 
 
   @action.bound
-  async callRBXCapabilitiesQueryService(namespace) {
+  async callDeviceRBXStatusQueryService(namespace) {
 
     const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/RBXCapabilitiesQuery",  
+      name: namespace + "/status_query",
+      messageType: "nepi_interfaces/DeviceRBXStatusQuery",  
     })
     if (response != null){
     this.rbxDevices[namespace] = response.device_status
@@ -1567,10 +1564,10 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  async callNPXCapabilitiesQueryService(namespace) {
+  async callDeviceNPSStatusQueryService(namespace) {
     const response = await this.callService({
-      name: namespace + "/capabilities_query",
-      messageType: "nepi_interfaces/NPXCapabilitiesQuery",  
+      name: namespace + "/status_query",
+      messageType: "nepi_interfaces/DeviceNPSStatusQuery",  
     })
     if (response != null){
     this.npxDevices[namespace] = response.device_status
@@ -1718,35 +1715,35 @@ class ROSConnectionStore {
   }
 
 
-  @action.bound
-  updateNavPoseTopics(topics,types) {
-    // Function for updating image topics list
-    var newNavPoseTopics = []
-    if (this.connectedToNepi === true) {
+  // @action.bound
+  // updateNavPoseTopics(topics,types) {
+  //   // Function for updating image topics list
+  //   var newNavPoseTopics = []
+  //   if (this.connectedToNepi === true) {
       
-      for (var i = 0; i < topics.length; i++) {
-        if (types[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
-          newNavPoseTopics.push(topics[i])
-        }
-      }
+  //     for (var i = 0; i < topics.length; i++) {
+  //       if (types[i] === "nepi_interfaces/NavPose" && topics[i].indexOf("zed_node") === -1) {
+  //         newNavPoseTopics.push(topics[i])
+  //       }
+  //     }
 
-      // sort the image topics for comparison to work
-      newNavPoseTopics.sort()  
-    }  
-    else {
-      newNavPoseTopics = []
-    }
-    if (!this.navposeTopics.equals(newNavPoseTopics)) {
-      this.navposeTopics = newNavPoseTopics
-      for (var i2 = 0; i < newNavPoseTopics.length; i2++) {
-            this.callNavPoseCapabilitiesQueryService(newNavPoseTopics[i2])
-          }
-      return true
-    } else {
-      return false
-    }
+  //     // sort the image topics for comparison to work
+  //     newNavPoseTopics.sort()  
+  //   }  
+  //   else {
+  //     newNavPoseTopics = []
+  //   }
+  //   if (!this.navposeTopics.equals(newNavPoseTopics)) {
+  //     this.navposeTopics = newNavPoseTopics
+  //     for (var i2 = 0; i < newNavPoseTopics.length; i2++) {
+  //           this.callNavPoseCapabilitiesQueryService(newNavPoseTopics[i2])
+  //         }
+  //     return true
+  //   } else {
+  //     return false
+  //   }
 
-  }
+  // }
 
   @action.bound
   updateImageTopics(topics,types) {
@@ -1784,9 +1781,6 @@ class ROSConnectionStore {
       if (!this.imageTopics.equals(newImageTopics)) {
         this.imageTopics = newImageTopics
         this.imageTargetTopics = newImageTargetTopics
-        for (var i2 = 0; i2 < newImageTopics.length; i2++) {
-              this.callImageCapabilitiesQueryService(newImageTopics[i2])
-            }
         return true
       } else {
         return false
@@ -1832,7 +1826,7 @@ class ROSConnectionStore {
       if (topics[i].endsWith("/idx/status")) {
         const idx_device_namespace = topics[i].replace("/status","")
         if (!(devices_detected.includes(idx_device_namespace))) {
-          this.callIDXCapabilitiesQueryService(idx_device_namespace) // Testing
+          this.callDeviceIDXStatusQueryService(idx_device_namespace) // Testing
           const idxDevices = this.idxDevices[idx_device_namespace]
           if (idxDevices) { // Testing
             devices_detected.push(idx_device_namespace)
@@ -1861,7 +1855,7 @@ class ROSConnectionStore {
       if (topics[i].endsWith("/ptx/status")) {
         const ptx_device_namespace = topics[i].replace("/status","")
         if (!(ptx_devices_detected.includes(ptx_device_namespace))) {
-          this.callPTXCapabilitiesQueryService(ptx_device_namespace)
+          this.callDevicePTXStatusQueryService(ptx_device_namespace)
           const ptxUnit = this.ptxDevices[ptx_device_namespace]
           if (ptxUnit)
           {
@@ -1892,7 +1886,7 @@ class ROSConnectionStore {
       if (topics[i].endsWith("/svx/status")) {
         const svx_device_namespace = topics[i].replace("/status","")
         if (!(svx_devices_detected.includes(svx_device_namespace))) {
-          this.callSVXCapabilitiesQueryService(svx_device_namespace)
+          this.callDeviceSVXStatusQueryService(svx_device_namespace)
           const svxUnit = this.svxDevices[svx_device_namespace]
           if (svxUnit)
           {
@@ -1923,7 +1917,7 @@ class ROSConnectionStore {
       if (topics[i].endsWith("/lsx/status")) {
         const lsx_device_namespace = topics[i].replace("/status","")
         if (!(lsx_devices_detected.includes(lsx_device_namespace))) {
-          this.callLSXCapabilitiesQueryService(lsx_device_namespace)
+          this.callDeviceLSXStatusQueryService(lsx_device_namespace)
           const lsxDevices = this.lsxDevices[lsx_device_namespace]
           if (lsxDevices)
           {
@@ -1953,7 +1947,7 @@ class ROSConnectionStore {
       if (topics[i].endsWith("/rbx/status")) {
         const rbx_device_namespace = topics[i].replace("/status","")
         if (!(devices_detected.includes(rbx_device_namespace))) {
-          this.callRBXCapabilitiesQueryService(rbx_device_namespace)
+          this.callDeviceRBXStatusQueryService(rbx_device_namespace)
           const rbxDevice = this.rbxDevices[rbx_device_namespace]
           if (rbxDevice) {
             devices_detected.push(rbx_device_namespace)
@@ -1982,7 +1976,7 @@ class ROSConnectionStore {
       if (topics[i].endsWith("/npx/status")) {
         const npx_device_namespace = topics[i].replace("/status","")
         if (!(devices_detected.includes(npx_device_namespace))) {
-          this.callNPXCapabilitiesQueryService(npx_device_namespace) // Testing
+          this.callDeviceNPSStatusQueryService(npx_device_namespace) // Testing
           const npxSensor = this.npxDevices[npx_device_namespace]
           if (npxSensor) { // Testing
             devices_detected.push(npx_device_namespace)
@@ -2897,17 +2891,39 @@ class ROSConnectionStore {
   }
 
   @action.bound
-  sendMotorControlMsg(namespace, motor_ind, speed_ratio) {
+  sendServoAxisControlMsg(namespace, direction = -999,
+                          spin_direction = -999,
+                          speed_ratio = -999,
+                          speed_dps = -999,
+                          position_deg = -999,
+                          position_ratio = -999,
+                          jog_time = -999,
+                          jog_direction = -999,
+                          jog_speed = -999,
+                          min_limit_deg = -999,
+                          max_limit_deg = -999
+    ) {
     this.publishMessage({
       name: namespace,
-      messageType: "nepi_interfaces/MotorControl",
+      messageType: "nepi_interfaces/ServoAxisControl",
       data: {
-        motor_ind: motor_ind,
-        speed_ratio: speed_ratio
+          spin_direction: -999,
+          speed_ratio: -999,
+          speed_dps: -999,
+          position_deg: -999,
+          position_ratio: -999,
+          jog_time: -999,
+          jog_direction: -999,
+          jog_speed: -999,
+          min_limit_deg: -999,
+          max_limit_deg: -999
       },
       noPrefix: true
     })
   }
+
+
+
 
   @action.bound
   sendImagePixelMsg(namespace,x,y,r,g,b,a) {
@@ -3361,7 +3377,7 @@ sendSaveConfigTrigger(namespace) {
 
 
     // Publish a plain nepi_interfaces/Transform directly to a device's
-    // Transform3DIF set topic (e.g. <transform_topic>/set_3d_transform).
+    // TransfromIF set topic (e.g. <transform_topic>/set_3d_transform).
     @action.bound
     sendTransformMsg(namespace, transform_msg) {
         this.publishMessage({

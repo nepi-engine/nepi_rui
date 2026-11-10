@@ -49,7 +49,7 @@ class NepiIFTransform extends Component {
 
       transformNamespace: 'None',
       status_msg: null,
-      data_msg: null,
+      transform_msg: null,
 
       transform_data: null,
       transform_data_copy: null,
@@ -78,6 +78,9 @@ class NepiIFTransform extends Component {
     this.onChangeSourceFrame = this.onChangeSourceFrame.bind(this)
 
     this.renderTransform = this.renderTransform.bind(this)
+    this.renderOffsets = this.renderOffsets.bind(this)
+
+    this.updateTransformData = this.updateTransformData(this)
 
     this.updateListener = this.updateListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
@@ -85,12 +88,82 @@ class NepiIFTransform extends Component {
 
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
-    const last_transform_data = this.state.transform_data
+    
+    this.update_transform_data(message)
+
     this.setState({
-      data_msg: message,
-      source_ref_description: message.source_ref_description,
-      end_ref_description: message.end_ref_description
+      transform_msg: message,
     })
+
+  }
+
+
+
+  // Function for configuring and subscribing to StatusIDX
+  updateListener(transformNamespace) {
+    if (this.state.listener != null) {
+      this.state.listener.unsubscribe()
+      this.setState({listener: null, 
+                    transform_msg: null, 
+                    transform_data: null,
+                    transform_data_copy: null,
+                    connected: false})
+    }
+    if (transformNamespace !== 'None' && transformNamespace != null){
+      var listener = this.props.ros.setupTransformListener(
+        transformNamespace,
+        this.statusListener
+      )
+      this.setState({ listener: listener, disabled: false })
+    }
+
+  }
+
+
+
+  // Lifecycle method called when compnent updates.
+  // Used to track changes in the topic
+  componentDidUpdate(prevProps, prevState, snapshot) {
+
+    const transform_msg = (this.props.transform_msg !== undefined) ? this.props.transform_msg : null
+
+    const transformNamespace = (this.props.transformNamespace !== undefined && this.props.transformNamespace !== '' && this.props.transformNamespace !== 'None' && this.props.transformNamespace !== null) ? 
+                             this.props.transformNamespace : this.state.transformNamespace
+    if (this.state.transformNamespace !== transformNamespace){
+        this.setState({
+          transformNamespace: transformNamespace,
+        })
+
+        if (transform_msg == null){
+          this.updateListener(transformNamespace)
+        } 
+    } 
+    if (transform_msg != null) {
+      this.updateTransformData(transform_msg)
+    }
+  }
+
+
+
+  componentDidMount(){
+    this.setState({needs_update: true})
+  }
+
+  // Lifecycle method called just before the component umounts.
+  // Used to unsubscribe to StatusIDX message
+  componentWillUnmount() {
+    if (this.state.listener) {
+      this.state.listener.unsubscribe()
+    }
+  }
+
+
+
+
+
+  updateTransformData(message){
+    const last_transform_data = this.state.transform_data
+
 
     const transform_data = {
       source_ref_description: message.source_ref_description,
@@ -134,58 +207,8 @@ class NepiIFTransform extends Component {
       })
     }
 
-  }
-
-  // Function for configuring and subscribing to StatusIDX
-  updateListener(transformNamespace) {
-    if (this.state.listener != null) {
-      this.state.listener.unsubscribe()
-      this.setState({listener: null, 
-                    data_msg: null, 
-                    transform_data: null,
-                    transform_data_copy: null,
-                    connected: false})
-    }
-    if (transformNamespace !== 'None' && transformNamespace != null){
-      this.setState({ transformNamespace: transformNamespace  })
-      var listener = this.props.ros.setupTransformListener(
-        transformNamespace,
-        this.statusListener
-      )
-      this.setState({ listener: listener, disabled: false })
-    }
 
   }
-
-
-
-  // Lifecycle method called when compnent updates.
-  // Used to track changes in the topic
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    const transformNamespace = this.props.transformNamespace
-    if (transformNamespace !== this.state.transformNamespace) {
-      this.updateListener(transformNamespace)
-    }
-  }
-
-
-
-  componentDidMount(){
-    this.setState({needs_update: true})
-  }
-
-  // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to StatusIDX message
-  componentWillUnmount() {
-    if (this.state.listener) {
-      this.state.listener.unsubscribe()
-    }
-  }
-
-
-
-
-
 
 
   sendTransformUpdateMessage(transform_data){
@@ -194,7 +217,7 @@ class NepiIFTransform extends Component {
     if (transform_data == null) {
       return
     }
-    // Device (Transform3DIF) mode: publish a plain Transform to set_3d_transform
+    // Device (TransfromIF) mode: publish a plain Transform to set_3d_transform
     if (this.props.device_transform === true) {
       const setNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : transformNamespace + "/set_3d_transform"
       sendTransformMsg(setNamespace, transform_data)
@@ -283,16 +306,17 @@ class NepiIFTransform extends Component {
 
     }
     else {
-      const allow_updates = (this.props.allow_updates !== undefined)? this.props.allow_updates : true
+      const read_only = (this.props.read_only !== undefined)? this.props.read_only : false
 
       const { userRestricted} = this.props.ros
       const transform_control_restricted = userRestricted.indexOf('SYSTEM-TRANSFORM_CONTROL') !== -1
 
-      const disabled = transform_control_restricted === true && allow_updates === true
+      const disabled = transform_control_restricted === true && read_only === true
 
       const show_frame_select = (this.props.show_frame_select !== undefined) ? this.props.show_frame_select : false
       const expanded = this.state.expanded !== false
 
+      const show_offsets = (this.props.show_offsets !== undefined) ? this.props.show_offsets : false
       const msg = ("Source Desc: " + transform_data.source_ref_description +
       "   End Desc: " + transform_data.end_ref_description)
 
@@ -374,10 +398,48 @@ class NepiIFTransform extends Component {
             </div>
             : null }
 
+
+        {/* { (show_offsets === true) ? this.renderOffsets() : null} */}
+
         </React.Fragment>
       )
     }
   }
+
+
+
+
+  renderOffsets() {
+    const transform_data = this.props.transform_data !== undefined ? this.props.transform_data : ((this.state.transform_data != null) ? this.state.transform_data : null)
+
+
+    if (transform_data == null) {
+
+      return(
+        <Columns>
+          <Column>
+
+          </Column>
+        </Columns>
+      )
+
+    }
+    else {
+
+
+      return (
+        <React.Fragment>
+
+            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
+            {'Transform Offsets'}
+            </label>
+
+        </React.Fragment>
+      )
+    }
+  }
+
+
 
   renderConfigs(){
     const configNamespace = this.state.configNamespace ? this.state.configNamespace : this.state.transformNamespace

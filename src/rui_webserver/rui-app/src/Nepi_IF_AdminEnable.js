@@ -173,8 +173,8 @@ class NepiIFAdminEnable extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
     const show_line = (this.props.show_line !== undefined)? this.props.show_line : true
     const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM ADMIN ENABLE"
-
-    if (base_namespace == null){
+    const admin_restricted = this.props.ros.systemAdminRestricted
+    if (base_namespace == null || admin_restricted === false){
       return (
   
         <Columns>

@@ -655,3 +655,201 @@ export function clearElementStyleModified(e) {
 }
 
 
+///////////////////////////////////////////////
+// DICT FUNCTIONS
+///////////////////////////////////////////////
+
+////////////////////////////////////
+// Values Dict
+////////////////////////////////////
+// key_names[i] names entries[i], as in nepi_dict.convert_values_msg2dict
+export function get_value_from_dict_msg(dict_msg, key, fallback = null) {
+  var values_list = null
+  var dict_entry = null
+  for (var i = 0; i < dict_msg.key_names.length; i++) {
+    if (dict_msg.key_names[i] === key){
+        dict_entry = dict_msg.entries[i]
+        break
+    }
+  }
+  if (dict_entry == null){ return fallback}
+
+  const msg_type = dict_entry.type
+  const msg_values = dict_entry.values
+  const is_list = dict_entry.is_list
+
+  if (msg_type === 'Strings'){
+    values_list = msg_values
+  }
+  else if (msg_type === 'Bools'){
+    values_list = msg_values.map(item => item === 'True')
+  }
+  else if (msg_type === 'Ints'){
+    values_list = msg_values.map(item => parseInt(item, 10))
+  }
+  else if (msg_type === 'Floats'){
+    values_list = msg_values.map(item => parseFloat(item))
+  }
+
+  if (values_list == null) { return fallback }
+
+  if (values_list.length === 0) { return fallback }
+
+  if (values_list.length === 1 && is_list !== true) { return values_list[0] }
+
+  return values_list
+
+}
+
+
+export function get_dict_from_dict_msg(dict_msg) {
+  var output_dict = {}
+  var dict_key
+  var dict_value
+  for (var i = 0; i < dict_msg.key_names.length; i++) {
+    dict_key = dict_msg.key_names[i]
+    dict_value = get_value_from_dict_msg(dict_msg, dict_key)
+    if (dict_value != null){
+      output_dict[dict_key] = dict_value
+    }
+  }
+
+  return output_dict
+}
+
+
+export function get_lists_from_dict_msg(dict_msg) {
+  var key_list = []
+  var values_list = []
+  var dict_key
+  var dict_value
+  for (var i = 0; i < dict_msg.key_names.length; i++) {
+    dict_key = dict_msg.key_names[i]
+    dict_value = get_value_from_dict_msg(dict_msg, dict_key)
+    if (dict_value != null){
+      key_list.push(dict_key)
+      values_list.push(dict_value)
+    }
+  }
+
+  return [key_list, values_list]
+}
+
+
+
+////////////////////////////////////
+// Topic Dict
+////////////////////////////////////
+
+// Matched on key_names, not entries[i].name: a topic entry's name can
+// differ from its dict key (nepi_dict.convert_topic_dict2msg)
+export function get_topic_from_topics_msg(topics_msg, key) {
+
+  var dict_entry = null
+  for (var i = 0; i < topics_msg.key_names.length; i++) {
+    if (topics_msg.key_names[i] === key){
+        dict_entry = topics_msg.entries[i]
+        break
+    }
+  }
+  if (dict_entry == null){ return ''}
+
+  return dict_entry.topic
+
+}
+
+export function get_status_msg_from_topics_msg(topics_msg, key) {
+
+  var dict_entry = null
+  for (var i = 0; i < topics_msg.key_names.length; i++) {
+    if (topics_msg.key_names[i] === key){
+        dict_entry = topics_msg.entries[i]
+        break
+    }
+  }
+  if (dict_entry == null){ return ''}
+
+  return dict_entry.status_msg_type
+
+}
+
+
+export function get_data_msg_from_topics_msg(topics_msg, key) {
+
+  var dict_entry = null
+  for (var i = 0; i < topics_msg.key_names.length; i++) {
+    if (topics_msg.key_names[i] === key){
+        dict_entry = topics_msg.entries[i]
+        break
+    }
+  }
+  if (dict_entry == null){ return ''}
+
+  return dict_entry.data_msg_type
+
+}
+
+export function get_connected_from_topics_msg(topics_msg, key) {
+
+  var dict_entry = null
+  for (var i = 0; i < topics_msg.key_names.length; i++) {
+    if (topics_msg.key_names[i] === key){
+        dict_entry = topics_msg.entries[i]
+        break
+    }
+  }
+  if (dict_entry == null){ return false}
+
+  return dict_entry.connected
+
+}
+
+
+
+// ////////////////////////////////////
+// // Control Group Dict
+// ////////////////////////////////////
+// export function get_control_topic_from_group_msg(group_msg, key) {
+
+//   var dict_entry = null
+//   for (i = 0; i < group_msg.entries.length; i++) {
+//     if (group_msg[i] === key){
+//         dict_entry = group_msg[i]
+//         break
+//     }
+//   }
+//   if (dict_entry == null){ return ''}
+
+//   return dict_entry.control_topic
+
+// }
+
+// export function get_data_topic_from_group_msg(group_msg, key) {
+
+//   var dict_entry = null
+//   for (i = 0; i < group_msg.entries.length; i++) {
+//         dict_entry = group_msg[i]
+//         break
+//     }
+//   }
+//   if (dict_entry == null){ return ''}
+
+//   return dict_entry.data_topic
+
+// }
+
+// export function get_value_dict_from_group_msg(group_msg, key) {
+
+//   var dict_entry = null
+//   for (i = 0; i < group_msg.entries.length; i++) {
+//     if (group_msg[i] === key){
+//         dict_entry = group_msg[i]
+//         break
+//     }
+//   }
+//   if (dict_entry == null){ return ''}
+
+  
+//   return get_dict_from_dict_msg(dict_entry.value_dict)
+
+// }

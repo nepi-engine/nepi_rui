@@ -430,8 +430,7 @@ class NepiIFConnectTargets extends Component {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const title = (this.props.title !== undefined) ? this.props.title : "Targets Connect"
 
-    // No connect status yet: render nothing (empty Columns/Column), matching
-    // the Nepi_IF_ConnectMotor "not ready" branch.
+
     if (connect_status_msg == null) {
       return (
         <Columns>

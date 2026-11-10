@@ -181,7 +181,7 @@ class NepiIFSaveData extends Component {
       this.setState({saveStatusListener: null, 
                     status_msg: null})
     }
-    if (saveNamespace !== '' &&  saveNamespace !== 'None'){
+    if (saveNamespace !== '' && saveNamespace !== 'None' && saveNamespace !== '/save_data'){
       var saveStatusListener = this.props.ros.setupSaveDataStatusListener(
             saveNamespace,
             this.saveStatusListener
@@ -1112,9 +1112,9 @@ class NepiIFSaveData extends Component {
     const saveNamespace = this.state.saveNamespace
     const { userRestricted} = this.props.ros
     const save_view_restricted = userRestricted.indexOf('SYSTEM-SAVE-VIEW') !== -1
+    const status_msg = this.state.status_msg
 
-
-    if (saveNamespace === 'None' || save_view_restricted === true){
+    if (saveNamespace === 'None' || save_view_restricted === true || status_msg == null){
       return (
         <Columns>
         <Column>

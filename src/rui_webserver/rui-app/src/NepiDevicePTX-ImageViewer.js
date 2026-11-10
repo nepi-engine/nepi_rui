@@ -176,7 +176,8 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               <NepiIFImageViewersSelector
                 
                 hideQualitySelector={true}
-                show_save_controls={show_save_controls}
+                show_save_config={show_save_controls}
+                show_save_data={show_save_controls}
                 show_image_controls={show_image_controls}
                 mouse_event_topic={mouse_event_topic}
               />
@@ -184,7 +185,8 @@ componentDidUpdate(prevProps, prevState, snapshot) {
                   <NepiIFImageViewerSelector
                     id={'ptxImageViewer'}
                     hideQualitySelector={true}
-                    show_save_controls={show_save_controls}
+                    show_save_config={show_save_controls}
+                    show_save_data={show_save_controls}
                     show_image_controls={show_image_controls}
                     mouse_event_topic={mouse_event_topic}
 

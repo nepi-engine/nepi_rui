@@ -29,8 +29,11 @@ import Label from "./Label"
 import AsyncToggle from "./AsyncToggle"
 import Styles from "./Styles"
 
+
+import NepiIFSaveData from "./Nepi_IF_SaveData"
+import NepiIFConnectNavPose from "./Nepi_IF_ConnectNavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
-import NepiIFAdmin from "./Nepi_IF_Admin"
+import NepiIFMessages from "./Nepi_IF_Messages"
 
 
 import NepiDeviceSVXControls from "./NepiDeviceSVX-Controls"
@@ -51,6 +54,9 @@ class NepiDeviceSVX extends Component {
       // Every discovered servo's servo_connected flag, by namespace. The selector
       // lists only servos marked connected unless show_all_channels is on.
       connected_dict: {},
+      // Every discovered servo's has_connected_control. False for a driver that
+      // declares its servos always connected (a fixed pan-tilt): no toggle shown.
+      connect_control_dict: {},
       show_all_channels: false,
 
     }
@@ -74,7 +80,7 @@ class NepiDeviceSVX extends Component {
    }
 
 
-  // The SVX capabilities query does not carry servo_connected (it is runtime
+  // The SVX status_msg query does not carry servo_connected (it is runtime
   // config, not a capability), so read it from each servo's own status topic.
   updateConnectedListeners() {
     const topics = Object.keys(this.props.ros.svxDevices)
@@ -96,11 +102,13 @@ class NepiDeviceSVX extends Component {
           listeners[svx_namespace].unsubscribe()
         }
         delete listeners[svx_namespace]
-        if (svx_namespace in this.state.connected_dict) {
+        if (svx_namespace in this.state.connected_dict || svx_namespace in this.state.connect_control_dict) {
           this.setState((prevState) => {
             const connected_dict = Object.assign({}, prevState.connected_dict)
             delete connected_dict[svx_namespace]
-            return { connected_dict: connected_dict }
+            const connect_control_dict = Object.assign({}, prevState.connect_control_dict)
+            delete connect_control_dict[svx_namespace]
+            return { connected_dict: connected_dict, connect_control_dict: connect_control_dict }
           })
         }
       }
@@ -109,10 +117,17 @@ class NepiDeviceSVX extends Component {
 
   // Status arrives at the servo's status rate, so only touch state on a change.
   onConnectedStatus(svx_namespace, message) {
-    const connected = (message.servo_connected === true)
+    // RC1 DeviceSVXStatus reports servo connected in its 'connected' field
+    const connected = (message.connected === true)
+    const connect_control = (message.has_connected_control !== false)
     if (this.state.connected_dict[svx_namespace] !== connected) {
       this.setState((prevState) => ({
         connected_dict: Object.assign({}, prevState.connected_dict, { [svx_namespace]: connected })
+      }))
+    }
+    if (this.state.connect_control_dict[svx_namespace] !== connect_control) {
+      this.setState((prevState) => ({
+        connect_control_dict: Object.assign({}, prevState.connect_control_dict, { [svx_namespace]: connect_control })
       }))
     }
   }
@@ -196,6 +211,7 @@ class NepiDeviceSVX extends Component {
     const namespace = this.state.namespace ? this.state.namespace : "None"
     const device_selected = (namespace !== 'None')
     const servo_connected = (this.state.connected_dict[namespace] === true)
+    const has_connected_control = (this.state.connect_control_dict[namespace] !== false)
     const topics = Object.keys(this.props.ros.svxDevices)
     const connected_count = topics.filter((topic) => this.state.connected_dict[topic] === true).length
     const show_hint = (topics.length > 0 && connected_count === 0 && this.state.show_all_channels === false)
@@ -236,7 +252,7 @@ class NepiDeviceSVX extends Component {
             </div>
           : null}
 
-          {(device_selected === true) ?
+          {(device_selected === true && has_connected_control === true) ?
             <Columns>
             <Column>
 
@@ -282,9 +298,12 @@ class NepiDeviceSVX extends Component {
  render() {
     const device_selected = (this.state.namespace !== null && this.state.namespace !== 'None')
     const namespace = (this.state.namespace !== null) ? this.state.namespace : 'None'
-    const capabilities = this.props.ros.svxDevices[namespace]
-    const node_name = capabilities ? capabilities.device_node_name : 'None'
-    
+    const status_msg = this.props.ros.svxDevices[namespace]
+
+    const save_data_topic = (status_msg && status_msg.save_data_topic) ? status_msg.save_data_topic : null
+    const settings_topic = (status_msg && status_msg.settings_topic) ? status_msg.settings_topic : null
+    const navpose_connect_topic = (status_msg && status_msg.connect_navpose_topic) ? status_msg.connect_navpose_topic : null
+    const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null  
         return (
 
           <Columns>
@@ -300,6 +319,38 @@ class NepiDeviceSVX extends Component {
               {(device_selected === true) ?
               this.renderImageViewer()
               : null}
+
+
+                  {(device_selected === true) ?
+                      <NepiIFSaveData
+                      saveNamespace={save_data_topic}
+                      make_section={true}
+                      show_all_save_options={false}
+                      show_topic_selector={false}
+                    />
+                : null}
+
+                  {(device_selected === true) ?
+                    <NepiIFConnectNavPose
+                    namespace={navpose_connect_topic}
+                    navpose_topic={navpose_topic}
+                    select_title={"NavPose Frame"}
+                    show_selector={true}
+                    show_transform={true}
+                    show_controls={true}
+                    show_data={false}
+                    make_section={true}
+                    />
+                  : null}
+
+
+                  {(device_selected === true) ?
+                    <NepiIFMessages
+                    messagesNamespace={namespace + '/messages'}
+                    hide_control={true}
+                    title={"Messages"}
+                    />
+                  : null}
 
               </div>
 
@@ -328,41 +379,15 @@ class NepiDeviceSVX extends Component {
                     </Section>
 
                       {(device_selected === true) ?
-                      <NepiIFSettings
-                        settingsNamespace={
-                          // SettingsIF honors the device namespace it is handed, so the
-                          // servo's settings live under this device's svx namespace at
-                          // <node>/svx/settings (confirmed on-device: settings_topic =
-                          // /nepi/.../maestro_..._ch0/svx/settings).
-                          //
-                          // This used to prefer capabilities.settings_topic, but back then
-                          // `capabilities` was the flat SVXCapabilitiesQuery response, which
-                          // had no settings_topic field. The lookup was always undefined and
-                          // always fell through, so the derived path is the only one that has
-                          // ever been used. `capabilities` is now the DeviceSVXStatus the query
-                          // carries, but the derived path stays as the one proven on device.
-                          namespace + '/settings'
-                        }
-                        // Was allways_show_settings, a prop Nepi_IF_Settings does not read
-                        // -- so the intent (settings always open, no Show toggle) never
-                        // took effect. The prop is allways_show_controls.
-                        allways_show_controls={true}
-                        make_section={true}
-                        title={"Device Settings"}
-                    />
+                          <NepiIFSettings
+                            settingsNamespace={settings_topic}
+                            allways_show_controls={true}
+                            title={"Device Settings"}
+                        />
                     : null}
 
 
 
-                    {(device_selected === true) ?
-                      <NepiIFAdmin
-                          title={"Advanced Settings"}
-                          show_advanced_option={true}
-                          show_admin_device_names={true}
-                          node_name={node_name}
-                          make_section={true}
-                    />
-                    : null}
 
               </div>
 

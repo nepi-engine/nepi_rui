@@ -29,7 +29,6 @@ import Styles from "./Styles"
 
 import NepiIFAdminDebug from "./Nepi_IF_AdminDebug"
 
-
 @inject("ros")
 @observer
 class NepiIFAdminModes extends Component {
@@ -43,8 +42,8 @@ class NepiIFAdminModes extends Component {
 
     this.getBaseNamespace = this.getBaseNamespace.bind(this)
     this.sendModeSelection = this.sendModeSelection.bind(this)
-    this.renderAdminModes = this.renderAdminModes.bind(this)
-
+    this.renderDebugModes = this.renderDebugModes.bind(this)
+    this.renderRunModes = this.renderRunModes.bind(this)
   }
 
   getBaseNamespace(){
@@ -65,14 +64,71 @@ class NepiIFAdminModes extends Component {
 
 
 
-  renderAdminModes() {
+
+  renderDebugModes() {
+  const base_namespace = this.getBaseNamespace()
+
+
+  const debug_mode = this.props.ros.systemDebugEnabled
+
+ return (
+
+
+      <React.Fragment>
+
+
+                <div style={{ display: 'flex' }}>
+                        <div style={{ width: '40%' }} >
+ 
+                             <Label title="Debug Mode">
+                                    <AsyncToggle
+                                    checked={debug_mode === true}
+                                    onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/set_debug_enable", !debug_mode)}>
+                                  </AsyncToggle>
+                              </Label>
+
+                        </div>
+
+
+                        <div style={{ width: '20%' }}>
+                        </div>
+
+            
+                        <div style={{ width: '40%' }}>
+
+                            
+
+                        </div>
+
+                  </div>
+
+
+
+                    {                        
+                      <NepiIFAdminDebug
+                        make_section={false}
+                        />    
+                    }
+
+
+
+      </React.Fragment>
+
+
+
+    )
+
+   
+  }
+
+
+  renderRunModes() {
     const base_namespace = this.getBaseNamespace()
     const run_mode = this.props.ros.systemRunMode
-
     const develop_mode = run_mode === 'develop'
     const deploy_mode = run_mode === 'deploy'
 
-    const debug_mode = this.props.ros.systemDebugEnabled
+
     return (
 
 
@@ -80,7 +136,7 @@ class NepiIFAdminModes extends Component {
 
 
                 <div style={{ display: 'flex' }}>
-                        <div style={{ width: '25%' }} >
+                        <div style={{ width: '40%' }} >
  
                                 <Label title="Develop Mode">
                                       <AsyncToggle
@@ -93,11 +149,11 @@ class NepiIFAdminModes extends Component {
                         </div>
 
 
-                        <div style={{ width: '5%' }}>
+                        <div style={{ width: '20%' }}>
                         </div>
 
             
-                        <div style={{ width: '25%' }}>
+                        <div style={{ width: '40%' }}>
 
                               <Label title="Deploy Mode">
                                     <AsyncToggle
@@ -110,31 +166,7 @@ class NepiIFAdminModes extends Component {
                         </div>
 
 
-                        <div style={{ width: '5%' }}>
-                        </div>
-
-                        <div style={{ width: '25%' }} >
-
-                              <Label title="Debug Mode">
-                                    <AsyncToggle
-                                    checked={debug_mode === true}
-                                    onClick={() => this.props.ros.sendBoolMsg(base_namespace + "/set_debug_enable", !debug_mode)}>
-                                  </AsyncToggle>
-                              </Label>
-
-                        </div>
-
                   </div>
-
-
-
-                  {                        
-                      <NepiIFAdminDebug
-                        make_section={false}
-                        />    
-                    }
-
-
 
 
 
@@ -149,11 +181,10 @@ class NepiIFAdminModes extends Component {
 
   render() {
     const base_namespace = this.getBaseNamespace()
-    const admin_mode_set = this.props.ros.systemAdminModeSet
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
-    const title = (this.props.title !== undefined) ? this.props.title : "SYSTEM RUN MODES"
-
-    if (base_namespace == null || admin_mode_set === false){
+    const title = (this.props.title !== undefined) ? this.props.title : "DEBUG MODES"
+    const admin_mode_set = this.props.ros.systemAdminModeSet
+    if (base_namespace == null){
       return (
   
         <Columns>
@@ -170,9 +201,11 @@ class NepiIFAdminModes extends Component {
 
           <React.Fragment>
 
+
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Label title={title} />
-                  {this.renderAdminModes()}
+                  {this.renderDebugModes()}
+                  {(admin_mode_set === true) ? this.renderRunModes : null}
 
           </React.Fragment>
       )
@@ -182,7 +215,8 @@ class NepiIFAdminModes extends Component {
 
           <Section title={title}>
 
-              {this.renderAdminModes()}
+                  {this.renderDebugModes()}
+                  {(admin_mode_set === true) ? this.renderRunModes : null}
 
         </Section>
      )

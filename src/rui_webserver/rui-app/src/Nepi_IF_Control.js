@@ -363,7 +363,7 @@ class Nepi_IF_Control extends Component {
       const { sendUpdateControlValue } = this.props.ros
       const name = control_msg.name
       const control_type =  control_msg.type
-      const display_label = control_msg.display_labels[control_index]
+      const display_label = control_msg.value_names[control_index]
       // Control.display_width: pixel width for this control's input widget.
       // 0 or absent -- every control that predates the field -- keeps the
       // "100%" the inputs have always used, so ungrouped layouts are unchanged.
@@ -609,8 +609,8 @@ class Nepi_IF_Control extends Component {
       const control_type =  control_msg.type
       const display_name = (control_msg.display_name && control_msg.display_name !== '') ? control_msg.display_name : name
       // True when there IS a name to show; the consumer below hides on false.
-      const display_labels = control_msg.display_labels
-      const show_header_label = display_name !== '' && display_name !== 'None' && display_labels.length > 1
+      const value_names = control_msg.value_names
+      const show_header_label = display_name !== '' && display_name !== 'None' && value_names.length > 1
       // Control.msg spells these display_hidden / display_disabled. Read under
       // the old names both were undefined, so nothing ever hid or disabled --
       // and show_bounds, which gates on control_disabled === false, never
@@ -627,6 +627,8 @@ class Nepi_IF_Control extends Component {
 
       const min_bound = control_msg.min_bound
       const max_bound = control_msg.max_bound
+      const delta_bound = control_msg.delta_bound      
+      const dir_bound = control_msg.dir_bound
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : control_msg.display_bounds)
       const values = this.getControlValue()
       const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
@@ -747,9 +749,17 @@ class Nepi_IF_Control extends Component {
       // spelling driver params yaml files use for the same named option list,
       // so it renders through this same branch. 
       else if (control_type === "Selection") {
+        const has_auto_select = max_bound === 1
+        const auto_select_enabled = delta_bound !== -999
+        const show_auto_select = display_options.indexOf('hide_auto_select') === -1
+        const last_auto_value = dir_bound
+        const auto_toggle_value = (auto_select_enabled === true) ? -999 : last_auto_value
         const value = values[0]
         return (
           <Label title={display_name} key={name}>
+
+
+
             <Select
               disabled={control_disabled}
               id={'csbx_' + name}
@@ -764,6 +774,13 @@ class Nepi_IF_Control extends Component {
 
     
       else if (control_type === "Selections") {
+
+        const has_auto_select = max_bound === 1
+        const auto_select_enabled = delta_bound !== -999
+        const show_auto_select = display_options.indexOf('hide_auto_select') === -1
+        const current_auto_count = (delta_bound < 0) ? 'ALL' : delta_bound
+        const last_auto_count = dir_bound
+        const auto_toggle_value = (auto_select_enabled === true) ? -999 : last_auto_count
         // "None" and "All" are actions, not selectable options: they are never
         // highlighted and are never sent as values -- they resolve to [] and to
         // the full option list respectively. Mixed case, and the collapsed
@@ -829,7 +846,7 @@ class Nepi_IF_Control extends Component {
 
 
       // // INTSLIDERS -- a multi-select: each option gets its own int slider. 
-      // // names come from the display_labels list. On every toggle
+      // // names come from the value_names list. On every toggle
       // // we send the complete desired selection (declarative), not a single delta.
       // else if (control_type === "IntSliders") {
       //   const value = values[0]
@@ -842,7 +859,7 @@ class Nepi_IF_Control extends Component {
       //     </div>
       //             {(display_row === true) ?
       //               <Columns>
-      //                 {display_labels.map((slider_name, index) => (
+      //                 {value_names.map((slider_name, index) => (
       //                   <Column key={name + '_row_' + index}>
       //                     {this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)}
       //                   </Column>
@@ -851,7 +868,7 @@ class Nepi_IF_Control extends Component {
       //             :
       //               <div>
       //                 {/* Map over the device names array */}
-      //                 {display_labels.map((slider_name, index) => (
+      //                 {value_names.map((slider_name, index) => (
       //                   this.renderIntSliderControl(slider_name, values[index], min, max, index, control_disabled)
       //                 ))}
       //               </div>
@@ -917,7 +934,7 @@ class Nepi_IF_Control extends Component {
 
 
       // ColorRGB -- one 0-255 component per channel, labelled from
-      // display_labels, over a swatch of the combined color. Boxes go through
+      // value_names, over a swatch of the combined color. Boxes go through
       // renderControl and sliders through renderIntSliderControl, the same two
       // helpers every other multi-value control uses.
       else if (control_type === "ColorRGB") {
@@ -947,7 +964,7 @@ class Nepi_IF_Control extends Component {
             </Columns>
 
             <div>
-              {display_labels.map((slider_name, index) => (
+              {value_names.map((slider_name, index) => (
                 <React.Fragment key={name + '_slider_' + index}>
                   {this.renderIntSliderControl(name, show_values[index], 0, 255, index, control_disabled, slider_name)}
                 </React.Fragment>

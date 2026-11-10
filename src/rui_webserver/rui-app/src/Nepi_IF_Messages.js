@@ -32,6 +32,7 @@ import {Queue, onChangeSwitchStateValue} from "./Utilities"
 
 export const MSG_COLORS = {
   WHITE:  "#FFFFFF",
+  GREY: "#AAAAAA",
   
   RED: "#ff0000",
   ORANGE: "#ff8700",
@@ -55,17 +56,21 @@ export const MSG_COLORS = {
   DARK_MAGENTA: "#87005f",
   DARK_PINK: "#af005f",
 
-  INFO: "#FFFFFF",
-  WARN: "#e3b10c",
-  ERROR: "#ff0000",
-  FATAL: "#870000",
-  DEBUG: "#ff8700",
 
   // --- Utility ---
   RESET: "#FFFFFF"
+
 };
 
-
+export const MSG_DEFAULT_COLORS = {
+  info: 'GREY',
+  warn: 'YELLOW',
+  error: 'RED',
+  fatal: 'RED',
+  debug: 'ORANGE',
+  data_msg: 'MAGENTA',
+  debug_msg: 'GREY',
+}
 
 
 @inject("ros")
@@ -108,6 +113,7 @@ class NepiIFMessages extends Component {
     this.renderMessages = this.renderMessages.bind(this)
     this.messagesListener = this.messagesListener.bind(this)
     this.updateMessagesListener = this.updateMessagesListener.bind(this)
+    this.renderMessage = this.renderMessage.bind(this)
 
   }
 
@@ -138,7 +144,7 @@ class NepiIFMessages extends Component {
         this.state.messagesListener.unsubscribe()
         this.setState({messagesListener: null})
       }
-      if (namespace !== 'None' && namespace != null) {
+      if (namespace !== 'None' && namespace != null && namespace != '/messages') {
         var messagesListener = this.props.ros.setupMessagesListener(
           namespace,
           this.messagesListener
@@ -282,14 +288,11 @@ class NepiIFMessages extends Component {
             <pre style={{ height: "1000px", overflowY: "auto" }}>
                 <div style={{ padding: '10px', fontFamily: 'sans-serif' }}>
                   <ul>
-                    {msg_list.map((item) => (
-                      <li 
-                        key={item.id} 
-                        style={{ color: MSG_COLORS[item.color], fontSize: '17px', margin: '8px 0' }}
-                      >
-                        {item.message}
-                      </li>
+                    {msg_list.map((item, index) => (
+                      this.renderMessage(index, item)
                     ))}
+
+
                   </ul>
                 </div>
             </pre>
@@ -306,6 +309,47 @@ class NepiIFMessages extends Component {
       )
     }
   }
+
+  renderMessage(id, msg){
+
+    const data_color = MSG_DEFAULT_COLORS['data_msg']
+    const debug_color = MSG_DEFAULT_COLORS['debug_msg']
+    return(
+    <React.Fragment>
+
+      <li 
+        key={'m' + id} 
+        style={{ fontSize: '17px', margin: '6px 0' }}
+          >
+        <span style={{ color: MSG_COLORS[msg.color] }}>{msg.prefix}</span> <span style={{ color: MSG_COLORS['WHITE'] }}>{msg.message}</span>
+      </li>
+
+      {msg.data_list.map((dtmsg, index) => (
+            <li 
+            key={'d' + index} 
+            style={{ color: MSG_COLORS[data_color], fontSize: '15px', margin: '6px' }}
+          >
+            {dtmsg}
+          </li>
+      ))}
+
+      {msg.debug_list.map((dbmsg, index) => (
+            <li 
+            key={'d' + index} 
+            style={{ color: MSG_COLORS[debug_color], fontSize: '15px', margin: '6px' }}
+          >
+            {'---' + dbmsg}
+          </li>
+      ))}
+
+
+    </React.Fragment>
+
+      )
+  }
+
+
+
 
   render() {
     const { userRestricted} = this.props.ros

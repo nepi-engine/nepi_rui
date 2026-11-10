@@ -52,7 +52,7 @@ class NepiIFMessagesSelector extends Component {
     this.onChangeMessageSelection = this.onChangeMessageSelection.bind(this)
     this.onChangeDebugEnable = this.onChangeDebugEnable.bind(this)
     this.messageSelectionUpdated = this.messageSelectionUpdated.bind(this)
-
+    this.renderDebugLevels = this.renderDebugLevels.bind(this)
     
   }
 
@@ -197,6 +197,52 @@ class NepiIFMessagesSelector extends Component {
   }
 
 
+  renderDebugLevels() {
+    const base_namespace = this.getBaseNamespace()
+    const debug_level = this.props.ros.systemDebugLevel
+    const debug_level_topic = base_namespace + '/set_debug_level'
+    return (
+
+
+
+      <React.Fragment>
+
+                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <Label title={'DEBUG_LEVELS'} />
+     
+     <Label title="LOW">
+              <AsyncToggle
+            checked={debug_level === 'LOW'}
+            onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'LOW')}>
+          </AsyncToggle>
+    </Label>
+
+     <Label title="MED">
+              <AsyncToggle
+            checked={debug_level === 'MED'}
+            onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'MED')}>
+          </AsyncToggle>
+    </Label>
+
+     <Label title="HIGH">
+              <AsyncToggle
+            checked={debug_level === 'HIGH'}
+            onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'HIGH')}>
+          </AsyncToggle>
+      </Label>
+
+     <Label title="ALL">
+              <AsyncToggle
+            checked={debug_level === 'ALL'}
+            onClick={() => this.props.ros.sendStringMsg(debug_level_topic,'ALL')}>
+          </AsyncToggle>
+      </Label>
+
+
+      </React.Fragment>
+    )
+  }
+
 
   render() {
     const base_namespace = this.getBaseNamespace()
@@ -231,6 +277,9 @@ class NepiIFMessagesSelector extends Component {
                               <div style={{ width: '20%' }} >
                               </div>
                     </div>
+
+
+                    { (debug_mode === true) ? this.renderDebugLevels() : null }
 
 
 

@@ -89,9 +89,7 @@ class Nepi_IF_ImageViewer extends Component {
       pixel: null,
       mouse_drag: false,
 
-      save_data_topic: '',
-      navpose_topic: '',
-      transform_topic: '',
+  
       selected_frame: 'None',
 
       status_msg: null,
@@ -185,8 +183,8 @@ class Nepi_IF_ImageViewer extends Component {
     this.statusListener = this.statusListener.bind(this)
     this.updateStatusListener = this.updateStatusListener.bind(this)
 
-    this.onChangeNavposeFrame = this.onChangeNavposeFrame.bind(this)
-    this.renderNavPoseSection = this.renderNavPoseSection.bind(this)
+    // this.onChangeNavposeFrame = this.onChangeNavposeFrame.bind(this)
+    // this.renderNavPoseSection = this.renderNavPoseSection.bind(this)
 
   }
 
@@ -211,77 +209,77 @@ class Nepi_IF_ImageViewer extends Component {
   }
 
 
-  onChangeNavposeFrame(event) {
-    const frame = event.target.value
-    this.setState({ selected_frame: frame })
-    const tf = this.state.transform_topic
-    if (tf !== undefined && tf !== '' && tf !== 'None') {
-      this.props.ros.sendStringMsg(tf + '/set_source_ref', frame)
-    }
-  }
+  // onChangeNavposeFrame(event) {
+  //   const frame = event.target.value
+  //   this.setState({ selected_frame: frame })
+  //   const tf = this.state.transform_topic
+  //   if (tf !== undefined && tf !== '' && tf !== 'None') {
+  //     this.props.ros.sendStringMsg(tf + '/set_source_ref', frame)
+  //   }
+  // }
 
-  // Renders the NavPose Data section: a reference-frame selector (navpose manager
-  // frames), the selected frame's NavPose readout, and the camera mount transform.
-  renderNavPoseSection() {
-    const { navpose_frames, navpose_frames_topics } = this.props.ros
-    const nav_frames = navpose_frames || []
-    const nav_frame_topics = navpose_frames_topics || []
-    var sel_frame = this.state.selected_frame
-    if ((sel_frame === 'None' || sel_frame === '' || nav_frames.indexOf(sel_frame) === -1) && nav_frames.length > 0) {
-      sel_frame = nav_frames[0]
-    }
-    const sel_idx = nav_frames.indexOf(sel_frame)
-    var navpose_ns = this.state.navpose_topic
-    if ((navpose_ns == null || navpose_ns === '' || navpose_ns === 'None') && sel_idx >= 0 && nav_frame_topics[sel_idx]) {
-      navpose_ns = nav_frame_topics[sel_idx] + '/navpose'
-    }
-    const transform_topic = this.state.transform_topic
-    const has_transform = (transform_topic !== undefined && transform_topic !== '' && transform_topic !== 'None')
-    // Transformed navpose is published at <idx_ns>/navpose (reference navpose + mount transform)
-    var transformed_ns = ''
-    const tf_suffix = '/navpose_frame_transform'
-    if (has_transform === true && transform_topic.endsWith(tf_suffix)) {
-      transformed_ns = transform_topic.slice(0, transform_topic.length - tf_suffix.length) + '/navpose'
-    }
-    // Always display the camera's navpose (reference navpose + mount transform), published
-    // at <idx_ns>/navpose. Fall back to the raw reference-frame navpose only if this device
-    // has no mount transform (transformed_ns unavailable).
-    const navpose_display_ns = transformed_ns !== '' ? transformed_ns : navpose_ns
-    return (
-      <React.Fragment>
+  // // Renders the NavPose Data section: a reference-frame selector (navpose manager
+  // // frames), the selected frame's NavPose readout, and the camera mount transform.
+  // renderNavPoseSection() {
+  //   const { navpose_frames, navpose_frames_topics } = this.props.ros
+  //   const nav_frames = navpose_frames || []
+  //   const nav_frame_topics = navpose_frames_topics || []
+  //   var sel_frame = this.state.selected_frame
+  //   if ((sel_frame === 'None' || sel_frame === '' || nav_frames.indexOf(sel_frame) === -1) && nav_frames.length > 0) {
+  //     sel_frame = nav_frames[0]
+  //   }
+  //   const sel_idx = nav_frames.indexOf(sel_frame)
+  //   var navpose_ns = this.state.navpose_topic
+  //   if ((navpose_ns == null || navpose_ns === '' || navpose_ns === 'None') && sel_idx >= 0 && nav_frame_topics[sel_idx]) {
+  //     navpose_ns = nav_frame_topics[sel_idx] + '/navpose'
+  //   }
+  //   const transform_topic = this.state.transform_topic
+  //   const has_transform = (transform_topic !== undefined && transform_topic !== '' && transform_topic !== 'None')
+  //   // Transformed navpose is published at <idx_ns>/navpose (reference navpose + mount transform)
+  //   var transformed_ns = ''
+  //   const tf_suffix = '/navpose_frame_transform'
+  //   if (has_transform === true && transform_topic.endsWith(tf_suffix)) {
+  //     transformed_ns = transform_topic.slice(0, transform_topic.length - tf_suffix.length) + '/navpose'
+  //   }
+  //   // Always display the camera's navpose (reference navpose + mount transform), published
+  //   // at <idx_ns>/navpose. Fall back to the raw reference-frame navpose only if this device
+  //   // has no mount transform (transformed_ns unavailable).
+  //   const navpose_display_ns = transformed_ns !== '' ? transformed_ns : navpose_ns
+  //   return (
+  //     <React.Fragment>
 
-      <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+  //     <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-        {(nav_frames.length > 0) ?
-        <Label title={"Reference Frame"}>
-          <Select value={sel_frame} onChange={this.onChangeNavposeFrame}>
-            {nav_frames.map((f, i) => <Option key={i} value={f}>{f}</Option>)}
-          </Select>
-        </Label>
-        : null }
+  //       {(nav_frames.length > 0) ?
+  //       <Label title={"Reference Frame"}>
+  //         <Select value={sel_frame} onChange={this.onChangeNavposeFrame}>
+  //           {nav_frames.map((f, i) => <Option key={i} value={f}>{f}</Option>)}
+  //         </Select>
+  //       </Label>
+  //       : null }
 
-        <NepiIFNavPose
-          navposeNamespace={navpose_display_ns}
-          title={"NavPose Data"}
-          show_line={false}
-          read_only={true}
-          make_section={false}
-        />
+  //       <NepiIFNavPose
+  //         navposeNamespace={navpose_display_ns}
+  //         title={"NavPose Data"}
+  //         show_line={false}
+  //         read_only={true}
+  //         make_section={false}
+  //       />
 
-        {(has_transform === true) ?
-        <NepiIFTransform
-          transformNamespace={transform_topic}
-          title={"Camera Frame Transform"}
-          device_transform={true}
-          show_line={false}
-          show_config={false}
-          make_section={false}
-        />
-        : null }
+  //       {(has_transform === true) ?
+  //       <NepiIFTransform
+  //         transformNamespace={transform_topic}
+  //         title={"Camera Frame Transform"}
+  //         device_transform={true}
+  //         show_line={false}
+  //         show_config={false}
+  //         make_section={false}
+  //       />
+  //       : null }
 
-      </React.Fragment>
-    )
-  }
+  //     </React.Fragment>
+  //   )
+  // }
 
   // Function for configuring and subscribing to Status
   //
@@ -1059,11 +1057,12 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_filters = this.props.show_filters ? this.props.show_filters : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
-    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+    const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+    // The has_* capability flags ride in the image status message
+    const capabilities = this.state.status_msg
 
-   
-    if (show_filters === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+
+    if (show_filters === true && this.state.status_msg !== null && namespace !== null){
       const has_auto_adjust = (capabilities && capabilities.has_auto_adjust && !this.state.disabled)
       const has_contrast = (capabilities && capabilities.has_contrast && !this.state.disabled)
       const has_brightness = (capabilities && capabilities.has_brightness && !this.state.disabled)
@@ -1222,11 +1221,11 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
-    const { imageCaps, sendTriggerMsg } = this.props.ros
-    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+    const { sendTriggerMsg } = this.props.ros
+    const capabilities = this.state.status_msg
 
 
-    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null){
       const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
@@ -1480,11 +1479,11 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
-    const { imageCaps, sendTriggerMsg, sendFloatMsg } = this.props.ros
-    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+    const { sendTriggerMsg, sendFloatMsg } = this.props.ros
+    const capabilities = this.state.status_msg
 
 
-    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null){
       // const has_range = (capabilities && capabilities.has_range && !this.state.disabled)
       // const has_zoom = (capabilities && capabilities.has_zoom && !this.state.disabled)
       // const has_pan = (capabilities && capabilities.has_pan && !this.state.disabled)
@@ -1672,13 +1671,11 @@ class Nepi_IF_ImageViewer extends Component {
     const show_render_controls = this.props.show_render_controls ? this.props.show_render_controls : true
 
     const {
-      imageCaps,
       // sendTriggerMsg,
       sendBoolMsg } = this.props.ros
-    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
 
 
-    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+    if (show_render_controls === true && this.state.status_msg !== null && namespace !== null){
       
       const message = this.state.status_msg
       const stream_compression_enabled = message.stream_compression_enabled
@@ -1746,11 +1743,11 @@ class Nepi_IF_ImageViewer extends Component {
     const namespace = this.state.image_topic
     const show_res_orient = this.props.show_res_orient ? this.props.show_res_orient : true
 
-    const { imageCaps, sendTriggerMsg, sendBoolMsg } = this.props.ros
-    const capabilities = (imageCaps !== null) ? (imageCaps[namespace] !== null ? imageCaps[namespace] : null) : null
+    const { sendTriggerMsg, sendBoolMsg } = this.props.ros
+    const capabilities = this.state.status_msg
 
-   
-    if (show_res_orient === true && this.state.status_msg !== null && namespace !== null && capabilities !== null){
+
+    if (show_res_orient === true && this.state.status_msg !== null && namespace !== null){
       const has_rotate_2d = (capabilities && capabilities.has_rotate_2d && !this.state.disabled)
       const has_flip_horz = (capabilities && capabilities.has_flip_horz && !this.state.disabled)
       const has_flip_vert = (capabilities && capabilities.has_flip_vert && !this.state.disabled)
@@ -2846,13 +2843,13 @@ class Nepi_IF_ImageViewer extends Component {
     const show_3d_controls = (is_pointcloud === true && this.state.status_msg !== null && render_ns !== 'None' && render_ns !== null)
     const render_3d_controls_enabled = (status_msg !== null && status_msg !== undefined && status_msg.render_3d_controls_enabled !== undefined) ? status_msg.render_3d_controls_enabled : false
 
-    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_save_config = (this.props.show_save_config !== undefined) ? this.props.show_save_config : true
     // const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
-    const save_data_topic = (this.props.save_data_topic !== undefined) ? this.props.save_data_topic :  this.state.save_data_topic
-
+    const save_data_topic  = (status_msg !== null && status_msg !== undefined) ? status_msg.save_data_topic : ''
+    const show_save_data = (this.props.show_save_data !== undefined) ? this.props.show_save_data : true
 
     const title = (this.props.title !== undefined && this.props.title != null) ? this.props.title : createMenuFirstLastName(this.state.image_topic)
 
@@ -2883,11 +2880,17 @@ class Nepi_IF_ImageViewer extends Component {
     const show_render = selected_control === 'RENDER'  && (userRestricted.indexOf('DATA-IMAGE-RENDER-VIEW') === -1)
     const show_overlay = selected_control === 'OVERLAY'  && (userRestricted.indexOf('DATA-IMAGE-OVERLAY-VIEW') === -1)
 
-    const controls_options_topic = (this.props.controls_options_topic !== undefined) ? this.props.controls_options_topic : ''
+
+    const status_options_topic = (status_msg !== null && status_msg !== undefined) ? status_msg.controls_options_topic : ''
+    const controls_options_topic = (this.props.controls_options_topic !== undefined) ? this.props.controls_options_topic : status_options_topic
     const show_options = controls_options_topic !== ''
     
 
+    const transform_topic = (status_msg !== null && status_msg !== undefined) ? status_msg.transform_topic : ''
+    const show_transform = (this.props.show_transform !== undefined)? this.props.show_transform : false
+    const edit_transform = (this.props.edit_transform !== undefined)? this.props.edit_transform : false
 
+    const navpose_topic = (status_msg !== null && status_msg !== undefined) ? status_msg.navpose_topic : ''
 
 
     return (
@@ -3005,7 +3008,7 @@ class Nepi_IF_ImageViewer extends Component {
                         
                             </div>
                     
-                          {((single_slider_topic === true || double_slider_topic === true) && (show_save_controls === true ) && namespace !== 'None') ?
+                          {((single_slider_topic === true || double_slider_topic === true) && (show_save_config === true ) && namespace !== 'None') ?
                             <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                           : null }
 
@@ -3172,7 +3175,7 @@ class Nepi_IF_ImageViewer extends Component {
                 
                           </div>
 
-                            {(show_save_controls === true && config_topic !== '') ?
+                            {(show_save_config === true && config_topic !== '') ?
                             <NepiIFConfig
                                 namespace={config_topic}
                                 title={"Nepi_IF_Config"}
@@ -3218,7 +3221,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 
-                            {(show_save_controls === true && config_topic !== '') ?
+                            {(show_save_config === true && config_topic !== '') ?
                             <NepiIFConfig
                                 namespace={config_topic}
                                 title={"Nepi_IF_Config"}
@@ -3230,15 +3233,40 @@ class Nepi_IF_ImageViewer extends Component {
 
                     <div align={"left"} textAlign={"left"} hidden={(show_navpose !== true || namespace === 'None')}>
 
-                      {this.renderNavPoseSection()}
+                      {/* {this.renderNavPoseSection()} */}
+
+                            <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
 
-                            {(show_save_controls === true && namespace !== 'None') ?
+                            <NepiIFNavPose
+                              navposeNamespace={navpose_topic}
+                              title={"NAVPOSE DATA"}
+                              show_namespace={true}
+                              show_line={false}
+                              read_only={true}
+                              make_section={false}
+                            />
+
+                          {(show_transform === true) ?
+                          <NepiIFTransform
+                            transformNamespace={transform_topic}
+                            title={"Navpose Transform"}
+                            read_only={edit_transform}
+                            device_transform={true}
+                            show_line={false}
+                            show_config={false}
+                            make_section={false}
+                          />
+                          : null }
+
+
+                            {/* 
+                            {(show_save_config === true && namespace !== 'None') ?
                             <NepiIFConfig
                                 namespace={namespace}
                                 title={"Nepi_IF_Config"}
                             />
-                            : null }
+                            : null } */}
 
                     </div>
 
@@ -3269,7 +3297,7 @@ class Nepi_IF_ImageViewer extends Component {
 
           
 
-                            {(show_save_controls === true && config_topic !== '') ?
+                            {(show_save_config === true && config_topic !== '') ?
                             <NepiIFConfig
                                 namespace={config_topic}
                                 title={"Nepi_IF_Config"}
@@ -3278,10 +3306,10 @@ class Nepi_IF_ImageViewer extends Component {
 
                       </div>
 
-                          {(show_save_controls === true && namespace !== 'None') ?
+                          {(show_save_data === true && namespace !== 'None') ?
                           <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                           : null }
-                            {(show_save_controls === true && namespace !== 'None') ?
+                            {(show_save_data === true && namespace !== 'None') ?
                               <NepiIFSaveData
                               saveNamespace={save_data_topic}
                               make_section={false}
@@ -3295,7 +3323,7 @@ class Nepi_IF_ImageViewer extends Component {
 
 
 {/* 
-                            {(show_save_controls === true && config_topic !== '') ?
+                            {(show_save_config === true && config_topic !== '') ?
                             <NepiIFConfig
                                 namespace={config_topic}
                                 title={"Nepi_IF_Config"}

@@ -390,7 +390,8 @@ class NepiIFImageViewerSelector extends Component {
     const show_render_controls = (this.props.show_render_controls !== undefined) ? this.props.show_render_controls : show_image_controls === true
     const show_overlay_controls = (this.props.show_overlay_controls !== undefined) ? this.props.show_overlay_controls : show_image_controls === true
 
-    const show_save_controls = (this.props.show_save_controls !== undefined) ? this.props.show_save_controls : true
+    const show_save_config = (this.props.show_save_config !== undefined) ? this.props.show_save_config : true
+    const show_save_data = (this.props.show_save_data !== undefined) ? this.props.show_save_data : true
     const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
@@ -414,7 +415,8 @@ class NepiIFImageViewerSelector extends Component {
       show_navpose_controls={show_navpose_controls}
       show_render_controls={show_render_controls}
       show_overlay_controls={show_overlay_controls}
-      show_save_controls={show_save_controls}
+      show_save_config={show_save_config}
+      show_save_data={show_save_data}
       show_all_config_options={show_all_config_options}
       show_reset_button={show_reset_button}
       show_browser_save_button={show_browser_save_button}

@@ -191,7 +191,7 @@ class Nepi_IF_Datum extends Component {
       const { sendUpdateDatumValue } = this.props.ros
       const name = datum_msg.name
       const datum_type =  datum_msg.type
-      const display_label = datum_msg.display_labels[datum_index]
+      const display_label = datum_msg.value_names[datum_index]
       const display_options = this.props.display_options !== undefined ? this.props.display_options : datum_msg.display_options
       // Datum.msg spells it display_disabled.
       const datum_disabled = true
@@ -303,8 +303,8 @@ class Nepi_IF_Datum extends Component {
       const name = datum_msg.name
       const datum_type =  datum_msg.type
       const display_name = (datum_msg.display_name && datum_msg.display_name !== '') ? datum_msg.display_name : name
-      const display_labels = datum_msg.display_labels
-      const show_header_label = display_name !== '' && display_name !== 'None' && display_labels.length > 1
+      const value_names = datum_msg.value_names
+      const show_header_label = display_name !== '' && display_name !== 'None' && value_names.length > 1
       // Datum.msg spells these display_hidden / display_disabled. Read under
       // the old names both were undefined, so nothing ever hid or disabled --
       // and show_bounds, which gates on datum_disabled === false, never
@@ -353,7 +353,7 @@ class Nepi_IF_Datum extends Component {
 
 
       // ColorRGB -- an multi-select: each option (R,G,B) gets its own int slider.
-      // names come from the display_labels list. On every toggle
+      // names come from the value_names list. On every toggle
       // we send the complete desired selection (declarative), not a single delta.
       else if (datum_type === "ColorRGB") {
         const value = (values.length > 2) ? [values[0],values[1],values[2]] : [255, 255, 255]
@@ -386,10 +386,10 @@ class Nepi_IF_Datum extends Component {
                 <Columns>
                 <Column>
 
-                  <label > {display_labels[0]} </label>                
+                  <label > {value_names[0]} </label>                
                   <Input
                     disabled={datum_disabled}
-                    id={'csbx_' + name + '_' + display_labels[0]}
+                    id={'csbx_' + name + '_' + value_names[0]}
                     style={{ width: "100%" }}
                     value={value[0]}
                   />
@@ -397,10 +397,10 @@ class Nepi_IF_Datum extends Component {
                 </Column>
                 <Column>
 
-                  <label > {display_labels[1]} </label>                
+                  <label > {value_names[1]} </label>                
                   <Input
                     disabled={datum_disabled}
-                    id={'csbx_' + name + '_' + display_labels[1]}
+                    id={'csbx_' + name + '_' + value_names[1]}
                     style={{ width: "100%" }}
                     value={value[1]}
                   />
@@ -408,10 +408,10 @@ class Nepi_IF_Datum extends Component {
                 </Column>
                 <Column>
 
-                  <label > {display_labels[2]} </label>                
+                  <label > {value_names[2]} </label>                
                   <Input
                     disabled={datum_disabled}
-                    id={'csbx_' + name + '_' + display_labels[2]}
+                    id={'csbx_' + name + '_' + value_names[2]}
                     style={{ width: "100%" }}
                     value={value[2]}
                   />

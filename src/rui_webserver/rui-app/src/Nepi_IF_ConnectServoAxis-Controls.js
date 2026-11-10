@@ -36,37 +36,11 @@ import NepiIFAdmin from "./Nepi_IF_Admin"
 @inject("ros")
 @observer
 
-// Command component for a motor device. Subscribes to the device's MotorsStatus
-// on the namespace prop (namespace/motor_status) and renders command widgets
-// only. The companion Nepi_IF_Motor-Data component owns the read-only telemetry
-// rows for the same device.
-//
-// Command controls publish the six standard motor command topics (set_speed,
-// set_direction, go_direction, stop_motor, goto_rotation, set_rotation_speed),
-// each carrying a nepi_interfaces/MotorCommand keyed by motor_name, on the
-// device namespace. Motion is continuous-until-stop: GO starts the motor moving
-// in its set direction at its set speed, STOP halts it.
-//
-// The rotatable-wheel (steering) group renders only for a motor reporting
-// has_rotation true. Rotation is a separate axis from drive: goto_rotation
-// steers the wheel to an angle and set_rotation_speed sets how fast it steers,
-// while set_speed continues to set how fast the wheel drives.
-//
-// One row per motor, each with a divider and the bold motor_name header. The
-// pre-split Nepi_IF_ConnectMotor placed a motor's read-only cells and its
-// command cells side by side in adjacent columns of a single row; with data and
-// controls in separate components those become two stacked blocks, each with its
-// own per-motor rows.
-//
-// The Device Settings (Nepi_IF_Settings) and Advanced Settings (Nepi_IF_Admin)
-// panels for the connected device are rendered here as well, so any page that
-// drops in this component gets them without wiring up the device namespace
-// itself. Suppress either one with show_settings/show_admin={false}.
-class NepiIFMotorControls extends Component {
+class NepiIFServoAxisControls extends Component {
   constructor(props) {
     super(props)
 
-    // these states track the values through MotorsStatus messages
+
     this.state = {
 
       namespace: 'None',
@@ -74,27 +48,20 @@ class NepiIFMotorControls extends Component {
 
       statusListener: null,
 
-      // Local intended-direction UI state keyed by motor_name (1 = clockwise,
-      // -1 = counter-clockwise). MotorStatus.motor_dir reports the reverse flag,
-      // a different concept from the commanded direction, so the direction
-      // toggle tracks its own state here (default clockwise) and publishes
-      // set_direction on change.
       motorDirections: {},
 
-      // Local rotation-target text state keyed by motor_name, for the editable
-      // input a continuously-rotating motor gets in place of a bounded slider.
-      // Cleared when the device namespace changes.
+     
       rotationTargets: {},
 
     }
 
-    this.publishMotorCommand = this.publishMotorCommand.bind(this)
-    this.getMotorDirection = this.getMotorDirection.bind(this)
+    this.publishServoAxisControl = this.publishServoAxisControl.bind(this)
+    this.getServoAxisDirection = this.getServoAxisDirection.bind(this)
     this.getRotationTarget = this.getRotationTarget.bind(this)
 
-    this.renderMotorControlFields = this.renderMotorControlFields.bind(this)
-    this.renderMotorRotationFields = this.renderMotorRotationFields.bind(this)
-    this.renderMotorRow = this.renderMotorRow.bind(this)
+    this.renderServoAxisControlFields = this.renderServoAxisControlFields.bind(this)
+    this.renderServoAxisRotationFields = this.renderServoAxisRotationFields.bind(this)
+    this.renderServoAxisRow = this.renderServoAxisRow.bind(this)
     this.renderControls = this.renderControls.bind(this)
     this.renderSettingsAndAdmin = this.renderSettingsAndAdmin.bind(this)
 
@@ -103,13 +70,13 @@ class NepiIFMotorControls extends Component {
 
   }
 
-  // Callback for handling ROS MotorsStatus messages.
+  // Callback for handling ROS ServoStatus messages.
   statusListener(message) {
     this.setState({ status_msg: message })
   }
 
   // Function for configuring and subscribing to the device's motor status topic
-  // (namespace/motor_status), message type MotorsStatus.
+  // (namespace/motor_status), message type ServoStatus.
   updateStatusListener() {
     const { namespace } = this.props
     if (this.state.statusListener != null) {
@@ -120,7 +87,7 @@ class NepiIFMotorControls extends Component {
       const statusNamespace = namespace + '/motor_status'
       var statusListener = this.props.ros.setupStatusListener(
         statusNamespace,
-        "nepi_interfaces/MotorsStatus",
+        "nepi_interfaces/ServoStatus",
         this.statusListener
       )
       this.setState({ statusListener: statusListener})
@@ -147,7 +114,7 @@ class NepiIFMotorControls extends Component {
     }
 
   // Lifecycle method called just before the component umounts.
-  // Used to unsubscribe to MotorsStatus message
+  // Used to unsubscribe to ServoStatus message
   componentWillUnmount() {
     if (this.state.statusListener) {
       this.state.statusListener.unsubscribe()
@@ -155,18 +122,18 @@ class NepiIFMotorControls extends Component {
   }
 
   // Publish one of the six standard motor command topics on the device
-  // namespace, carrying a nepi_interfaces/MotorCommand keyed by motor_name.
+  // namespace, carrying a nepi_interfaces/ServoAxisControl keyed by motor_name.
   // speed_ratio is only meaningful for set_speed, direction only for
   // set_direction, rotation only for goto_rotation, and rotation_speed_ratio
   // only for set_rotation_speed; the other fields are sent as 0.
-  publishMotorCommand(command_topic, motor_name, speed_ratio, direction, rotation, rotation_speed_ratio) {
+  publishServoAxisControl(command_topic, motor_name, speed_ratio, direction, rotation, rotation_speed_ratio) {
     const namespace = this.props.namespace
     if (namespace == null || namespace === 'None') {
       return
     }
     this.props.ros.publishMessage({
       name: namespace + '/' + command_topic,
-      messageType: "nepi_interfaces/MotorCommand",
+      messageType: "nepi_interfaces/ServoAxisControl",
       data: {
         motor_name: motor_name,
         speed_ratio: (speed_ratio !== undefined && speed_ratio !== null) ? Number(speed_ratio) : 0.0,
@@ -180,7 +147,7 @@ class NepiIFMotorControls extends Component {
 
   // Resolve the current intended direction for a motor (1 = clockwise,
   // -1 = counter-clockwise), defaulting to clockwise.
-  getMotorDirection(motor_name) {
+  getServoAxisDirection(motor_name) {
     const dir = this.state.motorDirections[motor_name]
     return (dir === -1) ? -1 : 1
   }
@@ -208,7 +175,7 @@ class NepiIFMotorControls extends Component {
   // The rotation speed slider gates on rotation_max_speed > 0 exactly the way
   // the drive speed slider gates on motor_max_speed > 0. Rotation speed is a
   // separate axis: it sets how fast the wheel steers, not how fast it drives.
-  renderMotorRotationFields(motor, index) {
+  renderServoAxisRotationFields(motor, index) {
     const motor_name = (motor.motor_name !== undefined && motor.motor_name !== '') ? motor.motor_name : ('motor_' + index)
     const has_rotation = (motor.has_rotation === true)
     if (has_rotation === false) {
@@ -230,7 +197,7 @@ class NepiIFMotorControls extends Component {
         {(has_continuous_rotation === false) ?
           <SliderAdjustment
             title={"Rotation"}
-            msgType={"nepi_interfaces/MotorCommand"}
+            msgType={"nepi_interfaces/ServoAxisControl"}
             adjustment={rotation}
             topic={this.props.namespace + "/goto_rotation"}
             scaled={1}
@@ -238,7 +205,7 @@ class NepiIFMotorControls extends Component {
             max={rotation_max_limit}
             tooltip={"Wheel rotation about the steering axis, in degrees"}
             unit={" deg"}
-            onSliderChangeOverride={(new_value) => this.publishMotorCommand('goto_rotation', motor_name, 0.0, 0, new_value, 0.0)}
+            onSliderChangeOverride={(new_value) => this.publishServoAxisControl('goto_rotation', motor_name, 0.0, 0, new_value, 0.0)}
           />
         :
           <Label title={"Rotation (deg)"}>
@@ -254,7 +221,7 @@ class NepiIFMotorControls extends Component {
                 if (e.key === 'Enter') {
                   const el = document.getElementById(rotation_input_id)
                   clearElementStyleModified(el)
-                  this.publishMotorCommand('goto_rotation', motor_name, 0.0, 0, el.value, 0.0)
+                  this.publishServoAxisControl('goto_rotation', motor_name, 0.0, 0, el.value, 0.0)
                 }
               }}
             />
@@ -265,7 +232,7 @@ class NepiIFMotorControls extends Component {
           <SliderAdjustment
             disabled={!has_rotation_speed}
             title={"Rotation Speed"}
-            msgType={"nepi_interfaces/MotorCommand"}
+            msgType={"nepi_interfaces/ServoAxisControl"}
             adjustment={rotation_speed_ratio}
             topic={this.props.namespace + "/set_rotation_speed"}
             scaled={0.01}
@@ -273,7 +240,7 @@ class NepiIFMotorControls extends Component {
             max={100}
             tooltip={"Rotation speed as a percentage (0%=off, 100%=max)"}
             unit={"%"}
-            onSliderChangeOverride={(new_value) => this.publishMotorCommand('set_rotation_speed', motor_name, 0.0, 0, 0.0, new_value * 0.01)}
+            onSliderChangeOverride={(new_value) => this.publishServoAxisControl('set_rotation_speed', motor_name, 0.0, 0, 0.0, new_value * 0.01)}
           />
         </div>
 
@@ -281,16 +248,16 @@ class NepiIFMotorControls extends Component {
     )
   }
 
-  // Command control fields for a single motor: a speed_ratio slider (enabled
+  // Control control fields for a single motor: a speed_ratio slider (enabled
   // only when the motor reports an adjustable speed, motor_max_speed > 0), a
   // clockwise/counter-clockwise direction toggle, GO / STOP buttons for
   // continuous motion, and the rotatable-wheel group for a motor that steers.
   // No divider or motor-name header (the row supplies those).
-  renderMotorControlFields(motor, index) {
+  renderServoAxisControlFields(motor, index) {
     const motor_name = (motor.motor_name !== undefined && motor.motor_name !== '') ? motor.motor_name : ('motor_' + index)
     const has_speed = (motor.motor_max_speed > 0)
     const motor_speed_ratio = motor.motor_speed_ratio
-    const direction = this.getMotorDirection(motor_name)
+    const direction = this.getServoAxisDirection(motor_name)
     const is_cw = (direction === 1)
 
     return (
@@ -300,7 +267,7 @@ class NepiIFMotorControls extends Component {
           <SliderAdjustment
             disabled={!has_speed}
             title={"Speed"}
-            msgType={"nepi_interfaces/MotorCommand"}
+            msgType={"nepi_interfaces/ServoAxisControl"}
             adjustment={motor_speed_ratio}
             topic={this.props.namespace + "/set_speed"}
             scaled={0.01}
@@ -308,7 +275,7 @@ class NepiIFMotorControls extends Component {
             max={100}
             tooltip={"Speed as a percentage (0%=off, 100%=max)"}
             unit={"%"}
-            onSliderChangeOverride={(new_value) => this.publishMotorCommand('set_speed', motor_name, new_value * 0.01, 0, 0.0, 0.0)}
+            onSliderChangeOverride={(new_value) => this.publishServoAxisControl('set_speed', motor_name, new_value * 0.01, 0, 0.0, 0.0)}
           />
         </div>
 
@@ -319,7 +286,7 @@ class NepiIFMotorControls extends Component {
               onClick={() => {
                 const new_dir = is_cw ? -1 : 1
                 this.setState({ motorDirections: { ...this.state.motorDirections, [motor_name]: new_dir } })
-                this.publishMotorCommand('set_direction', motor_name, 0.0, new_dir, 0.0, 0.0)
+                this.publishServoAxisControl('set_direction', motor_name, 0.0, new_dir, 0.0, 0.0)
               }}
             />
           </div>
@@ -329,11 +296,11 @@ class NepiIFMotorControls extends Component {
         </Label>
 
         <ButtonMenu>
-          <Button onClick={() => this.publishMotorCommand('go_direction', motor_name, 0.0, 0, 0.0, 0.0)}>{"GO"}</Button>
-          <Button onClick={() => this.publishMotorCommand('stop_motor', motor_name, 0.0, 0, 0.0, 0.0)}>{"STOP"}</Button>
+          <Button onClick={() => this.publishServoAxisControl('go_direction', motor_name, 0.0, 0, 0.0, 0.0)}>{"GO"}</Button>
+          <Button onClick={() => this.publishServoAxisControl('stop_motor', motor_name, 0.0, 0, 0.0, 0.0)}>{"STOP"}</Button>
         </ButtonMenu>
 
-        {this.renderMotorRotationFields(motor, index)}
+        {this.renderServoAxisRotationFields(motor, index)}
 
       </React.Fragment>
     )
@@ -341,7 +308,7 @@ class NepiIFMotorControls extends Component {
 
   // One row per motor: a divider, the bold motor_name header, then that motor's
   // command controls.
-  renderMotorRow(motor, index) {
+  renderServoAxisRow(motor, index) {
     const motor_name = (motor.motor_name !== undefined && motor.motor_name !== '') ? motor.motor_name : ('motor_' + index)
 
     return (
@@ -353,7 +320,7 @@ class NepiIFMotorControls extends Component {
 
         <Columns>
           <Column>
-            {this.renderMotorControlFields(motor, index)}
+            {this.renderServoAxisControlFields(motor, index)}
           </Column>
         </Columns>
 
@@ -361,7 +328,7 @@ class NepiIFMotorControls extends Component {
     )
   }
 
-  // Command controls, backed by MotorsStatus. One row per motor.
+  // Control controls, backed by ServoStatus. One row per motor.
   renderControls() {
     const status_msg = this.state.status_msg
     if (status_msg == null || status_msg.motors == null) {
@@ -392,7 +359,7 @@ class NepiIFMotorControls extends Component {
     return (
       <React.Fragment>
 
-        { motors.map((motor, index) => this.renderMotorRow(motor, index)) }
+        { motors.map((motor, index) => this.renderServoAxisRow(motor, index)) }
 
       </React.Fragment>
     )
@@ -403,7 +370,7 @@ class NepiIFMotorControls extends Component {
   // Both build their own Section, so these are rendered as siblings of this
   // component's Section rather than nested inside it.
   //
-  // Motor devices have no capabilities dictionary in the ros store, so the node
+  // ServoAxis devices have no capabilities dictionary in the ros store, so the node
   // name for the Advanced Settings panel cannot be resolved the way the typed
   // device controls components resolve it. Pass node_name explicitly, or pass
   // show_admin={false} to suppress that panel.
@@ -490,4 +457,4 @@ class NepiIFMotorControls extends Component {
   }
 
 }
-export default NepiIFMotorControls
+export default NepiIFServoAxisControls

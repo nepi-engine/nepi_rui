@@ -33,9 +33,13 @@ import NepiDeviceControls from "./NepiDeviceRBX-Controls"
 import NepiDeviceMessages from "./NepiDeviceRBX-Info"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
+
 import ImageViewer from "./Nepi_IF_ImageViewer"
-import NepiIFSettings from "./Nepi_IF_Settings"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
+import NepiIFConnectNavPose from "./Nepi_IF_ConnectNavPose"
+import NepiIFSettings from "./Nepi_IF_Settings"
+import NepiIFMessages from "./Nepi_IF_Messages"
+
 import NepiIFConfig from "./Nepi_IF_Config"
 
 import { createShortValuesFromNamespaces, createMenuListFromStrList,
@@ -56,8 +60,9 @@ class NepiDeviceRBX extends Component {
       show_settings: true,
       show_save_data: true,
 
-      rbx_capabilities: null,
+      capabilities: null,
 
+      status_msg: null,
       device_name: null,
       serial_num: null,
       hw_version: null,
@@ -135,49 +140,51 @@ class NepiDeviceRBX extends Component {
   }
 
 
-  // Callback for handling ROS DeviceRBXInfo messages.
-  // Pose values are not part of DeviceRBXInfo; the System Information panel
-  // sources them from the NavPose topic.
+  // Callback for handling ROS DeviceRBXStatus messages. In 3.4 the RBX IF
+  // publishes no <ns>/info DeviceRBXData topic; every field this page used
+  // from it, plus the state/mode/setup-action option lists, rides in the
+  // status message. Pose values come from the NavPose topic, as before.
   infoListener(message) {
-    const { rbxDevices } = this.props.ros
     this.setState({
       device_name: message.device_name,
       serial_num: message.serial_num,
       hw_version: message.hw_version,
       sw_version: message.sw_version,
       standby: message.standby,
-      state_index: message.state,
+      // DeviceRBXStatus has no int state index: the IF writes it into the
+      // base bool `state` field, so DISARM/ARM arrive as false/true.
+      state_index: (message.state === true) ? 1 : ((message.state === false) ? 0 : message.state),
       mode_index: message.mode,
       error_bound_m: message.error_bounds.max_distance_error_m,
       error_bound_deg: message.error_bounds.max_rotation_error_deg,
       error_stabilize_s: message.error_bounds.min_stabilize_time_s,
       cmd_timeout: message.cmd_timeout,
-      image_source: message.image_source,
+      image_source: (message.connect_image_topic !== undefined) ? message.connect_image_topic : message.image_source,
       image_status_overlay: message.image_status_overlay,
       home_lat: message.home_lat,
       home_long: message.home_long,
       home_alt: message.home_alt
     })
-    if (this.state.rbx_capabilities === null) {
-      const capabilities = rbxDevices[this.state.currentRBXNamespace]
-      if (capabilities) {
-        const states = capabilities.state_options
-        const states_menu_options = createMenuListFromStrList(states, false, [], [], [])
-        const modes = capabilities.mode_options
-        const modes_menu_options = createMenuListFromStrList(modes, false, [], [], [])
-        const actions = capabilities.setup_action_options
-        const actions_menu_options = createMenuListFromStrList(actions, false, [], [], [])
-
-        this.setState({
-          rbx_capabilities: capabilities,
-          states_list: states,
-          states_menu: states_menu_options,
-          modes_list: modes,
-          modes_menu: modes_menu_options,
-          actions_list: actions,
-          actions_menu: actions_menu_options,
-        })
-      }
+    // Rebuild the Mode/State/Setup Action menus on the first status message
+    // and whenever a list changes. The old guard (`this.state === null`) was
+    // never true in a mounted component, so these menus only showed None.
+    const states = (message.state_options !== undefined) ? message.state_options : []
+    const modes = (message.mode_options !== undefined) ? message.mode_options : []
+    const actions = (message.setup_action_options !== undefined) ? message.setup_action_options : []
+    const lists_changed = (JSON.stringify(states) !== JSON.stringify(this.state.states_list)) ||
+                          (JSON.stringify(modes) !== JSON.stringify(this.state.modes_list)) ||
+                          (JSON.stringify(actions) !== JSON.stringify(this.state.actions_list))
+    if (this.state.status_msg === null || lists_changed) {
+      this.setState({
+        status_msg: message,
+        capabilities: message,
+        states_list: states,
+        states_menu: createMenuListFromStrList(states, false, [], [], []),
+        modes_list: modes,
+        modes_menu: createMenuListFromStrList(modes, false, [], [], []),
+        actions_list: actions,
+        actions_menu: createMenuListFromStrList(actions, false, [], [], []),
+      })
     }
   }
 
@@ -189,16 +196,17 @@ class NepiDeviceRBX extends Component {
     if (this.state.rbxInfoListener) {
       this.state.rbxInfoListener.unsubscribe()
       this.setState({
-        rbx_capabilities: null,
+        status_msg: null,
+        capabilities: null,
         states_list: null,
         modes_list: null,
         actions_list: null
       })
     }
     if (deviceNamespace !== null && deviceNamespace.indexOf('null') === -1) {
-      var listener = this.props.ros.setupStatusListener(
-        deviceNamespace + "/info",
-        "nepi_interfaces/DeviceRBXInfo",
+      // 3.4: subscribe to <ns>/status (DeviceRBXStatus); there is no <ns>/info.
+      var listener = this.props.ros.setupRBXStatusListener(
+        deviceNamespace,
         this.infoListener
       )
       this.setState({ rbxInfoListener: listener })
@@ -425,7 +433,8 @@ class NepiDeviceRBX extends Component {
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No device selected",
       image_topic: null,
-      rbx_capabilities: null,
+      status_msg: null,
+      capabilities: null,
       states_list: null,
       modes_list: null,
       actions_list: null,
@@ -507,8 +516,8 @@ class NepiDeviceRBX extends Component {
   renderDeviceSelection() {
     const { rbxDevices, sendStringMsg, sendBoolMsg, sendGeoPointMsg } = this.props.ros
     const NoneOption = <Option>None</Option>
-    const deviceSelected = (this.state.currentRBXNamespace != null)
-    const has_fake_gps = (this.state.rbx_capabilities !== null) ? (this.state.rbx_capabilities.has_fake_gps === true) : false
+    const device_selected = (this.state.currentRBXNamespace != null)
+    const has_fake_gps = (this.state !== null) ? (this.state.has_fake_gps === true) : false
     const namespace = this.state.currentRBXNamespace
     return (
       <React.Fragment>
@@ -533,7 +542,7 @@ class NepiDeviceRBX extends Component {
           </Columns>
 
 
-          <div align={"left"} textAlign={"left"} hidden={!deviceSelected}>
+          <div align={"left"} textAlign={"left"} hidden={!device_selected}>
 
 
             <Columns>
@@ -680,8 +689,8 @@ class NepiDeviceRBX extends Component {
 
   renderSetupControls() {
     const NoneOption = <Option>None</Option>
-    const current_state = (this.state.rbx_capabilities !== null && this.state.states_list !== null) ? this.state.states_list[this.state.state_index] : "None"
-    const current_mode = (this.state.rbx_capabilities !== null && this.state.modes_list !== null) ? this.state.modes_list[this.state.mode_index] : "None"
+    const current_state = (this.state.status_msg !== null && this.state.states_list !== null) ? this.state.states_list[this.state.state_index] : "None"
+    const current_mode = (this.state.status_msg !== null && this.state.modes_list !== null) ? this.state.modes_list[this.state.mode_index] : "None"
     const namespace = this.state.currentRBXNamespace
     return (
       <React.Fragment>
@@ -746,6 +755,8 @@ class NepiDeviceRBX extends Component {
               image_topic={this.state.image_topic}
               title={""}
               hideQualitySelector={false}
+              show_save_config={false}
+              show_save_data={false}
               show_topic_selector={false}
             />
           </Column>
@@ -756,17 +767,28 @@ class NepiDeviceRBX extends Component {
 
 
   render() {
-    const deviceSelected = (this.state.currentRBXNamespace != null)
+    const device_selected = (this.state.currentRBXNamespace != null)
     const namespace = this.state.currentRBXNamespace
+    const status_msg = this.props.ros.rbxDevices[namespace]
+
+    const save_data_topic = (status_msg && status_msg.save_data_topic) ? status_msg.save_data_topic : null
+    const settings_topic = (status_msg && status_msg.settings_topic) ? status_msg.settings_topic : null
+    // The NavPose source selector is the node's ConnectNavPoseIF at
+    // <node_namespace>/navpose_connect, the namespace Nepi_IF_ConnectNavPose
+    // expects. DeviceRBXStatus has no field for it: navpose_connect_topic does
+    // not exist, and connect_navpose_topic carries the SELECTED source.
+    const navpose_connect_topic = (status_msg && status_msg.node_namespace) ? status_msg.node_namespace + "/navpose_connect" : null
+    const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null    
+
     return (
       <Columns>
         <Column>
 
-          {(deviceSelected === true) ?
+          {(device_selected === true) ?
             <NepiDeviceInfo
               deviceNamespace={namespace}
-              status_topic={"/info"}
-              status_msg_type={"nepi_interfaces/DeviceRBXInfo"}
+              status_topic={"/status"}
+              status_msg_type={"nepi_interfaces/DeviceRBXStatus"}
               name_update_topic={"/update_device_name"}
               name_reset_topic={"/reset_device_name"}
               title={"Device Info"}
@@ -775,31 +797,59 @@ class NepiDeviceRBX extends Component {
 
           {this.renderImageViewer()}
 
-          {(deviceSelected === true) ?
-            <NepiIFSaveData
-              saveNamespace={namespace}
-              make_section={true}
-              title={"Save Data"}
-            />
-            : null}
+ 
 
-          {(deviceSelected === true) ?
+          {(device_selected === true) ?
             <NepiDeviceMessages
               rbxNamespace={namespace}
-              has_set_home={(this.state.rbx_capabilities !== null) ? (this.state.rbx_capabilities.has_set_home === true) : false}
+              has_set_home={(this.state !== null) ? (this.state.has_set_home === true) : false}
               title={"System Information"}
             />
             : null}
+
+
+                  {(device_selected === true) ?
+                      <NepiIFSaveData
+                      saveNamespace={save_data_topic}
+                      make_section={true}
+                      show_all_save_options={false}
+                      show_topic_selector={false}
+                    />
+                : null}
+
+                  {(device_selected === true) ?
+                    <NepiIFConnectNavPose
+                    namespace={navpose_connect_topic}
+                    navpose_topic={navpose_topic}
+                    select_title={"NavPose Frame"}
+                    show_selector={true}
+                    show_transform={true}
+                    show_controls={true}
+                    show_data={false}
+                    make_section={true}
+                    />
+                  : null}
+
+
+                  {(device_selected === true) ?
+                    <NepiIFMessages
+                    messagesNamespace={namespace + '/messages'}
+                    hide_control={true}
+                    title={"Messages"}
+                    />
+                  : null}
+
+
 
         </Column>
         <Column>
           {this.renderDeviceSelection()}
 
-          {(deviceSelected === true) ?
+          {(device_selected === true) ?
             this.renderSetupControls()
             : null}
 
-          {(deviceSelected === true) ?
+          {(device_selected === true) ?
             <NepiIFConfig
               namespace={namespace}
               title={"Save Config"}
@@ -811,7 +861,7 @@ class NepiDeviceRBX extends Component {
               autonomous_movement_enabled decide which control types are
               offered; capabilities alone only say whether a robot type
               supports something, not whether this deployment wants it. */}
-          {(deviceSelected === true) ?
+          {(device_selected === true) ?
             <NepiDeviceControls
               rbxNamespace={namespace}
               title={"Process Controls"}
@@ -820,12 +870,12 @@ class NepiDeviceRBX extends Component {
             />
             : null}
 
-          {(deviceSelected === true) ?
-            <NepiIFSettings
-              settingsNamespace={namespace + '/settings'}
-              allways_show_controls={true}
-              title={"Device Settings"}
-            />
+          {(device_selected === true) ?
+                          <NepiIFSettings
+                            settingsNamespace={settings_topic}
+                            allways_show_controls={true}
+                            title={"Device Settings"}
+                        />
             : null}
 
         </Column>

@@ -37,6 +37,10 @@ import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateV
 
 import NepiIFConfig from "./Nepi_IF_Config" 
 
+
+
+
+
 @inject("ros")
 @observer
 
@@ -355,6 +359,7 @@ class NepiDeviceIDXControls extends Component {
 
 
     const devices = this.props.ros.idxDevices
+    const status_msg = this.props.ros.idxDevices[namespace]
     var has_resolution =   false
     var has_framerate =   false
     var has_auto_adjust =   false
@@ -388,8 +393,7 @@ class NepiDeviceIDXControls extends Component {
 
     const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : device_controls_restricted === false
     const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
-
-
+   
 
     if ( device_controls_restricted === true){
       return (
@@ -628,6 +632,7 @@ class NepiDeviceIDXControls extends Component {
                         <ButtonMenu>
                           <Button  onClick={() => this.props.ros.sendTriggerMsg(namespace + '/reset_controls')}>{"Reset"}</Button>
                         </ButtonMenu>
+
 
                     <NepiIFConfig
                         namespace={namespace}
