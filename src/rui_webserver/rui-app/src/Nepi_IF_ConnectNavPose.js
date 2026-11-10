@@ -196,7 +196,7 @@ class NepiIFConnectNavPose extends Component {
     const available_topics = connect_status_msg.available_topics
     const available_names = connect_status_msg.available_names
     const selected_topic = connect_status_msg.selected_topic
-    const connected = connect_status_msg.status_connected
+    const connected = connect_status_msg.connected
 
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
