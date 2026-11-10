@@ -2846,6 +2846,11 @@ class Nepi_IF_ImageViewer extends Component {
     const show_save_config = (this.props.show_save_config !== undefined) ? this.props.show_save_config : true
     // const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
+
+    const show_stabilize_control = (this.props.show_stabilize_control !== undefined) ? this.props.show_stabilize_control : true
+    const stabilize_disabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_disabled : true
+    const stabilize_enabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_enabled : false
+
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
     const save_data_topic  = (status_msg !== null && status_msg !== undefined) ? status_msg.save_data_topic : ''
@@ -2943,6 +2948,21 @@ class Nepi_IF_ImageViewer extends Component {
                         </div>
                         : null }
 
+
+                        <div style={{ marginLeft: 'auto' }} hidden={(show_reset_button === false  || namespace === 'None')}>
+
+                             <Label title={"Stabilize"}>
+                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
+                                  <Toggle
+                                    disabled={stabilize_disabled}
+                                    checked={stabilize_enabled}
+                                    onClick={() => {
+                                      sendBoolMsg(namespace + '/set_stabilize_enable', !stabilize_enabled)
+                                    }}
+                                  />
+                                </Label>
+
+                        </div>
 
                         <div style={{ marginLeft: 'auto' }} hidden={(show_reset_button === false  || namespace === 'None')}>
 
