@@ -311,8 +311,8 @@ class NepiIFConnectNavPose extends Component {
 
     const frameName = status_msg.frame_name
     const nodeName = status_msg.node_name
-    const navposeTopic = status_msg.navpose_topic
-    const transformTopic = status_msg.transform_topic
+    const navposeTopic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic :connect_status_msg.navpose_topic
+    const transformTopic = (this.props.transform_topic !== undefined)? this.props.transform_topic :connect_status_msg.transform_topic
 
     const sourceDescription = status_msg.data_source_description
     const refDescription = status_msg.data_ref_description
@@ -409,12 +409,12 @@ class NepiIFConnectNavPose extends Component {
       )
     }
 
-    const transform_topic = connect_status_msg.transform_topic
+    const transform_topic = (this.props.transform_topic !== undefined)? this.props.transform_topic :connect_status_msg.transform_topic
 
-    const show_transform = (this.props.show_transform !== undefined)? this.props.show_transform : false
+    const show_transform = (this.props.show_transform !== undefined)? this.props.show_transform : transform_topic !== ''
     const edit_transform = (this.props.edit_transform !== undefined)? this.props.edit_transform : false
     
-    const navpose_topic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic : null
+    const navpose_topic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic :connect_status_msg.navpose_topic
     return (
       <React.Fragment>
 
