@@ -773,11 +773,11 @@ class NepiDeviceRBX extends Component {
 
     const save_data_topic = (status_msg && status_msg.save_data_topic) ? status_msg.save_data_topic : null
     const settings_topic = (status_msg && status_msg.settings_topic) ? status_msg.settings_topic : null
-    // The NavPose source selector is the node's ConnectNavPoseIF at
-    // <node_namespace>/navpose_connect, the namespace Nepi_IF_ConnectNavPose
-    // expects. DeviceRBXStatus has no field for it: connect_navpose_topic does
-    // not exist, and connect_navpose_topic carries the SELECTED source.
-    const connect_navpose_topic = (status_msg && status_msg.node_namespace) ? status_msg.node_namespace + "/navpose_connect" : null
+    // The NavPose source selector is the node's ConnectNavPoseIF, which
+    // device_if_rbx reports in DeviceRBXStatus.connect_navpose_topic
+    // (<node_namespace>/connect_navpose, the fallback before the field arrives).
+    const connect_navpose_topic = (status_msg && status_msg.connect_navpose_topic) ? status_msg.connect_navpose_topic :
+                                  (status_msg && status_msg.node_namespace) ? status_msg.node_namespace + "/connect_navpose" : null
     const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null    
 
     return (

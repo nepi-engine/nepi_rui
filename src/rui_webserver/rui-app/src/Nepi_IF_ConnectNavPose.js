@@ -309,6 +309,9 @@ class NepiIFConnectNavPose extends Component {
       )
     }
 
+    // Topics come from the props or ConnectIFStatus; fall back to the source's own
+    // NavPoseStatus until the connect status has arrived.
+    const connect_status_msg = (this.state.connect_status_msg != null) ? this.state.connect_status_msg : status_msg
     const frameName = status_msg.frame_name
     const nodeName = status_msg.node_name
     const navposeTopic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic :connect_status_msg.navpose_topic
