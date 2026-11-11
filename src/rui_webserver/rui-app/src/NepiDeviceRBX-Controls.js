@@ -167,6 +167,8 @@ class NepiDeviceControls extends Component {
       location_long: 0,
       altitude_meters: 0,
       yaw_deg_location: 0,
+      // Set once the GoTo Location form has been filled from the first real fix
+      location_prefilled: false,
 
       // motor_test_timeout_s setting, surfaced here (in addition to the
       // generic Settings panel) since it directly controls the motor
@@ -496,7 +498,7 @@ class NepiDeviceControls extends Component {
   // Callback for handling NavPose messages. The current-position values used by
   // the "Set to Current" goto helper come from the device's NavPose topic.
   navposeListener(message) {
-    this.setState({
+    const update = {
       current_lat: message.latitude,
       current_long: message.longitude,
       current_altitude: message.altitude_m,
@@ -504,7 +506,21 @@ class NepiDeviceControls extends Component {
       current_roll: message.roll_deg,
       current_pitch: message.pitch_deg,
       current_yaw: message.yaw_deg
-    })
+    }
+    // Fill the GoTo Location form from the first real fix, once, so it never
+    // starts at 0,0: sent untouched, those defaults drove the vehicle toward
+    // latitude 0, longitude 0 (bench, 2026-11-10). After that the fields are
+    // the operator's, and "Set to Current" refreshes them on demand.
+    const has_fix = (typeof message.latitude === 'number' && typeof message.longitude === 'number' &&
+                     (message.latitude !== 0 || message.longitude !== 0))
+    if (this.state.location_prefilled !== true && has_fix) {
+      update.location_lat = message.latitude
+      update.location_long = message.longitude
+      update.altitude_meters = message.altitude_m
+      update.yaw_deg_location = message.yaw_deg
+      update.location_prefilled = true
+    }
+    this.setState(update)
   }
 
   // Function for configuring and subscribing to DeviceRBXStatus
@@ -532,7 +548,8 @@ class NepiDeviceControls extends Component {
       "nepi_interfaces/NavPose",
       this.navposeListener
     )
-    this.setState({ navposeListener: navposeListener })
+    // A different device's fix should refill the form, not keep the last one's
+    this.setState({ navposeListener: navposeListener, location_prefilled: false })
   }
 
   // Function for configuring and subscribing to the device's Settings status
