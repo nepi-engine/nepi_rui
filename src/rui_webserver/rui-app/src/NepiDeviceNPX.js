@@ -158,7 +158,7 @@ class NepiDeviceNPX extends Component {
 
     const save_data_topic = (status_msg && status_msg.save_data_topic) ? status_msg.save_data_topic : null
     const settings_topic = (status_msg && status_msg.settings_topic) ? status_msg.settings_topic : null
-    const navpose_connect_topic = (status_msg && status_msg.navpose_connect_topic) ? status_msg.navpose_connect_topic : null
+    const connect_navpose_topic = (status_msg && status_msg.connect_navpose_topic) ? status_msg.connect_navpose_topic : null
     const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null
 
     
@@ -190,7 +190,7 @@ class NepiDeviceNPX extends Component {
 
                   {(device_selected === true) ?
                     <NepiIFConnectNavPose
-                    namespace={navpose_connect_topic}
+                    namespace={connect_navpose_topic}
                     navpose_topic={navpose_topic}
                     select_title={"NavPose Frame"}
                     show_selector={true}
