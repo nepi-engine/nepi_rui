@@ -80,7 +80,7 @@ class NepiIFTransform extends Component {
     this.renderTransform = this.renderTransform.bind(this)
     this.renderOffsets = this.renderOffsets.bind(this)
 
-    this.updateTransformData = this.updateTransformData(this)
+    this.updateTransformData = this.updateTransformData.bind(this)
 
     this.updateListener = this.updateListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
