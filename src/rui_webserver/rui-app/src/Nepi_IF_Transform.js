@@ -80,7 +80,7 @@ class NepiIFTransform extends Component {
     this.renderTransform = this.renderTransform.bind(this)
     this.renderOffsets = this.renderOffsets.bind(this)
 
-    this.updateTransformData = this.updateTransformData(this)
+    this.updateTransformData = this.updateTransformData.bind(this)
 
     this.updateListener = this.updateListener.bind(this)
     this.statusListener = this.statusListener.bind(this)
@@ -89,7 +89,7 @@ class NepiIFTransform extends Component {
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
     
-    this.update_transform_data(message)
+    this.updateTransformData(message)
 
     this.setState({
       transform_msg: message,
