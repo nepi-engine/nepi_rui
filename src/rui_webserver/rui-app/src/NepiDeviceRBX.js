@@ -34,7 +34,7 @@ import NepiDeviceMessages from "./NepiDeviceRBX-Info"
 
 import NepiDeviceInfo from "./Nepi_IF_DeviceInfo"
 
-import ImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConnectNavPose from "./Nepi_IF_ConnectNavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
@@ -42,7 +42,7 @@ import NepiIFMessages from "./Nepi_IF_Messages"
 
 import NepiIFConfig from "./Nepi_IF_Config"
 
-import { createShortValuesFromNamespaces, createMenuListFromStrList,
+import { createMenuListFromStrList,
   onDropdownSelectedSendIndex, onUpdateSetStateValue } from "./Utilities"
 
 
@@ -74,7 +74,6 @@ class NepiDeviceRBX extends Component {
       error_bound_deg: 0,
       error_stabilize_s: 0,
       cmd_timeout: null,
-      image_source: null,
       image_status_overlay: null,
       home_lat: null,
       home_long: null,
@@ -84,7 +83,6 @@ class NepiDeviceRBX extends Component {
       states_menu: null,
       modes_list: null,
       modes_menu: null,
-      image_topic: null,
 
       actions_list: null,
       actions_menu: null,
@@ -99,9 +97,9 @@ class NepiDeviceRBX extends Component {
       // This device's own settings/status, kept here for two consumers: the
       // setting NAMES and VALUES are passed to NepiDeviceControls (driver
       // Settings such as teleop_movement_enabled/autonomous_movement_enabled
-      // gate its control types), and enabled_image_sources curates
-      // createImageOptions(). enabled_image_sources is a comma-separated topic
-      // allowlist, or empty for "unrestricted" (no curation saved).
+      // gate its control types), and enabled_image_sources curates the image
+      // viewer's topic list (getViewerImageTopics). enabled_image_sources is a
+      // comma-separated topic allowlist, or empty for "unrestricted".
       rbxSettingsListener: null,
       settingsNamesList: [],
       settingsValuesDict: {},
@@ -131,7 +129,7 @@ class NepiDeviceRBX extends Component {
     this.selectDeviceNamespace = this.selectDeviceNamespace.bind(this)
 
     this.createTopicOptions = this.createTopicOptions.bind(this)
-    this.createImageOptions = this.createImageOptions.bind(this)
+    this.getViewerImageTopics = this.getViewerImageTopics.bind(this)
     this.onEnterSetInputErrorBoundValue = this.onEnterSetInputErrorBoundValue.bind(this)
     this.sendErrorBounds = this.sendErrorBounds.bind(this)
     this.onDropdownSelectedAction = this.onDropdownSelectedAction.bind(this)
@@ -159,7 +157,6 @@ class NepiDeviceRBX extends Component {
       error_bound_deg: message.error_bounds.max_rotation_error_deg,
       error_stabilize_s: message.error_bounds.min_stabilize_time_s,
       cmd_timeout: message.cmd_timeout,
-      image_source: (message.connect_image_topic !== undefined) ? message.connect_image_topic : message.image_source,
       image_status_overlay: message.image_status_overlay,
       home_lat: message.home_lat,
       home_long: message.home_long,
@@ -304,7 +301,6 @@ class NepiDeviceRBX extends Component {
     const currentRBXNamespace = this.state.currentRBXNamespace
     if (prevState.currentRBXNamespace !== currentRBXNamespace && currentRBXNamespace !== null) {
       if (currentRBXNamespace.indexOf('null') === -1) {
-        this.setState({ image_topic: currentRBXNamespace.split('/rbx')[0] + "/image" })
         this.updateInfoListener()
         this.updateRbxSettingsListener(currentRBXNamespace)
         this.updateRobotLinkListener(currentRBXNamespace)
@@ -379,44 +375,24 @@ class NepiDeviceRBX extends Component {
     })
   }
 
-  createImageOptions(RBXDeviceNamespace) {
-    var items = []
-    items.push(<Option>{"None"}</Option>)
-
-    // enabled_image_sources (see rbxSettingsListenerCb) is an opt-in
-    // curation Setting: when a driver exposes it and the operator has saved a
-    // non-empty allowlist (the Sim Connector's Robot Capabilities panel writes
-    // it), only those topics are offered, and the list is exhaustive. Empty
-    // or absent means nothing is curated, and the full candidate list below
-    // is offered exactly as before.
+  // Topic list for the image viewer's selector. undefined means "no curation"
+  // and lets NepiIFImageViewerSelector offer every image topic, exactly as the
+  // servo page does.
+  //
+  // enabled_image_sources (see rbxSettingsListenerCb) is an opt-in curation
+  // Setting: when a driver exposes it and a non-empty allowlist is saved, only
+  // those topics are offered, plus this robot's own published image (its
+  // status-overlay output) so curation never hides the robot's own view.
+  getViewerImageTopics(status_msg) {
     const enabledRaw = this.state.enabled_image_sources || ""
     const enabledList = enabledRaw.split(',').map((s) => s.trim()).filter((s) => s !== "")
-
-    const image_topics = this.props.ros.imageTopics
-    var img_topics = []
-
-    for (var i = 0; i < image_topics.length; i++) {
-      const topic = image_topics[i]
-      if (topic.includes('zed_node') === true) {
-        continue
-      }
-      if (enabledList.length > 0) {
-        if (enabledList.includes(topic)) {
-          img_topics.push(topic)
-        }
-        continue
-      }
-      if (topic.startsWith(RBXDeviceNamespace) === true) {
-        continue
-      }
-      img_topics.push(topic)
+    if (enabledList.length === 0) {
+      return undefined
     }
-
-    const img_topics_short = createShortValuesFromNamespaces(img_topics)
-    for (i = 0; i < img_topics.length; i++) {
-      items.push(<Option value={img_topics[i]}>{img_topics_short[i]}</Option>)
-    }
-    return items
+    const live_msg = this.state.status_msg
+    const own_image_topic = (live_msg && live_msg.pub_image_topic) ? live_msg.pub_image_topic :
+                            (status_msg && status_msg.pub_image_topic) ? status_msg.pub_image_topic : null
+    return this.props.ros.imageTopics.filter((topic) => enabledList.includes(topic) || topic === own_image_topic)
   }
 
   clearDeviceSelection() {
@@ -432,7 +408,6 @@ class NepiDeviceRBX extends Component {
     this.setState({
       currentRBXNamespace: null,
       currentRBXNamespaceText: "No device selected",
-      image_topic: null,
       status_msg: null,
       capabilities: null,
       states_list: null,
@@ -514,8 +489,7 @@ class NepiDeviceRBX extends Component {
 
 
   renderDeviceSelection() {
-    const { rbxDevices, sendStringMsg, sendBoolMsg, sendGeoPointMsg } = this.props.ros
-    const NoneOption = <Option>None</Option>
+    const { rbxDevices, sendBoolMsg, sendGeoPointMsg } = this.props.ros
     const device_selected = (this.state.currentRBXNamespace != null)
     const has_fake_gps = (this.state !== null) ? (this.state.has_fake_gps === true) : false
     const namespace = this.state.currentRBXNamespace
@@ -556,21 +530,6 @@ class NepiDeviceRBX extends Component {
                   </Label>
                 </div>
 
-                <Label title={"Image_Source"}>
-                  <Select
-                    id="image_source"
-                    onChange={(event) => sendStringMsg(namespace + "/set_image_topic", event.target.value)}
-                    value={this.state.image_source}
-                  >
-                    {namespace
-                      ? this.createImageOptions(namespace)
-                      : NoneOption}
-                  </Select>
-                </Label>
-
-              </Column>
-              <Column>
-
                 <Label title="Image Status Overlay">
                   <AsyncToggle
                     checked={this.state.image_status_overlay === true}
@@ -578,9 +537,8 @@ class NepiDeviceRBX extends Component {
                   </AsyncToggle>
                 </Label>
 
-                <Label title="">
-                </Label>
-
+              </Column>
+              <Column>
               </Column>
             </Columns>
 
@@ -746,19 +704,24 @@ class NepiDeviceRBX extends Component {
     )
   }
 
-  renderImageViewer() {
+  // Same viewer as the servo page (NepiDeviceSVX-ImageViewer): a topic selector
+  // above the image, choosing what this browser views. It is view-only and
+  // publishes nothing to the robot. The robot's own status-overlay image
+  // (<node>/color_image, DeviceRBXStatus.pub_image_topic) is one of the options.
+  renderImageViewer(status_msg) {
     return (
       <React.Fragment>
         <Columns>
           <Column equalWidth={false}>
-            <ImageViewer
-              image_topic={this.state.image_topic}
-              title={""}
-              hideQualitySelector={false}
-              show_save_config={false}
-              show_save_data={false}
-              show_topic_selector={false}
-            />
+            <div id={'rbxImageViewer'}>
+              <NepiIFImageViewerSelector
+                id={'rbxImageViewer'}
+                image_topics={this.getViewerImageTopics(status_msg)}
+                hideQualitySelector={true}
+                show_save_controls={false}
+                show_image_controls={false}
+              />
+            </div>
           </Column>
         </Columns>
       </React.Fragment>
@@ -795,9 +758,9 @@ class NepiDeviceRBX extends Component {
             />
             : null}
 
-          {this.renderImageViewer()}
-
- 
+          {(device_selected === true) ?
+            this.renderImageViewer(status_msg)
+            : null}
 
           {(device_selected === true) ?
             <NepiDeviceMessages
