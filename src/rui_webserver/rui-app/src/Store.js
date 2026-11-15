@@ -3377,7 +3377,7 @@ sendSaveConfigTrigger(namespace) {
 
 
     // Publish a plain nepi_interfaces/Transform directly to a device's
-    // TransfromIF set topic (e.g. <transform_topic>/set_3d_transform).
+    // Transform3DIF set topic (e.g. <transform_topic>/set_transform).
     @action.bound
     sendTransformMsg(namespace, transform_msg) {
         this.publishMessage({

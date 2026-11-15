@@ -217,9 +217,12 @@ class NepiIFTransform extends Component {
     if (transform_data == null) {
       return
     }
-    // Device (TransfromIF) mode: publish a plain Transform to set_3d_transform
+    // Device (Transform3DIF) mode: publish a plain Transform to set_transform.
+    // Must match the subscriber topic in system_if.py Transform3DIF; engine 6cec147
+    // renamed it from set_3d_transform, and the RUI kept publishing to a topic with
+    // no subscriber, so every edit reverted to the latched value.
     if (this.props.device_transform === true) {
-      const setNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : transformNamespace + "/set_3d_transform"
+      const setNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : transformNamespace + "/set_transform"
       sendTransformMsg(setNamespace, transform_data)
       return
     }
