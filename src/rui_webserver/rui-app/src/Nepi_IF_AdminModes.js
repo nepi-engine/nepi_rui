@@ -205,7 +205,7 @@ class NepiIFAdminModes extends Component {
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 <Label title={title} />
                   {this.renderDebugModes()}
-                  {(admin_mode_set === true) ? this.renderRunModes : null}
+                  {(admin_mode_set === true) ? this.renderRunModes() : null}
 
           </React.Fragment>
       )
@@ -216,7 +216,7 @@ class NepiIFAdminModes extends Component {
           <Section title={title}>
 
                   {this.renderDebugModes()}
-                  {(admin_mode_set === true) ? this.renderRunModes : null}
+                  {(admin_mode_set === true) ? this.renderRunModes() : null}
 
         </Section>
      )
