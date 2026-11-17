@@ -2847,7 +2847,7 @@ class Nepi_IF_ImageViewer extends Component {
     // const show_all_config_options = (this.props.show_all_config_options !== undefined) ? this.props.show_all_config_options : true
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
 
-    const show_stabilize_control = (this.props.show_stabilize_control !== undefined) ? this.props.show_stabilize_control : true
+    const show_stabilize_control = (this.props.show_stabilize_control !== undefined) ? this.props.show_stabilize_control : status_msg.has_stabilize
     const stabilize_disabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_disabled : true
     const stabilize_enabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_enabled : false
 
