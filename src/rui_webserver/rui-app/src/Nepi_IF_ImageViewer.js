@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -281,6 +281,17 @@ class Nepi_IF_ImageViewer extends Component {
   //   )
   // }
 
+  // Advertised type of a topic from the store's topic list, or null when the
+  // list does not carry it (yet).
+  getTopicType(topic) {
+    const { topicNames, topicTypes } = this.props.ros
+    if (topicNames == null || topicTypes == null) {
+      return null
+    }
+    const ind = topicNames.indexOf(topic)
+    return (ind !== -1 && ind < topicTypes.length) ? topicTypes[ind] : null
+  }
+
   // Function for configuring and subscribing to Status
   //
   // Idempotent by design. Re-pointing the listener tears the subscription down
@@ -321,12 +332,22 @@ class Nepi_IF_ImageViewer extends Component {
       })
 
     }
+    // Subscribe only when <topic>/status really is an ImageStatus. Any
+    // sensor_msgs/Image can be picked here, but a depth map's status is a
+    // DepthMapStatus, and rosbridge rejects a subscribe whose type differs from
+    // the advertised one. The stream itself is not tied to the status, so such
+    // an image still displays; only the ImageStatus-driven controls stay hidden,
+    // as they do before any status arrives. An unknown type (the topic list
+    // has not caught up yet) keeps the ImageStatus subscribe.
     if (status_topic !== 'None' && status_topic !== 'None Available' && status_topic != null ){
-      var status_listenter = this.props.ros.setupStatusListener(
-            status_topic + '/status',
-            "nepi_interfaces/ImageStatus",
-            this.statusListener
-          )
+      const status_type = this.getTopicType(status_topic + '/status')
+      if (status_type === null || status_type === "nepi_interfaces/ImageStatus") {
+        var status_listenter = this.props.ros.setupStatusListener(
+              status_topic + '/status',
+              "nepi_interfaces/ImageStatus",
+              this.statusListener
+            )
+      }
     }
     this.setState({ status_listenter: status_listenter,
                     subscribed_status_topic: (status_listenter != null) ? status_topic : null,
@@ -1545,8 +1566,7 @@ class Nepi_IF_ImageViewer extends Component {
                       {/* Zoom 3D / Rotate 3D / Tilt 3D move the render camera around
                           the pointcloud. They are titled "3D" to separate them from the
                           "Rotate" slider below, which rotates the flat output image
-                          via live_adjust_rotate_ratio -- two different controls that
-                          both used to read simply "Rotate", in two different panels. */}
+                          via live_adjust_rotate_ratio. */}
                       <div hidden={(has_zoom_3d !== true )}>
                       <SliderAdjustment
                             title={"Zoom 3D"}
@@ -1634,9 +1654,9 @@ class Nepi_IF_ImageViewer extends Component {
                             (Rotate 3D, Tilt 3D and zoom) through the backend.
                             Reset Position returns Translate X and Translate Y to
                             their 0.5 neutral -- the same value reset_renders uses
-                            for live_adjust_x_ratio / live_adjust_y_ratio. These
-                            replace a single Reset Controls button that fired
-                            reset_renders and reset far more than this section owns. */}
+                            for live_adjust_x_ratio / live_adjust_y_ratio.
+                            reset_renders is not used here: it resets far more
+                            than this section owns. */}
                         <ButtonMenu>
                             <Button onClick={() => sendTriggerMsg( namespace + "/reset_render_3d_controls")}>{"Reset Orientation"}</Button>
                             <Button onClick={() => {
