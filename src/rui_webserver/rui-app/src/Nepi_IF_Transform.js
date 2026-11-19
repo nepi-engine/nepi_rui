@@ -5,11 +5,11 @@
 # This file is part of nepi rui (nepi_rui) repo
 # (see https://github.com/nepi-engine/nepi_rui)
 #
-# License: NEPI RUI repo source_ref_description-code and NEPI Images that use this source_ref_description-code
-# are licensed under the "Numurus Software License", 
+# License: NEPI RUI repo source-code and NEPI Images that use this source-code
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
-# Redistributions in source_ref_description code must retain this top-level comment block.
+# Redistributions in source code must retain this top-level comment block.
 # Plagiarizing this software to sidestep the license obligations is illegal.
 #
 # Contact Information:
@@ -218,9 +218,8 @@ class NepiIFTransform extends Component {
       return
     }
     // Device (Transform3DIF) mode: publish a plain Transform to set_transform.
-    // Must match the subscriber topic in system_if.py Transform3DIF; engine 6cec147
-    // renamed it from set_3d_transform, and the RUI kept publishing to a topic with
-    // no subscriber, so every edit reverted to the latched value.
+    // Must match the subscriber topic in system_if.py Transform3DIF; with no
+    // subscriber on the topic, every edit reverts to the latched value.
     if (this.props.device_transform === true) {
       const setNamespace = (this.props.update_namespace !== undefined)? this.props.update_namespace : transformNamespace + "/set_transform"
       sendTransformMsg(setNamespace, transform_data)

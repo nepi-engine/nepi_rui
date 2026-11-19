@@ -45,13 +45,9 @@ import { onUpdateSetStateValue, onEnterSendIntValue, onEnterSendFloatValue, onCh
 //                         on <statusNamespace>/status.
 //
 //   nodeNamespace       - the device node namespace, e.g. /nepi/device1/zed2_31
-//                         Passed by the parent but no longer used for controls.
+//                         Passed by the parent but not used for controls.
 //
-// This used to be split: PointcloudIF registered every subscriber on the node
-// namespace while status arrived on the data product namespace, so a control
-// published to the data product namespace was silently dropped. PointcloudIF
-// was realigned to the data product namespace, matching NavPoseIF and
-// BaseImageIF, so that split is gone. Build control topics from
+// This matches NavPoseIF and BaseImageIF. Build control topics from
 // statusNamespace.
 class NepiIFPointcloudControls extends Component {
   constructor(props) {
@@ -82,9 +78,8 @@ class NepiIFPointcloudControls extends Component {
   // Callback for handling ROS PointcloudStatus messages
   statusListener(message) {
     // PointcloudStatus is flat. The three process control values are top level
-    // fields on the status message itself - they used to arrive nested inside a
-    // process_status submessage, which the pointcloud/image message
-    // consolidation removed. Guard on the status message, not on a submessage.
+    // fields on the status message itself.
+    // Guard on the status message, not on a submessage.
     if (message == null) {
       return
     }
@@ -200,8 +195,8 @@ class NepiIFPointcloudControls extends Component {
 
                   {/* No Columns wrapper here on purpose. Label splits its row
                       flex 1 / flex 1 between title and input, so nesting these in
-                      a half-width Column left each title on ~25% of the panel and
-                      wrapped every one of them. Full panel width plus labelStyle
+                      a half-width Column leaves each title on ~25% of the panel and
+                      wraps every one of them. Full panel width plus labelStyle
                       flex 3 gives the title 3/4 of the row and parks the input
                       box flush against the right edge. */}
                   <Label title={"Voxel Downsample Size (m) - 0 disables"} labelStyle={{ flex: 3 }}>

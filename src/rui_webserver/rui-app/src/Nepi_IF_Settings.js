@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -138,7 +138,7 @@ class Nepi_IF_Settings extends Component {
     // re-enters componentDidUpdate on every render (mobx-react's observer SCU
     // re-renders on any state identity change), which is an infinite update
     // loop that takes down the whole RUI page, and it would also clear the
-    // operator's in-progress edit on every frame.  Same fix as
+    // operator's in-progress edit on every frame.  Same guard as
     // Nepi_IF_Controls.js and Nepi_IF_Data.js.
     if (namespace_changed === true || this.state.needs_update === true) {
       this.setState({ settingsNamespace: settingsNamespace,
@@ -210,8 +210,7 @@ class Nepi_IF_Settings extends Component {
     if (status_msg == null) { return [] }
     const names = status_msg.controls_name_list || []
     const msgs = status_msg.controls_msg_list || []
-    // Hidden settings are not offered in the selector, matching the way the
-    // retired SettingCap.disabled flag was filtered out of the old caps list.
+    // Hidden settings are not offered in the selector.
     var shown = []
     for (let i = 0; i < names.length; i++) {
       if (msgs[i] != null && msgs[i].hidden === true) { continue }
@@ -426,8 +425,7 @@ class Nepi_IF_Settings extends Component {
     const make_section = (this.props.make_section !== undefined)? this.props.make_section : true
 
     // A node with no settings reports an empty controls list, so there is
-    // nothing to gate on beyond that -- the old 'None' sentinel setting is no
-    // longer published (the 'None' type maps to no control type).
+    // nothing to gate on beyond that (the 'None' type maps to no control type).
     const has_settings = (this.getSettingNames().length > 0)
 
     const { userRestricted} = this.props.ros

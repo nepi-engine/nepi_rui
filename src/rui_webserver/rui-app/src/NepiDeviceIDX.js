@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -378,10 +378,7 @@ class NepiDeviceIDX extends Component {
 
 
                           {/* PointcloudIF process controls. Controls publish to and
-                              status arrives on the same data product namespace. The
-                              old split, where controls went to the node namespace,
-                              ended when PointcloudIF was realigned to the data
-                              product namespace. */}
+                              status arrives on the same data product namespace. */}
                           {(device_selected === true && has_pointcloud === true) ?
                           <NepiIFPointcloudControls
                               nodeNamespace={namespace}

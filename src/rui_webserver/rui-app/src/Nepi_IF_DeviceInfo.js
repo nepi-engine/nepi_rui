@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -95,8 +95,8 @@ class NepiIFDeviceInfo extends Component {
   // Subscribe on mount when the namespace is already set. componentDidUpdate
   // below only reacts to the namespace CHANGING after mount, so a page that
   // mounts this component with its namespace in place (e.g. NepiDeviceRBX.js,
-  // which renders it only once a device is selected) never subscribed, and
-  // the device name stayed blank.
+  // which renders it only once a device is selected) would otherwise never
+  // subscribe, and the device name would stay blank.
   componentDidMount() {
     if (this.props.deviceNamespace != null) {
       this.updateListener()

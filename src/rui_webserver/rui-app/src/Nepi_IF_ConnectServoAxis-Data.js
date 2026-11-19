@@ -40,11 +40,9 @@ import { round } from "./Utilities"
 // capabilities dictionary, so the subscription is made through the generic
 // setupStatusListener.
 //
-// One row per motor, each with a divider and the bold motor_name header. The
-// pre-split Nepi_IF_ConnectServoAxis placed a motor's read-only cells and its
-// command cells side by side in adjacent columns of a single row; with data and
-// controls in separate components those become two stacked blocks, each with its
-// own per-motor rows.
+// One row per motor, each with a divider and the bold motor_name header. With
+// data and controls in separate components, a motor's read-only cells and its
+// command cells are two stacked blocks, each with its own per-motor rows.
 class NepiIFServoAxisData extends Component {
   constructor(props) {
     super(props)
@@ -125,8 +123,7 @@ class NepiIFServoAxisData extends Component {
   //
   // The rotatable-wheel (steering) rows render only for a motor reporting
   // has_rotation true, and the rotation limit rows only where that rotation is
-  // limited (has_continuous_rotation false). A non-steering motor's rows are
-  // unchanged.
+  // limited (has_continuous_rotation false).
   renderServoAxisStatus(motor) {
     const motor_enable = motor.motor_enable
     const motor_dir = motor.motor_dir

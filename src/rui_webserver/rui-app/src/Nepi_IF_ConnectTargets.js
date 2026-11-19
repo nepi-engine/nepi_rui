@@ -207,16 +207,15 @@ class NepiIFConnectTargets extends Component {
     // connect rows (make_section={false}) pass show_connect_header={true}: the
     // row's title and its connected BooleanIndicator then share a line ABOVE
     // the selector, and the Select spans the panel width. Default false keeps
-    // the original one-line layout with the indicator beside the Select.
+    // the one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
     const header_title = (this.props.title !== undefined) ? this.props.title : "Targets Connect"
 
-    // Single-line row mode, ported from Nepi_IF_ConnectNavPose so the two
+    // Single-line row mode, shared with Nepi_IF_ConnectNavPose so the two
     // sibling connect components read the same prop the same way. Pages that
     // pack several connect rows into one panel pass shortened={true} and get
     // exactly one line: just the Select, no header line and no Connected
-    // indicator. Default false leaves both layouts below untouched, so every
-    // existing consumer renders as it always has.
+    // indicator. Default false leaves both layouts below untouched.
     const shortened = (this.props.shortened !== undefined) ? this.props.shortened : false
 
     const selector = (

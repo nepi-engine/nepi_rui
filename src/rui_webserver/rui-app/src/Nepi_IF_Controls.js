@@ -105,7 +105,7 @@ class Nepi_IF_Controls extends Component {
     }
     // Guarded: an unconditional setState here re-enters componentDidUpdate on
     // every render (mobx-react's observer SCU re-renders on any state identity
-    // change), which is an infinite update loop, and it also cleared the
+    // change), which is an infinite update loop, and it also clears the
     // operator's in-progress edits on every frame.
     if (namespace_changed === true || this.state.needs_update === true) {
       this.setState({ controlsNamespace: namespace, needs_update: false})
@@ -211,8 +211,7 @@ class Nepi_IF_Controls extends Component {
 
   // Collect controls into row groups. Controls carrying the same non-empty
   // Control.display_group render on ONE horizontal line; an empty group -- the
-  // default, and what every control carried before the field existed -- gets a
-  // group of its own and renders stacked exactly as before.
+  // default -- gets a group of its own and renders stacked.
   //
   // Grouping is over CONSECUTIVE runs on purpose. If the same group name
   // reappears further down the list it opens a NEW row rather than pulling that
@@ -266,11 +265,9 @@ class Nepi_IF_Controls extends Component {
   // Each block below maps one nepi_controls control type to its RUI widget and
   // the nepi_controls "set_*_control_value" topic it publishes to on change.
   //
-  // show_bounds is forwarded, not consumed here. Nepi_IF_Control has always read
-  // a show_bounds prop and defaulted it to true, but nothing passed one, so the
-  // read-only Min/Max block under a bounded control could not be turned off by
-  // the page mounting the set. Forwarding it changes nothing by itself: an
-  // absent prop arrives undefined and the child still defaults to true.
+  // show_bounds is forwarded, not consumed here, so the page mounting the set
+  // can turn off the read-only Min/Max block under a bounded control. An
+  // absent prop arrives undefined and Nepi_IF_Control defaults it to true.
   renderControl(control_msg) {
     const namespace = this.getNamespace()
     const topic = this.props.update_topic !== undefined ? this.props.update_topic : 'update_control'

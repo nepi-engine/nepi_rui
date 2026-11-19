@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -209,8 +209,8 @@ class RangeAdjustment extends Component {
   if (comp_name != null && is_control === true) {
     const new_values = [min, max]
     // No throttle argument here. sendUpdateControlValue's fourth parameter is
-    // the value `index`, so the throttle flag the other two branches take was
-    // going out on the wire as index "true"/"false".
+    // the value `index`, so the throttle flag the other two branches take would
+    // go out on the wire as index "true"/"false".
     this.props.ros.sendUpdateControlValue(this.props.topic, comp_name, new_values)
   }
   else if (comp_name != null) {

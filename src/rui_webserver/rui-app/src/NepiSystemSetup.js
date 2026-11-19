@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -196,9 +196,7 @@ class SystemMgr extends Component {
           { nameStr: 'NEPI_NAV_IP_NMEA', typeStr: 'String',
             value: this.getDerivedIp(this.getSettingValue('NEPI_NAV_IP_NMEA'), prefix, '1') }
         ]
-        // updateSettings now publishes one update_setting message per entry:
-        // the batch 'update_settings' topic is retired, and the node applied
-        // its entries in a sequential loop anyway.
+        // updateSettings publishes one update_setting message per entry.
         this.props.ros.updateSettings(base_namespace + '/settings', settingsList)
       }
     }

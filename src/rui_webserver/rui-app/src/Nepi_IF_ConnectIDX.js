@@ -161,7 +161,7 @@ class NepiIFConnectIDX extends Component {
     // connect rows (make_section={false}) pass show_connect_header={true}: the
     // row's title and its connected BooleanIndicator then share a line ABOVE
     // the selector, and the Select spans the panel width. Default false keeps
-    // the original one-line layout with the indicator beside the Select.
+    // the one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
     const header_title = (this.props.title !== undefined) ? this.props.title : "IDX Connect"
 

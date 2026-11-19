@@ -138,10 +138,10 @@ class NepiDeviceRBX extends Component {
   }
 
 
-  // Callback for handling ROS DeviceRBXStatus messages. In 3.4 the RBX IF
-  // publishes no <ns>/info DeviceRBXData topic; every field this page used
-  // from it, plus the state/mode/setup-action option lists, rides in the
-  // status message. Pose values come from the NavPose topic, as before.
+  // Callback for handling ROS DeviceRBXStatus messages. The RBX IF
+  // publishes no <ns>/info topic; the device fields, plus the
+  // state/mode/setup-action option lists, ride in the
+  // status message. Pose values come from the NavPose topic.
   infoListener(message) {
     this.setState({
       device_name: message.device_name,
@@ -163,8 +163,7 @@ class NepiDeviceRBX extends Component {
       home_alt: message.home_alt
     })
     // Rebuild the Mode/State/Setup Action menus on the first status message
-    // and whenever a list changes. The old guard (`this.state === null`) was
-    // never true in a mounted component, so these menus only showed None.
+    // and whenever a list changes.
     const states = (message.state_options !== undefined) ? message.state_options : []
     const modes = (message.mode_options !== undefined) ? message.mode_options : []
     const actions = (message.setup_action_options !== undefined) ? message.setup_action_options : []
@@ -201,7 +200,7 @@ class NepiDeviceRBX extends Component {
       })
     }
     if (deviceNamespace !== null && deviceNamespace.indexOf('null') === -1) {
-      // 3.4: subscribe to <ns>/status (DeviceRBXStatus); there is no <ns>/info.
+      // Subscribe to <ns>/status (DeviceRBXStatus); there is no <ns>/info.
       var listener = this.props.ros.setupRBXStatusListener(
         deviceNamespace,
         this.infoListener
@@ -294,8 +293,8 @@ class NepiDeviceRBX extends Component {
   // Lifecycle method called when component updates.
   // Used to track changes in the selected device.
   componentDidUpdate(prevProps, prevState) {
-    // Reconcile first: this is the safe phase for the setState calls that used
-    // to run during render out of createTopicOptions.
+    // Reconcile first: this is the safe phase for the selection setState
+    // calls, which must not run during render (see createTopicOptions).
     this.reconcileDeviceSelection(Object.keys(this.props.ros.rbxDevices))
 
     const currentRBXNamespace = this.state.currentRBXNamespace
@@ -347,8 +346,8 @@ class NepiDeviceRBX extends Component {
   // Runs from componentDidUpdate, not from render. It also selects by NAMESPACE
   // rather than by calling setDeviceSelection: that method is a DOM event
   // handler and reads event.nativeEvent.target, so handing it a namespace
-  // string threw "Cannot read properties of undefined (reading 'target')" and
-  // took the whole page down as soon as any RBX device existed.
+  // string would throw "Cannot read properties of undefined (reading 'target')"
+  // and take the whole page down as soon as any RBX device existed.
   reconcileDeviceSelection(topics) {
     const namespace = this.state.currentRBXNamespace
     const selected = (namespace != null && namespace !== 'None')

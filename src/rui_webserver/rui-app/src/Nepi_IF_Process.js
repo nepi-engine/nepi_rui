@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -58,7 +58,6 @@ class Nepi_IF_Process extends Component {
     this.updateProcessListener = this.updateProcessListener.bind(this)
     this.processListener = this.processListener.bind(this)
 
-    // renderControls / renderData are not bound here: they no longer exist.
     // renderProcess() mounts Nepi_IF_Data and Nepi_IF_Controls inline. Binding
     // a method that does not exist throws in the constructor, which kills the
     // whole page the moment this component mounts.
@@ -104,7 +103,7 @@ class Nepi_IF_Process extends Component {
   // Lifecycle method cAlled when compnent updates.
   // Used to track changes in the topic
   // The namespace prop is what every caller passes; processNamespace is kept as
-  // an accepted alias. Reading only processNamespace is what left this component
+  // an accepted alias. Reading only processNamespace would leave this component
   // permanently unsubscribed and blank.
   getProcessNamespace() {
     const ns = (this.props.namespace !== undefined && this.props.namespace !== null) ?

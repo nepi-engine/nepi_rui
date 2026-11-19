@@ -186,7 +186,7 @@ class Nepi_IF_Datum extends Component {
     else {
       const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_datum'
       // Bound here as in every other handler in this file: the widgets below
-      // publish, and neither name was in scope.
+      // publish.
       const namespace = this.props.namespace !== undefined ? this.props.namespace : null
       const { sendUpdateDatumValue } = this.props.ros
       const name = datum_msg.name
@@ -305,17 +305,13 @@ class Nepi_IF_Datum extends Component {
       const display_name = (datum_msg.display_name && datum_msg.display_name !== '') ? datum_msg.display_name : name
       const value_names = datum_msg.value_names
       const show_header_label = display_name !== '' && display_name !== 'None' && value_names.length > 1
-      // Datum.msg spells these display_hidden / display_disabled. Read under
-      // the old names both were undefined, so nothing ever hid or disabled --
-      // and show_bounds, which gates on datum_disabled === false, never
-      // rendered the min/max boxes.
+      // Datum.msg spells these display_hidden / display_disabled.
       const datum_hidden = this.props.hidden !== undefined ? this.props.hidden : datum_msg.display_hidden
       const datum_disabled = true
       // Datum.display_row: true lays a multi-value datum's widgets side by
       // side in one row, false stacks them. Defaulted rather than read bare so
-      // a publisher built against the older message -- where this field was a
-      // string, and arrives here undefined -- keeps the stacked layout it has
-      // always had.
+      // a publisher built against an older message -- where this field is a
+      // string, and arrives here undefined -- gets the stacked layout.
       const display_row = (datum_msg.display_row === true)
       
       const display_options = this.props.display_options !== undefined ? this.props.display_options : datum_msg.display_options
@@ -425,11 +421,9 @@ class Nepi_IF_Datum extends Component {
       }
 
       // Fallthrough for every remaining type -- one renderDatum per value
-      // entry -- reached because each branch above returns. It was written as an
-      // empty `else {}` followed by this return, which is the same thing; the
-      // brace that closed that else is the one this return needs to stay inside
-      // the enclosing block. show_values must be the LIST: round() of the whole
-      // value returned a number, which has no .map(). An in-progress edit
+      // entry -- reached because each branch above returns.
+      // show_values must be the LIST: round() of the whole
+      // value returns a number, which has no .map(). An in-progress edit
       // already holds the full updated array (onInputChangeIndex writes it so).
       // Same list guard as `values`: onInputChangeIndex stores the whole updated
       // array, but onInputChange stores a bare string for a single-value datum.

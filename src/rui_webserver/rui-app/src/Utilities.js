@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -228,8 +228,7 @@ export function createMenuFirstLastName(optionStr) {
     var menu_name = 'None'
     var parts = []
     var sliced_parts = []
-    // See createMenuBaseName. 'None' is already the declared default here, it
-    // just never got reached because the split threw first.
+    // See createMenuBaseName. 'None' is the declared default here.
     if (optionStr == null || typeof optionStr !== 'string') {
       return menu_name
     }

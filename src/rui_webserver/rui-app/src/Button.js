@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -128,8 +128,8 @@ const ButtonMenu = props => {
     <div {...props} style={actualStyle}>
       {buttons.map((button, index) =>
         // Merge, don't replace -- a button that sets its own style (e.g. a
-        // selected-state backgroundColor) had that style silently discarded
-        // by this clone, since it used to overwrite `style` outright.
+        // selected-state backgroundColor) would have that style silently
+        // discarded if this clone overwrote `style` outright.
         React.cloneElement(button, {
           style: { marginLeft: Styles.vars.spacing.regular, ...button.props.style }
         })

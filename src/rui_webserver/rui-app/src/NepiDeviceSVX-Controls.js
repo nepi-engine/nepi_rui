@@ -22,8 +22,8 @@
 // One SVX device = one servo. Positional vs continuous-rotation is IF-owned config,
 // not a board capability: the Continuous-Spinning toggle publishes set_continuous_mode
 // and the IF flips status_msg.has_spin, so the bottom slider switches between a degree
-// position slider and a bipolar direction+speed slider. Soft limits were removed -- the
-// hardstops are the single clamp range -- so there are no soft-limit inputs here.
+// position slider and a bipolar direction+speed slider. The hardstops are the single
+// clamp range, so there are no soft-limit inputs here.
 
 import React, { Component } from "react"
 import { observer, inject } from "mobx-react"
@@ -255,7 +255,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
 
   // Linear degrees -> pulse-width (microseconds). Maps the device's declared travel
-  // (min/max_softstop_deg, which now carry the hardstop range) onto its pulse
+  // (min/max_softstop_deg, which carry the hardstop range) onto its pulse
   // endpoints. Returns null when the pulse settings are not (yet) available.
   degToPwm(deg) {
     const status = this.state.status_msg
@@ -447,8 +447,8 @@ componentDidUpdate(prevProps, prevState, snapshot) {
   }
 
 
-  // Reverse Control lives with the device settings (relocated out of the live
-  // controls). It still publishes the same set_reverse_enable topic.
+  // Reverse Control lives with the device settings, not the live
+  // controls. It publishes the set_reverse_enable topic.
   renderSettings() {
     const { sendBoolMsg } = this.props.ros
     const namespace = this.props.namespace ? this.props.namespace : 'None'

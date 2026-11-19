@@ -41,8 +41,8 @@ import { round, rgbToIindicatorColor, setElementStyleModified, clearElementStyle
 // column regardless of how long each row's label is.
 //
 // Sized so a label with a unit suffix -- "Longitude (°)", "Speed (m/s)" -- sits
-// on ONE line. At 100 those wrapped to two ("Longitude" over "(°)"), which
-// double-spaced every row. A label longer than this still wraps rather than
+// on ONE line. At 100 those wrap to two ("Longitude" over "(°)"), which
+// double-spaces every row. A label longer than this still wraps rather than
 // overflowing, so the gutter stays a fixed column either way.
 const ROW_LABEL_WIDTH = 130
 
@@ -209,8 +209,7 @@ class Nepi_IF_Control extends Component {
     // to detect when the backend has acted on our change.
     const baseline = this.getControlValue()
     var sent = false
-    // indexOf returns an index, never true, so none of these branches could
-    // fire: pressing Enter in a text box published nothing at all.
+    // indexOf returns an index, never true, so each branch compares it to -1.
     if (IS_STRING_TYPE !== -1) {
       sendUpdateControlValue(namespace  + "/" + topic, name, raw)
     } else if (IS_INT_TYPE !== -1) {
@@ -234,11 +233,11 @@ class Nepi_IF_Control extends Component {
     if (el) { setElementStyleModified(el) }
     const editValues = { ...this.state.editValues }
     // List form, for the same reason render() needs it: a single-value control
-    // reports a scalar, whose .length is undefined, so the guard below was
-    // false and a keystroke in the box updated nothing.
+    // reports a scalar, whose .length is undefined, so the guard below would be
+    // false and a keystroke in the box would update nothing.
     // Seed from any edit already in progress, not from the message: read from
     // the message, typing in one box of a multi-box control (ColorRGB's G)
-    // threw away the unsent edit in its siblings (R).
+    // would throw away the unsent edit in its siblings (R).
     const current = (name in this.state.editValues) ? this.state.editValues[name] : this.getControlValue()
     var update_values = (current == null) ? [] : (Array.isArray(current) ? [...current] : [current])
     if (update_values.length > index){
@@ -267,8 +266,8 @@ class Nepi_IF_Control extends Component {
     // to detect when the backend has acted on our change.
     const baseline = this.getControlValue()
     var sent = false
-    // Same two fixes as onInputKey: the type is spelled ColorRGB, and indexOf
-    // returns an index rather than true, so no per-component edit ever sent.
+    // As in onInputKey: the type is spelled ColorRGB, and indexOf
+    // returns an index rather than true.
     if (control_type === "ColorRGB") {
       const val = parseInt(raw, 10)
       if (!Number.isNaN(val)) {
@@ -358,15 +357,14 @@ class Nepi_IF_Control extends Component {
     else {
       const topic = (this.props.topic !== undefined) ? this.props.topic : 'update_control'
       // Bound here as in every other handler in this file: the widgets below
-      // publish, and neither name was in scope.
+      // publish.
       const namespace = this.props.namespace !== undefined ? this.props.namespace : null
       const { sendUpdateControlValue } = this.props.ros
       const name = control_msg.name
       const control_type =  control_msg.type
       const display_label = control_msg.value_names[control_index]
       // Control.display_width: pixel width for this control's input widget.
-      // 0 or absent -- every control that predates the field -- keeps the
-      // "100%" the inputs have always used, so ungrouped layouts are unchanged.
+      // 0 or absent keeps the "100%" width.
       // A row group needs fixed widths, since "100%" of a flex child collapses.
       const input_width = (control_msg.display_width > 0) ? control_msg.display_width : "100%"
       // Control.msg spells it display_disabled.
@@ -376,8 +374,8 @@ class Nepi_IF_Control extends Component {
       const show_bounds = (control_disabled === false) && (this.props.show_bounds !== undefined ? this.props.show_bounds : true)
       // Named value_round, NOT round: `round` is the formatting helper imported
       // from ./Utilities at the top of this file, and a const of that name
-      // shadows it for the whole function body -- which made every Float branch
-      // below throw "round is not a function" and take the page down with it.
+      // shadows it for the whole function body, so every Float branch below
+      // would throw "round is not a function" and take the page down with it.
       const value_round =  (control_msg.round >= 0) ? control_msg.round : 6
       const display_round =  (control_msg.display_round >= 0) ? control_msg.display_round : 6
       const display_options = this.props.display_options !== undefined ? this.props.display_options : control_msg.display_options
@@ -611,17 +609,13 @@ class Nepi_IF_Control extends Component {
       // True when there IS a name to show; the consumer below hides on false.
       const value_names = control_msg.value_names
       const show_header_label = display_name !== '' && display_name !== 'None' && value_names.length > 1
-      // Control.msg spells these display_hidden / display_disabled. Read under
-      // the old names both were undefined, so nothing ever hid or disabled --
-      // and show_bounds, which gates on control_disabled === false, never
-      // rendered the min/max boxes.
+      // Control.msg spells these display_hidden / display_disabled.
       const control_hidden = this.props.hidden !== undefined ? this.props.hidden : control_msg.display_hidden
       const control_disabled = this.props.disabled !== undefined ? this.props.disabled : control_msg.display_disabled
       // Control.display_row: true lays a multi-value control's widgets side by
       // side in one row, false stacks them. Defaulted rather than read bare so
-      // a publisher built against the older message -- where this field was a
-      // string, and arrives here undefined -- keeps the stacked layout it has
-      // always had.
+      // a publisher built against an older message -- where this field is a
+      // string, and arrives here undefined -- gets the stacked layout.
       const display_row = (control_msg.display_row === true)
       const options = control_msg.options
 
@@ -637,13 +631,13 @@ class Nepi_IF_Control extends Component {
       const editing = (name in this.state.editValues)
       // Row grouping, set by Nepi_IF_Controls when this control shares a
       // non-empty Control.display_group with its neighbours. Both default to
-      // the ungrouped case, so a control rendered on its own -- every control
-      // that predates the field, and every direct mount of this component --
-      // takes the original stacked layout below and is untouched by this.
+      // the ungrouped case, so a control rendered on its own -- an empty
+      // display_group, or any direct mount of this component --
+      // takes the stacked layout below.
       const in_group = (this.props.in_group === true)
       const group_first = (this.props.group_first === true)
       // Pixel width hint for the input widget; 0 (the default) means let the
-      // renderer size it, which is what every existing control does.
+      // renderer size it.
       const display_width = (control_msg.display_width > 0) ? control_msg.display_width : 0
 
 
@@ -976,11 +970,9 @@ class Nepi_IF_Control extends Component {
       }
 
       // Fallthrough for every remaining type -- one renderControl per value
-      // entry -- reached because each branch above returns. It was written as an
-      // empty `else {}` followed by this return, which is the same thing; the
-      // brace that closed that else is the one this return needs to stay inside
-      // the enclosing block. show_values must be the LIST: round() of the whole
-      // value returned a number, which has no .map(). An in-progress edit
+      // entry -- reached because each branch above returns.
+      // show_values must be the LIST: round() of the whole
+      // value returns a number, which has no .map(). An in-progress edit
       // already holds the full updated array (onInputChangeIndex writes it so).
       // Same list guard as `values`: onInputChangeIndex stores the whole updated
       // array, but onInputChange stores a bare string for a single-value control.

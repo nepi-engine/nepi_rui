@@ -6,7 +6,7 @@
 # (see https://github.com/nepi-engine/nepi_rui)
 #
 # License: NEPI RUI repo source-code and NEPI Images that use this source-code
-# are licensed under the "Numurus Software License", 
+# are licensed under the "Numurus Software License",
 # which can be found at: <https://numurus.com/wp-content/uploads/Numurus-Software-License-Terms.pdf>
 #
 # Redistributions in source code must retain this top-level comment block.
@@ -38,15 +38,13 @@ const UPDATE_PERIOD = 100 // ms between sending updates
 
 // Order-independent set equality for two string arrays. updateTopicsServices
 // uses this to decide whether the topic/type/service lists actually changed
-// -- a plain .length comparison (what this replaced) misses any case where
+// -- a plain .length comparison misses any case where
 // one topic disappears and a different one appears in the same tick (the
 // count stays identical), which silently skips re-running every device-list
 // refresh (updateIDXDevices/updateSVXDevices/updateRBXDevices/
 // updateImageTopics/etc, all gated on this same check) until some LATER,
-// unrelated topic change happens to produce a length mismatch. Confirmed as
-// the mechanism behind real user reports: a killed sim's robot lingering as a
-// selectable device long after its /rbx/status topic was actually gone, and
-// camera topics not appearing in the image selector. rosbridge's getTopics()
+// unrelated topic change happens to produce a length mismatch.
+// rosbridge's getTopics()
 // also does not guarantee a stable order between calls, so this has to be a
 // Set comparison, not an index-by-index one (which would report "changed" on
 // every single tick even when nothing real changed, reintroducing the cost
@@ -444,10 +442,10 @@ class ROSConnectionStore {
 
         if (this.topicNames != null && this.topicTypes != null && this.serviceNames != null){
           // Set-based comparison (see sameStringSet's own comment) -- a
-          // plain .length check here missed any tick where one topic
-          // disappeared and a different one appeared (net-zero count
+          // plain .length check here would miss any tick where one topic
+          // disappears and a different one appears (net-zero count
           // change), leaving every device list below stale until an
-          // unrelated later change happened to shift the count.
+          // unrelated later change happens to shift the count.
           if (!sameStringSet(this.topicNames, topicNames) ||
               !sameStringSet(this.topicTypes, topicTypes) ||
               !sameStringSet(this.serviceNames, serviceNames)) {
@@ -515,13 +513,11 @@ class ROSConnectionStore {
       // resetStates() sets rosAutoReconnect = false, and checkROSConnection()
       // only re-arms its own setTimeout `if (this.rosAutoReconnect)`. Since
       // App.js starts that loop exactly ONCE on mount, leaving it false here
-      // permanently killed the reconnect loop: the RUI dropped to
-      // "Connecting" and never came back on its own, however healthy the
-      // device got again, until a page reload. (The commented-out line above
-      // shows this was already the intent; it could not survive resetStates()
-      // clobbering the flag.)
+      // would permanently kill the reconnect loop: the RUI would drop to
+      // "Connecting" and never come back on its own, however healthy the
+      // device got again, until a page reload.
       //
-      // Setting the flag is the whole fix -- deliberately no setTimeout here.
+      // Setting the flag is all this needs -- deliberately no setTimeout here.
       // This method's only caller is checkROSConnection() itself, whose tail
       // already re-arms the loop; re-arming here as well would leave two
       // self-rescheduling loops after one teardown, four after the next.
@@ -673,12 +669,12 @@ class ROSConnectionStore {
   @observable hearbeatNepi = false
   // Ticks of NEPI_TIMEOUT_MSEC (3 s) without a system status message before
   // the client declares the device gone and tears the websocket down (see
-  // checkROSConnection/destroyROSConnection). Was 5, i.e. a ~15 s stall in
-  // that one topic dropped every subscription in the RUI. system_mgr
+  // checkROSConnection/destroyROSConnection), which drops every
+  // subscription in the RUI. system_mgr
   // publishes it at only ~1-1.7 Hz measured on a loaded ARM device, so a CPU
-  // spike (simulator, AI, a slow disk check) could starve it past 15 s with
+  // spike (simulator, AI, a slow disk check) can starve it past 15 s with
   // nothing actually wrong. 20 ticks (~60 s) still detects a real outage, and
-  // is safe now that a teardown reliably re-arms the reconnect loop.
+  // is safe because a teardown re-arms the reconnect loop.
   @observable watchdogNepiMax = 20
   @observable watchdogNepiCounter = 0
 
@@ -1767,9 +1763,9 @@ class ROSConnectionStore {
       // Drop duplicate topic names. The upstream topic list can carry the same
       // topic more than once (a topic with both a publisher and a subscriber
       // is reported once per role by pub/sub-oriented listings), and every
-      // image selector built from this then rendered the same camera twice,
+      // image selector built from this would render the same camera twice,
       // visually identical since only the last two path segments are shown.
-      // Deduping here fixes every consumer at once. Sorted first, so equal
+      // Deduping here covers every consumer at once. Sorted first, so equal
       // names are adjacent.
       newImageTopics = newImageTopics.filter(function (topic, ind, arr) {
         return ind === 0 || topic !== arr[ind - 1]
@@ -2685,7 +2681,7 @@ class ROSConnectionStore {
       name: namespace,
       messageType: "nepi_interfaces/ErrorBounds",
       // ErrorBounds' fields sit at the top level of the message -- an extra
-      // "data" wrapper is not a field of it, so rosbridge rejected the publish.
+      // "data" wrapper is not a field of it, so rosbridge rejects the publish.
       data: {
         max_distance_error_m: max_m,
         max_rotation_error_deg: max_d,
@@ -3151,9 +3147,7 @@ sendSaveConfigTrigger(namespace) {
 
   // Update several controls.  controlsList is an array of
   // {nameStr, typeStr, value} entries, published as one update_control message
-  // each.  The batch "update_controls" topic is retired: the node applied its
-  // entries in a sequential loop anyway, so this is the same behavior without
-  // a second message type to maintain.
+  // each.
   @action.bound
   sendUpdateControls(namespace,controlsList) {
     controlsList.forEach((c) => {

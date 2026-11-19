@@ -43,7 +43,7 @@ import NepiDeviceSVXControls from "./NepiDeviceSVX-Controls"
 // ignores linear_y/linear_z entirely for the rover.
 //
 // Rebindable from the Sim Connector's keybind editor (TeleopKeymap.js is the
-// shared source of truth for both sides) -- this is no longer a fixed
+// shared source of truth for both sides) -- this is not a fixed
 // constant, it's rebuilt fresh every time teleop key capture starts so an
 // edit made before switching a robot's control type to Teleop takes effect
 // without a page reload.
@@ -68,7 +68,7 @@ class NepiDeviceControls extends Component {
 
       status_msg: null,
       // current_* pose values are sourced from the device NavPose topic, not
-      // from DeviceRBXStatus (which no longer carries them).
+      // from DeviceRBXStatus (which does not carry them).
       current_lat: null,
       current_long: null,
       current_altitude: null,
@@ -219,8 +219,8 @@ class NepiDeviceControls extends Component {
       // Held-key UI state (teleop_active_keys, driving the "W (held)" label
       // in renderTeleopControls) is purely local React state -- it renders
       // correctly regardless of whether rbxNamespace actually resolved, so
-      // this silent return used to look identical to "broken" from the RUI:
-      // holding a key showed as held with zero visible effect and no way to
+      // a silent return here would look identical to "broken" from the RUI:
+      // holding a key would show as held with zero visible effect and no way to
       // tell "no device selected in this page's own dropdown" apart from an
       // actual bug. Surfaced the same way last_error_message already is.
       if (this.state.last_error_message !== "No robot selected -- pick one above before using Teleop") {
@@ -349,8 +349,7 @@ class NepiDeviceControls extends Component {
             not-ready command silently over the wire, so without this the
             RUI shows "W (held)" forever with no visible effect and no way
             to tell "rejected" apart from "broken". last_error_message is
-            already tracked in state (controlsStatusListener) but was never
-            rendered anywhere before this. */}
+            tracked in state (controlsStatusListener). */}
         {(this.state.last_error_message) ?
           <Label title={"Last error: " + this.state.last_error_message}/>
         : null}
@@ -383,11 +382,10 @@ class NepiDeviceControls extends Component {
       last_cmd_str: message.last_cmd_string,
       last_error_message: message.last_error_message
     })
-    // Was gated on `this.state.rbx_capabilities === null` -- derived once and
-    // never again. The derivation below also reads the settingsNamesList/
+    // The derivation below also reads the settingsNamesList/
     // settingsValuesDict props (Settings such as autonomous_movement_enabled
     // and teleop_movement_enabled, which a Sim Connector robot config can
-    // toggle at any time), so a once-only gate ignored those changes.
+    // toggle at any time), so it must not be gated to run only once.
     // Everything below is a pure re-derivation, safe to re-run on every
     // status tick.
     {
@@ -422,7 +420,7 @@ class NepiDeviceControls extends Component {
         // "automated movement" unchecked. That's a Setting
         // (autonomous_movement_enabled), same mechanism as camera_offset_x,
         // not a capability -- a real robot that never defines this Setting at
-        // all keeps behaving exactly as before (settingEnabled treats an
+        // all is unaffected (settingEnabled treats an
         // absent Setting as enabled, never as a reason to hide something a
         // capability already says exists).
         const settingsNamesList = (this.props.settingsNamesList !== undefined) ? this.props.settingsNamesList : []
@@ -478,7 +476,7 @@ class NepiDeviceControls extends Component {
           controls_auto_menu: controls_auto_menu
         })
 
-        // A capability can now disappear out from under an already-selected
+        // A capability can disappear out from under an already-selected
         // dropdown value (e.g. "automated movement" toggled off from the Sim
         // Connector while "Autonomous" is the current control type) -- reset
         // to a valid selection rather than leaving a stale one whose controls
@@ -508,8 +506,8 @@ class NepiDeviceControls extends Component {
       current_yaw: message.yaw_deg
     }
     // Fill the GoTo Location form from the first real fix, once, so it never
-    // starts at 0,0: sent untouched, those defaults drove the vehicle toward
-    // latitude 0, longitude 0 (bench, 2026-11-10). After that the fields are
+    // starts at 0,0: sent untouched, those defaults would drive the vehicle
+    // toward latitude 0, longitude 0. After that the fields are
     // the operator's, and "Set to Current" refreshes them on demand.
     const has_fix = (typeof message.latitude === 'number' && typeof message.longitude === 'number' &&
                      (message.latitude !== 0 || message.longitude !== 0))
@@ -681,7 +679,7 @@ class NepiDeviceControls extends Component {
     const { updateSetting } = this.props.ros
     const value = parseFloat(text)
     if (!isNaN(value)) {
-      // The update message is typed now, so the float goes on the wire as a
+      // The update message is typed, so the float goes on the wire as a
       // float instead of a string the node has to reparse.
       updateSetting(this.props.rbxNamespace + "/settings", "motor_test_timeout_s", "Float", value)
     }
@@ -770,11 +768,8 @@ class NepiDeviceControls extends Component {
               </Column>
               <Column>
 
-                {/* Was unconditional -- rendered whenever Autonomous mode was
-                    selected, with no check on has_go_stop, unlike every
-                    sibling button here (Go Home checks has_go_home). A robot
-                    reporting has_go_stop: false still got a Stop button that
-                    published go_stop into the void.
+                {/* Gated on has_go_stop, like every sibling button here (Go
+                    Home checks has_go_home).
                     Visibility only, deliberately no click-time readiness gate
                     (unlike Go Home): device_if_rbx.py's goStopCb has no
                     "another command is active" check, unlike the goto

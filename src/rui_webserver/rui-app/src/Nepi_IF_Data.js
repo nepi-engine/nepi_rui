@@ -105,7 +105,7 @@ class Nepi_IF_Data extends Component {
     }
     // Guarded: an unconditional setState here re-enters componentDidUpdate on
     // every render (mobx-react's observer SCU re-renders on any state identity
-    // change), which is an infinite update loop, and it also cleared the
+    // change), which is an infinite update loop, and it also clears the
     // operator's in-progress edits on every frame.
     if (namespace_changed === true || this.state.needs_update === true) {
       this.setState({ dataNamespace: namespace, needs_update: false})
