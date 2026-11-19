@@ -675,18 +675,18 @@ export function get_value_from_dict_msg(dict_msg, key, fallback = null) {
 
   const msg_type = dict_entry.type
   const msg_values = dict_entry.values
-  const is_list = dict_entry.is_list
+  const is_list = msg_type.slice(-1) === 's' ? true : false
 
-  if (msg_type === 'Strings'){
+  if (msg_type === 'String' || msg_type === 'Strings'){
     values_list = msg_values
   }
-  else if (msg_type === 'Bools'){
+  else if (msg_type === 'Bool' || msg_type === 'Bools'){
     values_list = msg_values.map(item => item === 'True')
   }
-  else if (msg_type === 'Ints'){
+  else if (msg_type === 'Int' || msg_type === 'Ints'){
     values_list = msg_values.map(item => parseInt(item, 10))
   }
-  else if (msg_type === 'Floats'){
+  else if (msg_type === 'Float' || msg_type === 'Floats'){
     values_list = msg_values.map(item => parseFloat(item))
   }
 
