@@ -2868,9 +2868,9 @@ class Nepi_IF_ImageViewer extends Component {
     const show_topic_selector = (this.props.show_topic_selector !== undefined) ? this.props.show_topic_selector : true
 
     const has_stabilize = (status_msg !== null && status_msg !== undefined) ? status_msg.has_stabilize : false
-    const show_stabilize_control = (this.props.show_stabilize_control !== undefined) ? this.props.show_stabilize_control : has_stabilize
-    const stabilize_disabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_disabled : true
+    const show_stabilize_control = (this.props.show_stabilize_control !== undefined) ? this.props.show_stabilize_control : true
     const stabilize_enabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_enabled : false
+    const stabilize_namespace = has_stabilize === true ? namespace : this.getBaseNamespace()
 
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
@@ -2975,10 +2975,9 @@ class Nepi_IF_ImageViewer extends Component {
                              <Label title={"Stabilize"}>
                                   {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
                                   <Toggle
-                                    disabled={stabilize_disabled}
                                     checked={stabilize_enabled}
                                     onClick={() => {
-                                      sendBoolMsg(namespace + '/set_stabilize_enable', !stabilize_enabled)
+                                      sendBoolMsg(stabilize_namespace + '/set_stabilize_enable', !stabilize_enabled)
                                     }}
                                   />
                                 </Label>

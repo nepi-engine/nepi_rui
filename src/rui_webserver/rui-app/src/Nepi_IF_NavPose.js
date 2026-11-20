@@ -412,7 +412,7 @@ class NepiIFNavPose extends Component {
           const has_pan_tilt = navpose_msg.has_pan_tilt
           const pan_deg = (force_enable || has_pan_tilt === true) && navpose_msg.pan_deg !== -999 ? navpose_msg.pan_deg : null
           const tilt_deg = (force_enable || has_pan_tilt === true) && navpose_msg.tilt_deg !== -999 ? navpose_msg.tilt_deg : null
-
+          
           const show_frame_info = (this.props.show_frame_info !== undefined) ? this.props.show_frame_info : true
           const frame_msg = ('NavPose Frame:\u00A0\u00A0' + frame_nav + 
             '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Alt Frame:\u00A0\u00A0' + frame_alt + 
@@ -536,18 +536,22 @@ class NepiIFNavPose extends Component {
                     />
                   </Label>
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
-                  <Label title={"Pan (degs)"}>
-                    <Input
-                      id={"pan_deg"}
-                      disabled={mk_disabled(has_pan_tilt)}
-                      style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('pan_deg') ? navpose_msg.pan_deg : round(pan_deg, 2)}
-                      onChange= {(event) => this.onUpdateInputNavposeValue(event,"pan_deg")}
-                      onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"pan_deg")}
-                    />
-                  </Label>
+                  <div hidden={show_pt_values === true}>
+                        <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+
+                        <Label title={"Pan (degs)"}>
+                          <Input
+                            id={"pan_deg"}
+                            disabled={mk_disabled(has_pan_tilt)}
+                            style={{ width: "45%", float: "left" }}
+                            value={this.dirtyFields.has('pan_deg') ? navpose_msg.pan_deg : round(pan_deg, 2)}
+                            onChange= {(event) => this.onUpdateInputNavposeValue(event,"pan_deg")}
+                            onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"pan_deg")}
+                          />
+                        </Label>
+
+                  </div>
 
                   </Column>
                 <Column>
@@ -585,19 +589,21 @@ class NepiIFNavPose extends Component {
                     />
                   </Label>
 
-                  <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
+                <div hidden={show_pt_values === true}>
 
-                  <Label title={"Tilt (deg)"}>
-                    <Input
-                      id={"tilt_deg"}
-                      disabled={mk_disabled(has_pan_tilt)}
-                      style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('tilt_deg') ? navpose_msg.tilt_deg : round(tilt_deg, 2)}
-                      onChange= {(event) => this.onUpdateInputNavposeValue(event,"tilt_deg")}
-                      onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"tilt_deg")}
-                    />
-                  </Label>
+                    <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
+                    <Label title={"Tilt (deg)"}>
+                      <Input
+                        id={"tilt_deg"}
+                        disabled={mk_disabled(has_pan_tilt)}
+                        style={{ width: "45%", float: "left" }}
+                        value={this.dirtyFields.has('tilt_deg') ? navpose_msg.tilt_deg : round(tilt_deg, 2)}
+                        onChange= {(event) => this.onUpdateInputNavposeValue(event,"tilt_deg")}
+                        onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"tilt_deg")}
+                      />
+                    </Label>
+                </div>
 
 
                 </Column>
@@ -635,7 +641,7 @@ class NepiIFNavPose extends Component {
 
 
                                         { (has_pan_tilt === true ) ?       
-                                              <Label title={"Use PT Frame"}>
+                                              <Label title={"Show PT Frame"}>
                                                 <Toggle
                                                   checked={show_pt_values}
                                                   onClick={() => this.setState({ show_pt_values: !show_pt_values })}
