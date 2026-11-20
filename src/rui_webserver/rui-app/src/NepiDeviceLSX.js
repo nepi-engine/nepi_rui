@@ -26,7 +26,7 @@ import Select, { Option } from "./Select"
 import Label from "./Label"
 
 
-import NepiIFImageViewer from "./Nepi_IF_ImageViewer"
+import NepiIFImageViewerSelector from "./Nepi_IF_ImageViewerSelector"
 import NepiIFSaveData from "./Nepi_IF_SaveData"
 import NepiIFConnectNavPose from "./Nepi_IF_ConnectNavPose"
 import NepiIFSettings from "./Nepi_IF_Settings"
@@ -134,14 +134,19 @@ class NepiControlsLights extends Component {
   renderImageViewer() {
     return (
       <React.Fragment>
-
-             
-                  <NepiIFImageViewer
-                    id="lsxImageViewer"
-                  />
-               
-
-
+        <Columns>
+          <Column equalWidth={false}>
+            <div id={'lsxImageViewer'}>
+              <NepiIFImageViewerSelector
+                id={'lsxImageViewer'}
+                hideQualitySelector={true}
+                show_save_config={false}
+                show_save_data={false}
+                show_image_controls={false}
+              />
+            </div>
+          </Column>
+        </Columns>
       </React.Fragment>
     )
   }

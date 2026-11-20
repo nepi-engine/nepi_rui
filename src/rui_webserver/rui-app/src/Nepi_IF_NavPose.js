@@ -199,7 +199,6 @@ class NepiIFNavPose extends Component {
       }
 
       this.setState({
-        navpose_msg: message,
         connected: true
       })
 
