@@ -167,10 +167,11 @@ class NepiDeviceSVX extends Component {
 
   // Function for creating topic options for Select input
   createDeviceOptions() {
-    const { svxDevices} = this.props.ros
+    const { svxDevices, namespacePrefix, deviceId } = this.props.ros
     const topics = Object.keys(svxDevices)
     const namespace = this.state.namespace
     const show_all = (this.state.show_all_channels === true)
+    const device_prefix = ("/" + namespacePrefix + "/" + deviceId + "/").toLowerCase()
     var items = []
     items.push(<Option value={'None'}>{'None'}</Option>)
     var device_name = ""
@@ -182,7 +183,11 @@ class NepiDeviceSVX extends Component {
       if (connected === false && show_all === false && topics[i] !== namespace) {
         continue
       }
-      device_name = topics[i].split('/svx')[0].split('/').pop()
+      // Label a servo by its namespace below the device, without /svx: <node> for a
+      // node with one servo, <node>/pan or <node>/motor_1 for one of several
+      const svx_base = topics[i].replace(/\/svx$/, "")
+      device_name = svx_base.toLowerCase().startsWith(device_prefix) ?
+        svx_base.substring(device_prefix.length) : svx_base.split('/').pop()
       if (connected === false) {
         device_name = device_name + " (not connected)"
       }
