@@ -2970,7 +2970,7 @@ class Nepi_IF_ImageViewer extends Component {
                         : null }
 
 
-                        <div style={{ marginLeft: 'auto' }} hidden={(show_reset_button === false  || namespace === 'None')}>
+                        <div style={{ marginLeft: 'auto' }} hidden={(show_stabilize_control === false  || namespace === 'None')}>
 
                              <Label title={"Stabilize"}>
                                   {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
