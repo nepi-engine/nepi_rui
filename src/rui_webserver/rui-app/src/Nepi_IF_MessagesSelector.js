@@ -248,7 +248,8 @@ class NepiIFMessagesSelector extends Component {
     const base_namespace = this.getBaseNamespace()
     const allNamespace = this.getAllNamespace()
     const selected_topic = (this.state.selected_topic !== 'ALL') ? this.state.selected_topic : allNamespace
-
+    const run_mode = this.props.ros.systemRunMode
+    const develop_mode = run_mode === 'develop'
     const debug_mode = this.props.ros.systemDebugEnabled
     const hide_app = this.state.selected_topic === "Connecting"
     return (
@@ -259,7 +260,7 @@ class NepiIFMessagesSelector extends Component {
                     {this.renderSelection()}
 
 
-                      <div style={{ display: 'flex' }}>
+                      <div hidden={develop_mode === false} style={{ display: 'flex' }}>
                               <div style={{ width: '20%' }} >
                               </div>
 
