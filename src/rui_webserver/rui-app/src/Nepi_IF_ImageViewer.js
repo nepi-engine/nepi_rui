@@ -2870,7 +2870,7 @@ class Nepi_IF_ImageViewer extends Component {
     const has_stabilize = (status_msg !== null && status_msg !== undefined) ? status_msg.has_stabilize : false
     const show_stabilize_control = (this.props.show_stabilize_control !== undefined) ? this.props.show_stabilize_control : true
     const stabilize_enabled = (status_msg !== null && status_msg !== undefined) ? status_msg.stabilize_enabled : false
-    const stabilize_namespace = has_stabilize === true ? namespace : this.getBaseNamespace()
+    const stabilize_namespace = has_stabilize === true ? namespace : this.getBaseNamespace() + '/all/images'
 
     const show_reset_button = (this.props.show_reset_button !== undefined) ? this.props.show_reset_button : true
     const show_browser_save_button = (this.props.show_browser_save_button !== undefined) ? this.props.show_browser_save_button : true
