@@ -30,7 +30,7 @@ import Styles from "./Styles"
 
 import { round } from "./Utilities"
 
-import NepiIFTransform from "./Nepi_IF_Transform"
+import NepiIFConnectTransform from "./Nepi_IF_ConnectTransform"
 import NepiIFNavPose from "./Nepi_IF_NavPose"
 import NepiIFConfig from "./Nepi_IF_Config"
 
@@ -422,7 +422,7 @@ class NepiIFConnectNavPose extends Component {
 
 
             {(show_transform === true) ?
-            <NepiIFTransform
+            <NepiIFConnectTransform
               transformNamespace={transform_topic}
               title={"Navpose Transform"}
               read_only={edit_transform}
