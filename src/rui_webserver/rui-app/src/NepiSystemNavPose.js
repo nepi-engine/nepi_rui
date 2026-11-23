@@ -70,7 +70,7 @@ class NavPoseMgr extends Component {
       selected_frame_topic: null,
       selected_frame_solution: null,
 
-      selected_topic_config: 'init',
+      selected_topic_config: 'update',
       selected_frame_ind: -1,
       selected_frame_rate: 0.0,
 
@@ -748,9 +748,9 @@ class NavPoseMgr extends Component {
                   </div>
                 )}
 
-                {currentTopic !== 'None' && (() => {
+                {currentTopic !== 'None' && currentTopic !== 'Fixed' && (() => {
                   const tfKey = comp.comp_name + '_' + typeShort
-                  const isExpanded = !!this.state.transform_expanded[tfKey]
+                  const isExpanded = true //(this.state.transform_expanded[tfKey] !== undefined) ? this.state.transform_expanded[tfKey] : true
                   const tf = comp[typeShort + '_topic_transform'] || {}
                   const sendTransform = (overrides) => {
                     this.props.ros.sendUpdateTransformMsg(
@@ -812,7 +812,7 @@ class NavPoseMgr extends Component {
                     <div>
                       <div
                         style={{ cursor: 'pointer', fontSize: '0.8em', color: Styles.vars.colors.grey1, marginTop: '4px', userSelect: 'none' }}
-                        onClick={() => this.setState({ transform_expanded: { ...this.state.transform_expanded, [tfKey]: !isExpanded } })}
+                        //onClick={() => this.setState({ transform_expanded: { ...this.state.transform_expanded, [tfKey]: !isExpanded } })}
                       >
                         {'Transform ' + (isExpanded ? '▲' : '▼')}
                       </div>
@@ -864,10 +864,11 @@ class NavPoseMgr extends Component {
           value={selected_topic_config}
           onChange={(e) => this.setState({ selected_topic_config: e.target.value })}
         >
-          <Option value={'init'}>{'Init Topic Config'}</Option>
-          <Option value={'update'}>{'Update Topic Config'}</Option>
-          <Option value={'offset'}>{'Offset Topic Config'}</Option>
-          <Option value={'reset'}>{'Reset Topic Config'}</Option>
+
+          <Option value={'update'}>{'Source Config'}</Option>
+          <Option value={'init'}>{'Init Config'}</Option>
+          <Option value={'offset'}>{'Offset Config'}</Option>
+          <Option value={'reset'}>{'Reset Config'}</Option>
         </Select>
 
         {renderCompTopicSection(...CONFIG_SECTIONS[selected_topic_config])}

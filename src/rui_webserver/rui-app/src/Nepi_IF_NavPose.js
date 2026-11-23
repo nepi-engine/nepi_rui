@@ -100,9 +100,8 @@ class NepiIFNavPose extends Component {
     const last_navpose_msg = this.state.navpose_msg
     
      const has_pan_tilt = message.has_pan_tilt
-    const show_pt_values = (this.state.show_pt_values != null && has_pan_tilt === true) ? this.state.show_pt_values === true : has_pan_tilt === true
      var navpose_msg_from_msg = null
-     if (show_pt_values === true) {
+     if (has_pan_tilt === true) {
         navpose_msg_from_msg = {
             navpose_frame: message.navpose_frame,
             navpose_description: message.navpose_description,
@@ -110,10 +109,11 @@ class NepiIFNavPose extends Component {
             frame_nav: message.frame_nav,
             frame_altitude: message.frame_altitude,
             frame_depth: message.frame_depth,
+            geoid_height_meters: message.geoid_height_meters,
 
             has_location: message.has_location,
-            latitude: message.latitude,
-            longitude: message.longitude,
+            latitude: message.pan_tilt_latitude,
+            longitude: message.pan_tilt_longitude,
 
 
             has_heading: true,
@@ -130,11 +130,11 @@ class NepiIFNavPose extends Component {
             z_m: message.pan_tilt_z_m,
 
             has_altitude: message.has_altitude,
-            altitude_m: message.altitude_m,
-            geoid_height_meters: message.geoid_height_meters,
+            altitude_m: message.pan_tilt_altitude_m,
+     
 
             has_depth: message.has_depth,
-            depth_m: message.depth_m,
+            depth_m: message.pan_tilt_depth_m,
 
             has_pan_tilt: message.has_pan_tilt,
             pan_deg: message.pan_deg,
@@ -431,8 +431,6 @@ class NepiIFNavPose extends Component {
           const mk_disabled = (has_flag) => read_only || disabled || (!force_enable && !has_flag)
 
 
-          const show_pt_values = (this.state.show_pt_values != null && has_pan_tilt === true) ? this.state.show_pt_values === true : has_pan_tilt === true
-
           return (
 
 <React.Fragment>
@@ -536,7 +534,6 @@ class NepiIFNavPose extends Component {
                   </Label>
 
 
-                  <div hidden={show_pt_values === true}>
                         <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
                         <Label title={"Pan (degs)"}>
@@ -550,7 +547,6 @@ class NepiIFNavPose extends Component {
                           />
                         </Label>
 
-                  </div>
 
                   </Column>
                 <Column>
@@ -588,7 +584,6 @@ class NepiIFNavPose extends Component {
                     />
                   </Label>
 
-                <div hidden={show_pt_values === true}>
 
                     <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
 
@@ -602,7 +597,6 @@ class NepiIFNavPose extends Component {
                         onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"tilt_deg")}
                       />
                     </Label>
-                </div>
 
 
                 </Column>
@@ -639,14 +633,14 @@ class NepiIFNavPose extends Component {
                                 <div style={{ width: '30%' }}>
 
 
-                                        { (has_pan_tilt === true ) ?       
+                                        {/* { (has_pan_tilt === true ) ?       
                                               <Label title={"Show PT Frame"}>
                                                 <Toggle
                                                   checked={show_pt_values}
                                                   onClick={() => this.setState({ show_pt_values: !show_pt_values })}
                                                 />
                                               </Label>
-                                        : null}
+                                        : null} */}
 
                     
                                 </div>
