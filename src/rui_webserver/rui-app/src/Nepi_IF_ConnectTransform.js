@@ -352,9 +352,9 @@ class NepiIFConnectTransform extends Component {
       return (
         <React.Fragment>
 
-            <label align={"left"} textAlign={"left"} style={{ fontSize: '0.8em', color: Styles.vars.colors.grey1 }}>
+            {/* <label align={"left"} textAlign={"left"} style={{ fontSize: '0.8em', color: Styles.vars.colors.grey1 }}>
             {msg}
-            </label>
+            </label> */}
 
             {(show_frame_select === true) ?
             <Label title={"Reference Frame"}>
