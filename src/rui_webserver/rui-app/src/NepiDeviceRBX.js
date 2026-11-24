@@ -741,7 +741,8 @@ class NepiDeviceRBX extends Component {
     const connect_navpose_topic = (status_msg && status_msg.connect_navpose_topic) ? status_msg.connect_navpose_topic :
                                   (status_msg && status_msg.node_namespace) ? status_msg.node_namespace + "/connect_navpose" : null
     const navpose_topic = (status_msg && status_msg.navpose_topic) ? status_msg.navpose_topic : null    
-
+    const run_mode = this.props.ros.systemRunMode
+    const develop_mode = run_mode === 'develop'
     return (
       <Columns>
         <Column>
@@ -815,7 +816,7 @@ class NepiDeviceRBX extends Component {
             <NepiIFConfig
               namespace={namespace}
               title={"Save Config"}
-              show_save_all={true}
+              show_save_all={develop_mode}
             />
             : null}
 

@@ -329,6 +329,8 @@ class NepiControlsLightsControls extends Component {
     const show_controls_option = (this.props.show_controls_option !== undefined) ? this.props.show_controls_option : device_controls_restricted === false
    const show_controls = (this.state.show_controls && (device_controls_restricted === false)) || (show_controls_option === false)
 
+       const run_mode = this.props.ros.systemRunMode
+    const develop_mode = run_mode === 'develop'
 
     if (device_controls_restricted === true){
       return (
@@ -505,7 +507,7 @@ class NepiControlsLightsControls extends Component {
             <NepiIFConfig
                 namespace={namespace}
                 title={"Nepi_IF_Conig"}
-                show_save_all={true}
+                show_save_all={develop_mode}
           />
 </div>
         </React.Fragment>

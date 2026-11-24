@@ -312,6 +312,7 @@ class Nepi_IF_Settings extends Component {
 
 
     const show_controls = (this.props.show_controls !== undefined) ? this.props.show_controls : true
+    const show_config = (this.props.show_config !== undefined) ? this.props.show_config : false
     const show_settings = (this.props.show_settings !== undefined) ? this.props.show_settings : true
 
     const { userRestricted} = this.props.ros
@@ -342,7 +343,7 @@ class Nepi_IF_Settings extends Component {
                    this.renderSetting()
                   : null }
       
-                  { (show_controls === true) ?
+                  { (show_config === true) ?
                    this.renderConfigs()
                   : null }
 

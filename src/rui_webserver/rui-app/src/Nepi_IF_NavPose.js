@@ -445,7 +445,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"latitude"}
                       disabled={mk_disabled(has_location)}
-                      value={this.dirtyFields.has('latitude') ? navpose_msg.latitude : round(latitude, 6)}
+                      value={this.dirtyFields.has('latitude') ? navpose_msg.latitude : round(latitude, 8)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"latitude")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"latitude")}
@@ -455,7 +455,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"longitude"}
                       disabled={mk_disabled(has_location)}
-                      value={this.dirtyFields.has('longitude') ? navpose_msg.longitude : round(longitude, 6)}
+                      value={this.dirtyFields.has('longitude') ? navpose_msg.longitude : round(longitude, 8)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"longitude")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"longitude")}
@@ -477,7 +477,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"altitude_m"}
                       disabled={read_only || disabled}
-                      value={this.dirtyFields.has('altitude_m') ? navpose_msg.altitude_m : round(altitude_m, 2)}
+                      value={this.dirtyFields.has('altitude_m') ? navpose_msg.altitude_m : round(altitude_m, 3)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"altitude_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"altitude_m")}
@@ -488,7 +488,7 @@ class NepiIFNavPose extends Component {
                     <Input
                       id={"depth_m"}
                       disabled={read_only || disabled}
-                      value={this.dirtyFields.has('depth_m') ? navpose_msg.depth_m : round(depth_m, 2)}
+                      value={this.dirtyFields.has('depth_m') ? navpose_msg.depth_m : round(depth_m, 3)}
                       style={{ width: "80%" }}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"depth_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"depth_m")}
@@ -558,7 +558,7 @@ class NepiIFNavPose extends Component {
                       id={"x_m"}
                       disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('x_m') ? navpose_msg.x_m : round(x_m, 2)}
+                      value={this.dirtyFields.has('x_m') ? navpose_msg.x_m : round(x_m, 3)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"x_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"x_m")}
                     />
@@ -568,7 +568,7 @@ class NepiIFNavPose extends Component {
                       id={"y_m"}
                       disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('y_m') ? navpose_msg.y_m : round(y_m, 2)}
+                      value={this.dirtyFields.has('y_m') ? navpose_msg.y_m : round(y_m, 3)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"y_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"y_m")}
                     />
@@ -578,7 +578,7 @@ class NepiIFNavPose extends Component {
                       id={"z_m"}
                       disabled={mk_disabled(has_position)}
                       style={{ width: "45%", float: "left" }}
-                      value={this.dirtyFields.has('z_m') ? navpose_msg.z_m : round(z_m, 2)}
+                      value={this.dirtyFields.has('z_m') ? navpose_msg.z_m : round(z_m, 3)}
                       onChange= {(event) => this.onUpdateInputNavposeValue(event,"z_m")}
                       onKeyDown= {(event) => this.onKeySaveInputNavposeValue(event,"z_m")}
                     />

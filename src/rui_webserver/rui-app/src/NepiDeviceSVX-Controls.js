@@ -671,6 +671,9 @@ componentDidUpdate(prevProps, prevState, snapshot) {
     const show_controls = (this.props.show_controls !== undefined) ? this.props.show_controls : true
     const show_config = (this.props.show_config !== undefined) ? this.props.show_config : true
     const status_msg = this.state.status_msg
+    const run_mode = this.props.ros.systemRunMode
+    const develop_mode = run_mode === 'develop'
+
     if (status_msg == null){
       return (
         <Columns>
@@ -692,7 +695,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               { (status_msg != null && show_config === true) ?
                 <NepiIFConfig
                 namespace={namespace}
-                show_save_all={true}
+                show_save_all={develop_mode}
                 title={"Nepi_IF_Conig"}
                 />
               : null }
@@ -716,7 +719,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               { (status_msg != null && show_config === true) ?
                 <NepiIFConfig
                 namespace={namespace}
-                show_save_all={true}
+                show_save_all={develop_mode}
                 title={"Nepi_IF_Conig"}
                 />
               : null }

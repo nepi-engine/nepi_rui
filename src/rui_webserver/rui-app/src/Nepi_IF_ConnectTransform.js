@@ -32,7 +32,7 @@ import Select, { Option } from "./Select"
 import NepiIFConfig from "./Nepi_IF_Config"
 //import Nepi_IF_SaveData from "./Nepi_IF_SaveData"
 
-import { setElementStyleModified, clearElementStyleModified } from "./Utilities"
+import { round, setElementStyleModified, clearElementStyleModified } from "./Utilities"
 
 // Mirrors nepi_nav.NAVPOSE_3D_FRAME_OPTIONS (the reference frame the transform is defined from)
 const NAVPOSE_3D_FRAME_OPTIONS = ['base_frame','nepi_frame','sensor_frame','world_frame']
@@ -257,7 +257,7 @@ class NepiIFConnectTransform extends Component {
         transform_data[name] = transform_data_copy[name]
       }
       else{
-        transform_data[name] = value
+        transform_data[name] = round(value, 3)
       }
       this.dirtyFields.delete(name)
       this.setState({ transform_data: transform_data })
@@ -338,7 +338,7 @@ class NepiIFConnectTransform extends Component {
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
             <Input
-              value={transform_data[field]}
+              value={round(transform_data[field],3)}
               id={field}
               disabled={disabled === true}
               onChange={(event) => this.onUpdateInputTransformValue(event, field)}
@@ -450,6 +450,7 @@ class NepiIFConnectTransform extends Component {
 
   }
 
+
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const transformNamespace = this.state.transformNamespace ? this.state.transformNamespace : 'None'
@@ -458,6 +459,7 @@ class NepiIFConnectTransform extends Component {
     const show_config = (this.props.show_config !== undefined)? this.props.show_config : false
     const { userRestricted} = this.props.ros
     const transform_view_restricted = userRestricted.indexOf('SYSTEM-TRANSFORM-VIEW') !== -1
+    const desc = 'Offsets measured from source reference to navpose reference in ENU'
 
 
     if (transformNamespace == null || transform_view_restricted === true) {
@@ -477,9 +479,8 @@ class NepiIFConnectTransform extends Component {
                 { (show_line === true) ?
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 : null }
-            <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-            {title}
-            </label>
+            <Label title={title}></Label>
+            <Label title={desc}></Label>
             {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
@@ -491,6 +492,7 @@ class NepiIFConnectTransform extends Component {
     else {
       return (
         <Section title={title}>
+          <Label title={desc}></Label>
           {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
