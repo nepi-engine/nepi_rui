@@ -749,7 +749,7 @@ class NavPoseMgr extends Component {
                   </div>
                 )}
 
-                {currentTopic !== 'None' && currentTopic !== 'Fixed' && (() => {
+                {currentTopic !== 'None' && currentTopic !== 'Fixed' && comp.comp_name != 'pan_tilt' && (() => {
                   const tfKey = comp.comp_name + '_' + typeShort
                   const isExpanded = true //(this.state.transform_expanded[tfKey] !== undefined) ? this.state.transform_expanded[tfKey] : true
                   const tf = comp[typeShort + '_topic_transform'] || {}

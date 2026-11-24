@@ -368,7 +368,7 @@ class NepiIFConnectTransform extends Component {
             </Label>
             : null }
 
-              {'Transform ' + (expanded ? '▲' : '▼') + ' - Offsets measured from source to device in ENU'}
+              {'Transform ' + (expanded ? '▲' : '▼') + ' - From source to target frame in ENU'}
 
             {(expanded === true) ?
             <div style={{ marginTop: '4px' }}>
