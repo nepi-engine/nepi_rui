@@ -470,7 +470,7 @@ class NepiIFTransform extends Component {
     const show_config = (this.props.show_config !== undefined)? this.props.show_config : false
     const { userRestricted} = this.props.ros
     const transform_view_restricted = userRestricted.indexOf('SYSTEM-TRANSFORM-VIEW') !== -1
-    const desc = 'Offsets measured from source reference to navpose reference in ENU'
+    const desc = 'Offsets measured from device in ENU'
 
 
     if (transformNamespace == null || transform_view_restricted === true) {
