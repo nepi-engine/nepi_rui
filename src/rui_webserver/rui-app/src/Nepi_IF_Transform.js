@@ -257,7 +257,7 @@ class NepiIFTransform extends Component {
         transform_data[name] = transform_data_copy[name]
       }
       else{
-        transform_data[name] = round(value, 3)
+        transform_data[name] = parseFloat(round(value, 3))
       }
       this.dirtyFields.delete(name)
       this.setState({ transform_data: transform_data })
@@ -316,7 +316,7 @@ class NepiIFTransform extends Component {
       const disabled = transform_control_restricted === true && read_only === true
 
       const show_frame_select = (this.props.show_frame_select !== undefined) ? this.props.show_frame_select : false
-      const expanded = this.state.expanded !== false
+      const expanded = true
 
       const show_offsets = (this.props.show_offsets !== undefined) ? this.props.show_offsets : false
       const msg = ("Source Desc: " + transform_data.source_ref_description +
@@ -340,7 +340,7 @@ class NepiIFTransform extends Component {
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
             <Input
-              value={round(transform_data[field],3)}
+              value={transform_data[field]}
               id={field}
               disabled={disabled === true}
               onChange={(event) => this.onUpdateInputTransformValue(event, field)}
@@ -380,6 +380,9 @@ class NepiIFTransform extends Component {
             </Label>
             : null }
 
+              {'Transform ' + (expanded ? '▲' : '▼') + ' - Offsets measured from source to device in ENU'}
+
+            {(expanded === true) ?
             <div style={{ marginTop: '4px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>{tfCols[1].map(renderTfInput)}</div>
@@ -390,7 +393,7 @@ class NepiIFTransform extends Component {
                 {'Clear Transform'}
               </div>
             </div>
-
+            : null }
 
 
         {/* { (show_offsets === true) ? this.renderOffsets() : null} */}
@@ -454,6 +457,7 @@ class NepiIFTransform extends Component {
 
   }
 
+
   render() {
     const make_section = (this.props.make_section !== undefined) ? this.props.make_section : true
     const transformNamespace = this.state.transformNamespace ? this.state.transformNamespace : 'None'
@@ -462,7 +466,7 @@ class NepiIFTransform extends Component {
     const show_config = (this.props.show_config !== undefined)? this.props.show_config : false
     const { userRestricted} = this.props.ros
     const transform_view_restricted = userRestricted.indexOf('SYSTEM-TRANSFORM-VIEW') !== -1
-    const desc = this.props.show_description === true  ? ' - Offsets measured from source to device in ENU' : ''
+    const desc = 'Offsets measured from source to device in ENU'
 
 
     if (transformNamespace == null || transform_view_restricted === true) {
@@ -482,7 +486,7 @@ class NepiIFTransform extends Component {
                 { (show_line === true) ?
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 : null }
-            <Label title={title + desc}></Label>
+            <Label title={title}></Label>
             {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
@@ -493,7 +497,7 @@ class NepiIFTransform extends Component {
     }
     else {
       return (
-        <Section title={title + desc}>
+        <Section title={title}>
           {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
@@ -504,7 +508,9 @@ class NepiIFTransform extends Component {
     }
     
   }
-  }
+
+
+}
 
 
 export default NepiIFTransform

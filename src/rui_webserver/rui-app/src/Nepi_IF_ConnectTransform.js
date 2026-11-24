@@ -316,7 +316,7 @@ class NepiIFConnectTransform extends Component {
       const disabled = transform_control_restricted === true && read_only === true
 
       const show_frame_select = (this.props.show_frame_select !== undefined) ? this.props.show_frame_select : false
-      const expanded = this.state.expanded !== false
+      const expanded = true
 
       const show_offsets = (this.props.show_offsets !== undefined) ? this.props.show_offsets : false
       const msg = ("Source Desc: " + transform_data.source_ref_description +
@@ -338,7 +338,7 @@ class NepiIFConnectTransform extends Component {
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <label style={{ fontSize: '0.75em', width: '46px', flexShrink: 0 }}>{label}</label>
             <Input
-              value={round(transform_data[field],3)}
+              value={transform_data[field]}
               id={field}
               disabled={disabled === true}
               onChange={(event) => this.onUpdateInputTransformValue(event, field)}
@@ -368,7 +368,9 @@ class NepiIFConnectTransform extends Component {
             </Label>
             : null }
 
+              {'Transform ' + (expanded ? '▲' : '▼') + ' - Offsets measured from source to device in ENU'}
 
+            {(expanded === true) ?
             <div style={{ marginTop: '4px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
               <div hidden={disabled === true}
@@ -378,7 +380,7 @@ class NepiIFConnectTransform extends Component {
                 {'Clear Transform'}
               </div>
             </div>
-
+            : null }
 
 
         {/* { (show_offsets === true) ? this.renderOffsets() : null} */}
@@ -452,7 +454,6 @@ class NepiIFConnectTransform extends Component {
     const show_config = (this.props.show_config !== undefined)? this.props.show_config : false
     const { userRestricted} = this.props.ros
     const transform_view_restricted = userRestricted.indexOf('SYSTEM-TRANSFORM-VIEW') !== -1
-    const desc = this.props.show_description === true  ? ' - Offsets measured from source to device in ENU' : ''
 
 
     if (transformNamespace == null || transform_view_restricted === true) {
@@ -472,7 +473,7 @@ class NepiIFConnectTransform extends Component {
                 { (show_line === true) ?
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 : null }
-            <Label title={title + desc}></Label>
+            <Label title={title}></Label>
             {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
@@ -483,7 +484,7 @@ class NepiIFConnectTransform extends Component {
     }
     else {
       return (
-        <Section title={title + desc}>
+        <Section title={title}>
           {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
@@ -494,6 +495,8 @@ class NepiIFConnectTransform extends Component {
     }
     
   }
-  }
+
+}
+
 
 export default NepiIFConnectTransform

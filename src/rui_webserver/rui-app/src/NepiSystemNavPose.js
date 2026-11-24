@@ -398,6 +398,7 @@ class NavPoseMgr extends Component {
               <NepiIFNavPose
                 navposeNamespace={this.state.selected_frame_topic + '/navpose'}
                 title={live_solution.frame_name}
+                show_pt_values={false}
                 show_line={false}
                 make_section={false}
                 read_only={true}
@@ -810,12 +811,7 @@ class NavPoseMgr extends Component {
                   }
                   return (
                     <div>
-                      <div
-                        style={{ cursor: 'pointer', fontSize: '0.8em', color: Styles.vars.colors.grey1, marginTop: '4px', userSelect: 'none' }}
-                        //onClick={() => this.setState({ transform_expanded: { ...this.state.transform_expanded, [tfKey]: !isExpanded } })}
-                      >
-                        {'Transform ' + (isExpanded ? '▲' : '▼')}
-                      </div>
+                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - Offsets measured from source to device in ENU'}
                       {isExpanded && (
                         <div style={{ marginTop: '4px' }}>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
