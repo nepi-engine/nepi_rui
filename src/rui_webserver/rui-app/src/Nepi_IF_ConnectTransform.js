@@ -368,14 +368,7 @@ class NepiIFConnectTransform extends Component {
             </Label>
             : null }
 
-            <div
-              style={{ cursor: 'pointer', fontSize: '0.8em', color: Styles.vars.colors.grey1, marginTop: '4px', userSelect: 'none' }}
-              onClick={() => this.setState({ expanded: !expanded })}
-            >
-              {'Transform ' + (expanded ? '▲' : '▼')}
-            </div>
 
-            {(expanded === true) ?
             <div style={{ marginTop: '4px' }}>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
               <div hidden={disabled === true}
@@ -385,7 +378,7 @@ class NepiIFConnectTransform extends Component {
                 {'Clear Transform'}
               </div>
             </div>
-            : null }
+
 
 
         {/* { (show_offsets === true) ? this.renderOffsets() : null} */}

@@ -655,12 +655,17 @@ class NepiIFNavPose extends Component {
         const show_save = this.props.show_save !== undefined ? this.props.show_save : true
         const show_save_menu = show_save === true && save_topic != null && save_topic !== ''
         const navpose_msg = (this.props.navpose_msg !== undefined) ? this.props.navpose_msg : null
-
+        if (navpose_msg != null){
+          const navpose_frame = navpose_msg.navpose_frame
+          const navpose_description = navpose_msg.navpose_description
+          const frame_nav = navpose_msg.frame_nav
+          const frame_alt =navpose_msg.frame_altitude
+          const frame_depth = navpose_msg.frame_depth
           const show_frame_info = (this.props.show_frame_info !== undefined) ? this.props.show_frame_info : true
           const frame_msg = show_frame_info === true ? (' - NavPose Frame:\u00A0\u00A0' + frame_nav + 
             '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Alt Frame:\u00A0\u00A0' + frame_alt + 
             '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Depth Frame:\u00A0\u00A0' + frame_depth ) : ''
-
+        }
         if ((navposeNamespace == null && navpose_msg == null) || navpose_view_restricted === true) {
     
           return(
