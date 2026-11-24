@@ -211,7 +211,7 @@ class NepiIFConnectNavPose extends Component {
     // the selector, and the Select spans the panel width. Default false keeps
     // the one-line layout with the indicator beside the Select.
     const show_connect_header = (this.props.show_connect_header !== undefined) ? this.props.show_connect_header : false
-    const title = (this.props.select_title !== undefined) ? this.props.select_title : "Select Device"
+    const title = (this.props.select_title !== undefined) ? this.props.select_title : "Source Frame"
     
     // Single-line row mode. Pages that pack several connect rows into one panel
     // pass shortened={true} and get exactly one line: the row's name (the title

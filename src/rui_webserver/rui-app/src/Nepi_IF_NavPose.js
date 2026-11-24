@@ -412,14 +412,6 @@ class NepiIFNavPose extends Component {
           const pan_deg = (force_enable || has_pan_tilt === true) && navpose_msg.pan_deg !== -999 ? navpose_msg.pan_deg : null
           const tilt_deg = (force_enable || has_pan_tilt === true) && navpose_msg.tilt_deg !== -999 ? navpose_msg.tilt_deg : null
           
-          const show_frame_info = (this.props.show_frame_info !== undefined) ? this.props.show_frame_info : true
-          const frame_msg = ('NavPose Frame:\u00A0\u00A0' + frame_nav + 
-            '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Alt Frame:\u00A0\u00A0' + frame_alt + 
-            '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Depth Frame:\u00A0\u00A0' + frame_depth )
-
-          const show_source_topic = (this.props.show_source_topic !== undefined) ? this.props.show_source_topic : true
-          const source_msg = ("Source Topic: " + navposeNamespace )
-
           
           const allow_updates = (this.props.allow_updates !== undefined)? this.props.allow_updates : false
           const read_only = this.props.read_only === true
@@ -616,36 +608,6 @@ class NepiIFNavPose extends Component {
                 </Column>
               </Columns>
 
-                        <div style={{ display: 'flex' }}>
-                                <div style={{ width: '70%' }}>
-
-                                      { (show_frame_info === true ) ?       
-                                          <Label title={frame_msg}></Label>
-                                      : null}
-
-                                      { (show_source_topic === true ) ?       
-                                            <Label title={source_msg}></Label>
-                                      : null}
-
-
-                                </div>
-
-                                <div style={{ width: '30%' }}>
-
-
-                                        {/* { (has_pan_tilt === true ) ?       
-                                              <Label title={"Show PT Frame"}>
-                                                <Toggle
-                                                  checked={show_pt_values}
-                                                  onClick={() => this.setState({ show_pt_values: !show_pt_values })}
-                                                />
-                                              </Label>
-                                        : null} */}
-
-                    
-                                </div>
-
-                      </div>
 
 
 
@@ -658,6 +620,8 @@ class NepiIFNavPose extends Component {
         renderConfigs(){
           const configNamespace = this.state.configNamespace ? this.state.configNamespace : this.state.navposeNamespace
           const show_all_config_options = (this.props.show_all_config_options !== undefined)? this.props.show_all_config_options : true
+
+
           return(
             <Columns>
             <Column>
@@ -691,6 +655,12 @@ class NepiIFNavPose extends Component {
         const show_save = this.props.show_save !== undefined ? this.props.show_save : true
         const show_save_menu = show_save === true && save_topic != null && save_topic !== ''
         const navpose_msg = (this.props.navpose_msg !== undefined) ? this.props.navpose_msg : null
+
+          const show_frame_info = (this.props.show_frame_info !== undefined) ? this.props.show_frame_info : true
+          const frame_msg = show_frame_info === true ? (' - NavPose Frame:\u00A0\u00A0' + frame_nav + 
+            '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Alt Frame:\u00A0\u00A0' + frame_alt + 
+            '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0Depth Frame:\u00A0\u00A0' + frame_depth ) : ''
+
         if ((navposeNamespace == null && navpose_msg == null) || navpose_view_restricted === true) {
     
           return(
@@ -705,7 +675,7 @@ class NepiIFNavPose extends Component {
         else if (make_section === true) {
 
               return (
-                <Section title={title}>
+                <Section title={title + frame_msg}>
                 
 
                 {this.renderData()}
@@ -740,7 +710,7 @@ class NepiIFNavPose extends Component {
 
                 {/* <Label title={title} labelStyle={{fontWeight: 'bold'}}/> */}
                   
-                <Label title={title}/>
+                <Label title={title + frame_msg}/>
 
                 {this.renderData()}
                 

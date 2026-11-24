@@ -192,7 +192,7 @@ class NepiDeviceNPX extends Component {
                     <NepiIFConnectNavPose
                     namespace={connect_navpose_topic}
                     navpose_topic={navpose_topic}
-                    select_title={"NavPose Frame"}
+                    select_title={"Source Frame"}
                     show_selector={true}
                     show_transform={true}
                     show_controls={true}

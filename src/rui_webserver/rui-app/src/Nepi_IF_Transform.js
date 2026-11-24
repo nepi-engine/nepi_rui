@@ -470,7 +470,7 @@ class NepiIFTransform extends Component {
     const show_config = (this.props.show_config !== undefined)? this.props.show_config : false
     const { userRestricted} = this.props.ros
     const transform_view_restricted = userRestricted.indexOf('SYSTEM-TRANSFORM-VIEW') !== -1
-    const desc = 'Offsets measured from device in ENU'
+    const desc = this.props.show_description === true  ? ' - Offsets measured from source to device in ENU' : ''
 
 
     if (transformNamespace == null || transform_view_restricted === true) {
@@ -490,8 +490,7 @@ class NepiIFTransform extends Component {
                 { (show_line === true) ?
                   <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
                 : null }
-            <Label title={title}></Label>
-            <Label title={desc}></Label>
+            <Label title={title + desc}></Label>
             {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
@@ -502,8 +501,7 @@ class NepiIFTransform extends Component {
     }
     else {
       return (
-        <Section title={title}>
-          <Label title={desc}></Label>
+        <Section title={title + desc}>
           {this.renderTransform()}
             { (show_config === true) ?
                 this.renderConfigs()
