@@ -257,7 +257,7 @@ class NepiIFConnectTransform extends Component {
         transform_data[name] = transform_data_copy[name]
       }
       else{
-        transform_data[name] = round(value, 3)
+        transform_data[name] = parseFloat(round(value, 3))
       }
       this.dirtyFields.delete(name)
       this.setState({ transform_data: transform_data })
