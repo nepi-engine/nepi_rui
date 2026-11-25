@@ -811,7 +811,7 @@ class NavPoseMgr extends Component {
                   }
                   return (
                     <div>
-                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - Offsets measured from source to target in ENU'}
+                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - From source to target frame in ENU'}
                       {isExpanded && (
                         <div style={{ marginTop: '4px' }}>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
