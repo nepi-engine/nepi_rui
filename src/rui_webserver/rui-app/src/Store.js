@@ -33,6 +33,11 @@ const TRIGGER_MASKS = {
 const NEPI_RETRY_MSEC = 500
 const NEPI_TIMEOUT_MSEC = 3000
 const NEPI_CONNECT_RETRIES = 1
+// A rosbridge socket still connecting gets this long before a retry replaces
+// it, so retries do not stack up beside it, while a connect that hangs on an
+// unreachable device does not hold off the next attempt for the browser's
+// whole TCP timeout.
+const ROS_CONNECT_WAIT_MSEC = 5000
 
 const UPDATE_PERIOD = 100 // ms between sending updates
 
@@ -66,6 +71,25 @@ function sameStringSet(a, b) {
     }
   }
   return true
+}
+
+// roslib 0.20's Ros.connect() replaces ros.socket with a new WebSocket without
+// closing the old one, and every socket it creates reports its events on the
+// same Ros object. An old socket left open keeps receiving every topic it
+// subscribed, and one that fails later emits "close" on the shared Ros object,
+// which marks the replacement connection disconnected and starts yet another
+// retry. Detaching the handlers before closing stops the old socket from
+// reporting anything at all.
+function closeRosSocket(ros) {
+  if (ros == null || ros.socket == null) {
+    return
+  }
+  const socket = ros.socket
+  socket.onopen = null
+  socket.onclose = null
+  socket.onerror = null
+  socket.onmessage = null
+  socket.close()
 }
 
 let _ruiCryptoKey = null
@@ -321,6 +345,10 @@ class ROSConnectionStore {
   @observable serviceNamesLast = null
 
   rosListeners = []
+  // When the current rosbridge socket was opened; see ROS_CONNECT_WAIT_MSEC.
+  rosConnectStartMsec = 0
+  // The one pending updateTopicsServices pass, or null.
+  topicsServicesTimer = null
 
 
   async checkROSConnection() {
@@ -332,6 +360,7 @@ class ROSConnectionStore {
           // setup rosbridge connection
           if (this.ros == null) {
             this.rosCheckStarted = true
+            this.rosConnectStartMsec = Date.now()
             this.ros = new ROS.Ros({
               url: ROS_WS_URL
             })
@@ -340,7 +369,14 @@ class ROSConnectionStore {
             this.ros.on("close", this.onDisconnectedToROS)
           }
           else {
-            this.ros.connect(ROS_WS_URL)
+            const socket = this.ros.socket
+            const stillConnecting = (socket != null && socket.readyState === WebSocket.CONNECTING &&
+              (Date.now() - this.rosConnectStartMsec) < ROS_CONNECT_WAIT_MSEC)
+            if (stillConnecting === false) {
+              closeRosSocket(this.ros)
+              this.rosConnectStartMsec = Date.now()
+              this.ros.connect(ROS_WS_URL)
+            }
             this.checkTopicsServices = true
             this.topicQueryLock = false
             this.updateTopicsServices()
@@ -391,6 +427,14 @@ class ROSConnectionStore {
 
   @action.bound
   async updateTopicsServices() {
+    // At most one pass is ever scheduled. checkROSConnection calls this every
+    // 500 ms while reconnecting or waiting for NEPI, and each call would
+    // otherwise start its own self-rescheduling chain, every one of them
+    // running until the next teardown.
+    if (this.topicsServicesTimer !== null) {
+      clearTimeout(this.topicsServicesTimer)
+      this.topicsServicesTimer = null
+    }
 
     var update_time = 100
     if (this.topicQueryLock === false){
@@ -484,7 +528,8 @@ class ROSConnectionStore {
       this.topicQueryLock = false
     }
     if (this.checkTopicsServices === true) {
-      setTimeout(async () => {
+      this.topicsServicesTimer = setTimeout(async () => {
+        this.topicsServicesTimer = null
         await this.updateTopicsServices()
       }, update_time)
     }
@@ -504,10 +549,15 @@ class ROSConnectionStore {
       this.ros.off("error", this.onErrorConnectingToROS)
       this.ros.off("close", this.onDisconnectedToROS)
 
+      const ros = this.ros
       this.ros = null
       this.rosListeners.forEach(listener => {
         listener.unsubscribe()
       })
+      // Closed after the unsubscribes are sent. Left open, the old socket keeps
+      // receiving every topic any component subscribed through it, beside the
+      // replacement the next checkROSConnection pass opens.
+      closeRosSocket(ros)
       this.resetStates()
 
       // resetStates() sets rosAutoReconnect = false, and checkROSConnection()
