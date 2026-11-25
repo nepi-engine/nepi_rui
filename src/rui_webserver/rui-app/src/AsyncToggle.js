@@ -53,9 +53,14 @@ import "./AsyncToggle.css"
 //   checked           the authoritative value from the status message
 //   onClick           called on click, unchanged, so the caller still publishes
 //   disabled          same as react-toggle
-//   confirmTimeoutMs  revert-if-unconfirmed window, default 3000 ms
+//   confirmTimeoutMs  revert-if-unconfirmed window, default 15000 ms
 //   any other prop    passed straight through to react-toggle
-const DEFAULT_CONFIRM_TIMEOUT_MS = 3000
+//
+// The default is long enough for a confirmation that is only slow -- a loaded
+// device or a busy rosbridge can take several seconds to return the status --
+// so the thumb returns only when the request was really lost. Until then the
+// track color already shows that the request is unconfirmed.
+const DEFAULT_CONFIRM_TIMEOUT_MS = 15000
 
 class AsyncToggle extends Component {
   constructor(props) {
