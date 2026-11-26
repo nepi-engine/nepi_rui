@@ -252,12 +252,12 @@ class NepiIFTransform extends Component {
     var transform_data = this.state.transform_data
     const transform_data_copy = this.state.transform_data_copy
     if(event.key === 'Enter'){
-      const value = parseFloat(event.target.value)
+      const value = Number(event.target.value)
       if (isNaN(value)) {
         transform_data[name] = transform_data_copy[name]
       }
       else{
-        transform_data[name] = parseFloat(round(value, 3))
+        transform_data[name] = value
       }
       this.dirtyFields.delete(name)
       this.setState({ transform_data: transform_data })

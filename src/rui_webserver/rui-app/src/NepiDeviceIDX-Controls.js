@@ -637,7 +637,7 @@ class NepiDeviceIDXControls extends Component {
 
 
                     <NepiIFConfig
-                        namespace={namespace}
+                        namespace={namespace.replace('/idx','')}
                         show_save_all={develop_mode}
                         title={"Nepi_IF_Conig"}
                   />

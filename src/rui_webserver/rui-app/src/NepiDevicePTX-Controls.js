@@ -930,7 +930,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               { (status_msg != null && show_controls === true) ? this.renderControlPanel() : null}
               { (status_msg != null && show_config === true) ?  
                 <NepiIFConfig
-                namespace={namespace}
+                namespace={namespace.replace('/ptx','')}
                 show_save_all={develop_mode}
                 title={"Nepi_IF_Conig"}
                 />
@@ -949,7 +949,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               { (status_msg != null && show_controls === true) ? this.renderControlPanel() : null}
               { (status_msg != null && show_config === true) ?  
                 <NepiIFConfig
-                namespace={namespace}
+                namespace={namespace.replace('/ptx','')}
                 show_save_all={develop_mode}
                 title={"Nepi_IF_Conig"}
                 />

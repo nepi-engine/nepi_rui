@@ -505,7 +505,7 @@ class NepiControlsLightsControls extends Component {
 
 
             <NepiIFConfig
-                namespace={namespace}
+                namespace={namespace.replace('/lsx','')}
                 title={"Nepi_IF_Conig"}
                 show_save_all={develop_mode}
           />

@@ -814,7 +814,7 @@ class NepiDeviceRBX extends Component {
 
           {(device_selected === true) ?
             <NepiIFConfig
-              namespace={namespace}
+              namespace={namespace.replace('/rbx','')}
               title={"Save Config"}
               show_save_all={develop_mode}
             />

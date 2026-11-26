@@ -694,7 +694,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
               { (status_msg != null && show_config === true) ? this.renderSettings() : null}
               { (status_msg != null && show_config === true) ?
                 <NepiIFConfig
-                namespace={namespace}
+                namespace={namespace.replace('/svx','')}
                 show_save_all={develop_mode}
                 title={"Nepi_IF_Conig"}
                 />
@@ -718,7 +718,7 @@ componentDidUpdate(prevProps, prevState, snapshot) {
 
               { (status_msg != null && show_config === true) ?
                 <NepiIFConfig
-                namespace={namespace}
+                namespace={namespace.replace('/svx','')}
                 show_save_all={develop_mode}
                 title={"Nepi_IF_Conig"}
                 />
