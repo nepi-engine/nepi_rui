@@ -368,7 +368,7 @@ class NepiIFConnectTransform extends Component {
             </Label>
             : null }
 
-              {'Transform ' + (expanded ? '▲' : '▼') + ' - From source to target frame in ENU'}
+              {'Transform ' + (expanded ? '▲' : '▼') + ' - From Source Frame or PanTilt Axis to Device in ENU'}
 
             {(expanded === true) ?
             <div style={{ marginTop: '4px' }}>

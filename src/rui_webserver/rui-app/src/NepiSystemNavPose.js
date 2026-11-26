@@ -406,28 +406,25 @@ class NavPoseMgr extends Component {
 
                 
 
+            
 
+                        <NepiIFNavPose
+                          navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
+                          title={"NavPose Fixed Data"}
+                          make_section={false}
+                          update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
+                          frame_name={this.state.selected_frame}
+                        />
 
-
+              
                 <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-        
 
                   <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
                     {"Show NavPose Components"}
                   </label>
 
                   <div style={{ display: 'flex' }}>
-                          <div style={{ width: '13%' }} hidden={false}>
-                                <Label title="Fixed">
-                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                                  <Toggle
-                                    checked={this.state.show_fixed===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_fixed",this.state.show_fixed)}>
-                                  </Toggle>
-                              </Label>
-                          </div>
-                          <div style={{ width: '3%' }}>
-                          </div>
+
 
                           <div style={{ width: '13%' }} hidden={false}>
                                 <Label title="Init">
@@ -475,21 +472,18 @@ class NavPoseMgr extends Component {
                                 </Label>
                           </div>
 
+                          <div style={{ width: '13%' }} hidden={false}>
+
+                          </div>
+                          <div style={{ width: '3%' }}>
+                          </div>
+
+
+
                     </div>
 
 
 
-                    { (this.state.show_fixed === true) ?
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
-                          title={"NavPose Fixed Data"}
-                          make_section={false}
-                          update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
-                          frame_name={this.state.selected_frame}
-                        />
-
-                    : null }
 
                     { (this.state.show_init === true) ?
 
@@ -749,7 +743,7 @@ class NavPoseMgr extends Component {
                   </div>
                 )}
 
-                {currentTopic !== 'None' && currentTopic !== 'Fixed' && comp.comp_name != 'pan_tilt' && (() => {
+                {currentTopic !== 'None' && currentTopic !== 'Fixed' && (() => {
                   const tfKey = comp.comp_name + '_' + typeShort
                   const isExpanded = true //(this.state.transform_expanded[tfKey] !== undefined) ? this.state.transform_expanded[tfKey] : true
                   const tf = comp[typeShort + '_topic_transform'] || {}
@@ -811,7 +805,7 @@ class NavPoseMgr extends Component {
                   }
                   return (
                     <div>
-                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - From source to target frame in ENU'}
+                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - ' + (comp.comp_name === 'pan_tilt' ? 'From PanTilt to Frame in ENU' : 'From Frame to Source in ENU')}
                       {isExpanded && (
                         <div style={{ marginTop: '4px' }}>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>
