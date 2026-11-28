@@ -81,7 +81,8 @@ class NepiIFConnectNavPose extends Component {
 
     this.renderSelector = this.renderSelector.bind(this)
     this.renderData = this.renderData.bind(this)
-    this.renderControls = this.renderControls.bind(this)
+    this.renderNavPose = this.renderNavPose.bind(this)
+    this.renderTransform = this.renderTransform.bind(this)
   }
 
   // Resolve the connect namespace from the namespace prop
@@ -388,7 +389,56 @@ class NepiIFConnectNavPose extends Component {
   // publishers on the selected source beyond the standard save / reset /
   // factory-reset config triggers, so the controls section is the shared
   // Nepi_IF_Config panel pointed at the selected source namespace.
-  renderControls() {
+  renderNavPose() {
+    const connect_status_msg = this.state.connect_status_msg
+    if (connect_status_msg == null) {
+      return (
+        <Columns>
+          <Column>
+
+          </Column>
+        </Columns>
+      )
+    }
+
+    const namespace = connect_status_msg.selected_topic
+    if (namespace == null || namespace === 'None') {
+      return (
+        <Columns>
+          <Column>
+
+          </Column>
+        </Columns>
+      )
+    }
+
+    const navpose_topic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic :connect_status_msg.navpose_topic
+    return (
+      <React.Fragment>
+
+            <NepiIFNavPose
+              navposeNamespace={navpose_topic}
+              read_only={true}
+              show_line={false}
+              make_section={false}
+            />
+
+              {/* <NepiIFConfig
+                namespace={namespace}
+                title={"Nepi_IF_Config"}
+              /> */}
+
+      </React.Fragment>
+    )
+  }
+
+
+
+  // Controls, backed by ConnectIFStatus. ConnectNavPoseIF registers no command
+  // publishers on the selected source beyond the standard save / reset /
+  // factory-reset config triggers, so the controls section is the shared
+  // Nepi_IF_Config panel pointed at the selected source namespace.
+  renderTransform() {
     const connect_status_msg = this.state.connect_status_msg
     if (connect_status_msg == null) {
       return (
@@ -415,8 +465,7 @@ class NepiIFConnectNavPose extends Component {
 
     const show_transform = (this.props.show_transform !== undefined)? this.props.show_transform : transform_topic !== ''
     const edit_transform = (this.props.edit_transform !== undefined)? this.props.edit_transform : false
-    
-    const navpose_topic = (this.props.navpose_topic !== undefined)? this.props.navpose_topic :connect_status_msg.navpose_topic
+  
     return (
       <React.Fragment>
 
@@ -433,17 +482,6 @@ class NepiIFConnectNavPose extends Component {
             />
             : null }
 
-            <NepiIFNavPose
-              navposeNamespace={navpose_topic}
-              read_only={true}
-              show_line={false}
-              make_section={false}
-            />
-
-              {/* <NepiIFConfig
-                namespace={namespace}
-                title={"Nepi_IF_Config"}
-              /> */}
 
       </React.Fragment>
     )
@@ -476,10 +514,12 @@ class NepiIFConnectNavPose extends Component {
     const content = (
       <React.Fragment>
 
-        { (show_selector === true) ? this.renderSelector() : null }
-        { (show_data === true) ? this.renderData() : null }
-        { (show_controls === true) ? this.renderControls() : null }
 
+
+        { (show_controls === true) ? this.renderNavPose() : null }
+        { (show_data === true) ? this.renderData() : null }
+        { (show_selector === true) ? this.renderSelector() : null }
+        { (show_controls === true) ? this.renderTransform() : null }
       </React.Fragment>
     )
 

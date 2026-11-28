@@ -168,23 +168,23 @@ class NepiIFTransform extends Component {
     const transform_data = {
       source_ref_description: message.source_ref_description,
       end_ref_description: message.end_ref_description,
-      x_m: message.x_m,
-      y_m: message.y_m,
-      z_m: message.z_m,
+      x_m: Number(round(message.x_m,3)),
+      y_m: Number(round(message.y_m,3)),
+      z_m: Number(round(message.z_m,3)),
 
       x_invert: message.x_invert,
       y_invert: message.y_invert,
       z_invert: message.z_invert,
 
-      roll_deg: message.roll_deg,
-      pitch_deg: message.pitch_deg,
-      yaw_deg: message.yaw_deg,
+      roll_deg: Number(round(message.roll_deg,3)),
+      pitch_deg: Number(round(message.pitch_deg,3)),
+      yaw_deg: Number(round(message.yaw_deg,3)),
 
       roll_invert: message.roll_invert,
       pitch_invert: message.pitch_invert,
       yaw_invert: message.yaw_invert,
 
-      heading_deg: message.heading_deg,
+      heading_deg: Number(round(message.heading_deg,3)),
 
       heading_invert: message.heading_invert
     }

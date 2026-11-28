@@ -33,7 +33,7 @@ export function doNothing(){
 }
 
 export function round(value, decimals = 0) {
-  return Number(value).toFixed(decimals)
+  return Number(Number(value).toFixed(decimals))
   //return value && Number(Math.round(value + "e" + decimals) + "e-" + decimals)
 }
 
@@ -588,6 +588,18 @@ export function onEnterSendIntValue(event, namespace) {
     const value = parseInt(event.target.value, 10)
     if (!isNaN(value)){
       sendIntMsg(namespace,value)
+    }
+    document.getElementById(event.target.id).style.color = Styles.vars.colors.black
+  }
+}
+
+
+export function onEnterSendUpdateIntValue(event, namespace, name, name2 = '', name3 = '') {
+  const {sendUpdateIntMsg} = this.props.ros
+  if(event.key === 'Enter'){
+    const value = parseInt(event.target.value, 10)
+    if (!isNaN(value)){
+      sendUpdateIntMsg(namespace,name,value,name2,name3)
     }
     document.getElementById(event.target.id).style.color = Styles.vars.colors.black
   }

@@ -406,129 +406,15 @@ class NavPoseMgr extends Component {
 
                 
 
-            
+  
 
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
-                          title={"NavPose Fixed Data"}
-                          make_section={false}
-                          update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
-                          frame_name={this.state.selected_frame}
-                        />
-
-              
-                <div style={{ borderTop: "1px solid #ffffff", marginTop: Styles.vars.spacing.medium, marginBottom: Styles.vars.spacing.xs }}/>
-
-                  <label style={{fontWeight: 'bold'}} align={"left"} textAlign={"left"}>
-                    {"Show NavPose Components"}
-                  </label>
-
-                  <div style={{ display: 'flex' }}>
-
-
-                          <div style={{ width: '13%' }} hidden={false}>
-                                <Label title="Init">
-                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                                  <Toggle
-                                    checked={this.state.show_init===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_init",this.state.show_init)}>
-                                  </Toggle>
-                              </Label>
-                          </div>
-                          <div style={{ width: '3%' }}>
-                          </div>
-
-                          <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Update">
-                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                                  <Toggle
-                                    checked={this.state.show_update===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_update",this.state.show_update)}>
-                                  </Toggle>
-                                </Label>
-                          </div>
-                          <div style={{ width: '3%' }}>
-                          </div>
-
-                          <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Reset">
-                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                                  <Toggle
-                                    checked={this.state.show_replace===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_replace",this.state.show_replace)}>
-                                  </Toggle>
-                                </Label>
-                          </div>
-                          <div style={{ width: '3%' }}>
-                          </div>
-
-                          <div style={{ width: '13%' }} hidden={false}>
-                              <Label title="Offset">
-                                  {/* react-toggle (not AsyncToggle): checked is local view state, already immediate -- no backend round trip to confirm. */}
-                                  <Toggle
-                                    checked={this.state.show_offset===true}
-                                    onClick={() => onChangeSwitchStateValue.bind(this)("show_offset",this.state.show_offset)}>
-                                  </Toggle>
-                                </Label>
-                          </div>
-
-                          <div style={{ width: '13%' }} hidden={false}>
-
-                          </div>
-                          <div style={{ width: '3%' }}>
-                          </div>
-
-
-
-                    </div>
-
-
-
-
-                    { (this.state.show_init === true) ?
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_init'}
-                          title={"NavPose Init Data"}
-                          make_section={false}
-                          read_only={true}
-                        />
-
-                    : null }
-
-                    { (this.state.show_update === true) ?
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_update'}
-                          title={"NavPose Update Data"}
-                          make_section={false}
-                          read_only={true}
-                        />
-
-                    : null }
-
-                    { (this.state.show_replace === true) ?
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_reset'}
-                          title={"NavPose Reset Data"}
-                          make_section={false}
-                          read_only={true}
-                        />
-
-                    : null }
-
-                    { (this.state.show_offset === true) ?
-
-                        <NepiIFNavPose
-                          navposeNamespace={this.state.selected_frame_topic + '/navpose_offset'}
-                          title={"NavPose Offset Data"}
-                          make_section={false}
-                          read_only={true}
-                        />
-
-                    : null }
-
+              <NepiIFNavPose
+                navposeNamespace={this.state.selected_frame_topic + '/navpose_fixed'}
+                title={"Init Fixed Data"}
+                make_section={false}
+                update_namespace={this.getMgrNamespace() + '/set_frame_fixed_navpose'}
+                frame_name={this.state.selected_frame}
+              />
 
 
 
@@ -805,7 +691,7 @@ class NavPoseMgr extends Component {
                   }
                   return (
                     <div>
-                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - ' + (comp.comp_name === 'pan_tilt' ? 'From PanTilt to Frame in ENU' : 'From Frame to Source in ENU')}
+                      {'Transform ' + (isExpanded ? '▲' : '▼') + ' - ' + (comp.comp_name === 'pan_tilt' ? 'From Frame to PanTilt in ENU' : 'From Frame to Source in ENU')}
                       {isExpanded && (
                         <div style={{ marginTop: '4px' }}>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'flex-start' }}>{tfCols[0].map(renderTfInput)}</div>

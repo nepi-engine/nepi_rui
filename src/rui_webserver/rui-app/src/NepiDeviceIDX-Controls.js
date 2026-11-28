@@ -33,7 +33,7 @@ import Styles from "./Styles"
 import Input from "./Input"
 //import BooleanIndicator from "./BooleanIndicator"
 import { Column, Columns } from "./Columns"
-import { round, onUpdateSetStateValue, onEnterSendIntValue, onChangeSwitchStateValue} from "./Utilities"
+import { round, onUpdateSetStateValue, onEnterSendIntValue, onEnterSendUpdateIntValue, onChangeSwitchStateValue} from "./Utilities"
 
 import NepiIFConfig from "./Nepi_IF_Config" 
 
@@ -87,6 +87,10 @@ class NepiDeviceIDXControls extends Component {
 
       statusListener: null,
 
+            set_max_framerate: null,
+            set_width_deg: null,
+            set_height_deg: null,
+
     }
 
     this.renderControlData = this.renderControlData.bind(this)
@@ -100,6 +104,7 @@ class NepiDeviceIDXControls extends Component {
 
   // Callback for handling ROS StatusIDX messages
   statusListener(message) {
+    const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
     const last_msg = this.state.status_msg
     this.setState({
       status_msg: message,
@@ -108,8 +113,6 @@ class NepiDeviceIDXControls extends Component {
       rtsp_password: message.rtsp_password,
       autoAdjust: message.auto_adjust_enabled,
       auto_adjust_controls: message.auto_adjust_controls,
-      resolutionAdjustment: message.resolution_ratio,
-      resolutionString : message.resolution_current,
       dataProducts: message.data_products,
       frameratesCurrent: message.framerates,
       contrastAdjustment: message.contrast_ratio,
@@ -123,26 +126,30 @@ class NepiDeviceIDXControls extends Component {
       rangeLimitMaxMAdj: message.max_range_m_adj,
     })
     
-    if (last_msg != null) {
-      if (message.max_framerate !== last_msg.max_framerate){
-        this.setState({max_framerate: message.max_framerate})
-      }
-
-      if (message.width_deg !== last_msg.width_deg){
-        this.setState({width_deg: message.width_deg})
-      }
-
-      if (message.height_deg !== last_msg.height_deg){
-        this.setState({height_deg: message.height_deg})
-      }
+    var width_deg = message.width_deg
+    var height_deg = message.height_deg
+    var resolutionString = '0:0'
+    if (data_product === 'color_image'){
+      width_deg = message.color_image_width_deg
+      height_deg = message.color_image_height_deg
+      resolutionString : message.color_image_resolution_current
     }
-    else {
-      this.setState({max_framerate: message.max_framerate,
-        width_deg: message.width_deg,
-        height_deg: message.height_deg
-      })
-
+    if (data_product === 'depth_map'){
+      width_deg = message.depth_map_width_deg
+      height_deg = message.depth_map_height_deg
+      resolutionString : message.depth_map_resolution_current
     }
+    if (data_product === 'pointcloud'){
+      width_deg = message.pointcloud_width_deg
+      height_deg = message.pointcloud_height_deg
+      resolutionString : message.pointcloud_resolution_current
+    }        
+
+    this.setState({max_framerate: message.max_framerate,
+      width_deg: width_deg,
+      height_deg: height_deg,
+      resolutionString: resolutionString
+    })
 
 
   }
@@ -397,6 +404,8 @@ class NepiDeviceIDXControls extends Component {
     const run_mode = this.props.ros.systemRunMode
     const develop_mode = run_mode === 'develop'
 
+    const data_product = this.props.dataProduct ? this.props.dataProduct : 'None'
+
     if ( device_controls_restricted === true){
       return (
               <Columns>
@@ -445,9 +454,9 @@ class NepiDeviceIDXControls extends Component {
                         <div hidden={(hide_framerate)}>
                             <Label title={"Max Framerate"}>
                           <Input
-                            value={this.state.max_framerate}
+                            value={this.state.set_max_framerate}
                             id="max_framerate"
-                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"max_framerate")}
+                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"set_max_framerate")}
                             onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_max_framerate')}
                             style={{ width: "100%" }}
                           />
@@ -485,29 +494,6 @@ class NepiDeviceIDXControls extends Component {
                             </Columns>
 
                     </div>
-
-
-
-
-                      <div hidden={(hide_resolution)}>
-
-                        <SliderAdjustment
-                                        title={"Publish Size"}
-                                        msgType={"std_msgs/Float32"}
-                                        adjustment={this.state.resolutionAdjustment}
-                                        topic={namespace + '/set_resolution_ratio'}
-                                        scaled={0.01}
-                                        min={0}
-                                        max={100}
-                                        tooltip={"Adjustable Resolution"}
-                                        noTextBox={true}
-                                    />
-              
-
-                        </div>
-
-
-
 
 
 
@@ -606,10 +592,10 @@ class NepiDeviceIDXControls extends Component {
 
                         <Label title={"Width (Deg)"}>
                           <Input
-                            value={this.state.width_deg}
+                            value={this.state.set_width_deg}
                             id="image_width"
-                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"width_deg")}
-                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_width_deg')}
+                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"set_width_deg")}
+                            onKeyDown= {(event) => onEnterSendUpdateIntValue.bind(this)(event,namespace + '/set_data_product_width_deg', data_product)}
                             style={{ width: "80%" }}
                           />
                         </Label>
@@ -620,10 +606,10 @@ class NepiDeviceIDXControls extends Component {
 
                             <Label title={"Height (Deg)"}>
                           <Input
-                            value={this.state.height_deg}
+                            value={this.state.set_height_deg}
                             id="image_height"
-                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"height_deg")}
-                            onKeyDown= {(event) => onEnterSendIntValue.bind(this)(event,namespace + '/set_height_deg')}
+                            onChange= {(event) => onUpdateSetStateValue.bind(this)(event,"set_height_deg")}
+                            onKeyDown= {(event) => onEnterSendUpdateIntValue.bind(this)(event,namespace + '/set_data_product_height_deg', data_product)}
                             style={{ width: "80%" }}
                           />
                         </Label>

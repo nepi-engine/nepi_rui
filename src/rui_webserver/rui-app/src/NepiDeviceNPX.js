@@ -188,7 +188,7 @@ class NepiDeviceNPX extends Component {
                     />
                 : null}
 
-                  {(device_selected === true) ?
+                  {/* {(device_selected === true) ?
                     <NepiIFConnectNavPose
                     namespace={connect_navpose_topic}
                     navpose_topic={navpose_topic}
@@ -199,7 +199,7 @@ class NepiDeviceNPX extends Component {
                     show_data={false}
                     make_section={true}
                     />
-                  : null}
+                  : null} */}
 
 
                   {(device_selected === true) ?
